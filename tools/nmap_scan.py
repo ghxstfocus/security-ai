@@ -125,7 +125,7 @@ def nmap_scan_run(
     now = datetime.now(timezone.utc).isoformat()
 
     return {
-        "mock": True,
+        "source": "mock",
         "tool": "nmap_scan",
         "target": t,
         "ports": p,

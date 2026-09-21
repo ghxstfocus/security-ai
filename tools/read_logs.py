@@ -99,7 +99,7 @@ def read_logs_run(
 
     now = datetime.now(timezone.utc).isoformat()
     return {
-        "mock": True,
+        "source": "mock",
         "tool": "read_logs",
         "path": str(Path(p)),
         "max_lines": n,
