@@ -146,6 +146,13 @@ class ChatServiceHappyPathTests(_ChatBase):
         with self.assertRaises(ChatServiceError):
             ChatService(self.conn, self.audit, None)
 
+    def test_system_prompt_verbietet_spekulation(self):
+        from apps.security_ai.chat import _DEFAULT_SYSTEM_PROMPT
+        sp = _DEFAULT_SYSTEM_PROMPT
+        self.assertIn("NUR auf Basis des mitgelieferten Kontexts", sp)
+        self.assertIn("Spekuliere nicht", sp)
+        self.assertIn("Kontext enthaelt keine passenden Daten", sp)
+
 
 # ---------------------------------------------------------------------- #
 # RBAC
