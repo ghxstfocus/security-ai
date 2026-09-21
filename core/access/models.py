@@ -1,0 +1,237 @@
+"""
+RBAC-Datenmodell.
+
+Rollen, Permissions, Principals.
+
+Konventionen:
+- Alle Zeitstempel UTC-aware, ISO-8601-Strings.
+- Dataclasses sind frozen (unveraenderlich).
+- permission_code ist der stabile Schluessel (z. B. "chat.ask").
+- role.name ist der stabile Schluessel (z. B. "admin").
+"""
+from __future__ import annotations
+
+import hashlib
+import hmac
+import os
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Any, Mapping
+
+
+# ---------------------------------------------------------------------- #
+# Enums
+# ---------------------------------------------------------------------- #
+
+class PrincipalKind(str, Enum):
+    """Art des Principals."""
+
+    HUMAN = "human"
+    SYSTEM = "system"
+    SERVICE = "service"
+
+
+# ---------------------------------------------------------------------- #
+# Zeit-Helfer
+# ---------------------------------------------------------------------- #
+
+def utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def require_utc_iso(value: str, field_name: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(
+            f"{field_name} muss ISO-8601-String sein"
+        )
+    try:
+        dt = datetime.fromisoformat(value)
+    except ValueError as exc:
+        raise ValueError(
+            f"{field_name} nicht parsebar: {value!r}"
+        ) from exc
+    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
+        raise ValueError(
+            f"{field_name} muss timezone-aware sein"
+        )
+    return value
+
+
+def _require_str(value: str, field_name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field_name} darf nicht leer sein")
+    return value
+
+
+# ---------------------------------------------------------------------- #
+# Passwort-Hashing (pbkdf2_sha256, OWASP 2023)
+# ---------------------------------------------------------------------- #
+
+PBKDF2_ITERATIONS = 600_000
+PBKDF2_SALT_BYTES = 16
+PBKDF2_ALGO = "pbkdf2_sha256"
+
+
+def hash_password(password: str, *, iterations: int = PBKDF2_ITERATIONS
+                  ) -> str:
+    """
+    Hasht ein Passwort. Format:
+        pbkdf2_sha256$<iterations>$<salt_hex>$<hash_hex>
+    """
+    if not isinstance(password, str) or not password:
+        raise ValueError("Passwort darf nicht leer sein")
+    salt = os.urandom(PBKDF2_SALT_BYTES)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), salt, iterations
+    )
+    return f"{PBKDF2_ALGO}${iterations}${salt.hex()}${digest.hex()}"
+
+
+def verify_password(password: str, encoded: str) -> bool:
+    """
+    Prueft ein Passwort gegen einen gespeicherten Hash.
+    Liefert False bei jedem Formatfehler (fail closed, kein raise).
+    """
+    if not isinstance(password, str) or not isinstance(encoded, str):
+        return False
+    try:
+        algo, iters_s, salt_hex, hash_hex = encoded.split("$", 3)
+        if algo != PBKDF2_ALGO:
+            return False
+        iters = int(iters_s)
+        salt = bytes.fromhex(salt_hex)
+        expected = bytes.fromhex(hash_hex)
+    except (ValueError, TypeError):
+        return False
+    candidate = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), salt, iters
+    )
+    return hmac.compare_digest(candidate, expected)
+
+
+# ---------------------------------------------------------------------- #
+# Permission
+# ---------------------------------------------------------------------- #
+
+@dataclass(frozen=True)
+class Permission:
+    """Eine einzelne Berechtigung. code ist der stabile Schluessel."""
+
+    code: str
+    description: str | None = None
+    row_id: int | None = None
+
+    def __post_init__(self) -> None:
+        _require_str(self.code, "Permission.code")
+
+    @classmethod
+    def from_row(cls, row: Mapping[str, Any]) -> "Permission":
+        return cls(
+            row_id=row["id"],
+            code=row["code"],
+            description=row["description"],
+        )
+
+
+# ---------------------------------------------------------------------- #
+# Role
+# ---------------------------------------------------------------------- #
+
+@dataclass(frozen=True)
+class Role:
+    """Eine Rolle. name ist der stabile Schluessel."""
+
+    name: str
+    description: str | None = None
+    created_at: str = ""
+    permissions: tuple[str, ...] = field(default_factory=tuple)
+    row_id: int | None = None
+
+    def __post_init__(self) -> None:
+        _require_str(self.name, "Role.name")
+        if self.created_at:
+            require_utc_iso(self.created_at, "Role.created_at")
+        if not isinstance(self.permissions, tuple):
+            raise ValueError("Role.permissions muss tuple sein")
+
+    def has_permission(self, code: str) -> bool:
+        return code in self.permissions
+
+    @classmethod
+    def from_row(cls, row: Mapping[str, Any],
+                 permissions: tuple[str, ...] = ()) -> "Role":
+        return cls(
+            row_id=row["id"],
+            name=row["name"],
+            description=row["description"],
+            created_at=row["created_at"],
+            permissions=permissions,
+        )
+
+
+# ---------------------------------------------------------------------- #
+# Principal
+# ---------------------------------------------------------------------- #
+
+@dataclass(frozen=True)
+class Principal:
+    """
+    Eine Entitaet, die authentifiziert werden kann.
+
+    kind: human | system | service.
+    password_hash NULL -> kein Login (z. B. cli-admin).
+    is_active False -> gesperrt.
+    """
+
+    name: str
+    role_id: int
+    kind: PrincipalKind
+    created_at: str
+    password_hash: str | None = None
+    is_active: bool = True
+    row_id: int | None = None
+
+    def __post_init__(self) -> None:
+        _require_str(self.name, "Principal.name")
+        if not isinstance(self.role_id, int) or self.role_id <= 0:
+            raise ValueError("Principal.role_id muss positive int sein")
+        if not isinstance(self.kind, PrincipalKind):
+            raise ValueError(
+                f"Principal.kind muss PrincipalKind sein, "
+                f"nicht {type(self.kind).__name__}"
+            )
+        require_utc_iso(self.created_at, "Principal.created_at")
+        if not isinstance(self.is_active, bool):
+            raise ValueError("Principal.is_active muss bool sein")
+        if self.password_hash is not None:
+            if not isinstance(self.password_hash, str) or \
+                    not self.password_hash:
+                raise ValueError(
+                    "Principal.password_hash muss String oder None sein"
+                )
+
+    @classmethod
+    def from_row(cls, row: Mapping[str, Any]) -> "Principal":
+        return cls(
+            row_id=row["id"],
+            name=row["name"],
+            kind=PrincipalKind(row["kind"]),
+            role_id=row["role_id"],
+            password_hash=row["password_hash"],
+            is_active=bool(row["is_active"]),
+            created_at=row["created_at"],
+        )
+
+
+__all__ = [
+    "PrincipalKind",
+    "Permission",
+    "Role",
+    "Principal",
+    "hash_password",
+    "verify_password",
+    "PBKDF2_ITERATIONS",
+    "utc_now_iso",
+    "require_utc_iso",
+]
