@@ -48,6 +48,7 @@ from harness.audit.writer import (
     AuditWriter,
     AuditWriteError,
 )
+from harness.approval.queue import ApprovalQueue
 from harness.policy_engine.engine import PolicyEngine
 from harness.policy_engine.policy import PolicyContext
 from harness.tool_registry.registry import ToolRegistry
@@ -166,6 +167,7 @@ class SecurityAI:
         loop_budget: LoopBudget | None = None,
         authorized_networks: frozenset[str] | None = None,
         app_config_path: Path | str = DEFAULT_APP_CONFIG,
+        approval_queue: ApprovalQueue | None = None,
     ) -> None:
         self._conn = connect(db_path)
         apply_migrations(self._conn, migrations_dir)
@@ -207,6 +209,13 @@ class SecurityAI:
         else:
             self._loop_trigger_categories = DEFAULT_LOOP_TRIGGER_CATEGORIES
 
+        # ApprovalQueue: DI-freundlich. Wenn None, aus conn + Audit bauen.
+        self._approval_queue = (
+            approval_queue
+            if approval_queue is not None
+            else ApprovalQueue(self._conn, self._audit)
+        )
+
         # AgentLoop: stateless, bekommt policy_context pro run()
         self._loop = AgentLoop(
             registry=self._tool_registry,
@@ -215,6 +224,7 @@ class SecurityAI:
             budget=self._loop_budget,
             network_id="homelab-default",
             policy_engine=self._policy_engine,
+            approval_queue=self._approval_queue,
         )
 
     # ------------------------------------------------------------------ #
