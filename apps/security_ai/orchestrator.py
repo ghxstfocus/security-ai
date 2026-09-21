@@ -74,6 +74,13 @@ DEFAULT_RISK_RULES = "core/risk/rules.yaml"
 DEFAULT_POLICY_RULES = "policies/tools.yaml"
 
 # Erlaubte Netzwerke fuer die Policy Engine (nmap etc.)
+DEFAULT_APP_CONFIG = "apps/security_ai/config.yaml"
+
+DEFAULT_LOOP_TRIGGER_CATEGORIES = frozenset({
+    "SECURITY_ALERT",
+    "CONFIRMED",
+})
+
 DEFAULT_AUTHORIZED_NETWORKS = frozenset({
     "192.168.178.0/24",
     "192.168.189.0/24",
@@ -158,6 +165,7 @@ class SecurityAI:
         policy_engine: PolicyEngine | None = None,
         loop_budget: LoopBudget | None = None,
         authorized_networks: frozenset[str] | None = None,
+        app_config_path: Path | str = DEFAULT_APP_CONFIG,
     ) -> None:
         self._conn = connect(db_path)
         apply_migrations(self._conn, migrations_dir)
@@ -191,6 +199,14 @@ class SecurityAI:
         )
         self._loop_budget = loop_budget or LoopBudget()
 
+        self._app_config_path = Path(app_config_path)
+        self._app_config = self._load_app_config(self._app_config_path)
+        cats = self._app_config.get("loop_trigger_categories")
+        if isinstance(cats, list) and all(isinstance(c, str) for c in cats):
+            self._loop_trigger_categories = frozenset(cats)
+        else:
+            self._loop_trigger_categories = DEFAULT_LOOP_TRIGGER_CATEGORIES
+
         # AgentLoop: stateless, bekommt policy_context pro run()
         self._loop = AgentLoop(
             registry=self._tool_registry,
@@ -207,6 +223,14 @@ class SecurityAI:
 
     @staticmethod
     def _load_detection_config(path: Path) -> dict[str, Any]:
+        if not path.exists():
+            return {}
+        with path.open(encoding="utf-8") as fh:
+            data = yaml.safe_load(fh) or {}
+        return data if isinstance(data, dict) else {}
+
+    @staticmethod
+    def _load_app_config(path: Path) -> dict[str, Any]:
         if not path.exists():
             return {}
         with path.open(encoding="utf-8") as fh:
@@ -311,6 +335,24 @@ class SecurityAI:
         return self._inventory_version_cache
 
     # ------------------------------------------------------------------ #
+    # Policy-Context
+    # ------------------------------------------------------------------ #
+
+    def _build_policy_context(self, event: Event) -> PolicyContext:
+        """
+        Baut pro Event einen frischen PolicyContext.
+
+        now = event.timestamp, nicht datetime.now(), damit die
+        Policy-Entscheidung deterministisch und replay-faehig ist.
+        """
+        return PolicyContext(
+            network_id=event.network_id,
+            authorized_networks=self._authorized_networks,
+            now=event.timestamp,
+            config={},
+        )
+
+    # ------------------------------------------------------------------ #
     # Verarbeitung
     # ------------------------------------------------------------------ #
 
@@ -365,7 +407,7 @@ class SecurityAI:
                 else "upsert_seen"
             )
             _audit(
-                tool=f"inventory.{action}",
+                tool="inventory_repository",
                 details={
                     "kind": "inventory_update",
                     "action": action,
@@ -384,7 +426,7 @@ class SecurityAI:
             if r.skipped:
                 continue
             _audit(
-                tool=f"detection.{r.rule_id}",
+                tool="detection_engine",
                 details={
                     "kind": "detection_result",
                     "rule_id": r.rule_id,
@@ -423,7 +465,7 @@ class SecurityAI:
                 continue
             assessments.append(a)
             _audit(
-                tool=f"risk.{a.rule_id}",
+                tool="risk_engine",
                 details={
                     "kind": "risk_assessment",
                     "event_id": a.event_id,
@@ -436,9 +478,42 @@ class SecurityAI:
                 },
             )
 
+        # 3b) Agent Loop fuer Alerts mit hoher Risk-Category
+        loop_results: list[LoopResult] = []
+        for alert, assessment in zip(alerts, assessments):
+            if assessment.category.value not in self._loop_trigger_categories:
+                continue
+            enriched = with_data(alert, {
+                "risk_category": assessment.category.value,
+                "risk_score": assessment.score,
+            })
+            policy_ctx = self._build_policy_context(enriched)
+            loop_result = self._loop.run(
+                enriched, policy_context=policy_ctx,
+            )
+            loop_results.append(loop_result)
+            _audit(
+                tool="agent_loop",
+                details={
+                    "kind": "loop_result",
+                    "loop_status": loop_result.status,
+                    "step_count": len(loop_result.steps),
+                    "successful_steps": sum(
+                        1 for s in loop_result.steps if s.status == "OK"
+                    ),
+                    "error_steps": sum(
+                        1 for s in loop_result.steps if s.status == "ERROR"
+                    ),
+                    "alert_event_id": alert.event_id,
+                    "assessment_score": assessment.score,
+                    "assessment_category": assessment.category.value,
+                },
+                execution_status=loop_result.status,
+            )
+
         # 4) Snapshot-Hash
         _audit(
-            tool="orchestrator.snapshot",
+            tool="orchestrator",
             details={
                 "kind": "snapshot",
                 "inventory_hash": self._inventory_hash(snapshot),
@@ -456,6 +531,7 @@ class SecurityAI:
             reports=reports,
             alerts=alerts,
             assessments=assessments,
+            loop_results=loop_results,
         )
 
     def process_many(self, events: list[Event]) -> list[ProcessingResult]:
