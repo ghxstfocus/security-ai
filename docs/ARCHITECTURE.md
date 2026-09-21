@@ -292,6 +292,11 @@ Regel: Was nicht explizit erlaubt ist, ist verboten.
 
 ### 3.8 harness/guardrails — Guardrails
 
+**Status:** geplant (Phase 4). Teilweise abgedeckt in
+`harness/policy_engine` (globale Pruefer `no_shell_chars`,
+`no_path_traversal`, `no_null_bytes`; spezifische Pruefer
+`target_in_scope`, `authorized_target`, `read_only_path`).
+
 Nicht überschreibbare Schutzmechanismen. Code, nicht Prompt.
 
 - scope_guard.py — Nur autorisierte Netzbereiche
@@ -333,6 +338,13 @@ Regel: Kein UPDATE, kein DELETE.
 
 ### 3.11 harness/sandbox — Sandbox
 
+**Status:** teilweise. `sandbox_profile`-Feld und
+`KNOWN_SANDBOX_PROFILES` in `harness/tool_registry/tool.py`;
+Profil-Dateien in `harness/sandbox/profiles/`. Die echte
+Durchsetzung (Timeout, kein Shell, Argument-Whitelist) liegt
+aktuell pro Tool, z. B. in `tools/nmap_scan.py`.
+Zentralisierung spaeter.
+
 Isolation pro Tool. Subprozess mit harten Limits:
 
 - Zeit (Timeout)
@@ -361,6 +373,22 @@ Jede Änderung ist ein Change Request:
 
 Status: DRAFT -> TESTING -> PENDING_REVIEW -> APPROVED ->
 DEPLOYED (oder REJECTED / ROLLED_BACK).
+
+### 3.13 harness/context — Kontext-Bauer (Phase 3.5)
+
+**Status:** geplant (Phase 3.5).
+
+Baut vor jedem LLM-Aufruf einen strukturierten Kontext aus
+Events, DB-Historie, Log-Ausschnitten und Inventory-Status.
+Filtert Rohdaten, damit das LLM keine Freitext-Eingaben aus
+unbekannten Quellen sieht (Prompt-Injection-Schutz). Der
+Kontext-Bauer ist selbst auditierbar.
+
+Das LLM bekommt nur, was der Kontext-Bauer freigibt. Kein
+LLM-Output fliesst in Detection, Risk, Policy, Approval
+oder Change-Freigaben.
+
+Details: docs/DESIGN_DECISIONS.md, Abschnitt 8.
 
 ## 4. Datenfluss — Beispiel
 
