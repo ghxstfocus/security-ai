@@ -86,6 +86,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help=f"SQLite-DB (Default: {DEFAULT_DB_PATH})")
     p.add_argument("--migrations-dir", default=DEFAULT_MIGRATIONS_DIR)
     p.add_argument("--audit-base-dir", default=DEFAULT_AUDIT_DIR)
+    p.add_argument("--no-bootstrap", action="store_true",
+                   help="Kein Auto-Bootstrap: fail closed, wenn DB fehlt "
+                        "oder cli-admin fehlt")
     p.add_argument("--base-url", default=None,
                    help=f"Ollama-Base-URL (Default aus .env: "
                         f"{get_ollama_base_url()})")
@@ -139,20 +142,28 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     db_path = Path(args.db)
 
-    # Bootstrap: wenn die DB fehlt, legen wir sie an (ohne Principal).
-    # chat_cli ist das Einstiegswerkzeug. Approvals/Changes-CLIs
-    # bleiben strikt (DB muss da sein).
-    if not db_path.exists():
-        print(f"DB nicht gefunden, lege an: {db_path}")
+    # Bootstrap: DB + cli-admin anlegen, falls noetig.
+    # Idempotent: init_db prueft, ob die DB existiert und ob der
+    # Principal schon da ist.
+    if not args.no_bootstrap:
+        if not db_path.exists():
+            print(f"DB nicht gefunden, lege an: {db_path}")
         rc = init_db(
             db_path=db_path,
             migrations_dir=args.migrations_dir,
-            with_principal=False,   # Principal legt der Mensch an
+            with_principal=True,
+            principal_name="cli-admin",
+            role_name="admin",
             verbose=True,
         )
         if rc != 0:
             print("FEHLER: DB-Initialisierung fehlgeschlagen",
                   file=sys.stderr)
+            return 1
+    else:
+        if not db_path.exists():
+            print(f"FEHLER: DB {db_path} existiert nicht "
+                  f"(--no-bootstrap)", file=sys.stderr)
             return 1
 
     try:
