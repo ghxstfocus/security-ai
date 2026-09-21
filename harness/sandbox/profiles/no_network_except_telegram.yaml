@@ -1,0 +1,19 @@
+# Sandbox-Profil: no_network_except_telegram
+#
+# Status: aktiv (Phase 3.2).
+# Verwendet von: tools/telegram_alert.py
+#
+# Erlaubt:
+#   - Ausgehende HTTPS-Verbindungen zur Telegram-Bot-API
+#     (api.telegram.org)
+#
+# Verboten:
+#   - Jede andere Netzwerkverbindung
+#   - Shell
+#   - Dateisystem-Schreibzugriff
+name: no_network_except_telegram
+timeout_seconds: 15
+network: telegram_only
+allowed_hosts:
+  - "api.telegram.org"
+shell: false

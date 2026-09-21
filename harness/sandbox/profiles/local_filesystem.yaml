@@ -1,0 +1,20 @@
+# Sandbox-Profil: local_filesystem
+#
+# Status: geplant.
+# Verwendet von: -
+#
+# Vorgesehen fuer Tools, die kontrolliert ins lokale Dateisystem
+# schreiben (z. B. Change-Export, Log-Rotation).
+#
+# Erlaubt:
+#   - Schreiben in einen konfigurierten Pfad-Satz
+#   - Lesen aus erlaubten Pfaden
+#
+# Verboten:
+#   - Netzwerk-Zugriff
+#   - Shell
+name: local_filesystem
+timeout_seconds: 10
+network: none
+filesystem: write_restricted
+shell: false

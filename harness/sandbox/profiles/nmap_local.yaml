@@ -1,0 +1,41 @@
+# Sandbox-Profil: nmap_local
+#
+# Status: aktiv (Phase 3.4).
+# Verwendet von: tools/nmap_scan.py
+#
+# Erlaubt:
+#   - Netzwerk-Scan gegen localhost und RFC1918-Adressen
+#   - TCP-Connect-Scan (-sT), kein SYN (braucht root)
+#   - Argumente: -sT, -sV, -p, --top-ports, -oX, -Pn, -n
+#   - XML-Ausgabe auf stdout (-oX -)
+#
+# Verboten:
+#   - Shell (subprocess mit shell=False)
+#   - Schreiben in Dateien (-oA, --script)
+#   - Ziele ausserhalb der Whitelist
+#
+# Timeout: 30 Sekunden.
+#
+# Die echte Durchsetzung liegt aktuell in tools/nmap_scan.py
+# (Whitelists, Timeout, XML-Parsing). Zentralisierung spaeter.
+name: nmap_local
+timeout_seconds: 30
+network: restricted
+allowed_targets:
+  - "127.0.0.0/8"
+  - "10.0.0.0/8"
+  - "172.16.0.0/12"
+  - "192.168.0.0/16"
+  - "localhost"
+allowed_args:
+  - "-sT"
+  - "-sV"
+  - "-p"
+  - "--top-ports"
+  - "-oX"
+  - "-Pn"
+  - "-n"
+forbidden_args:
+  - "--script"
+  - "-oA"
+shell: false

@@ -1,0 +1,20 @@
+# Sandbox-Profil: read_only
+#
+# Status: teilweise implementiert (Lese-Tools wie read_logs,
+# get_devices, whitelist_check).
+# Verwendet von: tools/read_logs.py
+#
+# Erlaubt:
+#   - Lesen aus einem festen Satz erlaubter Pfade
+#     (siehe Policy: read_only_path, z. B. /var/log)
+#   - Lesezugriff auf die Inventory-DB
+#
+# Verboten:
+#   - Schreiben in Dateien
+#   - Shell
+#   - Netzwerk-Zugriff
+name: read_only
+timeout_seconds: 10
+network: none
+filesystem: read_only
+shell: false
