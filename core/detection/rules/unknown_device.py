@@ -11,7 +11,7 @@ from __future__ import annotations
 from core.detection.rule_base import Rule, RuleContext
 from core.events.event import Event, EventType, Severity, new_event
 
-_ALARM_NETWORK = "Hauptnetz"
+_DEFAULT_ALARM_NETWORK = "Hauptnetz"
 _TRIGGER_TYPES = frozenset({
     EventType.DEVICE_PRESENCE.value,
     EventType.DEVICE_OFFLINE.value,
@@ -31,7 +31,10 @@ class UnknownDeviceRule(Rule):
         if event.event_type not in self.event_types:
             return []
 
-        if event.data.get("network_type") != _ALARM_NETWORK:
+        alarm_network = context.config.get(
+            "alarm_network", _DEFAULT_ALARM_NETWORK
+        )
+        if event.data.get("network_type") != alarm_network:
             return []
 
         # Nur explizit unbekannt alarmiert. Fehlendes Feld != False.

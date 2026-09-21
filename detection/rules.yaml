@@ -1,0 +1,22 @@
+# Detection-Regeln Konfiguration.
+#
+# Wird von der DetectionEngine pro process()-Call als configs-Dict
+# uebergeben: { rule_id: { ... } }.
+#
+# Geheimnis: Regeln lesen ihre Config ueber _cfg() mit Fallback auf
+# _DEFAULTS im Regel-Modul. Fehlende Keys hier sind okay.
+
+unknown_device:
+  alarm_network: "Hauptnetz"
+
+port_scan:
+  enabled: true
+  severity: WARNING
+  distinct_ports_threshold: 10
+  window_seconds: 60
+  distinct_ips_threshold: 5
+  distinct_ips_window_seconds: 120
+  same_port_attempts_threshold: 20
+  same_port_window_seconds: 30
+  alert_cooldown_seconds: 300
+  trust_whitelisted_sources: false
