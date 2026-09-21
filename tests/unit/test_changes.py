@@ -188,6 +188,48 @@ class RepositoryTests(unittest.TestCase):
         with self.assertRaises(ChangeStateError):
             repo.transition(r.change_id, ChangeStatus.DEPLOYED)
 
+    def test_cancel_aus_draft(self):
+        repo = self._repo()
+        r = repo.create(title="x", description="y",
+                        requested_by="u", type=ChangeType.CODE_CHANGE)
+        r2 = repo.transition(r.change_id, ChangeStatus.CANCELLED,
+                             decided_by="u", reason="zurueckgezogen")
+        self.assertEqual(r2.status, ChangeStatus.CANCELLED)
+        self.assertEqual(r2.decision_reason, "zurueckgezogen")
+
+    def test_cancel_aus_approved(self):
+        repo = self._repo()
+        r = repo.create(title="x", description="y",
+                        requested_by="u", type=ChangeType.CODE_CHANGE)
+        repo.transition(r.change_id, ChangeStatus.PENDING_REVIEW)
+        repo.transition(r.change_id, ChangeStatus.APPROVED,
+                        decided_by="admin")
+        r2 = repo.transition(r.change_id, ChangeStatus.CANCELLED,
+                             decided_by="u", reason="doch nicht")
+        self.assertEqual(r2.status, ChangeStatus.CANCELLED)
+
+    def test_approved_nach_rejected_verboten(self):
+        repo = self._repo()
+        r = repo.create(title="x", description="y",
+                        requested_by="u", type=ChangeType.CODE_CHANGE)
+        repo.transition(r.change_id, ChangeStatus.PENDING_REVIEW)
+        repo.transition(r.change_id, ChangeStatus.APPROVED,
+                        decided_by="admin")
+        with self.assertRaises(ChangeStateError):
+            repo.transition(r.change_id, ChangeStatus.REJECTED,
+                            decided_by="admin")
+
+    def test_cancelled_ist_final(self):
+        repo = self._repo()
+        r = repo.create(title="x", description="y",
+                        requested_by="u", type=ChangeType.CODE_CHANGE)
+        repo.transition(r.change_id, ChangeStatus.CANCELLED,
+                        decided_by="u")
+        for target in (ChangeStatus.TESTING, ChangeStatus.APPROVED,
+                       ChangeStatus.REJECTED, ChangeStatus.DEPLOYED):
+            with self.assertRaises(ChangeStateError):
+                repo.transition(r.change_id, target, decided_by="u")
+
     def test_list_pending(self):
         repo = self._repo()
         a = repo.create(title="a", description="d",
@@ -376,6 +418,20 @@ class ChangesCliTests(unittest.TestCase):
         self.assertEqual(rc, 0)
         self.assertEqual(self._status(cid), ChangeStatus.ROLLED_BACK)
 
+    def test_cancel_cli(self):
+        cid = self._seed()
+        rc = self._run("cancel", cid, "--by", "u",
+                       "--reason", "zurueckgezogen")
+        self.assertEqual(rc, 0)
+        self.assertEqual(self._status(cid), ChangeStatus.CANCELLED)
+
+    def test_cancel_cli_unbekannt_exit_1(self):
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            rc = self._run("cancel", "CHG-2026-99999", "--by", "u")
+        self.assertEqual(rc, 1)
+        self.assertIn("FEHLER", err.getvalue())
+
     def test_export(self):
         cid = self._seed()
         rc = self._run("export", cid, "--out", str(self.out))
@@ -421,6 +477,22 @@ class ChangesCliTests(unittest.TestCase):
         self.assertIn("change_created", kinds)
         self.assertIn("change_approved", kinds)
         self.assertIn("change_deployed", kinds)
+
+    def test_audit_kind_cancelled(self):
+        rc = self._run("create", "--title", "T", "--description", "D",
+                       "--by", "u", "--type", "config_change")
+        self.assertEqual(rc, 0)
+        cid = "CHG-2026-00001"
+        rc = self._run("cancel", cid, "--by", "u",
+                       "--reason", "zurueck")
+        self.assertEqual(rc, 0)
+        files = list(self.audit.glob("*.jsonl"))
+        self.assertEqual(len(files), 1)
+        kinds = []
+        for line in files[0].read_text().splitlines():
+            entry = json.loads(line)
+            kinds.append(entry["details"]["kind"])
+        self.assertIn("change_cancelled", kinds)
 
 
 if __name__ == "__main__":

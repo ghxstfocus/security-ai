@@ -39,6 +39,7 @@ class ChangeStatus(str, Enum):
     DEPLOYED = "deployed"
     ROLLED_BACK = "rolled_back"
     REJECTED = "rejected"
+    CANCELLED = "cancelled"
 
 
 class ChangeType(str, Enum):
