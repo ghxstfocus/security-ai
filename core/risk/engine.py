@@ -82,25 +82,14 @@ def _pred_not_in_inventory(event: Event, context: RiskContext) -> bool:
     return not context.is_in_inventory(identifier)
 
 
-def _pred_first_seen_recent(event: Event, context: RiskContext) -> bool:
+def _pred_first_seen(event: Event, context: RiskContext) -> bool:
     """
-    True, wenn das Geraet erst seit <= 1 Tag im Inventory steht.
+    True, wenn das Event als "erstes Auftreten" markiert ist.
 
-    Erwartet context.inventory["first_seen"] = dict[identifier, datetime].
-    Fehlt der Identifier dort, ist es kein "first_seen_recent" (nicht
-    im Inventory -> anderer Modifier greift).
+    Das Feld data["first_seen"] wird vom Orchestrator gesetzt, bevor
+    die Risk Engine laeuft. Deterministisch, replay-faehig.
     """
-    identifier = _data(event, "identifier")
-    if not identifier or not context.inventory:
-        return False
-    fs = context.inventory.get("first_seen") or {}
-    ts = fs.get(identifier)
-    if not isinstance(ts, datetime):
-        return False
-    if ts.tzinfo is None:
-        return False
-    delta = context.now - ts
-    return 0 <= delta.total_seconds() <= 86400
+    return _data(event, "first_seen") is True
 
 
 def _pred_is_whitelisted(event: Event, context: RiskContext) -> bool:
@@ -129,7 +118,7 @@ PREDICATES: dict[str, Predicate] = {
     "nachts": _pred_nachts,
     "wochenende": _pred_wochenende,
     "not_in_inventory": _pred_not_in_inventory,
-    "first_seen_recent": _pred_first_seen_recent,
+    "first_seen": _pred_first_seen,
     "is_whitelisted": _pred_is_whitelisted,
     "many_ports": _pred_many_ports,
     "many_ips": _pred_many_ips,

@@ -41,12 +41,12 @@ rules:
       - when: wochenende
         add: 0.05
         reason: "am Wochenende"
+      - when: first_seen
+        add: 0.15
+        reason: "Erstes Auftreten des Geraets"
       - when: is_whitelisted
         add: -0.3
         reason: "steht auf der Whitelist"
-      - when: first_seen_recent
-        add: 0.05
-        reason: "erstmals gesehen (<= 1 Tag)"
 
   # ------------------------------------------------------------------ #
   # port_scan (deckt port_scan / network_scan / brute_force ab)

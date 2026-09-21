@@ -113,8 +113,9 @@ class OrchestratorTests(unittest.TestCase):
         self.assertEqual(len(r.assessments), 1)
         # Inventory-Update laeuft VOR Risk -> Geraet ist schon drin,
         # not_in_inventory greift NICHT mehr.
-        # base 0.5 + hauptnetz 0.2 + nachts 0.1 + first_seen_recent 0.05 = 0.85
-        self.assertAlmostEqual(r.assessments[0].score, 0.85, places=4)
+        # base 0.5 + hauptnetz 0.2 + nachts 0.1 + first_seen 0.15 = 0.95
+        # (not_in_inventory greift nicht, weil Inventory-Update vorher lief)
+        self.assertAlmostEqual(r.assessments[0].score, 0.95, places=4)
         self.assertEqual(r.assessments[0].category.value, "CONFIRMED")
 
     def test_gastnetz_kein_alarm(self):
@@ -159,6 +160,41 @@ class OrchestratorTests(unittest.TestCase):
         # base 0.4 + many_ports 0.3 + is_whitelisted -0.2 = 0.5
         # (hauptnetz greift nicht, weil syn_packet kein network_type traegt)
         self.assertAlmostEqual(assessments_total[0].score, 0.5, places=4)
+
+    def test_first_seen_bonus_greift(self):
+        ts = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)  # Montagmittag
+        e = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
+            "identifier": "192.168.178.99",
+            "entity_name": "Neues-Geraet",
+            "network_type": "Hauptnetz",
+            "known": False,
+        })
+        r = self.ai.process(e)
+        self.assertEqual(len(r.alerts), 1)
+        # first_seen sollte im Alert-Event gesetzt sein
+        self.assertTrue(r.alerts[0].data.get("first_seen"))
+        # base 0.5 + hauptnetz 0.2 + first_seen 0.15 = 0.85 (nachts/wochenende aus)
+        self.assertAlmostEqual(r.assessments[0].score, 0.85, places=4)
+
+    def test_second_seen_kein_bonus(self):
+        ts = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)
+        e1 = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
+            "identifier": "192.168.178.98",
+            "network_type": "Hauptnetz",
+            "known": False,
+        })
+        self.ai.process(e1)
+        # zweites Mal: Geraet ist jetzt im Inventory -> first_seen=False
+        e2 = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
+            "identifier": "192.168.178.98",
+            "network_type": "Hauptnetz",
+            "known": False,
+        })
+        r = self.ai.process(e2)
+        self.assertEqual(len(r.alerts), 1)
+        self.assertFalse(r.alerts[0].data.get("first_seen"))
+        # base 0.5 + hauptnetz 0.2 = 0.7 (kein first_seen)
+        self.assertAlmostEqual(r.assessments[0].score, 0.7, places=4)
 
     def test_port_scan_durch_den_stack(self):
         base = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)

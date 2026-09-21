@@ -176,19 +176,17 @@ class PredicateTests(unittest.TestCase):
         # fehlender identifier -> False
         self.assertFalse(PREDICATES["not_in_inventory"](_event("x"), self.ctx))
 
-    def test_first_seen_recent(self):
-        now = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)
-        fs = now - timedelta(hours=2)
-        ctx = _ctx(now=now, inventory={"first_seen": {"10.0.0.1": fs}})
-        e = _event("x", data={"identifier": "10.0.0.1"})
-        self.assertTrue(PREDICATES["first_seen_recent"](e, ctx))
-
-        fs_old = now - timedelta(days=5)
-        ctx_old = _ctx(now=now, inventory={"first_seen": {"10.0.0.1": fs_old}})
-        self.assertFalse(PREDICATES["first_seen_recent"](e, ctx_old))
-
-        # fehlender identifier -> False
-        self.assertFalse(PREDICATES["first_seen_recent"](_event("x"), ctx))
+    def test_first_seen(self):
+        # Feld wird vom Orchestrator gesetzt; Predicate liest nur.
+        self.assertTrue(PREDICATES["first_seen"](
+            _event("x", data={"first_seen": True}), self.ctx))
+        self.assertFalse(PREDICATES["first_seen"](
+            _event("x", data={"first_seen": False}), self.ctx))
+        # fehlendes Feld -> False (fail safe)
+        self.assertFalse(PREDICATES["first_seen"](_event("x"), self.ctx))
+        # anderer Typ -> False
+        self.assertFalse(PREDICATES["first_seen"](
+            _event("x", data={"first_seen": "yes"}), self.ctx))
 
     def test_is_whitelisted(self):
         e = _event("x", data={"identifier": "10.0.0.1"})
