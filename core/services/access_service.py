@@ -1,0 +1,231 @@
+"""
+AccessService: Service-Schicht fuer RBAC.
+
+Duenne Fassade ueber AccessChecker, RoleRepository,
+PermissionRepository, PrincipalRepository.
+
+Aufgabe:
+- Berechtigung pruefen (require_permission).
+- Audit fuer jede schreibende Aktion.
+- Rolle/Permission/Principal-Verwaltung.
+
+Design:
+- Kein UI-Code. Web, CLI, Telegram rufen denselben Service.
+- Audit ist Pflicht bei Schreib-Aktionen (fail closed: wenn
+  AuditWriter fehlt, wirft der Service).
+- Der Service entscheidet nicht ueber Policy, nur ueber RBAC.
+"""
+from __future__ import annotations
+
+import sqlite3
+from typing import Any
+
+from core.access.checker import AccessChecker, AccessDeniedError
+from core.access.models import (
+    Permission,
+    Principal,
+    PrincipalKind,
+    Role,
+)
+from core.access.repository import (
+    AccessNotFoundError,
+    AccessRepositoryError,
+    PermissionRepository,
+    PrincipalRepository,
+    RolePermissionRepository,
+    RoleRepository,
+)
+from harness.audit.writer import AuditWriter
+
+
+AGENT = "security_ai"
+TOOL = "access_service"
+
+
+class AccessServiceError(RuntimeError):
+    """Fachlicher Fehler im AccessService."""
+
+
+class AccessService:
+    def __init__(
+        self,
+        conn: sqlite3.Connection,
+        audit_writer: AuditWriter,
+    ) -> None:
+        if audit_writer is None:
+            raise AccessServiceError(
+                "audit_writer ist Pflicht (fail closed)"
+            )
+        self._conn = conn
+        self._audit = audit_writer
+        self._checker = AccessChecker(conn)
+        self._roles = RoleRepository(conn)
+        self._perms = PermissionRepository(conn)
+        self._role_perms = RolePermissionRepository(conn)
+        self._principals = PrincipalRepository(conn)
+
+    # ------------------------------------------------------------------ #
+    # Audit
+    # ------------------------------------------------------------------ #
+
+    def _log(self, kind: str, **extra: Any) -> None:
+        details = {"kind": kind}
+        details.update(extra)
+        self._audit.log(
+            agent=AGENT,
+            tool=TOOL,
+            policy_result="ALLOWED",
+            permission_level=0,
+            execution_status="OK",
+            details=details,
+        )
+
+    # ------------------------------------------------------------------ #
+    # Lesen (mit Berechtigung)
+    # ------------------------------------------------------------------ #
+
+    def require(self, principal_name: str, code: str) -> None:
+        """Kurzform fuer self._checker.require_permission."""
+        self._checker.require_permission(principal_name, code)
+
+    def list_roles(self, actor: str) -> list[Role]:
+        self.require(actor, "role.manage")
+        return self._roles.list_all()
+
+    def list_permissions(self, actor: str) -> list[Permission]:
+        self.require(actor, "role.manage")
+        return self._perms.list_all()
+
+    def list_principals(self, actor: str) -> list[Principal]:
+        self.require(actor, "principal.manage")
+        return self._principals.list_all()
+
+    def get_role(self, actor: str, name: str) -> Role:
+        self.require(actor, "role.manage")
+        return self._roles.get_by_name(name)
+
+    def get_principal(self, actor: str, name: str) -> Principal:
+        self.require(actor, "principal.manage")
+        return self._principals.get_by_name(name)
+
+    # ------------------------------------------------------------------ #
+    # Schreiben (mit Berechtigung + Audit)
+    # ------------------------------------------------------------------ #
+
+    def create_principal(
+        self,
+        actor: str,
+        *,
+        name: str,
+        role_name: str,
+        kind: PrincipalKind = PrincipalKind.HUMAN,
+        password_hash: str | None = None,
+        is_active: bool = True,
+    ) -> Principal:
+        self.require(actor, "principal.manage")
+        try:
+            role = self._roles.get_by_name(role_name)
+        except AccessNotFoundError as exc:
+            raise AccessServiceError(
+                f"Rolle {role_name!r} nicht gefunden"
+            ) from exc
+        try:
+            p = self._principals.create(
+                name=name,
+                role_id=role.row_id,
+                kind=kind,
+                password_hash=password_hash,
+                is_active=is_active,
+            )
+        except AccessRepositoryError as exc:
+            raise AccessServiceError(str(exc)) from exc
+        self._log(
+            "principal_created",
+            actor=actor,
+            name=p.name,
+            role=role.name,
+            principal_kind=p.kind.value,
+        )
+        return p
+
+    def set_principal_active(
+        self,
+        actor: str,
+        *,
+        name: str,
+        is_active: bool,
+    ) -> Principal:
+        self.require(actor, "principal.manage")
+        try:
+            p = self._principals.set_active(name, is_active)
+        except AccessNotFoundError as exc:
+            raise AccessServiceError(str(exc)) from exc
+        self._log(
+            "principal_active_changed",
+            actor=actor,
+            name=p.name,
+            is_active=p.is_active,
+        )
+        return p
+
+    def assign_permission(
+        self,
+        actor: str,
+        *,
+        role_name: str,
+        permission_code: str,
+    ) -> None:
+        self.require(actor, "role.manage")
+        try:
+            self._role_perms.assign(role_name, permission_code)
+        except AccessNotFoundError as exc:
+            raise AccessServiceError(str(exc)) from exc
+        self._log(
+            "permission_assigned",
+            actor=actor,
+            role=role_name,
+            permission=permission_code,
+        )
+
+    def revoke_permission(
+        self,
+        actor: str,
+        *,
+        role_name: str,
+        permission_code: str,
+    ) -> int:
+        self.require(actor, "role.manage")
+        n = self._role_perms.revoke(role_name, permission_code)
+        self._log(
+            "permission_revoked",
+            actor=actor,
+            role=role_name,
+            permission=permission_code,
+            affected=n,
+        )
+        return n
+
+    # ------------------------------------------------------------------ #
+    # Selbst-Auskunft (jeder Principal darf das fuer sich)
+    # ------------------------------------------------------------------ #
+
+    def whoami(self, principal_name: str) -> dict[str, Any]:
+        """
+        Rolle und Permissions eines Principals.
+        Keine Berechtigung noetig ausser: Principal existiert und
+        ist aktiv.
+        """
+        role_name = self._checker.role_of(principal_name)
+        perms = self._checker.permissions_of(principal_name)
+        return {
+            "principal": principal_name,
+            "role": role_name,
+            "permissions": sorted(perms),
+        }
+
+
+__all__ = [
+    "AccessService",
+    "AccessServiceError",
+    "AccessDeniedError",
+]
