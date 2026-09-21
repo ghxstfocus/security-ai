@@ -12,6 +12,7 @@ Prüft die Sicherheitsgarantien:
 """
 from __future__ import annotations
 
+import json
 import tempfile
 from pathlib import Path
 
@@ -25,6 +26,11 @@ from harness.agent_loop.loop import (
 )
 from harness.agent_loop.model import DummyModel
 from harness.audit.writer import AuditWriter
+from harness.policy_engine.engine import PolicyEngine
+from harness.policy_engine.policy import (
+    Decision,
+    PolicyContext,
+)
 from harness.permissions.levels import Level
 from harness.tool_registry.registry import ToolRegistry
 from harness.tool_registry.tool import Tool
@@ -93,6 +99,19 @@ def sample_event() -> Event:
         severity=Severity.INFO,
         data={"identifier": "192.168.178.99"},
     )
+
+
+
+# --- Helper: Audit-Log lesen ---
+
+def _read_audit_entries(tmp_audit_dir: Path) -> list[dict]:
+    """Liest alle JSONL-Eintraege aus einem Audit-Verzeichnis."""
+    out: list[dict] = []
+    for f in sorted(tmp_audit_dir.glob("*.jsonl")):
+        for line in f.read_text(encoding="utf-8").strip().split("\n"):
+            if line:
+                out.append(json.loads(line))
+    return out
 
 
 # --- Tests: Happy Path ---
@@ -274,3 +293,108 @@ def test_empty_plan_is_ok(registry, audit, sample_event):
 
     assert result.status == "OK"
     assert len(result.steps) == 0
+
+
+# ---------------------------------------------------------------------- #
+# Audit-Konvention details.kind
+# ---------------------------------------------------------------------- #
+
+def test_audit_entries_haben_details_kind(registry, audit, tmp_audit_dir, sample_event):
+    """Jeder Audit-Eintrag des Loops traegt details['kind']."""
+    from harness.agent_loop.loop import PlanStep
+    model = DummyModel(fixed_steps=[
+        PlanStep(tool="read_logs", args={"file": "auth.log"}),
+    ])
+    loop = AgentLoop(registry=registry, audit=audit, model=model)
+    loop.run(sample_event)
+
+    entries = _read_audit_entries(tmp_audit_dir)
+    assert entries, "es sollten Audit-Eintraege geschrieben sein"
+    for e in entries:
+        assert "details" in e, e
+        assert isinstance(e["details"], dict), e
+        assert "kind" in e["details"], e
+
+
+def test_tool_denied_hat_policy_decision(tmp_audit_dir, sample_event):
+    """Policy-FORBIDDEN erzeugt details.kind='tool_denied' mit policy_decision."""
+    from harness.agent_loop.loop import PlanStep
+    from harness.tool_registry.registry import ToolRegistry
+    from harness.tool_registry.tool import Tool
+
+    reg = ToolRegistry()
+    reg.register(Tool(
+        name="read_logs",
+        level=Level.READ,
+        func=lambda file="x": f"logs from {file}",
+        description="Logs lesen",
+        sandbox_profile="read_only",
+        allowed_args=frozenset({"file"}),
+    ))
+
+    audit = AuditWriter(base_dir=tmp_audit_dir)
+    policy_engine = PolicyEngine("policies/tools.yaml")
+    # Leerer Kontext: authorized_networks leer, read_only_paths leer
+    policy_ctx = PolicyContext(
+        network_id="homelab-default",
+        config={},
+    )
+
+    model = DummyModel(fixed_steps=[
+        # Shell-Zeichen im Pfad -> globaler Pruefer no_shell_chars schlaegt zu
+        PlanStep(tool="read_logs", args={"file": "/var/log/x; rm -rf /"}),
+    ])
+    loop = AgentLoop(
+        registry=reg, audit=audit, model=model,
+        policy_engine=policy_engine,
+    )
+    result = loop.run(sample_event, policy_context=policy_ctx)
+
+    assert result.steps[0].status == "ERROR"
+    assert "POLICY" in (result.steps[0].error or "")
+
+    entries = _read_audit_entries(tmp_audit_dir)
+    denied = [e for e in entries
+              if e.get("details", {}).get("kind") == "tool_denied"]
+    assert len(denied) == 1, entries
+    d = denied[0]["details"]
+    assert d["policy_decision"] == "FORBIDDEN"
+    assert d["tool"] == "read_logs"
+    assert isinstance(d.get("failed_predicates"), list)
+    assert "no_shell_chars" in d["failed_predicates"]
+
+
+def test_tool_call_hat_duration(tmp_audit_dir, sample_event):
+    """Erfolgreicher Tool-Aufruf erzeugt details.kind='tool_call' mit duration_ms."""
+    from harness.agent_loop.loop import PlanStep
+    from harness.tool_registry.registry import ToolRegistry
+    from harness.tool_registry.tool import Tool
+
+    reg = ToolRegistry()
+    reg.register(Tool(
+        name="read_logs",
+        level=Level.READ,
+        func=lambda file="x": f"logs from {file}",
+        description="Logs lesen",
+        sandbox_profile="read_only",
+        allowed_args=frozenset({"file"}),
+    ))
+
+    audit = AuditWriter(base_dir=tmp_audit_dir)
+    model = DummyModel(fixed_steps=[
+        PlanStep(tool="read_logs", args={"file": "auth.log"}),
+    ])
+    loop = AgentLoop(registry=reg, audit=audit, model=model)
+    result = loop.run(sample_event)
+
+    assert result.steps[0].status == "OK"
+
+    entries = _read_audit_entries(tmp_audit_dir)
+    calls = [e for e in entries
+             if e.get("details", {}).get("kind") == "tool_call"]
+    assert len(calls) == 1, entries
+    d = calls[0]["details"]
+    assert d["tool"] == "read_logs"
+    assert d["level"] == int(Level.READ)
+    assert isinstance(d.get("duration_ms"), int)
+    assert d["duration_ms"] >= 0
