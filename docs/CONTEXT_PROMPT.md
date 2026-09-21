@@ -95,6 +95,23 @@ Alle Commits auf origin/main.
 
 ### Format-Regeln
 
+- Jeder Arbeitsschritt wird als EIN copy-paste-faehiger Block mit
+  `&&`-Verkettung geliefert (Patch, Checks, Commit).
+  Beispiel:
+      cd /opt/security-ai && python3 - << 'PYEOF' ... PYEOF && \
+        wc -l <datei> && python3 -m py_compile <datei> && \
+        python3 -m pytest tests/ -q && git add <datei> && \
+        git commit -m "..."
+  (Zeilenumbrueche dienen nur der Lesbarkeit; beim Kopieren
+  als eine Zeile behandeln oder Backslashes beibehalten.)
+- Faellt ein Schritt in der Kette fehl, stoppt `&&` automatisch
+  vor `git add` / `git commit`. Kein halb gepatchter Commit.
+- Kein sed auf Python-Code. Patches per Python-Skript
+  (Path.read_text / str.replace / Path.write_text).
+- Keine Umlaute in Code-Bloecken (oe, ue, ae, ss).
+- Nach jedem Schreiben: wc -l, py_compile (bei .py), Test, Commit.
+
+
 - Ein Codeblock pro Datei: `cat > ... << 'EOF' ... EOF`
 - Danach: wc -l, py_compile, Test, git commit
 - Keine Umlaute in Code-Bloecken (oe, ue, ae, ss)
