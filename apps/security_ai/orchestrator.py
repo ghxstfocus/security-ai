@@ -18,6 +18,9 @@ is_in_inventory wird dann False -> Risiko-Score geht eher hoch.
 """
 from __future__ import annotations
 
+import hashlib
+import json
+
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -35,6 +38,11 @@ from core.inventory.repository import (
 from core.inventory.whitelist import WhitelistRepository
 from core.risk.engine import RiskEngine
 from core.risk.models import RiskAssessment, RiskContext
+from harness.audit.writer import (
+    AuditEntry,
+    AuditWriter,
+    AuditWriteError,
+)
 
 try:
     import yaml  # PyYAML
@@ -82,6 +90,15 @@ class ProcessingResult:
         return max(a.score for a in self.assessments)
 
 
+class ProcessingAuditError(Exception):
+    """Ein oder mehrere Audit-Eintraege konnten nicht geschrieben werden."""
+
+    def __init__(self, errors: list[Exception]) -> None:
+        msg = f"{len(errors)} Audit-Fehler beim Verarbeiten"
+        super().__init__(msg)
+        self.errors = list(errors)
+
+
 class SecurityAI:
     """
     Orchestrator.
@@ -100,6 +117,8 @@ class SecurityAI:
         detection_config_path: Path | str = DEFAULT_DETECTION_CONFIG,
         risk_rules_path: Path | str = DEFAULT_RISK_RULES,
         rules_package: str = DEFAULT_RULES_PACKAGE,
+        audit_base_dir: Path | str = "audit-logs",
+        audit_writer: AuditWriter | None = None,
     ) -> None:
         self._conn = connect(db_path)
         apply_migrations(self._conn, migrations_dir)
@@ -116,6 +135,10 @@ class SecurityAI:
         self._detection_config = self._load_detection_config(
             self._detection_config_path
         )
+
+        self._audit = audit_writer or AuditWriter(base_dir=audit_base_dir)
+        self._audit_base_dir = Path(audit_base_dir)
+        self._inventory_version_cache: str | None = None
 
     # ------------------------------------------------------------------ #
     # Setup / Config
@@ -157,13 +180,13 @@ class SecurityAI:
     # Inventory-Update (nur device_presence / device_offline)
     # ------------------------------------------------------------------ #
 
-    def _update_inventory(self, event: Event) -> None:
+    def _update_inventory(self, event: Event) -> bool:
         if event.event_type not in _INVENTORY_EVENTS:
-            return
+            return False
 
         identifier = event.data.get("identifier")
         if not identifier or not isinstance(identifier, str):
-            return
+            return False
 
         if event.event_type == EventType.DEVICE_PRESENCE.value:
             self._devices.upsert_seen(
@@ -196,6 +219,36 @@ class SecurityAI:
                 timestamp=event.timestamp,
             )
 
+        return True
+
+    # ------------------------------------------------------------------ #
+    # Audit-Helper
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _inventory_hash(snapshot: dict[str, Any]) -> str:
+        """SHA256 ueber sortierte Identifier-Mengen (devices + whitelist)."""
+        payload = {
+            "devices": sorted(snapshot.get("devices", set()) or set()),
+            "whitelist": sorted(snapshot.get("whitelist", set()) or set()),
+        }
+        canonical = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+    def _inventory_version(self) -> str:
+        """Hoechste schema_migrations-Version als String, z.B. "0002". "0000" wenn leer."""
+        if self._inventory_version_cache is not None:
+            return self._inventory_version_cache
+        try:
+            row = self._conn.execute(
+                "SELECT MAX(version) FROM schema_migrations"
+            ).fetchone()
+            v = row[0] if row and row[0] is not None else 0
+            self._inventory_version_cache = f"{int(v):04d}"
+        except Exception:  # noqa: BLE001
+            self._inventory_version_cache = "0000"
+        return self._inventory_version_cache
+
     # ------------------------------------------------------------------ #
     # Verarbeitung
     # ------------------------------------------------------------------ #
@@ -204,18 +257,61 @@ class SecurityAI:
         """
         Verarbeitet ein Event durch den ganzen Stack.
 
-        Reihenfolge: Inventory-Update -> Detection -> Risk.
+        Reihenfolge: Pre-Snapshot -> Inventory-Update -> Detection
+        -> Alerts anreichern -> Risk -> Audit.
+
+        Audit-Fehler werden gesammelt; am Ende wird
+        ProcessingAuditError geworfen, ProcessingResult nicht
+        zurueckgegeben. Fail closed.
         """
-        # 0) Pre-Snapshot (Zustand VOR dem Update).
-        #    Wird gebraucht, um "first_seen" fuer Alerts zu setzen.
+        audit_errors: list[Exception] = []
+        audit_entries: list[AuditEntry] = []
+
+        def _audit(
+            tool: str,
+            details: dict[str, Any],
+            execution_status: str = "OK",
+        ) -> None:
+            try:
+                entry = self._audit.log(
+                    agent="security_ai",
+                    tool=tool,
+                    policy_result="ALLOWED",
+                    permission_level=0,
+                    execution_status=execution_status,
+                    details=details,
+                    network_id=event.network_id,
+                )
+                audit_entries.append(entry)
+            except Exception as exc:  # noqa: BLE001
+                audit_errors.append(exc)
+
+        # 0) Pre-Snapshot
         pre_snapshot = self._load_inventory_snapshot()
 
         # 1) Inventory-Update
+        updated = False
         try:
-            self._update_inventory(event)
-        except Exception:  # noqa: BLE001 - Detection/Risk sollen trotzdem laufen
-            # Fail-safe: wir loggen (noch) nicht, aber wir brechen nicht ab.
+            updated = self._update_inventory(event)
+        except Exception:  # noqa: BLE001 - Detection/Risk laufen weiter
             pass
+
+        if updated:
+            identifier = event.data.get("identifier")
+            action = (
+                "mark_offline"
+                if event.event_type == EventType.DEVICE_OFFLINE.value
+                else "upsert_seen"
+            )
+            _audit(
+                tool=f"inventory.{action}",
+                details={
+                    "kind": "inventory_update",
+                    "action": action,
+                    "identifier": identifier,
+                    "event_id": event.event_id,
+                },
+            )
 
         # 2) Detection
         reports = self._detection.process(
@@ -223,11 +319,24 @@ class SecurityAI:
             configs=self._detection_config,
             now=event.timestamp,
         )
+        for r in reports:
+            if r.skipped:
+                continue
+            _audit(
+                tool=f"detection.{r.rule_id}",
+                details={
+                    "kind": "detection_result",
+                    "rule_id": r.rule_id,
+                    "alert_count": len(r.alerts),
+                    "error": str(r.error) if r.error else None,
+                    "event_id": event.event_id,
+                },
+                execution_status="ERROR" if r.error else "OK",
+            )
+
         alerts = self._detection.alerts_from(reports)
 
-        # 2b) Alerts anreichern: first_seen setzen, wenn der
-        #     Identifier vor dem Inventory-Update NICHT drin war.
-        #     Alerts sind frozen; with_data erzeugt neue Events.
+        # 2b) Alerts anreichern: first_seen
         devices_before = pre_snapshot.get("devices", set())
         enriched_alerts: list[Event] = []
         for alert in alerts:
@@ -249,11 +358,38 @@ class SecurityAI:
         assessments: list[RiskAssessment] = []
         for alert in alerts:
             a = self._risk.evaluate(alert, ctx)
-            if a is not None:
-                assessments.append(a)
+            if a is None:
+                continue
+            assessments.append(a)
+            _audit(
+                tool=f"risk.{a.rule_id}",
+                details={
+                    "kind": "risk_assessment",
+                    "event_id": a.event_id,
+                    "rule_id": a.rule_id,
+                    "score": a.score,
+                    "category": a.category.value,
+                    "base": a.base,
+                    "modifiers": [list(m) for m in a.modifiers],
+                    "reasons": list(a.reasons),
+                },
+            )
 
-        # 4) Audit (Phase 3)
-        # 5) Ergebnis
+        # 4) Snapshot-Hash
+        _audit(
+            tool="orchestrator.snapshot",
+            details={
+                "kind": "snapshot",
+                "inventory_hash": self._inventory_hash(snapshot),
+                "inventory_version": self._inventory_version(),
+                "event_id": event.event_id,
+            },
+        )
+
+        # 5) Audit-Fehler?
+        if audit_errors:
+            raise ProcessingAuditError(audit_errors)
+
         return ProcessingResult(
             event=event,
             reports=reports,
