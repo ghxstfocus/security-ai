@@ -11,3 +11,12 @@
 loop_trigger_categories:
   - "SECURITY_ALERT"
   - "CONFIRMED"
+
+# approval_notify:
+#   Steuert die Telegram-Benachrichtigung bei APPROVAL_REQUIRED.
+#   enabled: false -> kein Versand, nur Audit approval_notify_skipped.
+#   channel: aktuell nur telegram.
+#
+approval_notify:
+  enabled: false
+  channel: telegram

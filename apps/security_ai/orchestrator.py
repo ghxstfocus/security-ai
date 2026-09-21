@@ -55,7 +55,10 @@ from harness.tool_registry.registry import ToolRegistry
 from tools.get_devices import GET_DEVICES_TOOL
 from tools.nmap_scan import NMAP_SCAN_TOOL
 from tools.read_logs import READ_LOGS_TOOL
-from tools.telegram_alert import TELEGRAM_ALERT_TOOL
+from tools.telegram_alert import (
+    TELEGRAM_ALERT_TOOL,
+    telegram_alert_run,
+)
 from tools.whitelist_check import WHITELIST_CHECK_TOOL
 
 try:
@@ -209,6 +212,14 @@ class SecurityAI:
         else:
             self._loop_trigger_categories = DEFAULT_LOOP_TRIGGER_CATEGORIES
 
+        notify = self._app_config.get("approval_notify") or {}
+        if not isinstance(notify, dict):
+            notify = {}
+        self._approval_notify_enabled = bool(notify.get("enabled", False))
+        self._approval_notify_channel = str(
+            notify.get("channel", "telegram")
+        )
+
         # ApprovalQueue: DI-freundlich. Wenn None, aus conn + Audit bauen.
         self._approval_queue = (
             approval_queue
@@ -230,6 +241,91 @@ class SecurityAI:
     # ------------------------------------------------------------------ #
     # Setup / Config
     # ------------------------------------------------------------------ #
+
+    def _notify_approval(
+        self,
+        loop_result: LoopResult,
+        event: Event,
+        audit_fn,
+    ) -> None:
+        """
+        Benachrichtigt den Human Admin bei APPROVAL_REQUIRED.
+
+        Telegram ist Kanal, DB ist Wahrheit: Fehler beim Versand
+        brechen den Prozess nicht ab, werden aber auditiert.
+        """
+        if (loop_result.status != "APPROVAL_REQUIRED"
+                or loop_result.approval_request_id is None):
+            return
+
+        request_id = loop_result.approval_request_id
+
+        if not self._approval_notify_enabled:
+            audit_fn(
+                tool="approval_notify",
+                details={
+                    "kind": "approval_notify_skipped",
+                    "request_id": request_id,
+                    "reason": "disabled",
+                },
+                execution_status="SKIPPED",
+            )
+            return
+
+        step_tool = None
+        for s in loop_result.steps:
+            if s.status == "APPROVAL_REQUIRED":
+                step_tool = s.tool
+                break
+
+        category = event.data.get("risk_category")
+        score = event.data.get("risk_score")
+        timestamp = event.timestamp.isoformat() if hasattr(
+            event, "timestamp") and event.timestamp is not None else "?"
+
+        lines = [
+            "Freigabe angefordert",
+            f"Tool: {step_tool or '?'}",
+            f"Request-ID: {request_id}",
+            f"Event-ID: {event.event_id}",
+            f"Risk: {category} ({score})",
+            f"Zeit: {timestamp}",
+            "",
+            f"/approve {request_id}",
+            f"/reject {request_id}",
+            "",
+            "Hinweis: Request verfaellt, wenn expires_at erreicht ist.",
+        ]
+        message = "\n".join(lines)
+        title = f"Freigabe angefordert: {step_tool or 'tool'}"
+
+        try:
+            telegram_alert_run(
+                title=title,
+                message=message,
+                severity="WARNING",
+            )
+        except Exception as exc:
+            audit_fn(
+                tool="approval_notify",
+                details={
+                    "kind": "approval_notify_failed",
+                    "request_id": request_id,
+                    "error": str(exc),
+                },
+                execution_status="ERROR",
+            )
+            return
+
+        audit_fn(
+            tool="approval_notify",
+            details={
+                "kind": "approval_notify_sent",
+                "request_id": request_id,
+                "channel": self._approval_notify_channel,
+            },
+            execution_status="OK",
+        )
 
     @staticmethod
     def _load_detection_config(path: Path) -> dict[str, Any]:
@@ -502,6 +598,7 @@ class SecurityAI:
                 enriched, policy_context=policy_ctx,
             )
             loop_results.append(loop_result)
+            self._notify_approval(loop_result, enriched, _audit)
             _audit(
                 tool="agent_loop",
                 details={
