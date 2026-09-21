@@ -47,6 +47,8 @@ class EventType(str, Enum):
 
     # Netzwerk
     PORT_SCAN = "port_scan"
+    CONNECTION_ATTEMPT = "connection_attempt"
+    SYN_PACKET = "syn_packet"
     HTTP_RECON = "http_recon"
 
     # Infrastruktur
