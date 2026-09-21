@@ -45,24 +45,28 @@ _ALLOWED_TRANSITIONS: dict[ChangeStatus, frozenset[ChangeStatus]] = {
         ChangeStatus.TESTING,
         ChangeStatus.PENDING_REVIEW,
         ChangeStatus.REJECTED,
+        ChangeStatus.CANCELLED,
     }),
     ChangeStatus.TESTING: frozenset({
         ChangeStatus.PENDING_REVIEW,
         ChangeStatus.REJECTED,
+        ChangeStatus.CANCELLED,
     }),
     ChangeStatus.PENDING_REVIEW: frozenset({
         ChangeStatus.APPROVED,
         ChangeStatus.REJECTED,
+        ChangeStatus.CANCELLED,
     }),
     ChangeStatus.APPROVED: frozenset({
         ChangeStatus.DEPLOYED,
-        ChangeStatus.REJECTED,
+        ChangeStatus.CANCELLED,
     }),
     ChangeStatus.DEPLOYED: frozenset({
         ChangeStatus.ROLLED_BACK,
     }),
     ChangeStatus.ROLLED_BACK: frozenset(),
     ChangeStatus.REJECTED: frozenset(),
+    ChangeStatus.CANCELLED: frozenset(),
 }
 
 
@@ -286,6 +290,7 @@ class ChangeRepository:
             ChangeStatus.APPROVED,
             ChangeStatus.REJECTED,
             ChangeStatus.ROLLED_BACK,
+            ChangeStatus.CANCELLED,
         ):
             sets += ["decided_at = ?"]
             params.append(now)
