@@ -251,6 +251,10 @@ class AgentLoop:
                 permission_level=0,
                 execution_status="BUDGET_EXCEEDED",
                 error=str(exc),
+                details={
+                    "kind": "loop_error",
+                    "error": str(exc),
+                },
                 network_id=self.network_id,
             )
             return LoopResult(
@@ -270,6 +274,10 @@ class AgentLoop:
                 permission_level=0,
                 execution_status="ERROR",
                 error=f"{type(exc).__name__}: {exc}",
+                details={
+                    "kind": "loop_error",
+                    "error": f"{type(exc).__name__}: {exc}",
+                },
                 network_id=self.network_id,
             )
             return LoopResult(
@@ -303,6 +311,10 @@ class AgentLoop:
                 permission_level=0,
                 execution_status="TOOL_NOT_FOUND",
                 error=str(exc),
+                details={
+                    "kind": "tool_not_found",
+                    "tool": step.tool,
+                },
                 network_id=self.network_id,
             )
             return StepResult(
@@ -324,6 +336,13 @@ class AgentLoop:
                 execution_status="FORBIDDEN",
                 args=step.args,
                 error=str(exc),
+                details={
+                    "kind": "tool_denied",
+                    "tool": tool.name,
+                    "level": int(tool.level),
+                    "reason": str(exc),
+                    "policy_decision": "FORBIDDEN",
+                },
                 network_id=self.network_id,
             )
             return StepResult(
@@ -342,6 +361,12 @@ class AgentLoop:
                 permission_level=int(tool.level),
                 execution_status="PENDING_APPROVAL",
                 args=step.args,
+                details={
+                    "kind": "tool_approval_required",
+                    "tool": tool.name,
+                    "level": int(tool.level),
+                    "reason": "Level 4",
+                },
                 network_id=self.network_id,
             )
             return StepResult(
@@ -365,6 +390,14 @@ class AgentLoop:
                     execution_status="POLICY_FORBIDDEN",
                     args=step.args,
                     error=f"POLICY: {decision.reason}",
+                    details={
+                        "kind": "tool_denied",
+                        "tool": tool.name,
+                        "level": int(tool.level),
+                        "reason": decision.reason,
+                        "policy_decision": decision.decision.value,
+                        "failed_predicates": list(decision.failed_predicates),
+                    },
                     network_id=self.network_id,
                 )
                 return StepResult(
@@ -383,6 +416,14 @@ class AgentLoop:
                     execution_status="PENDING_APPROVAL",
                     args=step.args,
                     error=f"POLICY: {decision.reason}",
+                    details={
+                        "kind": "tool_approval_required",
+                        "tool": tool.name,
+                        "level": int(tool.level),
+                        "reason": decision.reason,
+                        "policy_decision": decision.decision.value,
+                        "failed_predicates": list(decision.failed_predicates),
+                    },
                     network_id=self.network_id,
                 )
                 return StepResult(
@@ -406,6 +447,11 @@ class AgentLoop:
                 execution_status="INVALID_ARGS",
                 args=step.args,
                 error=str(exc),
+                details={
+                    "kind": "tool_invalid_args",
+                    "tool": tool.name,
+                    "reason": str(exc),
+                },
                 network_id=self.network_id,
             )
             return StepResult(
@@ -428,6 +474,12 @@ class AgentLoop:
                 execution_status="OK",
                 args=step.args,
                 duration_ms=duration_ms,
+                details={
+                    "kind": "tool_call",
+                    "tool": tool.name,
+                    "level": int(tool.level),
+                    "duration_ms": duration_ms,
+                },
                 network_id=self.network_id,
             )
             return StepResult(
@@ -447,6 +499,13 @@ class AgentLoop:
                 args=step.args,
                 duration_ms=duration_ms,
                 error=f"{type(exc).__name__}: {exc}",
+                details={
+                    "kind": "tool_call",
+                    "tool": tool.name,
+                    "level": int(tool.level),
+                    "duration_ms": duration_ms,
+                    "error": f"{type(exc).__name__}: {exc}",
+                },
                 network_id=self.network_id,
             )
             return StepResult(
