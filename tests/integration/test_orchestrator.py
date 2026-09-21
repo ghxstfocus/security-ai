@@ -4,9 +4,12 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from unittest import mock
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from harness.agent_loop.loop import Plan, PlanStep
+from harness.agent_loop.model import BaseModel
 from harness.permissions.levels import Level
 from harness.tool_registry.registry import ToolRegistry
 from harness.tool_registry.tool import Tool
@@ -546,3 +549,157 @@ class OrchestratorLoopTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+# ---------------------------------------------------------------------- #
+# Approval-Flow (Phase 4-Haertung)
+# ---------------------------------------------------------------------- #
+
+def _build_approval_test_registry(mock_calls: list) -> ToolRegistry:
+    """
+    Test-Registry mit telegram_alert (Mock) und nmap_scan (Mock, Level 4).
+
+    nmap_scan ist Level.SECURITY_ACTION -> requires_approval.
+    Ziel 10.0.0.1 ist nicht in authorized_networks, daher Policy
+    APPROVAL_REQUIRED. Beides fuehrt in den Approval-Pfad.
+    """
+    def _mock_telegram(title, message, severity="INFO"):
+        mock_calls.append({
+            "tool": "telegram_alert",
+            "title": title, "message": message, "severity": severity,
+        })
+        return {"ok": True, "message_id": len(mock_calls),
+                "source": "mock_telegram"}
+
+    def _mock_nmap(target, ports=None, scan_type="connect"):
+        mock_calls.append({
+            "tool": "nmap_scan",
+            "target": target, "ports": ports, "scan_type": scan_type,
+        })
+        return {"source": "mock_nmap", "hosts": []}
+
+    reg = ToolRegistry()
+    reg.register(Tool(
+        name="telegram_alert",
+        level=Level.SECURITY_ACTION,
+        func=_mock_telegram,
+        description="Mock telegram_alert",
+        sandbox_profile="no_network_except_telegram",
+        allowed_args=frozenset({"title", "message", "severity"}),
+    ))
+    reg.register(Tool(
+        name="nmap_scan",
+        level=Level.SECURITY_ACTION,
+        func=_mock_nmap,
+        description="Mock nmap_scan",
+        sandbox_profile="nmap_local",
+        allowed_args=frozenset({"target", "ports", "scan_type"}),
+    ))
+    return reg
+
+
+class NmapPlanModel(BaseModel):
+    """Liefert einen nmap_scan-Step auf ein nicht autorisiertes Ziel."""
+
+    def plan(self, event, context):
+        return Plan(steps=[
+            PlanStep(
+                tool="nmap_scan",
+                args={"target": "10.0.0.1", "scan_type": "connect"},
+                reason="test",
+            ),
+        ], summary="approval flow test")
+
+
+class ApprovalFlowIntegrationTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.tmp_path = Path(self.tmp.name)
+        self.audit_dir = self.tmp_path / "audit-logs"
+        self.mock_calls: list = []
+        self.registry = _build_approval_test_registry(self.mock_calls)
+        self.ai = SecurityAI(
+            db_path=self.tmp_path / "inventory.db",
+            migrations_dir="data/migrations",
+            detection_config_path=RULES_YAML,
+            risk_rules_path=RISK_RULES,
+            audit_base_dir=self.audit_dir,
+            tool_registry=self.registry,
+            plan_model=NmapPlanModel(),
+            approval_notify_enabled=True,
+            app_config_path=self.tmp_path / "cfg.yaml",
+        )
+
+    def tearDown(self):
+        self.ai.close()
+        self.tmp.cleanup()
+
+    def _read_audit_kinds(self) -> list:
+        """Liest die heutige Audit-JSONL und liefert details.kind-Werte."""
+        from datetime import datetime, timezone
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        f = self.audit_dir / f"{today}.jsonl"
+        if not f.exists():
+            return []
+        kinds = []
+        for line in f.read_text().splitlines():
+            if not line.strip():
+                continue
+            entry = json.loads(line)
+            details = entry.get("details") or {}
+            kinds.append(details.get("kind"))
+        return kinds
+
+    def test_approval_flow_alert_und_approval_benachrichtigung(self):
+        # Event wie in OrchestratorLoopTests.test_unknown_device_loest_-
+        # telegram_alert_aus: DEVICE_PRESENCE, Hauptnetz, known=False.
+        # Das triggert Detection + Risk + Loop.
+        ts = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        ev = _event(
+            EventType.DEVICE_PRESENCE.value,
+            ts=ts,
+            data={
+                "identifier": "192.168.178.77",
+                "entity_name": "Neuling",
+                "network_type": "Hauptnetz",
+                "known": False,
+            },
+        )
+        # telegram_alert_run wird gemockt: der Approval-Hook im
+        # Orchestrator ruft das Tool direkt, nicht ueber die Registry.
+        with mock.patch(
+            "apps.security_ai.orchestrator.telegram_alert_run"
+        ) as tg:
+            result = self.ai.process(ev)
+
+        # Loop ist pausiert
+        self.assertEqual(len(result.loop_results), 1)
+        lr = result.loop_results[0]
+        self.assertEqual(lr.status, "APPROVAL_REQUIRED")
+        self.assertIsNotNone(lr.approval_request_id)
+
+        # Approval liegt in der DB
+        pending = self.ai._approval_queue.pending()
+        self.assertEqual(len(pending), 1)
+        self.assertEqual(pending[0].request_id, lr.approval_request_id)
+        self.assertEqual(pending[0].status.value, "pending")
+
+        # Audit-Kinds
+        kinds = self._read_audit_kinds()
+        self.assertIn("tool_approval_required", kinds)
+        self.assertIn("approval_requested", kinds)
+        self.assertIn("approval_notify_sent", kinds)
+        self.assertIn("loop_result", kinds)
+
+        # Approval-Notification hat telegram_alert_run gerufen
+        self.assertEqual(tg.call_count, 1)
+        kwargs = tg.call_args.kwargs
+        self.assertIn(f"/approve {lr.approval_request_id}",
+                      kwargs["message"])
+        self.assertIn(f"/reject {lr.approval_request_id}",
+                      kwargs["message"])
+        self.assertEqual(kwargs["severity"], "WARNING")
+        # nmap_scan wurde NICHT gerufen (Approval blockiert)
+        nmap_calls = [
+            c for c in self.mock_calls if c["tool"] == "nmap_scan"
+        ]
+        self.assertEqual(nmap_calls, [])
