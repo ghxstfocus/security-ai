@@ -1,18 +1,21 @@
 """
-AccessChecker: Berechtigungspruefung fuer Principals.
+AccessChecker: zentrale RBAC-Stelle.
 
-Zentrale Stelle, an der aus Principal + Rolle + Permissions eine
-Ja/Nein-Entscheidung wird.
+Lese-Operationen (Check, Rolle, Permissions) und die
+Durchsetzung (require_permission) liegen hier.
+Schreibende Verwaltung liegt im AccessService.
 
-Regeln (fail closed):
-- Principal unbekannt -> AccessDeniedError.
-- Principal is_active False -> AccessDeniedError.
-- Rolle hat Permission nicht -> AccessDeniedError.
-- Permission-Code unbekannt (nicht in DB) -> AccessDeniedError.
+Design:
+- Konstruktor nimmt Repositories (DI). Aufrufer baut sie aus
+  der Connection.
+- from_conn(conn) als Convenience fuer einfache Aufrufer.
+- Fail closed:
+    check / require_permission -> False / AccessDeniedError
+    role_of                     -> None bei unbekannt/inaktiv
+    permissions_of              -> leeres frozenset
 - Kein Wildcard, kein Prefix-Match. Nur exakte Codes.
 
-Aufrufer (Services) sollen require_permission() nutzen, nicht
-has_permission() — damit der Pfad fail closed ist.
+Regel: Lesen -> Checker, Schreiben -> Service.
 """
 from __future__ import annotations
 
@@ -31,12 +34,30 @@ class AccessDeniedError(RuntimeError):
 
 
 class AccessChecker:
-    def __init__(self, conn: sqlite3.Connection) -> None:
-        self._principals = PrincipalRepository(conn)
-        self._roles = RoleRepository(conn)
-        self._permissions = PermissionRepository(conn)
+    def __init__(
+        self,
+        principal_repo: PrincipalRepository,
+        role_repo: RoleRepository,
+        permission_repo: PermissionRepository,
+    ) -> None:
+        self._principals = principal_repo
+        self._roles = role_repo
+        self._permissions = permission_repo
         # Cache pro Checker-Instanz (pro Request, nicht global).
         self._perm_cache: dict[int, frozenset[str]] = {}
+
+    # ------------------------------------------------------------------ #
+    # Konstruktor-Helfer
+    # ------------------------------------------------------------------ #
+
+    @classmethod
+    def from_conn(cls, conn: sqlite3.Connection) -> "AccessChecker":
+        """Convenience: baut Repositories aus der Connection."""
+        return cls(
+            PrincipalRepository(conn),
+            RoleRepository(conn),
+            PermissionRepository(conn),
+        )
 
     # ------------------------------------------------------------------ #
     # interne Helfer
@@ -46,7 +67,10 @@ class AccessChecker:
         cached = self._perm_cache.get(role_id)
         if cached is not None:
             return cached
-        role = self._roles.get_by_id(role_id)
+        try:
+            role = self._roles.get_by_id(role_id)
+        except AccessNotFoundError:
+            return frozenset()
         codes = frozenset(role.permissions)
         self._perm_cache[role_id] = codes
         return codes
@@ -55,7 +79,7 @@ class AccessChecker:
     # oeffentliche API
     # ------------------------------------------------------------------ #
 
-    def has_permission(self, principal_name: str, code: str) -> bool:
+    def check(self, principal_name: str, code: str) -> bool:
         """
         True nur, wenn:
         - principal existiert,
@@ -85,47 +109,52 @@ class AccessChecker:
         perms = self._role_permissions(principal.role_id)
         return code in perms
 
+    # Rueckwaerts-kompatibler Name.
+    def has_permission(self, principal_name: str, code: str) -> bool:
+        return self.check(principal_name, code)
+
     def require_permission(self, principal_name: str, code: str) -> None:
         """
-        Wie has_permission, aber wirft AccessDeniedError.
+        Wie check, aber wirft AccessDeniedError.
         Nutze diese Methode in Services.
         """
-        if not self.has_permission(principal_name, code):
+        if not self.check(principal_name, code):
             raise AccessDeniedError(
                 f"Zugriff verweigert: principal={principal_name!r} "
                 f"permission={code!r}"
             )
 
-    def role_of(self, principal_name: str) -> str:
-        """Liefert den Rollennamen. Fehler -> AccessDeniedError."""
+    def role_of(self, principal_name: str) -> str | None:
+        """
+        Rollenname des Principals. None bei unbekannt/inaktiv.
+        Kein raise.
+        """
+        if not isinstance(principal_name, str) or not principal_name:
+            return None
         try:
             p = self._principals.get_by_name(principal_name)
-        except AccessNotFoundError as exc:
-            raise AccessDeniedError(
-                f"Principal {principal_name!r} nicht gefunden"
-            ) from exc
+        except AccessNotFoundError:
+            return None
+        if not p.is_active:
+            return None
         try:
             return self._roles.get_by_id(p.role_id).name
-        except AccessNotFoundError as exc:
-            raise AccessDeniedError(
-                f"Rolle zu Principal {principal_name!r} nicht gefunden"
-            ) from exc
+        except AccessNotFoundError:
+            return None
 
     def permissions_of(self, principal_name: str) -> frozenset[str]:
         """
-        Alle Permissions des Principals (aus der Rolle).
-        Fehler -> AccessDeniedError.
+        Alle Permissions des Principals. Leeres Set bei
+        unbekannt/inaktiv. Kein raise.
         """
+        if not isinstance(principal_name, str) or not principal_name:
+            return frozenset()
         try:
             p = self._principals.get_by_name(principal_name)
-        except AccessNotFoundError as exc:
-            raise AccessDeniedError(
-                f"Principal {principal_name!r} nicht gefunden"
-            ) from exc
+        except AccessNotFoundError:
+            return frozenset()
         if not p.is_active:
-            raise AccessDeniedError(
-                f"Principal {principal_name!r} ist inaktiv"
-            )
+            return frozenset()
         return self._role_permissions(p.role_id)
 
 

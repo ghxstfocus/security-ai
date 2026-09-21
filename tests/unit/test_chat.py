@@ -20,9 +20,10 @@ from apps.security_ai.chat import (
     ChatServiceError,
     ChatResponse,
 )
-from core.access.checker import AccessDeniedError
+from core.access.checker import AccessChecker, AccessDeniedError
 from core.access.models import PrincipalKind
 from core.access.repository import (
+    PermissionRepository,
     PrincipalRepository,
     RoleRepository,
 )
@@ -78,8 +79,16 @@ class _ChatBase(unittest.TestCase):
         self.audit_dir = self.tmp / "audit-logs"
         self.audit = AuditWriter(base_dir=self.audit_dir)
         self.llm = FakeLLM(text="Antwort.")
+
+        self.checker = AccessChecker(
+            PrincipalRepository(self.conn),
+            RoleRepository(self.conn),
+            PermissionRepository(self.conn),
+        )
         self.svc = ChatService(
-            self.conn, self.audit, self.llm,
+            audit_writer=self.audit,
+            llm_client=self.llm,
+            checker=self.checker,
             default_model="llama3.2:3b",
         )
 
@@ -266,7 +275,7 @@ class ChatServicePromptTests(_ChatBase):
 class ChatServiceLlmErrorTests(_ChatBase):
     def test_llmerror_wird_propagiert(self):
         llm = FakeLLM(error=LLMUnavailable("ollama down"))
-        svc = ChatService(self.conn, self.audit, llm,
+        svc = ChatService(audit_writer=self.audit, llm_client=llm, checker=self.checker,
                           default_model="llama3.2:3b")
         with self.assertRaises(LLMError):
             svc.ask("admin", "Frage?")
@@ -279,7 +288,7 @@ class ChatServiceLlmErrorTests(_ChatBase):
         class KaputtLLM:
             def generate(self, request):
                 return object()
-        svc = ChatService(self.conn, self.audit, KaputtLLM())
+        svc = ChatService(audit_writer=self.audit, llm_client=KaputtLLM(), checker=self.checker)
         with self.assertRaises(ChatServiceError):
             svc.ask("admin", "Frage?")
         kinds = self._kinds()

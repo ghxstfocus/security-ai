@@ -49,20 +49,41 @@ class AccessServiceError(RuntimeError):
 class AccessService:
     def __init__(
         self,
-        conn: sqlite3.Connection,
+        principal_repo: PrincipalRepository,
+        role_repo: RoleRepository,
+        permission_repo: PermissionRepository,
+        role_permission_repo: RolePermissionRepository,
+        checker: AccessChecker,
         audit_writer: AuditWriter,
     ) -> None:
         if audit_writer is None:
             raise AccessServiceError(
                 "audit_writer ist Pflicht (fail closed)"
             )
-        self._conn = conn
+        if checker is None:
+            raise AccessServiceError(
+                "checker ist Pflicht (fail closed)"
+            )
+        self._principals = principal_repo
+        self._roles = role_repo
+        self._perms = permission_repo
+        self._role_perms = role_permission_repo
+        self._checker = checker
         self._audit = audit_writer
-        self._checker = AccessChecker(conn)
-        self._roles = RoleRepository(conn)
-        self._perms = PermissionRepository(conn)
-        self._role_perms = RolePermissionRepository(conn)
-        self._principals = PrincipalRepository(conn)
+
+    @classmethod
+    def from_conn(
+        cls,
+        conn: sqlite3.Connection,
+        audit_writer: AuditWriter,
+    ) -> "AccessService":
+        """Convenience: baut Repos + Checker aus der Connection."""
+        principals = PrincipalRepository(conn)
+        roles = RoleRepository(conn)
+        perms = PermissionRepository(conn)
+        rp = RolePermissionRepository(conn)
+        checker = AccessChecker(principals, roles, perms)
+        return cls(principals, roles, perms, rp, checker, audit_writer)
 
     # ------------------------------------------------------------------ #
     # Audit

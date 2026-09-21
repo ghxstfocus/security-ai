@@ -111,9 +111,9 @@ class ChatResponse:
 class ChatService:
     def __init__(
         self,
-        conn: sqlite3.Connection,
         audit_writer: AuditWriter,
         llm_client: LLMClientProtocol,
+        checker: AccessChecker,
         *,
         context_builder: ContextBuilder | None = None,
         system_prompt: str | None = None,
@@ -127,12 +127,15 @@ class ChatService:
             raise ChatServiceError(
                 "llm_client ist Pflicht (fail closed)"
             )
-        self._conn = conn
+        if checker is None:
+            raise ChatServiceError(
+                "checker ist Pflicht (fail closed)"
+            )
         self._audit = audit_writer
         self._llm = llm_client
+        self._checker = checker
         self._builder = context_builder or ContextBuilder()
         self._system_prompt = system_prompt or _DEFAULT_SYSTEM_PROMPT
-        self._checker = AccessChecker(conn)
         self._default_model = (
             default_model if default_model is not None
             else get_model_default()
@@ -161,12 +164,6 @@ class ChatService:
     # ------------------------------------------------------------------ #
     # interne Helfer
     # ------------------------------------------------------------------ #
-
-    def _role_of_safe(self, principal_name: str) -> str | None:
-        try:
-            return self._checker.role_of(principal_name)
-        except AccessDeniedError:
-            return None
 
     # ------------------------------------------------------------------ #
     # ask
@@ -201,7 +198,7 @@ class ChatService:
         if not isinstance(question, str) or not question.strip():
             raise ChatServiceError("Frage darf nicht leer sein")
 
-        role = self._role_of_safe(principal_name)
+        role = self._checker.role_of(principal_name)
         q_hash = hashlib.sha256(question.encode("utf-8")).hexdigest()
         q_hash_short = q_hash[:16]
 

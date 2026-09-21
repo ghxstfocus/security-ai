@@ -52,6 +52,13 @@ from core.services.access_service import (
     AccessService,
     AccessServiceError,
 )
+from core.access.checker import AccessChecker
+from core.access.repository import (
+    PermissionRepository,
+    PrincipalRepository,
+    RolePermissionRepository,
+    RoleRepository,
+)
 from harness.audit.writer import AuditWriter
 from harness.llm.client import OllamaClient
 from harness.llm.errors import LLMError
@@ -177,15 +184,34 @@ def main(argv: Sequence[str] | None = None) -> int:
         audit = AuditWriter(base_dir=args.audit_base_dir)
         base_url = args.base_url or get_ollama_base_url()
         llm = OllamaClient(base_url=base_url)
-        svc = ChatService(conn, audit, llm)
+
+        principals = PrincipalRepository(conn)
+        roles = RoleRepository(conn)
+        perms = PermissionRepository(conn)
+        role_perms = RolePermissionRepository(conn)
+        checker = AccessChecker(principals, roles, perms)
+
+        svc = ChatService(
+            audit_writer=audit,
+            llm_client=llm,
+            checker=checker,
+        )
+        access_svc = AccessService(
+            principals, roles, perms, role_perms,
+            checker, audit,
+        )
     except ChatServiceError as exc:
+        print(f"FEHLER: {exc}", file=sys.stderr)
+        conn.close()
+        return 1
+    except AccessServiceError as exc:
         print(f"FEHLER: {exc}", file=sys.stderr)
         conn.close()
         return 1
 
     # --whoami (Identity-Auskunft, AccessService)
     if args.whoami:
-        rc = _print_whoami(AccessService(conn, audit), args.principal)
+        rc = _print_whoami(access_svc, args.principal)
         conn.close()
         return rc
 
