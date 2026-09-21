@@ -49,6 +49,11 @@ from harness.audit.writer import (
     AuditWriteError,
 )
 from harness.approval.queue import ApprovalQueue
+from core.changes.models import ChangeStatus, ChangeType
+from core.changes.repository import (
+    ChangeRepository,
+    ChangeRepositoryError,
+)
 from harness.policy_engine.engine import PolicyEngine
 from harness.policy_engine.policy import PolicyContext
 from harness.tool_registry.registry import ToolRegistry
@@ -227,6 +232,9 @@ class SecurityAI:
             else ApprovalQueue(self._conn, self._audit)
         )
 
+        # ChangeRepository: nutzt dieselbe Connection.
+        self._change_repo = ChangeRepository(self._conn)
+
         # AgentLoop: stateless, bekommt policy_context pro run()
         self._loop = AgentLoop(
             registry=self._tool_registry,
@@ -241,6 +249,61 @@ class SecurityAI:
     # ------------------------------------------------------------------ #
     # Setup / Config
     # ------------------------------------------------------------------ #
+
+    def create_change_request(
+        self,
+        *,
+        title: str,
+        description: str,
+        requested_by: str = "security_ai",
+        type: ChangeType,
+        diff_or_patch: str | None = None,
+        files_affected: list[str] | None = None,
+        rollback_plan: str | None = None,
+        test_plan: str | None = None,
+        related_approval_id: str | None = None,
+        related_event_id: str | None = None,
+        risk_category: str | None = None,
+        risk_score: float | None = None,
+    ):
+        """
+        Legt einen Change Request an (Status DRAFT).
+        Schreibt Audit-Eintrag change_created.
+        Liefert den gespeicherten ChangeRequest.
+        """
+        cr = self._change_repo.create(
+            title=title,
+            description=description,
+            requested_by=requested_by,
+            type=type,
+            diff_or_patch=diff_or_patch,
+            files_affected=files_affected,
+            rollback_plan=rollback_plan,
+            test_plan=test_plan,
+            related_approval_id=related_approval_id,
+            related_event_id=related_event_id,
+            risk_category=risk_category,
+            risk_score=risk_score,
+        )
+        try:
+            self._audit.log(
+                agent="security_ai",
+                tool="orchestrator",
+                policy_result="ALLOWED",
+                permission_level=0,
+                execution_status="OK",
+                details={
+                    "kind": "change_created",
+                    "change_id": cr.change_id,
+                    "type": cr.type.value,
+                    "requested_by": cr.requested_by,
+                },
+            )
+        except Exception:
+            # Audit-Fehler nicht verschlucken: DB-Eintrag bleibt,
+            # Aufrufer soll es wissen.
+            raise
+        return cr
 
     def _notify_approval(
         self,
