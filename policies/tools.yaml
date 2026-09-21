@@ -1,0 +1,58 @@
+# Policy Engine — Regeln pro Tool.
+#
+# Kein eval, kein DSL. Pruefer-Namen muessen in
+# harness/policy_engine/engine.py existieren.
+#
+# Globale Pruefer laufen IMMER, unabhaengig von dieser Datei:
+#   no_shell_chars, no_path_traversal, no_null_bytes
+# Sie duerfen NICHT in conditions stehen.
+#
+# Spezifische Pruefer laufen nur, wenn in conditions genannt:
+#   authorized_target  (weich -> APPROVAL_REQUIRED)
+#   read_only_path     (weich -> APPROVAL_REQUIRED)
+#   target_in_scope    (weich -> APPROVAL_REQUIRED)
+#
+# Felder pro Tool:
+#   allowed:         bool (Default true)
+#   level:           int 0-5 (Default 0)
+#   conditions:      Liste spezifischer Pruefer
+#   forbidden_args:  Argument-Namen, die nicht vorkommen duerfen
+#   reason:          Klartext, landet im Audit
+
+tools:
+
+  read_logs:
+    allowed: true
+    level: 0
+    conditions:
+      - read_only_path
+    reason: "Nur Lesen aus erlaubten Log-Pfaden"
+
+  get_devices:
+    allowed: true
+    level: 0
+    conditions: []
+    reason: "Inventar-Abfrage, nur lesend"
+
+  whitelist_check:
+    allowed: true
+    level: 0
+    conditions: []
+    reason: "Whitelist-Abfrage, nur lesend"
+
+  telegram_alert:
+    allowed: true
+    level: 0
+    conditions: []
+    reason: "Benachrichtigung"
+
+  nmap_scan:
+    allowed: true
+    level: 1
+    conditions:
+      - authorized_target
+    forbidden_args:
+      - "--script"
+      - "-oA"
+      - "-oX"
+    reason: "Nmap nur gegen autorisierte Netze"
