@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from harness.permissions.levels import Level
@@ -83,23 +84,102 @@ class ToolDefinitionTests(unittest.TestCase):
 # ---------------------------------------------------------------------- #
 
 class NmapScanTests(unittest.TestCase):
-    def test_mock_ergebnis(self):
-        r = nmap_scan_run(target="192.168.178.1", ports="22,80",
-                          scan_type="connect")
-        self.assertEqual(r["source"], "mock")
+    _FAKE_XML = (
+        '<?xml version="1.0"?>'
+        '<nmaprun>'
+        '<host>'
+        '<status state="up"/>'
+        '<address addr="192.168.178.1" addrtype="ipv4"/>'
+        '<hostnames><hostname name="router.local"/></hostnames>'
+        '<ports>'
+        '<port protocol="tcp" portid="22">'
+        '<state state="open"/>'
+        '<service name="ssh" product="OpenSSH" version="8.4"/>'
+        '</port>'
+        '<port protocol="tcp" portid="80">'
+        '<state state="open"/>'
+        '<service name="http" product="nginx" version="1.18"/>'
+        '</port>'
+        '</ports>'
+        '</host>'
+        '</nmaprun>'
+    )
+
+    def _fake_run_ok(self, xml=None, returncode=0, stderr=""):
+        def _fake_run(argv, **kwargs):
+            return mock.Mock(
+                returncode=returncode,
+                stdout=(xml if xml is not None else self._FAKE_XML),
+                stderr=stderr,
+            )
+        return _fake_run
+
+    def _patch_ok(self, xml=None, returncode=0, stderr=""):
+        return mock.patch.multiple(
+            "tools.nmap_scan",
+            shutil=mock.Mock(which=mock.Mock(return_value="/usr/bin/nmap")),
+            subprocess=mock.Mock(
+                run=mock.Mock(side_effect=self._fake_run_ok(
+                    xml=xml, returncode=returncode, stderr=stderr
+                ))
+            ),
+        )
+
+    def test_nmap_mock_subprocess_ok(self):
+        with self._patch_ok():
+            r = nmap_scan_run(target="192.168.178.1", ports="22,80",
+                              scan_type="connect")
+        self.assertEqual(r["source"], "nmap")
         self.assertEqual(r["target"], "192.168.178.1")
         self.assertEqual(r["ports"], "22,80")
         self.assertEqual(r["scan_type"], "connect")
-        self.assertIn("nmap -sT", r["command_hint"])
+        self.assertEqual(len(r["hosts"]), 1)
+        h = r["hosts"][0]
+        self.assertEqual(h["ip"], "192.168.178.1")
+        self.assertEqual(h["hostname"], "router.local")
+        self.assertEqual(h["state"], "up")
+        self.assertEqual(len(h["ports"]), 2)
+        self.assertEqual(h["ports"][0]["port"], 22)
+        self.assertEqual(h["ports"][0]["service"], "ssh")
+        self.assertEqual(h["ports"][0]["state"], "open")
 
-    def test_ports_als_liste(self):
-        r = nmap_scan_run(target="192.168.178.1", ports=[22, 80])
-        self.assertEqual(r["ports"], "22,80")
+    def test_defaults_argv_enthaelt_sT_oX(self):
+        captured = {}
 
-    def test_defaults(self):
-        r = nmap_scan_run(target="192.168.178.1")
+        def _fake_run(argv, **kwargs):
+            captured["argv"] = argv
+            return mock.Mock(returncode=0, stdout=self._FAKE_XML, stderr="")
+
+        with mock.patch("tools.nmap_scan.shutil.which",
+                        return_value="/usr/bin/nmap"):
+            with mock.patch("tools.nmap_scan.subprocess.run",
+                            side_effect=_fake_run):
+                r = nmap_scan_run(target="192.168.178.1")
         self.assertIsNone(r["ports"])
         self.assertEqual(r["scan_type"], "connect")
+        argv = captured["argv"]
+        self.assertEqual(argv[0], "nmap")
+        self.assertIn("-sT", argv)
+        self.assertIn("-oX", argv)
+        self.assertIn("-", argv)
+        self.assertEqual(argv[-1], "192.168.178.1")
+
+    def test_ports_als_liste_wird_komma_string(self):
+        captured = {}
+
+        def _fake_run(argv, **kwargs):
+            captured["argv"] = argv
+            return mock.Mock(returncode=0, stdout=self._FAKE_XML, stderr="")
+
+        with mock.patch("tools.nmap_scan.shutil.which",
+                        return_value="/usr/bin/nmap"):
+            with mock.patch("tools.nmap_scan.subprocess.run",
+                            side_effect=_fake_run):
+                r = nmap_scan_run(target="192.168.178.1", ports=[22, 80])
+        self.assertEqual(r["ports"], "22,80")
+        argv = captured["argv"]
+        self.assertIn("-p", argv)
+        self.assertEqual(argv[argv.index("-p") + 1], "22,80")
 
     def test_validierung(self):
         for bad in [
@@ -113,6 +193,14 @@ class NmapScanTests(unittest.TestCase):
         ]:
             with self.assertRaises(ToolArgumentError, msg=bad):
                 nmap_scan_run(**bad)
+
+    def test_syn_scan_wirft_toolerror(self):
+        with self.assertRaises(ToolError):
+            nmap_scan_run(target="192.168.178.1", scan_type="syn")
+
+    def test_ping_scan_wirft_toolerror(self):
+        with self.assertRaises(ToolError):
+            nmap_scan_run(target="192.168.178.1", scan_type="ping")
 
     def test_validate_args(self):
         NMAP_SCAN_TOOL.validate_args({"target": "x"})
