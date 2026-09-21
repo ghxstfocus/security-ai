@@ -1,0 +1,75 @@
+# Risk Engine — deterministische Regeln.
+#
+# Die Engine laedt diese Datei beim Instanziieren. Unbekannte when-Namen
+# fuehren zu RiskRuleError (fail closed). Predicates werfen nie; fehlende
+# Felder im event.data -> False.
+#
+# Format:
+#   thresholds:  Schwellen fuer score_to_category (aufsteigend)
+#   default:     Pflicht. Greift fuer Event-Typen ohne eigenen Eintrag.
+#   rules:       pro event_type ein Block mit base + modifiers.
+
+thresholds:
+  anomaly: 0.2
+  suspicion: 0.4
+  security_alert: 0.6
+  confirmed: 0.8
+
+default:
+  rule_id: default
+  base: 0.1
+  modifiers: []
+
+rules:
+
+  # ------------------------------------------------------------------ #
+  # unknown_device
+  # ------------------------------------------------------------------ #
+  unknown_device:
+    rule_id: unknown_device
+    base: 0.5
+    modifiers:
+      - when: hauptnetz
+        add: 0.2
+        reason: "im Hauptnetz"
+      - when: not_in_inventory
+        add: 0.2
+        reason: "nicht im Inventory"
+      - when: nachts
+        add: 0.1
+        reason: "nachts (22-05)"
+      - when: wochenende
+        add: 0.05
+        reason: "am Wochenende"
+      - when: is_whitelisted
+        add: -0.3
+        reason: "steht auf der Whitelist"
+      - when: first_seen_recent
+        add: 0.05
+        reason: "erstmals gesehen (<= 1 Tag)"
+
+  # ------------------------------------------------------------------ #
+  # port_scan (deckt port_scan / network_scan / brute_force ab)
+  # ------------------------------------------------------------------ #
+  port_scan:
+    rule_id: port_scan
+    base: 0.4
+    modifiers:
+      - when: many_ports
+        add: 0.3
+        reason: "viele verschiedene Ziel-Ports"
+      - when: many_ips
+        add: 0.4
+        reason: "viele verschiedene Ziel-IPs"
+      - when: brute_force
+        add: 0.5
+        reason: "viele Versuche auf denselben Port"
+      - when: hauptnetz
+        add: 0.1
+        reason: "Quelle im Hauptnetz"
+      - when: nachts
+        add: 0.1
+        reason: "nachts (22-05)"
+      - when: is_whitelisted
+        add: -0.2
+        reason: "Quelle steht auf der Whitelist"
