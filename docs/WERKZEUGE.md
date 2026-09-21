@@ -95,7 +95,9 @@ Change Requests verwalten. DB muss existieren (fail closed).
 ## Tests
 
     python3 -m pytest tests/ -q
-        # alle Tests, gruen sein soll
+        # alle Tests
 
     python3 -m pytest tests/unit/test_chat.py -q
         # einzelne Datei
+
+Erwartung nach jedem groesseren Schritt: alle gruen.
