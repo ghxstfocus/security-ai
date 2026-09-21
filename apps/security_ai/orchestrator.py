@@ -43,6 +43,7 @@ from harness.agent_loop.loop import (
     LoopBudget,
     LoopResult,
 )
+from harness.agent_loop.model import BaseModel
 from harness.audit.writer import (
     AuditEntry,
     AuditWriter,
@@ -176,6 +177,8 @@ class SecurityAI:
         authorized_networks: frozenset[str] | None = None,
         app_config_path: Path | str = DEFAULT_APP_CONFIG,
         approval_queue: ApprovalQueue | None = None,
+        plan_model: BaseModel | None = None,
+        approval_notify_enabled: bool | None = None,
     ) -> None:
         self._conn = connect(db_path)
         apply_migrations(self._conn, migrations_dir)
@@ -224,6 +227,8 @@ class SecurityAI:
         self._approval_notify_channel = str(
             notify.get("channel", "telegram")
         )
+        if approval_notify_enabled is not None:
+            self._approval_notify_enabled = bool(approval_notify_enabled)
 
         # ApprovalQueue: DI-freundlich. Wenn None, aus conn + Audit bauen.
         self._approval_queue = (
@@ -236,10 +241,14 @@ class SecurityAI:
         self._change_repo = ChangeRepository(self._conn)
 
         # AgentLoop: stateless, bekommt policy_context pro run()
+        # plan_model erlaubt Test-Injektion ohne Produktionsaenderung.
+        self._plan_model: BaseModel = (
+            plan_model if plan_model is not None else SecurityPlanModel()
+        )
         self._loop = AgentLoop(
             registry=self._tool_registry,
             audit=self._audit,
-            model=SecurityPlanModel(),
+            model=self._plan_model,
             budget=self._loop_budget,
             network_id="homelab-default",
             policy_engine=self._policy_engine,
@@ -312,10 +321,14 @@ class SecurityAI:
         audit_fn,
     ) -> None:
         """
-        Benachrichtigt den Human Admin bei APPROVAL_REQUIRED.
+        Benachrichtigt den Menschen ueber eine offene Approval.
 
-        Telegram ist Kanal, DB ist Wahrheit: Fehler beim Versand
-        brechen den Prozess nicht ab, werden aber auditiert.
+        WICHTIG: Ruft telegram_alert_run DIREKT auf — NICHT ueber
+        die Tool Registry und NICHT ueber den Agent Loop.
+
+        Grund: Benachrichtigung, keine Aktion. Keine Policy, kein
+        Approval noetig. Best effort. DB ist Quelle der Wahrheit.
+        Siehe docs/DESIGN_DECISIONS.md #9.
         """
         if (loop_result.status != "APPROVAL_REQUIRED"
                 or loop_result.approval_request_id is None):
