@@ -38,6 +38,10 @@ from typing import Any, Protocol
 
 from core.events.event import Event
 from harness.audit.writer import AuditWriter
+from harness.approval.queue import (
+    ApprovalQueue,
+    ApprovalEnqueueError,
+)
 from harness.permissions.levels import (
     ForbiddenActionError,
     Level,
@@ -164,6 +168,7 @@ class LoopResult:
     status: str            # "OK", "APPROVAL_REQUIRED", "ERROR", "BUDGET_EXCEEDED"
     steps: list[StepResult] = field(default_factory=list)
     error: str | None = None
+    approval_request_id: str | None = None
 
 
 # --- Agent Loop ---
@@ -184,6 +189,7 @@ class AgentLoop:
         budget: LoopBudget | None = None,
         network_id: str = "homelab-default",
         policy_engine: PolicyEngine | None = None,
+        approval_queue: ApprovalQueue | None = None,
     ) -> None:
         self.registry = registry
         self.audit = audit
@@ -191,6 +197,7 @@ class AgentLoop:
         self.budget = budget or LoopBudget()
         self.network_id = network_id
         self.policy_engine = policy_engine
+        self.approval_queue = approval_queue
 
     def run(
         self,
@@ -227,12 +234,17 @@ class AgentLoop:
                 steps.append(result)
 
                 if result.status == "APPROVAL_REQUIRED":
+                    rid: str | None = None
+                    if (isinstance(result.output, dict)
+                            and "approval_request_id" in result.output):
+                        rid = result.output["approval_request_id"]
                     return LoopResult(
                         event_id=event.event_id,
                         started_at=started_at,
                         finished_at=datetime.now(timezone.utc),
                         status="APPROVAL_REQUIRED",
                         steps=steps,
+                        approval_request_id=rid,
                     )
 
             return LoopResult(
@@ -354,6 +366,29 @@ class AgentLoop:
 
         # APPROVAL REQUIRED — Loop pausiert
         if tool.level.requires_approval:
+            approval_request_id: str | None = None
+            if self.approval_queue is not None:
+                try:
+                    req = self.approval_queue.enqueue(
+                        tool_name=tool.name,
+                        args=step.args,
+                        requested_by="security_ai",
+                        reason="level_4_requires_approval",
+                        event_id=event.event_id,
+                    )
+                    approval_request_id = req.request_id
+                except ApprovalEnqueueError as exc:
+                    self.audit.log(
+                        agent="security_ai",
+                        tool="agent_loop",
+                        policy_result="DENIED",
+                        permission_level=int(tool.level),
+                        execution_status="ENQUEUE_FAILED",
+                        error=str(exc),
+                        details={"kind": "approval_enqueue_failed"},
+                        network_id=self.network_id,
+                    )
+                    raise
             self.audit.log(
                 agent="agent_loop",
                 tool=tool.name,
@@ -366,12 +401,14 @@ class AgentLoop:
                     "tool": tool.name,
                     "level": int(tool.level),
                     "reason": "Level 4",
+                    "approval_request_id": approval_request_id,
                 },
                 network_id=self.network_id,
             )
             return StepResult(
                 tool=tool.name,
                 status="APPROVAL_REQUIRED",
+                output={"approval_request_id": approval_request_id},
                 duration_ms=int((time.monotonic() - started) * 1000),
             )
 
@@ -408,6 +445,29 @@ class AgentLoop:
                 )
 
             if decision.decision is Decision.APPROVAL_REQUIRED:
+                approval_request_id: str | None = None
+                if self.approval_queue is not None:
+                    try:
+                        req = self.approval_queue.enqueue(
+                            tool_name=tool.name,
+                            args=step.args,
+                            requested_by="security_ai",
+                            reason=decision.reason,
+                            event_id=event.event_id,
+                        )
+                        approval_request_id = req.request_id
+                    except ApprovalEnqueueError as exc:
+                        self.audit.log(
+                            agent="security_ai",
+                            tool="agent_loop",
+                            policy_result="DENIED",
+                            permission_level=int(tool.level),
+                            execution_status="ENQUEUE_FAILED",
+                            error=str(exc),
+                            details={"kind": "approval_enqueue_failed"},
+                            network_id=self.network_id,
+                        )
+                        raise
                 self.audit.log(
                     agent="agent_loop",
                     tool=tool.name,
@@ -423,12 +483,14 @@ class AgentLoop:
                         "reason": decision.reason,
                         "policy_decision": decision.decision.value,
                         "failed_predicates": list(decision.failed_predicates),
+                        "approval_request_id": approval_request_id,
                     },
                     network_id=self.network_id,
                 )
                 return StepResult(
                     tool=tool.name,
                     status="APPROVAL_REQUIRED",
+                    output={"approval_request_id": approval_request_id},
                     error=f"POLICY: {decision.reason}",
                     duration_ms=int((time.monotonic() - started) * 1000),
                 )

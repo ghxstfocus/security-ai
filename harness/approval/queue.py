@@ -20,7 +20,7 @@ from __future__ import annotations
 import sqlite3
 from typing import Any
 
-from harness.audit.writer import AuditWriter
+from harness.audit.writer import AuditWriter, AuditWriteError
 
 from core.approval.models import ApprovalRequest, ApprovalStatus
 from core.approval.repository import (
@@ -33,6 +33,13 @@ from core.approval.repository import (
 
 AGENT = "security_ai"
 TOOL = "approval_queue"
+
+
+class ApprovalEnqueueError(RuntimeError):
+    """
+    Wird geworfen, wenn enqueue die DB nicht beschreiben konnte.
+    Fail closed: kein Audit, kein stiller Fallback.
+    """
 
 
 class ApprovalQueue:
@@ -78,16 +85,26 @@ class ApprovalQueue:
         event_id: str | None = None,
         expires_at: str | None = None,
     ) -> ApprovalRequest:
-        req = self._repo.create(
-            tool_name=tool_name,
-            args=args,
-            requested_by=requested_by,
-            reason=reason,
-            risk_category=risk_category,
-            risk_score=risk_score,
-            event_id=event_id,
-            expires_at=expires_at,
-        )
+        try:
+            req = self._repo.create(
+                tool_name=tool_name,
+                args=args,
+                requested_by=requested_by,
+                reason=reason,
+                risk_category=risk_category,
+                risk_score=risk_score,
+                event_id=event_id,
+                expires_at=expires_at,
+            )
+        except Exception as exc:
+            # DB ist Quelle der Wahrheit. Ohne DB-Eintrag kein Audit,
+            # kein stiller Fallback.
+            raise ApprovalEnqueueError(
+                f"enqueue fehlgeschlagen: {exc}"
+            ) from exc
+
+        # Audit ist Nachweis. Wenn das Audit scheitert, ist die
+        # Request bereits in der DB; AuditWriteError propagiert.
         self._log("approval_requested", {
             "request_id": req.request_id,
             "tool": tool_name,
@@ -183,6 +200,7 @@ class ApprovalQueue:
 
 __all__ = [
     "ApprovalQueue",
+    "ApprovalEnqueueError",
     "ApprovalNotFoundError",
     "ApprovalRepositoryError",
     "ApprovalStateError",
