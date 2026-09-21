@@ -65,6 +65,44 @@ Komponenten:
 - core/inventory/ — Geräte, Whitelist
 - core/events/ — Event-Modell
 
+### Lokale KI (Phase 3.5)
+
+Die Security AI wird zur echten KI. Ein lokales LLM erklaert,
+entscheidet aber nicht.
+
+LLM:
+
+- Ollama als Laufzeitumgebung, kein Cloud-Zugriff.
+- Default-Modell: qwen2.5:7b.
+- Kleinere Alternative: llama3.2:3b (weniger RAM).
+
+Rolle: Erklaeren, nicht Entscheiden.
+
+- Detection, Risk und Policy bleiben deterministisch.
+- LLM-Output fliesst NICHT in Policy-Entscheidungen,
+  Risk-Scores, Approval-Entscheidungen oder
+  Change-Freigaben.
+- Das LLM liest Ergebnisse und formuliert Klartext fuer
+  den Human Admin.
+
+Kontext-Bauer (spaeter harness/context/):
+
+- Baut vor jedem LLM-Aufruf einen strukturierten Kontext
+  aus Events, DB-Historie, Log-Ausschnitten und
+  Inventory-Status.
+- Filtert Rohdaten, damit das LLM keine Freitext-Eingaben
+  aus unbekannten Quellen sieht (Prompt-Injection-Schutz).
+- Selbst auditierbar.
+
+Chat-Interface:
+
+- Ort: apps/dashboard/.
+- Human Admin fragt, LLM erklaert.
+- Kein Tool-Aufruf aus dem Chat.
+- Antworten sind Vorschlaege, keine Aktionen.
+
+Details: siehe docs/DESIGN_DECISIONS.md, Abschnitt 8.
+
 ### Ebene 3 — Builder Harness
 
 Die kontrollierte Ausführungsumgebung. Sie ist die einzige
@@ -392,6 +430,8 @@ Regeln:
 | LLM -> Whitelist           | Niemals                        |
 | LLM -> Policies            | Niemals                        |
 | LLM -> Guardrails          | Niemals                        |
+| LLM -> Entscheidungen      | Niemals (nur Erklaerung)       |
+| LLM -> Change-Ausfuehrung  | Niemals (Applier menschlich)   |
 
 ## 7. Erweiterbarkeit
 
