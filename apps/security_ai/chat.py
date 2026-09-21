@@ -19,7 +19,8 @@ Design:
 
 Audit-Kinds:
 - chat_query          (immer, vor RBAC)
-- chat_access_denied  (bei RBAC-Verweigerung)
+- chat_access_denied  (bei RBAC-Verweigerung: chat.ask,
+                       chat.include_details, chat.detail)
 - chat_answered       (bei erfolgreicher Antwort)
 - chat_llm_error      (bei LLM-Fehler)
 """
@@ -235,6 +236,20 @@ class ChatService:
             open_changes=open_changes,
             log_excerpts=log_excerpts,
         )
+
+        # 3b) RBAC: chat.include_details (nur wenn angefordert)
+        if include_details:
+            try:
+                self._checker.require_permission(
+                    principal_name, "chat.include_details"
+                )
+            except AccessDeniedError:
+                self._log(
+                    "chat_access_denied",
+                    principal=principal_name,
+                    reason="missing chat.include_details",
+                )
+                raise
 
         # 4) Detail-Pfad
         is_detail_question = detail or _matches_detail_regex(question)
