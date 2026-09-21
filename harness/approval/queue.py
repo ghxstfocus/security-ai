@@ -191,6 +191,13 @@ class ApprovalQueue:
     def pending(self) -> list[ApprovalRequest]:
         return self._repo.list_pending()
 
+    def list_all(
+        self,
+        status: ApprovalStatus | None = None,
+        limit: int | None = None,
+    ) -> list[ApprovalRequest]:
+        return self._repo.list_all(status=status, limit=limit)
+
     def get(self, request_id: str) -> ApprovalRequest:
         return self._repo.get(request_id)
 
