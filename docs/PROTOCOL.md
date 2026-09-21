@@ -101,11 +101,23 @@ beiden Seiten auditiert.
 
 ## 4. Statusmodell für Change Requests
 
-    DRAFT -> TESTING -> PENDING_REVIEW -> APPROVED -> DEPLOYED
-                                    \-> REJECTED
-                                    \-> ROLLED_BACK
+    DRAFT           -> {TESTING, PENDING_REVIEW, REJECTED, CANCELLED}
+    TESTING         -> {PENDING_REVIEW, REJECTED, CANCELLED}
+    PENDING_REVIEW  -> {APPROVED, REJECTED, CANCELLED}
+    APPROVED        -> {DEPLOYED, CANCELLED}
+    DEPLOYED        -> {ROLLED_BACK}
+    ROLLED_BACK     -> {}
+    REJECTED        -> {}
+    CANCELLED       -> {}
+
+CANCELLED = Antragsteller zieht zurueck.
+REJECTED  = Reviewer lehnt ab.
+Die beiden Zustände sind nicht austauschbar.
 
 Jeder Übergang wird auditiert. Kein Status kann übersprungen werden.
+Kein Übergang aus APPROVED nach REJECTED: wer freigegeben hat,
+kann den Change nur noch deployen oder vom Antragsteller
+zurückziehen lassen (CANCELLED).
 
 ## 5. Authentifizierung
 
