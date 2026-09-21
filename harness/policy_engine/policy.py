@@ -130,12 +130,32 @@ class PolicyDecision:
         }
 
 
+@dataclass(frozen=True)
+class PolicyContext:
+    """
+    Kontext fuer die Policy-Auswertung.
+
+    - network_id:           Netzwerk, in dem der Aufruf stattfindet
+    - authorized_networks:  erlaubte Ziele (IPs, Hostnames, CIDRs)
+    - now:                  aktueller Zeitstempel (UTC)
+    - config:               freie Konfiguration (z.B. read_only_paths)
+    """
+    network_id: str = "homelab-default"
+    authorized_networks: frozenset[str] = field(default_factory=frozenset)
+    now: Any = None
+    config: dict[str, Any] = field(default_factory=dict)
+
+    def has_network(self, target: str) -> bool:
+        return target in self.authorized_networks
+
+
 # Praktische Fabriken fuer den haeufigsten Fall
 def allowed(tool_name: str, level: int = 0,
-            matched_rule: str | None = None) -> PolicyDecision:
+            matched_rule: str | None = None,
+            reason: str = "alle Bedingungen erfuellt") -> PolicyDecision:
     return PolicyDecision(
         decision=Decision.ALLOWED,
-        reason="",
+        reason=reason,
         matched_rule=matched_rule,
         failed_predicates=[],
         tool_name=tool_name,
@@ -171,6 +191,7 @@ def approval(tool_name: str, reason: str, level: int = 0,
 
 __all__ = [
     "Decision",
+    "PolicyContext",
     "PolicyDecision",
     "PolicyError",
     "PredicateResult",
