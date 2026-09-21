@@ -589,3 +589,139 @@ unveraendert.
   (ApprovalQueue.enqueue), nicht ueber die Registry.
 - Approval-Benachrichtigung ist der einzige Pfad, der
   telegram_alert_run direkt ruft.
+
+## 10. RBAC (Rollen, Permissions, Principals)
+
+### Grundmodell
+
+Drei Entitaeten in SQLite (Migration 0005):
+
+- permissions: feingranulare Codes (chat.ask, approval.decide, ...).
+- roles: benannte Rollen (admin, operator, viewer, system).
+- role_permissions: n:m zwischen Rollen und Permissions.
+- principals: alles, was authentifiziert werden kann.
+
+### Principal statt User
+
+"Principal" ist der Fachbegriff fuer eine Entitaet, die
+authentifiziert werden kann. Nicht nur Menschen.
+
+kind:
+- human   — Mensch
+- system  — interne Komponente (security_ai, host_scanner)
+- service — externer Service (admin_ai, api_client)
+
+password_hash NULL = kein Login (z. B. cli-admin).
+is_active False = gesperrt.
+
+### Permissions (Phase 3.5)
+
+chat.ask, chat.detail, chat.include_details,
+device.read, device.write,
+approval.view, approval.decide,
+change.view, change.create, change.decide, change.deploy,
+audit.read, audit.write,
+principal.manage, role.manage
+
+### Rollen und Zuordnung
+
+- admin    -> alle
+- operator -> chat.*, device.read, approval.view, approval.decide,
+              change.view, change.create, change.decide, audit.read
+- viewer   -> chat.ask, device.read, audit.read
+- system   -> chat.ask, device.read, audit.write
+
+### Fail closed
+
+- AccessChecker.has_permission -> False bei jedem Fehler
+  (Principal unbekannt, inaktiv, Permission-Code unbekannt).
+- AccessChecker.require_permission -> AccessDeniedError.
+- Kein Wildcard, kein Prefix-Match. Nur exakte Codes.
+- require_permission bleibt im Checker: er ist die zustaendige
+  Stelle fuer "darf nicht". Ein Aufrufer, der selbst raise
+  macht, wird vergessen, es zu tun. Der Checker nicht.
+
+### Passwort-Hashing (Phase 3.6)
+
+- pbkdf2_sha256, 600_000 Iterationen (OWASP 2023).
+- Format: pbkdf2_sha256$600000$<salt_hex>$<hash_hex>.
+- In Phase 3.5 noch nicht genutzt: cli-admin laeuft ohne Login.
+- Passwort-Login kommt mit dem Web-Dashboard.
+
+## 11. Service-Schicht
+
+### Drei Schichten
+
+1. UI (Web Flask, CLI, Telegram) — ruft nur Services.
+2. Service-Schicht (core/services/) — Fachlogik,
+   Berechtigungspruefung, Audit.
+3. Repositories (core/access, core/approval, core/changes,
+   core/inventory) — DB-Zugriff.
+
+### Beispiel
+
+    AccessService.create_principal(actor, name, role_name, ...):
+        - Berechtigung pruefen (principal.manage)
+        - Validierung
+        - repo.create(...)
+        - audit.log(principal_created)
+
+Web-Route, CLI und Telegram rufen denselben Service. Keine
+Fachlogik in der UI.
+
+### Audit ist Pflicht in der Service-Schicht
+
+- Jede schreibende Service-Methode ruft audit.log(...).
+- details.kind ist die Aktion (z. B. principal_created,
+  permission_assigned).
+- Fehlt der AuditWriter, wirft der Service (fail closed).
+
+### ChatService
+
+- Nutzt AccessChecker (RBAC).
+- Nutzt ContextBuilder (harness/context).
+- Nutzt LLMClient (harness/llm).
+- LLM entscheidet nichts. Der Service ruft nur das LLM, um
+  eine Antwort zu formulieren.
+- Fail closed bei RBAC UND bei LLM-Fehler: LLMError wird
+  propagiert. Ein Chat, der eine erfundene Antwort liefert,
+  ist schlimmer als einer, der "nicht erreichbar" sagt.
+
+### Audit-Kinds (Phase 3.5, Chat)
+
+- chat_query          (immer, vor RBAC)
+- chat_access_denied  (bei RBAC-Verweigerung: chat.ask,
+                       chat.include_details, chat.detail)
+- chat_answered       (bei erfolgreicher Antwort)
+- chat_llm_error      (bei LLM-Fehler)
+
+Die Frage selbst landet NICHT im Audit. Stattdessen:
+- question_hash (sha256, 64 Hex)
+- question_hash_short (erste 16 Hex)
+
+### Detail-Anhang ohne LLM
+
+Wenn die Frage nach einer IP fragt (Regex) oder detail=True
+gesetzt ist, wird der Detail-Pfad genutzt:
+- kein LLM-Aufruf,
+- Antwort direkt aus dem Kontext (Event-Identifier +
+  inventory.recently_added + recently_offline),
+- Dedup via set, sortierte Ausgabe,
+- braucht die Permission chat.detail.
+
+### Modellwahl
+
+- Default: llama3.2:3b (schnell, CPU-tauglich).
+- Large: qwen2.5:7b (langsam, tiefere Fragen).
+- Konfiguration in .env: OLLAMA_BASE_URL,
+  SECURITY_AI_MODEL, SECURITY_AI_MODEL_LARGE.
+- Der Client bleibt dumm: Modell ist Parameter mit Default
+  aus harness.llm.models. ChatService liest den Default
+  aus core.config.
+
+### Was Phase 3.5 NICHT macht
+
+- Kein Web-Dashboard (Phase 3.6).
+- Kein Login (Phase 3.6).
+- Kein Streaming (spaeter).
+- Keine Session-Historie (harness/memory, spaeter).
