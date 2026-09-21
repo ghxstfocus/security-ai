@@ -1,39 +1,64 @@
 """
-Tool: nmap_scan (duenne Version).
+Tool: nmap_scan (echte Version).
 
-Validiert Argumente und liefert ein strukturiertes Mock-Ergebnis
-in der Form, die ein echter nmap-Aufruf spaeter liefern wird.
-Marker "mock": True bleibt, bis der echte subprocess-Aufruf
-eingebaut wird.
+Ruft nmap per subprocess auf, mit Sandbox:
+  - shell=False, Argumentliste
+  - Timeout 30s
+  - Argument-Whitelist (-sT, -sV, -p, --top-ports, -oX, -Pn, -n)
+  - Ziel-Whitelist via ipaddress (fail closed)
+  - XML-Ausgabe auf stdout (-oX -), Parsing mit xml.etree.ElementTree
 
-Kein subprocess. Kein nmap-Binary. Nur Validierung + Mock.
+Ziel-Whitelist (Defense in Depth, identisch zur Policy):
+  localhost, 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
 
 Signatur folgt dem AgentLoop: tool.func(**args).
 Also: nmap_scan_run(target=..., ports=..., scan_type=...).
 """
 from __future__ import annotations
 
+import ipaddress
+import shutil
+import socket
+import subprocess
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from typing import Any
 
 from harness.permissions.levels import Level
-from harness.tool_registry.tool import Tool, ToolArgumentError
+from harness.tool_registry.tool import Tool, ToolArgumentError, ToolError
 
 
 # ---------------------------------------------------------------------- #
-# Erlaubte Werte
+# Konstanten
 # ---------------------------------------------------------------------- #
 
-_VALID_SCAN_TYPES = frozenset({
-    "connect",      # TCP connect scan (-sT)
-    "syn",          # SYN scan (-sS, braucht root)
-    "ping",         # nur Erreichbarkeit
+_NMAP_BIN = "nmap"
+_NMAP_TIMEOUT_S = 30
+
+_ALLOWED_SCAN_TYPES = frozenset({"connect"})
+_FORBIDDEN_SCAN_TYPES = {
+    "syn": "syn scan nicht erlaubt, braucht root",
+    "ping": "ping scan nicht in der Whitelist",
+}
+
+# Nur diese Flags darf der Builder setzen. Alles andere -> ToolError.
+_ARG_WHITELIST = frozenset({
+    "-sT", "-sV", "-p", "--top-ports", "-oX", "-Pn", "-n",
 })
 
-# Ports als "22,80,443", "22-1024" oder "22,80,1000-2000".
-# Wir parsen das nicht selbst, sondern reichen es durch. Der echte
-# nmap-Aufruf bekommt das Format direkt.
+# Ziel-Whitelist als Netz-Objekte.
+_ALLOWED_NETWORKS = tuple(
+    ipaddress.ip_network(n) for n in (
+        "127.0.0.0/8",
+        "10.0.0.0/8",
+        "172.16.0.0/12",
+        "192.168.0.0/16",
+    )
+)
+_ALLOWED_HOSTNAMES = frozenset({"localhost"})
+
 _MAX_PORTS_LEN = 512
+_MAX_TARGET_LEN = 253
 
 
 # ---------------------------------------------------------------------- #
@@ -49,9 +74,9 @@ def _validate_target(target: Any) -> str:
     t = target.strip()
     if not t:
         raise ToolArgumentError("nmap_scan: 'target' darf nicht leer sein")
-    if len(t) > 253:
+    if len(t) > _MAX_TARGET_LEN:
         raise ToolArgumentError(
-            f"nmap_scan: 'target' zu lang ({len(t)} > 253)"
+            f"nmap_scan: 'target' zu lang ({len(t)} > {_MAX_TARGET_LEN})"
         )
     return t
 
@@ -60,7 +85,6 @@ def _validate_ports(ports: Any) -> str | None:
     if ports is None:
         return None
     if isinstance(ports, (list, tuple)):
-        # Bequemlichkeit: [22, 80] -> "22,80"
         try:
             ports = ",".join(str(int(p)) for p in ports)
         except (TypeError, ValueError) as exc:
@@ -79,7 +103,6 @@ def _validate_ports(ports: Any) -> str | None:
         raise ToolArgumentError(
             f"nmap_scan: 'ports' zu lang ({len(p)} > {_MAX_PORTS_LEN})"
         )
-    # Nur Ziffern, Komma, Bindestrich erlaubt (nmap-Syntax)
     for ch in p:
         if not (ch.isdigit() or ch in ",-"):
             raise ToolArgumentError(
@@ -95,12 +118,163 @@ def _validate_scan_type(scan_type: Any) -> str:
             f"nicht {type(scan_type).__name__}"
         )
     st = scan_type.strip().lower()
-    if st not in _VALID_SCAN_TYPES:
+    if st in _FORBIDDEN_SCAN_TYPES:
+        raise ToolError(f"nmap_scan: {_FORBIDDEN_SCAN_TYPES[st]}")
+    if st not in _ALLOWED_SCAN_TYPES:
         raise ToolArgumentError(
             f"nmap_scan: unbekannter scan_type {st!r}. "
-            f"Erlaubt: {sorted(_VALID_SCAN_TYPES)}"
+            f"Erlaubt: {sorted(_ALLOWED_SCAN_TYPES)}"
         )
     return st
+
+
+# ---------------------------------------------------------------------- #
+# Ziel-Whitelist (Sandbox-Ebene)
+# ---------------------------------------------------------------------- #
+
+def _resolve_target_networks(
+    target: str,
+) -> list[ipaddress.IPv4Network | ipaddress.IPv6Network]:
+    """
+    Zerlegt target in pruefbare Netze.
+
+    - IP oder CIDR: ipaddress.ip_network(target, strict=False)
+      (Einzel-IP wird als /32 bzw. /128 zurueckgegeben.)
+    - Hostname: socket.getaddrinfo, jede IP als /32 bzw. /128.
+    - "localhost" ist in _ALLOWED_HOSTNAMES und wird zu 127.0.0.1/32.
+
+    Fail closed: Aufloesefehler -> ToolError.
+    """
+    if target in _ALLOWED_HOSTNAMES:
+        return [ipaddress.ip_network("127.0.0.1/32")]
+
+    # IP oder CIDR
+    try:
+        return [ipaddress.ip_network(target, strict=False)]
+    except ValueError:
+        pass
+
+    # Hostname
+    try:
+        infos = socket.getaddrinfo(target, None, proto=socket.IPPROTO_TCP)
+    except socket.gaierror as exc:
+        raise ToolError(
+            f"nmap_scan: Ziel {target!r} nicht aufloesbar: {exc}"
+        ) from exc
+
+    nets: list[ipaddress.IPv4Network | ipaddress.IPv6Network] = []
+    for info in infos:
+        addr = info[4][0]
+        try:
+            ip = ipaddress.ip_address(addr)
+        except ValueError:
+            continue
+        prefix = 32 if ip.version == 4 else 128
+        nets.append(ipaddress.ip_network(f"{ip}/{prefix}", strict=False))
+    if not nets:
+        raise ToolError(f"nmap_scan: keine IP fuer Ziel {target!r}")
+    return nets
+
+
+def _check_target_allowed(target: str) -> None:
+    """
+    Jedes aufgeloeste Netz muss ECHTE TEILMENGE mindestens eines
+    erlaubten Netzes sein (subnet_of), nicht nur ueberlappen.
+    Fail closed.
+    """
+    for net in _resolve_target_networks(target):
+        allowed_same_version = [
+            a for a in _ALLOWED_NETWORKS if a.version == net.version
+        ]
+        if not any(net.subnet_of(a) for a in allowed_same_version):
+            raise ToolError(
+                f"nmap_scan: Ziel {target!r} ({net}) liegt nicht komplett "
+                f"in den erlaubten Netzen (localhost, RFC1918)"
+            )
+
+
+# ---------------------------------------------------------------------- #
+# Argument-Bau (Whitelist)
+# ---------------------------------------------------------------------- #
+
+def _build_argv(target: str, ports: str | None, scan_type: str) -> list[str]:
+    argv: list[str] = [_NMAP_BIN, "-sT", "-oX", "-", "-Pn", "-n"]
+    if scan_type == "connect":
+        pass  # -sT ist schon drin
+    else:
+        raise ToolError(
+            f"nmap_scan: scan_type {scan_type!r} hat kein Flag-Mapping"
+        )
+    if ports:
+        argv += ["-p", ports]
+    argv.append(target)
+    for a in argv:
+        if a.startswith("-") and a not in _ARG_WHITELIST and a not in {"-"}:
+            raise ToolError(f"nmap_scan: Argument {a!r} nicht in Whitelist")
+    return argv
+
+
+# ---------------------------------------------------------------------- #
+# XML-Parsing
+# ---------------------------------------------------------------------- #
+
+def _parse_nmap_xml(xml_text: str) -> list[dict[str, Any]]:
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError as exc:
+        raise ToolError(f"nmap_scan: XML-Parse-Fehler: {exc}") from exc
+
+    hosts: list[dict[str, Any]] = []
+    for host in root.findall("host"):
+        addr_el = host.find("address")
+        ip = addr_el.get("addr") if addr_el is not None else None
+
+        hostname = None
+        hn_el = host.find("hostnames/hostname")
+        if hn_el is not None:
+            hostname = hn_el.get("name")
+
+        state = None
+        st_el = host.find("status")
+        if st_el is not None:
+            state = st_el.get("state")
+
+        ports: list[dict[str, Any]] = []
+        for port in host.findall("ports/port"):
+            proto = port.get("protocol")
+            portid = port.get("portid")
+            pstate = None
+            ps_el = port.find("state")
+            if ps_el is not None:
+                pstate = ps_el.get("state")
+            service = None
+            product = None
+            version = None
+            svc_el = port.find("service")
+            if svc_el is not None:
+                service = svc_el.get("name")
+                product = svc_el.get("product")
+                version = svc_el.get("version")
+            try:
+                portnum = int(portid) if portid is not None else None
+            except ValueError:
+                portnum = None
+            ports.append({
+                "port": portnum,
+                "protocol": proto,
+                "state": pstate,
+                "service": service,
+                "product": product,
+                "version": version,
+            })
+
+        hosts.append({
+            "ip": ip,
+            "hostname": hostname,
+            "state": state,
+            "ports": ports,
+        })
+    return hosts
 
 
 # ---------------------------------------------------------------------- #
@@ -113,45 +287,76 @@ def nmap_scan_run(
     scan_type: str = "connect",
 ) -> dict[str, Any]:
     """
-    Duenne Version von nmap_scan.
+    Echter nmap-Aufruf mit Sandbox.
 
-    Validiert Argumente, liefert ein Mock-Ergebnis in der Form
-    des spaeteren echten Nmap-Outputs.
+    Fail closed bei:
+      - fehlendem nmap-Binary
+      - nicht erlaubtem Ziel
+      - Timeout
+      - non-zero exit
+      - XML-Parse-Fehler
     """
     t = _validate_target(target)
     p = _validate_ports(ports)
     st = _validate_scan_type(scan_type)
 
-    now = datetime.now(timezone.utc).isoformat()
+    _check_target_allowed(t)
+
+    if shutil.which(_NMAP_BIN) is None:
+        raise ToolError(
+            f"nmap_scan: {_NMAP_BIN!r} nicht im PATH. "
+            "Siehe docs/DEPLOYMENT.md (apt install nmap)."
+        )
+
+    argv = _build_argv(t, p, st)
+
+    started = datetime.now(timezone.utc)
+
+    try:
+        proc = subprocess.run(
+            argv,
+            shell=False,
+            capture_output=True,
+            text=True,
+            timeout=_NMAP_TIMEOUT_S,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise ToolError(
+            f"nmap_scan: Timeout nach {_NMAP_TIMEOUT_S}s"
+        ) from exc
+    except FileNotFoundError as exc:
+        raise ToolError(
+            f"nmap_scan: {_NMAP_BIN!r} nicht ausfuehrbar: {exc}"
+        ) from exc
+    except OSError as exc:
+        raise ToolError(f"nmap_scan: OSError: {exc}") from exc
+
+    finished = datetime.now(timezone.utc)
+
+    if proc.returncode != 0:
+        raise ToolError(
+            f"nmap_scan: nmap exit {proc.returncode}: "
+            f"{(proc.stderr or '').strip()[:200]}"
+        )
+
+    hosts = _parse_nmap_xml(proc.stdout or "")
 
     return {
-        "source": "mock",
+        "source": "nmap",
         "tool": "nmap_scan",
         "target": t,
         "ports": p,
         "scan_type": st,
-        "started_at": now,
-        "finished_at": now,
-        "command_hint": _command_hint(t, p, st),
-        "hosts": [],          # echt: Liste von Hosts mit offenen Ports
+        "started_at": started.isoformat(),
+        "finished_at": finished.isoformat(),
+        "argv": argv,
+        "hosts": hosts,
         "stdout_summary": (
-            f"mock scan: target={t} ports={p or 'default'} type={st}"
+            f"nmap scan: target={t} ports={p or 'default'} "
+            f"hosts={len(hosts)}"
         ),
     }
-
-
-def _command_hint(target: str, ports: str | None, scan_type: str) -> str:
-    """Gibt den Kommando-Vorschlag zurueck (nur Doku, nicht ausgefuehrt)."""
-    flag = {
-        "connect": "-sT",
-        "syn": "-sS",
-        "ping": "-sn",
-    }[scan_type]
-    parts = ["nmap", flag]
-    if ports:
-        parts += ["-p", ports]
-    parts.append(target)
-    return " ".join(parts)
 
 
 # ---------------------------------------------------------------------- #
@@ -164,9 +369,10 @@ NMAP_SCAN_TOOL = Tool(
     func=nmap_scan_run,
     description=(
         "Nmap-Scan gegen ein autorisiertes Ziel. "
-        "Duenne Version: validiert Argumente, kein echter subprocess."
+        "Echte Ausfuehrung via subprocess mit Sandbox "
+        "(Timeout, Argument-Whitelist, Ziel-Whitelist, XML-Parsing)."
     ),
-    version="0.1.0",
+    version="0.2.0",
     sandbox_profile="nmap_local",
     allowed_args=frozenset({"target", "ports", "scan_type"}),
     returns="dict",
