@@ -126,6 +126,43 @@ Inhalt:
     journalctl -u security-ai.service -f
     journalctl -u security-ai.service --since "10 minutes ago"
 
+## 3a. Runtime-Abhaengigkeiten (nmap)
+
+nmap ist eine Runtime-Abhaengigkeit von `tools/nmap_scan.py` und
+wird NICHT vom Tool selbst installiert. Fehlt das Binary, wirft
+`nmap_scan_run` fail-closed einen `ToolError` und der Aufruf wird
+nicht ausgefuehrt.
+
+Installation im Container CT102 (security-ai):
+
+    apt update
+    apt install -y nmap
+
+Verifikation:
+
+    which nmap
+    nmap --version | head -1
+
+Erwartet: `/usr/bin/nmap` und eine Versionszeile (z. B. `Nmap
+version 7.93`).
+
+Sandbox-Kontext:
+- Profil: `nmap_local` (siehe `tools/nmap_scan.py`)
+- Kein Shell (`shell=False`, Argumentliste)
+- Timeout 30 s (`subprocess.run(..., timeout=30)`)
+- Argument-Whitelist: `-sT`, `-sV`, `-p`, `--top-ports`, `-oX`, `-Pn`, `-n`
+- Ziel-Whitelist: `localhost`, `127.0.0.0/8`, `10.0.0.0/8`,
+  `172.16.0.0/12`, `192.168.0.0/16`
+- Erlaubter Scan-Typ: nur `connect` (nutzt `-sT`).
+  `syn` (braucht root) und `ping` sind bewusst gesperrt.
+- Ausgabe: XML auf stdout (`-oX -`), geparst mit
+  `xml.etree.ElementTree`.
+
+Tests:
+- Unit: `tests/unit/test_nmap_scan.py` (subprocess gemockt)
+- Integration: `tests/integration/test_nmap_real.py`
+  (`skipif` kein nmap). Laeuft nur gegen `127.0.0.1`.
+
 ## 4. Netzwerk und Firewall
 
 ### 4.1 Feste IP
