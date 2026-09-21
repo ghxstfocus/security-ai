@@ -55,6 +55,7 @@ from core.services.access_service import (
 from harness.audit.writer import AuditWriter
 from harness.llm.client import OllamaClient
 from harness.llm.errors import LLMError
+from scripts.init_db import init_db
 
 
 DEFAULT_MIGRATIONS_DIR = "data/migrations"
@@ -137,9 +138,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     db_path = Path(args.db)
+
+    # Bootstrap: wenn die DB fehlt, legen wir sie an (ohne Principal).
+    # chat_cli ist das Einstiegswerkzeug. Approvals/Changes-CLIs
+    # bleiben strikt (DB muss da sein).
     if not db_path.exists():
-        print(f"FEHLER: DB {db_path} existiert nicht", file=sys.stderr)
-        return 1
+        print(f"DB nicht gefunden, lege an: {db_path}")
+        rc = init_db(
+            db_path=db_path,
+            migrations_dir=args.migrations_dir,
+            with_principal=False,   # Principal legt der Mensch an
+            verbose=True,
+        )
+        if rc != 0:
+            print("FEHLER: DB-Initialisierung fehlgeschlagen",
+                  file=sys.stderr)
+            return 1
 
     try:
         conn = connect(db_path)
