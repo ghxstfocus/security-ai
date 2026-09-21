@@ -9,16 +9,21 @@ Wichtig:
 - ContextBundle enthaelt NUR gefilterte Rohdaten.
 - redacted=True, sobald mindestens eine Redaktion stattfand.
 - built_at ist UTC-aware.
+- Kein Zirkelimport zur Laufzeit: die konkreten Event-,
+  Risk-, Approval- und Change-Typen werden nur unter
+  TYPE_CHECKING importiert (PEP 563).
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-
-def _utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+if TYPE_CHECKING:
+    from core.approval.models import ApprovalRequest
+    from core.changes.models import ChangeRequest
+    from core.events.event import Event
+    from core.risk.models import RiskAssessment
 
 
 def _require_utc(dt: datetime, field_name: str) -> None:
@@ -26,6 +31,11 @@ def _require_utc(dt: datetime, field_name: str) -> None:
         raise ValueError(
             f"ContextBundle: {field_name} muss timezone-aware sein"
         )
+
+
+def utc_now() -> datetime:
+    """Aktueller UTC-Zeitstempel. Helfer fuer Builder und Tests."""
+    return datetime.now(timezone.utc)
 
 
 # ---------------------------------------------------------------------- #
@@ -40,6 +50,7 @@ class LogExcerpt:
     path ist der Pfad, aus dem der Ausschnitt stammt.
     line_count ist die Anzahl der Zeilen im Ausschnitt.
     text ist bereits redigiert.
+    redacted zeigt an, ob in diesem Ausschnitt redigiert wurde.
     """
 
     path: str
@@ -56,6 +67,8 @@ class LogExcerpt:
             raise ValueError(
                 "LogExcerpt: line_count muss int >= 0 sein"
             )
+        if not isinstance(self.redacted, bool):
+            raise ValueError("LogExcerpt: redacted muss bool sein")
 
 
 # ---------------------------------------------------------------------- #
@@ -67,20 +80,37 @@ class ContextBundle:
     """
     Alles, was das LLM sehen darf.
 
-    Felder sind absichtlich breit typisiert (Event | None,
-    tuple[Any, ...]), um Zirkelimporte zu vermeiden. Die
-    konkreten Typen sind: Event (core.events.event),
-    RiskAssessment (core.risk.models), ApprovalRequest
-    (core.approval.models), ChangeRequest (core.changes.models).
+    Struktur inventory_snapshot:
+        {
+            "device_count": int,
+            "whitelist_count": int,
+            "devices_online": int,
+            "devices_offline": int,
+            "recently_added": list[str],
+            "recently_offline": list[str],
+        }
+    Aggregate, keine Rohdaten. Kein PII.
+
+    Semantik:
+    - is_empty(): True nur, wenn ALLE Sammlungen leer sind UND
+      event is None UND inventory_snapshot leer ist.
+    - counts(): Anzahl pro Sammlung. event wird NICHT gezaehlt
+      (event ist None oder genau 1).
     """
 
     built_at: datetime
-    event: Any | None = None
-    recent_events: tuple[Any, ...] = field(default_factory=tuple)
+    event: Event | None = None
+    recent_events: tuple[Event, ...] = field(default_factory=tuple)
     inventory_snapshot: dict[str, Any] = field(default_factory=dict)
-    risk_assessments: tuple[Any, ...] = field(default_factory=tuple)
-    open_approvals: tuple[Any, ...] = field(default_factory=tuple)
-    open_changes: tuple[Any, ...] = field(default_factory=tuple)
+    risk_assessments: tuple[RiskAssessment, ...] = field(
+        default_factory=tuple
+    )
+    open_approvals: tuple[ApprovalRequest, ...] = field(
+        default_factory=tuple
+    )
+    open_changes: tuple[ChangeRequest, ...] = field(
+        default_factory=tuple
+    )
     log_excerpts: tuple[LogExcerpt, ...] = field(default_factory=tuple)
     redacted: bool = False
     notes: tuple[str, ...] = field(default_factory=tuple)
@@ -113,7 +143,12 @@ class ContextBundle:
     # ------------------------------------------------------------------ #
 
     def is_empty(self) -> bool:
-        """True, wenn ausser built_at nichts befuellt ist."""
+        """
+        True, wenn ausser built_at nichts befuellt ist.
+
+        Heisst: event is None UND alle Sammlungen leer UND
+        inventory_snapshot leer.
+        """
         return (
             self.event is None
             and not self.recent_events
@@ -125,10 +160,13 @@ class ContextBundle:
         )
 
     def counts(self) -> dict[str, int]:
-        """Anzahl Eintraege pro Kategorie. Nuetzlich fuer Audit."""
+        """
+        Anzahl Eintraege pro Kategorie. Nuetzlich fuer Audit.
+
+        event wird nicht gezaehlt (None oder 1).
+        """
         return {
-            "recent_events": len(self.recent_events),
-            "inventory_snapshot": len(self.inventory_snapshot),
+            "events": len(self.recent_events),
             "risk_assessments": len(self.risk_assessments),
             "open_approvals": len(self.open_approvals),
             "open_changes": len(self.open_changes),
@@ -141,8 +179,3 @@ __all__ = [
     "LogExcerpt",
     "utc_now",
 ]
-
-
-def utc_now() -> datetime:
-    """Oeffentlicher Helfer fuer Tests und Builder."""
-    return _utc_now()
