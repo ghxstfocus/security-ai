@@ -54,5 +54,4 @@ tools:
     forbidden_args:
       - "--script"
       - "-oA"
-      - "-oX"
     reason: "Nmap nur gegen autorisierte Netze"
