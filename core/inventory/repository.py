@@ -19,6 +19,10 @@ from typing import Any, Iterable
 from core.inventory.device import Device
 
 
+# Single source of truth fuer den DB-Pfad.
+# Kann spaeter nach core/config.py wandern, wenn mehr
+# Einstellungen dazukommen (Log-Level, Telegram,
+# Netzwerk-Scope, Scan-Schwellen).
 DEFAULT_DB_PATH = Path("data/inventory.db")
 DEFAULT_MIGRATIONS_DIR = Path("data/migrations")
 
