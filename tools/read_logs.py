@@ -40,6 +40,15 @@ _SHELL_CHARS = (";", "|", "&", "$", "`", "\n", "\r", ">", "<")
 # ---------------------------------------------------------------------- #
 
 def _validate_path(path: Any) -> str:
+    """
+    Akzeptiert Pfade mit Whitespace am Rand (entfernt ihn).
+    Lehnt Shell-Zeichen ab, auch mitten im Pfad.
+
+    Grund fuer strip(): Nutzer lesen Pfade oft aus Dateien
+    (mit \n am Ende) -- das soll kein Fehler sein.
+    Grund fuer Shell-Zeichen-Check: Injection-Versuche muessen
+    auch bei "sauberem" Pfad blockiert werden.
+    """
     if not isinstance(path, str):
         raise ToolArgumentError(
             f"read_logs: 'path' muss ein String sein, "
