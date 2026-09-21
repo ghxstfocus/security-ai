@@ -163,6 +163,100 @@ Tests:
 - Integration: `tests/integration/test_nmap_real.py`
   (`skipif` kein nmap). Laeuft nur gegen `127.0.0.1`.
 
+## 3b. Lokale KI (Ollama)
+
+Ollama stellt das lokale LLM bereit. Kein Cloud-Zugriff.
+Wird von `harness/llm/client.py` per HTTP angesprochen
+(`http://127.0.0.1:11434/api/generate`).
+
+### Hardware (CT102)
+
+- 16 GB Disk
+- 12 GB RAM
+- 4 CPU-Kerne
+- Keine GPU -> CPU-Inferenz
+
+### Installation
+
+Ollama nach offizieller Anleitung installieren
+(https://ollama.com/download). Nach der Installation:
+
+    systemctl status ollama
+
+### Modelle
+
+Zwei Modelle mit klaren Rollen:
+
+- `llama3.2:3b` (~2,2 GB) — Default.
+  Schnell, CPU-tauglich, Antworten in Sekunden.
+- `qwen2.5:7b` (~4,7 GB) — Large.
+  Tiefere Antworten, aber auf CPU ohne GPU langsam.
+  Nur bei Bedarf nutzen.
+
+Installation:
+
+    ollama pull llama3.2:3b
+    ollama pull qwen2.5:7b
+
+Pruefen:
+
+    ollama list
+    curl -s http://127.0.0.1:11434/api/tags | head -c 300
+
+### Tuning
+
+Bei wenig RAM/CPU (Homelab) sind zwei Ollama-Parameter
+wichtig. In `systemctl edit ollama` eintragen:
+
+    [Service]
+    Environment="OLLAMA_KEEP_ALIVE=-1"
+    Environment="OLLAMA_NUM_PARALLEL=1"
+
+- OLLAMA_KEEP_ALIVE=-1: Modell bleibt im RAM, kein
+  Nachladen pro Anfrage.
+- OLLAMA_NUM_PARALLEL=1: Nur eine Anfrage gleichzeitig.
+  Verhindert RAM-Spikes.
+
+Nach der Aenderung:
+
+    systemctl daemon-reload
+    systemctl restart ollama
+
+### Konfiguration der Security AI
+
+In `.env` (siehe `.env.example`):
+
+    OLLAMA_BASE_URL=http://127.0.0.1:11434
+    SECURITY_AI_MODEL=llama3.2:3b
+    SECURITY_AI_MODEL_LARGE=qwen2.5:7b
+
+Die Werte werden von `core/config.py` gelesen. Bereits
+gesetzte Umgebungsvariablen gewinnen.
+
+### Modellwahl nach Hardware
+
+- CPU-only, wenig RAM (< 8 GB): nur `llama3.2:3b` ziehen.
+- CPU-only, 12+ GB RAM: beide Modelle moeglich, aber
+  `qwen2.5:7b` nur fuer tiefe Fragen.
+- GPU vorhanden: `qwen2.5:7b` als Default denkbar.
+
+### Fail-closed-Verhalten
+
+Wenn Ollama nicht erreichbar ist:
+
+- `harness/llm/client.py` wirft `LLMUnavailable`.
+- `ChatService.ask` propagiert `LLMError` (fail closed).
+- Das CLI faengt den Fehler, gibt "FEHLER: LLM: ..." aus
+  und beendet mit Exit 1.
+- Kein stiller Fallback, keine erfundene Antwort.
+
+### Was Ollama NICHT darf
+
+- Kein Cloud-Zugriff. Modell laeuft lokal.
+- Kein Auto-Pull. Modell-Updates nur explizit.
+- Kein Tool-Aufruf aus dem LLM. Es formuliert nur
+  Erklaerungen.
+
 ## 4. Netzwerk und Firewall
 
 ### 4.1 Feste IP
