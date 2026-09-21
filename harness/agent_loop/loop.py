@@ -43,6 +43,8 @@ from harness.permissions.levels import (
     Level,
     check_level,
 )
+from harness.policy_engine.engine import PolicyEngine
+from harness.policy_engine.policy import Decision, PolicyContext
 from harness.tool_registry.registry import ToolRegistry
 from harness.tool_registry.tool import Tool, ToolArgumentError
 
@@ -181,12 +183,16 @@ class AgentLoop:
         model: Model,
         budget: LoopBudget | None = None,
         network_id: str = "homelab-default",
+        policy_engine: PolicyEngine | None = None,
+        policy_context: PolicyContext | None = None,
     ) -> None:
         self.registry = registry
         self.audit = audit
         self.model = model
         self.budget = budget or LoopBudget()
         self.network_id = network_id
+        self.policy_engine = policy_engine
+        self.policy_context = policy_context
 
     def run(self, event: Event) -> LoopResult:
         """
@@ -334,6 +340,54 @@ class AgentLoop:
                 status="APPROVAL_REQUIRED",
                 duration_ms=int((time.monotonic() - started) * 1000),
             )
+
+        # POLICY CHECK
+        if self.policy_engine is not None:
+            ctx = self.policy_context or PolicyContext(
+                network_id=self.network_id,
+                config={},
+            )
+            decision = self.policy_engine.evaluate(
+                tool.name, step.args, ctx
+            )
+
+            if decision.decision is Decision.FORBIDDEN:
+                self.audit.log(
+                    agent="agent_loop",
+                    tool=tool.name,
+                    policy_result="FORBIDDEN",
+                    permission_level=int(tool.level),
+                    execution_status="POLICY_FORBIDDEN",
+                    args=step.args,
+                    error=f"POLICY: {decision.reason}",
+                    network_id=self.network_id,
+                )
+                return StepResult(
+                    tool=tool.name,
+                    status="ERROR",
+                    error=f"POLICY: {decision.reason}",
+                    duration_ms=int((time.monotonic() - started) * 1000),
+                )
+
+            if decision.decision is Decision.APPROVAL_REQUIRED:
+                self.audit.log(
+                    agent="agent_loop",
+                    tool=tool.name,
+                    policy_result="APPROVAL_REQUIRED",
+                    permission_level=int(tool.level),
+                    execution_status="PENDING_APPROVAL",
+                    args=step.args,
+                    error=f"POLICY: {decision.reason}",
+                    network_id=self.network_id,
+                )
+                return StepResult(
+                    tool=tool.name,
+                    status="APPROVAL_REQUIRED",
+                    error=f"POLICY: {decision.reason}",
+                    duration_ms=int((time.monotonic() - started) * 1000),
+                )
+
+            # ALLOWED: faellt durch zur Argument-Validierung
 
         # ARGUMENT-VALIDIERUNG
         try:
