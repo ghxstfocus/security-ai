@@ -118,18 +118,23 @@ class PortScanRule(Rule):
         except ValueError:
             severity = Severity.WARNING
 
+        from core.events.event import Event as _Event, new_event_id
         return [
-            new_event(
+            _Event(
+                event_id=new_event_id(),
+                timestamp=event.timestamp,
                 source=f"detection:{self.id}",
                 event_type=EventType.PORT_SCAN.value,
                 severity=severity,
                 data={
+                    "identifier": src_ip,
                     "src_ip": src_ip,
                     "dst_ip": dst_ip,
                     "kind": kind,
                     "ports_seen": ports_seen,
                     "ips_seen": ips_seen,
                     "window_s": self._window_for(kind, cfg),
+                    "network_type": event.data.get("network_type"),
                     "trigger_event_id": event.event_id,
                 },
                 network_id=event.network_id,
