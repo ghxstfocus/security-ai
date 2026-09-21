@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
@@ -141,10 +141,23 @@ def new_event(
     )
 
 
+def with_data(event: "Event", updates: dict[str, Any]) -> "Event":
+    """
+    Neues Event mit gleichem event_id/timestamp, data um updates erweitert.
+
+    Event bleibt frozen. Diese Funktion erzeugt eine neue Instanz.
+    Bestehende Keys in event.data werden ueberschrieben.
+    """
+    new_data = dict(event.data)
+    new_data.update(updates)
+    return replace(event, data=new_data)
+
+
 __all__ = [
     "Event",
     "EventType",
     "Severity",
     "new_event",
     "new_event_id",
+    "with_data",
 ]
