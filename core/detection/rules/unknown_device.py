@@ -41,8 +41,11 @@ class UnknownDeviceRule(Rule):
         if event.data.get("known") is not False:
             return []
 
+        from core.events.event import Event as _Event, new_event_id
         return [
-            new_event(
+            _Event(
+                event_id=new_event_id(),
+                timestamp=event.timestamp,
                 source=f"detection:{self.id}",
                 event_type=EventType.UNKNOWN_DEVICE.value,
                 severity=self.severity,
