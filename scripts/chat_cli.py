@@ -17,8 +17,11 @@ Aufruf:
 Konvention:
 - --principal Pflicht.
 - Ohne --question: interaktiver Modus (bis "exit" oder EOF).
-- Exit 1 bei RBAC-Fehler, 0 sonst.
-- LLM-Fehler: Antwort wird trotzdem gedruckt, Exit 0.
+- Exit 1 bei RBAC-Fehler oder LLM-Fehler, 0 sonst.
+- LLM-Fehler: re-raise bis hier, dann "FEHLER: ..." + Exit 1.
+- --detail: Detail-Antwort ohne LLM (braucht chat.detail).
+- --include-details: Details in den Prompt aufnehmen
+  (braucht chat.include_details).
 """
 from __future__ import annotations
 
@@ -33,6 +36,12 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from core.access.checker import AccessDeniedError
+from core.config import (
+    get_model_default,
+    get_model_large,
+    get_ollama_base_url,
+    load_env,
+)
 from core.inventory.repository import (
     DEFAULT_DB_PATH,
     apply_migrations,
@@ -44,11 +53,8 @@ from core.services.access_service import (
     AccessServiceError,
 )
 from harness.audit.writer import AuditWriter
-from harness.llm.ollama_client import (
-    DEFAULT_BASE_URL,
-    DEFAULT_MODEL,
-    OllamaClient,
-)
+from harness.llm.client import OllamaClient
+from harness.llm.errors import LLMError
 
 
 DEFAULT_MIGRATIONS_DIR = "data/migrations"
@@ -71,32 +77,62 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--whoami", action="store_true",
                    help="Rolle + Permissions anzeigen, keine Frage")
     p.add_argument("--include-details", action="store_true",
-                   help="Rohdaten (Logs, Events) in den Prompt aufnehmen")
+                   help="Rohdaten in den Prompt aufnehmen "
+                        "(braucht chat.include_details)")
+    p.add_argument("--detail", action="store_true",
+                   help="Detail-Antwort ohne LLM (braucht chat.detail)")
     p.add_argument("--db", default=str(DEFAULT_DB_PATH),
                    help=f"SQLite-DB (Default: {DEFAULT_DB_PATH})")
     p.add_argument("--migrations-dir", default=DEFAULT_MIGRATIONS_DIR)
     p.add_argument("--audit-base-dir", default=DEFAULT_AUDIT_DIR)
-    p.add_argument("--base-url", default=DEFAULT_BASE_URL,
-                   help=f"Ollama-Base-URL (Default: {DEFAULT_BASE_URL})")
-    p.add_argument("--model", default=DEFAULT_MODEL,
-                   help=f"Ollama-Modell (Default: {DEFAULT_MODEL})")
-    p.add_argument("--timeout", type=float, default=30.0,
+    p.add_argument("--base-url", default=None,
+                   help=f"Ollama-Base-URL (Default aus .env: "
+                        f"{get_ollama_base_url()})")
+    p.add_argument("--model", default=None,
+                   help=f"Ollama-Modell (Default aus .env: "
+                        f"{get_model_default()}; gross: {get_model_large()})")
+    p.add_argument("--timeout", type=float, default=None,
                    help="LLM-Timeout in Sekunden (Default: 30)")
     return p
+
+
+# ---------------------------------------------------------------------- #
+# Hilfen
+# ---------------------------------------------------------------------- #
+
+def _print_response(resp) -> None:
+    print(resp.answer)
+    if resp.source == "detail_append":
+        print(f"\n[Quelle: Detail-Anhang]", file=sys.stderr)
+    elif resp.source == "llm" and resp.model:
+        print(f"\n[Modell: {resp.model}]", file=sys.stderr)
+
+
+def _print_whoami(svc: AccessService, principal_name: str) -> int:
+    try:
+        me = svc.whoami(principal_name)
+    except AccessDeniedError as exc:
+        print(f"FEHLER: {exc}", file=sys.stderr)
+        return 1
+    except AccessServiceError as exc:
+        print(f"FEHLER: {exc}", file=sys.stderr)
+        return 1
+    print(f"principal: {me['principal']}")
+    print(f"role:      {me['role']}")
+    print("permissions:")
+    for code in me["permissions"]:
+        print(f"  - {code}")
+    return 0
 
 
 # ---------------------------------------------------------------------- #
 # main
 # ---------------------------------------------------------------------- #
 
-def _print_response(resp) -> None:
-    print(resp.answer)
-    if resp.llm_error is not None:
-        print(f"\n[Hinweis: LLM-Fehler: {resp.llm_error}]",
-              file=sys.stderr)
-
-
 def main(argv: Sequence[str] | None = None) -> int:
+    # .env laden (optional, .env kann fehlen)
+    load_env()
+
     parser = build_parser()
     args = parser.parse_args(argv)
 
@@ -114,11 +150,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         audit = AuditWriter(base_dir=args.audit_base_dir)
-        llm = OllamaClient(
-            base_url=args.base_url,
-            model=args.model,
-            timeout=args.timeout,
-        )
+        base_url = args.base_url or get_ollama_base_url()
+        llm = OllamaClient(base_url=base_url)
         svc = ChatService(conn, audit, llm)
     except ChatServiceError as exc:
         print(f"FEHLER: {exc}", file=sys.stderr)
@@ -127,35 +160,28 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     # --whoami (Identity-Auskunft, AccessService)
     if args.whoami:
-        try:
-            access_svc = AccessService(conn, audit)
-            me = access_svc.whoami(args.principal)
-        except AccessDeniedError as exc:
-            print(f"FEHLER: {exc}", file=sys.stderr)
-            conn.close()
-            return 1
-        except AccessServiceError as exc:
-            print(f"FEHLER: {exc}", file=sys.stderr)
-            conn.close()
-            return 1
-        print(f"principal: {me['principal']}")
-        print(f"role:      {me['role']}")
-        print("permissions:")
-        for code in me["permissions"]:
-            print(f"  - {code}")
+        rc = _print_whoami(AccessService(conn, audit), args.principal)
         conn.close()
-        return 0
+        return rc
+
+    # gemeinsame ask-Parameter
+    ask_kwargs: dict = {
+        "include_details": args.include_details,
+        "detail": args.detail,
+        "model": args.model,
+        "timeout": args.timeout,
+    }
 
     # --question (einmalig)
     if args.question is not None:
         try:
-            resp = svc.ask(
-                args.principal,
-                args.question,
-                include_details=args.include_details,
-            )
+            resp = svc.ask(args.principal, args.question, **ask_kwargs)
         except AccessDeniedError as exc:
             print(f"FEHLER: {exc}", file=sys.stderr)
+            conn.close()
+            return 1
+        except LLMError as exc:
+            print(f"FEHLER: LLM: {exc}", file=sys.stderr)
             conn.close()
             return 1
         _print_response(resp)
@@ -177,13 +203,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         if q.lower() in ("exit", "quit"):
             break
         try:
-            resp = svc.ask(
-                args.principal,
-                q,
-                include_details=args.include_details,
-            )
+            resp = svc.ask(args.principal, q, **ask_kwargs)
         except AccessDeniedError as exc:
             print(f"FEHLER: {exc}", file=sys.stderr)
+            conn.close()
+            return 1
+        except LLMError as exc:
+            print(f"FEHLER: LLM: {exc}", file=sys.stderr)
             conn.close()
             return 1
         _print_response(resp)
