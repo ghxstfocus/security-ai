@@ -2,7 +2,8 @@
 ChatService: Service-Schicht fuer Chat mit der lokalen KI.
 
 Verantwortung:
-- Berechtigung pruefen (chat.ask, optional chat.include_details).
+- Berechtigung pruefen (chat.ask, optional chat.detail,
+  chat.include_details).
 - Kontext bauen (ContextBuilder).
 - LLM aufrufen (LLMClientProtocol).
 - Audit schreiben.
@@ -11,22 +12,33 @@ Design:
 - Kein UI-Code. CLI (scripts/chat_cli.py) und spaeteres
   Web-Dashboard rufen denselben Service.
 - DB ist Wahrheit, LLM ist nachgelagert.
-- LLM entscheidet nichts. Der Service ruft nur das LLM, um
-  eine Antwort zu formulieren.
-- Fail closed bei RBAC, fail open bei LLM-Fehler (Antwort
-  mit Fehlertext, kein Absturz).
+- LLM entscheidet nichts.
+- Fail closed bei RBAC UND bei LLM-Fehler (LLMError wird
+  propagiert). Ein Chat, der eine erfundene Antwort liefert,
+  ist schlimmer als einer, der "nicht erreichbar" sagt.
+
+Audit-Kinds:
+- chat_query          (immer, vor RBAC)
+- chat_access_denied  (bei RBAC-Verweigerung)
+- chat_answered       (bei erfolgreicher Antwort)
+- chat_llm_error      (bei LLM-Fehler)
 """
 from __future__ import annotations
 
+import hashlib
+import re
 import sqlite3
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Protocol
 
 from core.access.checker import AccessChecker, AccessDeniedError
+from core.config import get_model_default
 from harness.audit.writer import AuditWriter
 from harness.context.builder import ContextBuilder
 from harness.context.models import ContextBundle
+from harness.llm.errors import LLMError
+from harness.llm.models import LLMRequest
 
 
 AGENT = "security_ai"
@@ -41,19 +53,28 @@ class LLMClientProtocol(Protocol):
     """
     Minimale Schnittstelle fuer einen LLM-Client.
 
-    Echte Implementierung: harness.llm.OllamaClient (spaeter).
+    Echte Implementierung: harness.llm.client.OllamaClient.
     Test-Implementierung: ein Fake, der eine feste Antwort liefert.
     """
 
-    def generate(
-        self,
-        *,
-        prompt: str,
-        system: str | None = None,
-        max_tokens: int | None = None,
-        timeout: float | None = None,
-    ) -> str:
+    def generate(self, request: LLMRequest):  # pragma: no cover
         ...
+
+
+# ---------------------------------------------------------------------- #
+# Detail-Regex
+# ---------------------------------------------------------------------- #
+
+_DETAIL_RE = re.compile(
+    r"\bwelche\s+ip\b|\bwhich\s+ip\b|\bip[- ]?adresse\b",
+    re.IGNORECASE,
+)
+
+
+def _matches_detail_regex(question: str) -> bool:
+    if not isinstance(question, str):
+        return False
+    return _DETAIL_RE.search(question) is not None
 
 
 # ---------------------------------------------------------------------- #
@@ -76,6 +97,10 @@ class ChatResponse:
     llm_error: str | None = None
     answer_id: str | None = None
     created_at: datetime | None = None
+    # Phase 3.5 Erweiterungen
+    source: str = "llm"      # "llm" | "detail_append"
+    model: str | None = None
+    denied: bool = False
 
 
 # ---------------------------------------------------------------------- #
@@ -91,6 +116,7 @@ class ChatService:
         *,
         context_builder: ContextBuilder | None = None,
         system_prompt: str | None = None,
+        default_model: str | None = None,
     ) -> None:
         if audit_writer is None:
             raise ChatServiceError(
@@ -106,6 +132,10 @@ class ChatService:
         self._builder = context_builder or ContextBuilder()
         self._system_prompt = system_prompt or _DEFAULT_SYSTEM_PROMPT
         self._checker = AccessChecker(conn)
+        self._default_model = (
+            default_model if default_model is not None
+            else get_model_default()
+        )
 
     # ------------------------------------------------------------------ #
     # Audit
@@ -128,6 +158,16 @@ class ChatService:
         )
 
     # ------------------------------------------------------------------ #
+    # interne Helfer
+    # ------------------------------------------------------------------ #
+
+    def _role_of_safe(self, principal_name: str) -> str | None:
+        try:
+            return self._checker.role_of(principal_name)
+        except AccessDeniedError:
+            return None
+
+    # ------------------------------------------------------------------ #
     # ask
     # ------------------------------------------------------------------ #
 
@@ -137,6 +177,8 @@ class ChatService:
         question: str,
         *,
         include_details: bool = False,
+        detail: bool = False,
+        model: str | None = None,
         event: Any | None = None,
         recent_events: Any = (),
         inventory_snapshot: dict[str, Any] | None = None,
@@ -151,21 +193,39 @@ class ChatService:
         Beantwortet eine Frage.
 
         Ablauf:
-        1. RBAC: chat.ask Pflicht. include_details: zusaetzlich
-           chat.include_details Pflicht.
-        2. Kontext bauen.
-        3. Prompt bauen.
-        4. LLM aufrufen.
-        5. Audit.
+        1. chat_query (immer, vor RBAC)
+        2. RBAC: chat.ask
+        3. Detail-Pfad oder LLM-Pfad
         """
-        # 1) RBAC
-        self._checker.require_permission(principal_name, "chat.ask")
-        if include_details:
-            self._checker.require_permission(
-                principal_name, "chat.include_details"
-            )
+        if not isinstance(question, str) or not question.strip():
+            raise ChatServiceError("Frage darf nicht leer sein")
 
-        # 2) Kontext
+        role = self._role_of_safe(principal_name)
+        q_hash = hashlib.sha256(question.encode("utf-8")).hexdigest()
+        q_hash_short = q_hash[:16]
+
+        # 1) chat_query (immer, vor RBAC)
+        self._log(
+            "chat_query",
+            principal=principal_name,
+            role=role,
+            question_hash=q_hash,
+            question_hash_short=q_hash_short,
+            detail_requested=bool(detail),
+        )
+
+        # 2) RBAC: chat.ask
+        try:
+            self._checker.require_permission(principal_name, "chat.ask")
+        except AccessDeniedError:
+            self._log(
+                "chat_access_denied",
+                principal=principal_name,
+                reason="missing chat.ask",
+            )
+            raise
+
+        # 3) Kontext bauen
         context = self._builder.build(
             event=event,
             recent_events=recent_events,
@@ -176,52 +236,126 @@ class ChatService:
             log_excerpts=log_excerpts,
         )
 
-        # 3) Prompt
+        # 4) Detail-Pfad
+        is_detail_question = detail or _matches_detail_regex(question)
+        if is_detail_question:
+            try:
+                self._checker.require_permission(
+                    principal_name, "chat.detail"
+                )
+            except AccessDeniedError:
+                self._log(
+                    "chat_access_denied",
+                    principal=principal_name,
+                    reason="missing chat.detail",
+                )
+                raise
+
+            suffix = _build_detail_suffix(context)
+            answer = f"Details:\n{suffix}"
+            self._log(
+                "chat_answered",
+                principal=principal_name,
+                source="detail_append",
+                context_counts=context.counts(),
+                context_redacted=context.redacted,
+            )
+            return ChatResponse(
+                answer=answer,
+                principal=principal_name,
+                question=question,
+                context_used=context,
+                used_llm=False,
+                source="detail_append",
+                model=None,
+            )
+
+        # 5) Normaler LLM-Pfad
+        effective_model = model if model is not None else self._default_model
         prompt = _build_prompt(
             question=question,
             context=context,
             include_details=include_details,
         )
+        request = LLMRequest(
+            prompt=prompt,
+            system=self._system_prompt,
+            model=effective_model,
+            max_tokens=max_tokens if max_tokens is not None else 512,
+            timeout=timeout if timeout is not None else 30.0,
+        )
 
-        # 4) LLM (fail open)
         try:
-            answer = self._llm.generate(
-                prompt=prompt,
-                system=self._system_prompt,
-                max_tokens=max_tokens,
-                timeout=timeout,
+            response = self._llm.generate(request)
+        except LLMError as exc:
+            self._log(
+                "chat_llm_error",
+                principal=principal_name,
+                error=str(exc),
             )
-            used_llm = True
-            llm_error = None
-        except Exception as exc:
-            answer = (
-                "Die lokale KI ist momentan nicht erreichbar. "
-                "Die Frage wurde nicht beantwortet."
-            )
-            used_llm = False
-            llm_error = str(exc)
+            raise
 
-        # 5) Audit
+        text = getattr(response, "text", None)
+        resp_model = getattr(response, "model", effective_model)
+        if not isinstance(text, str):
+            # Fail closed: ein Client, der kein LLMResponse liefert,
+            # ist ein Programmierfehler.
+            self._log(
+                "chat_llm_error",
+                principal=principal_name,
+                error="LLM-Client lieferte kein text-Feld",
+            )
+            raise ChatServiceError(
+                "LLM-Client lieferte kein text-Feld (LLMResponse.text)"
+            )
+
         self._log(
             "chat_answered",
             principal=principal_name,
-            question_len=len(question),
+            source="llm",
+            model=resp_model,
             include_details=include_details,
-            used_llm=used_llm,
             context_counts=context.counts(),
             context_redacted=context.redacted,
         )
-        if llm_error is not None:
-            self._log("chat_llm_error", error=llm_error)
-
         return ChatResponse(
-            answer=answer,
+            answer=text,
             principal=principal_name,
             question=question,
             context_used=context,
-            used_llm=used_llm,
-            llm_error=llm_error,
+            used_llm=True,
+            source="llm",
+            model=resp_model,
         )
+
+
+# ---------------------------------------------------------------------- #
+# Detail-Anhang
+# ---------------------------------------------------------------------- #
+
+def _build_detail_suffix(context: ContextBundle) -> str:
+    """Baut die Detail-Zeilen aus Event + Inventory-Snapshot."""
+    ips: set[str] = set()
+
+    ev = context.event
+    if ev is not None:
+        data = getattr(ev, "data", None)
+        if isinstance(data, dict):
+            ident = data.get("identifier")
+            if isinstance(ident, str) and ident:
+                ips.add(ident)
+
+    inv = context.inventory_snapshot or {}
+    for key in ("recently_added", "recently_offline"):
+        raw = inv.get(key)
+        if isinstance(raw, list):
+            for item in raw:
+                if isinstance(item, str) and item:
+                    ips.add(item)
+
+    if not ips:
+        return "(keine Details verfuegbar)"
+    return "\n".join(f"- {ip}" for ip in sorted(ips))
 
 
 # ---------------------------------------------------------------------- #
@@ -261,7 +395,9 @@ def _build_prompt(
 
     if include_details:
         if context.event is not None:
-            lines.append(f"event_id: {getattr(context.event, 'event_id', '?')}")
+            lines.append(
+                f"event_id: {getattr(context.event, 'event_id', '?')}"
+            )
         if context.log_excerpts:
             for i, log in enumerate(context.log_excerpts):
                 lines.append(f"log[{i}] {log.path}: {log.text}")
