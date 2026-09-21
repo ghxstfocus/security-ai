@@ -19,6 +19,11 @@
 #   forbidden_args:  Argument-Namen, die nicht vorkommen duerfen
 #   reason:          Klartext, landet im Audit
 
+# Hinweis: Der konkrete Wert von authorized_networks kommt
+# aus PolicyContext. Im Orchestrator-Betrieb ist es die
+# breite Liste (10/8, 172.16/12, 192.168/16). In Tests oft
+# nur 192.168.178.0/24, um Approval-Faelle zu provozieren.
+
 tools:
 
   read_logs:
