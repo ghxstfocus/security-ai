@@ -93,6 +93,7 @@ class AuditEntry:
     duration_ms: int = 0
     output_hash: str = "sha256:empty"
     network_id: str = "homelab-default"
+    details: dict[str, Any] | None = None
     error: str | None = None
 
     def __post_init__(self) -> None:
@@ -169,6 +170,7 @@ class AuditWriter:
         duration_ms: int = 0,
         output_hash: str = "sha256:empty",
         network_id: str = "homelab-default",
+        details: dict[str, Any] | None = None,
         error: str | None = None,
     ) -> AuditEntry:
         """
@@ -184,6 +186,7 @@ class AuditWriter:
             duration_ms=duration_ms,
             output_hash=output_hash,
             network_id=network_id,
+            details=details,
             error=error,
         )
         self.write(entry)
