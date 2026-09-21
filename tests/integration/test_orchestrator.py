@@ -7,6 +7,9 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from harness.permissions.levels import Level
+from harness.tool_registry.registry import ToolRegistry
+from harness.tool_registry.tool import Tool
 from apps.security_ai.orchestrator import (
     ProcessingAuditError,
     SecurityAI,
@@ -350,6 +353,194 @@ class OrchestratorAuditTests(unittest.TestCase):
                     if x["details"]["kind"] == "detection_result"]
         self.assertNotIn("port_scan", rule_ids)
 
+
+
+
+# ---------------------------------------------------------------------- #
+# End-zu-End: Event -> Detection -> Risk -> AgentLoop -> Mock-Tool
+# ---------------------------------------------------------------------- #
+
+def _build_test_registry(mock_calls: list) -> ToolRegistry:
+    """
+    Baut eine Test-Registry mit einem Mock-Tool 'telegram_alert'.
+
+    Der Mock sammelt seine Aufrufe in mock_calls.
+    """
+    def _mock_telegram(title, message, severity="INFO"):
+        mock_calls.append({
+            "title": title, "message": message, "severity": severity,
+        })
+        return {"ok": True, "message_id": len(mock_calls),
+                "source": "mock_telegram"}
+
+    reg = ToolRegistry()
+    reg.register(Tool(
+        name="telegram_alert",
+        level=Level.SECURITY_ACTION,
+        func=_mock_telegram,
+        description="Mock telegram_alert",
+        sandbox_profile="no_network_except_telegram",
+        allowed_args=frozenset({"title", "message", "severity"}),
+    ))
+    return reg
+
+
+_CATEGORY_TO_SEVERITY = {
+    "EVENT": "INFO",
+    "ANOMALY": "INFO",
+    "SUSPICION": "WARNING",
+    "SECURITY_ALERT": "WARNING",
+    "CONFIRMED": "CRITICAL",
+}
+
+
+class OrchestratorLoopTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.audit_dir = Path(self.tmp.name) / "audit"
+        self.db_path = Path(self.tmp.name) / "inventory.db"
+        self.mock_calls: list = []
+        self.ai = SecurityAI(
+            db_path=self.db_path,
+            migrations_dir="data/migrations",
+            detection_config_path=RULES_YAML,
+            risk_rules_path=RISK_RULES,
+            audit_base_dir=self.audit_dir,
+            tool_registry=_build_test_registry(self.mock_calls),
+        )
+
+    def tearDown(self):
+        self.ai.close()
+        self.tmp.cleanup()
+
+    def _read_audit(self):
+        lines = []
+        for f in sorted(self.audit_dir.glob("*.jsonl")):
+            for line in f.read_text(encoding="utf-8").strip().split("\n"):
+                if line:
+                    lines.append(json.loads(line))
+        return lines
+
+    def _expected_severity(self, assessment) -> str:
+        return _CATEGORY_TO_SEVERITY[assessment.category.value]
+
+    # --- Test 1a: unknown_device, Hauptnetz, nachmittags -> Loop ---
+
+    def test_unknown_device_loest_telegram_alert_aus(self):
+        ts = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        e = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
+            "identifier": "192.168.178.77",
+            "entity_name": "Neuling",
+            "network_type": "Hauptnetz",
+            "known": False,
+        })
+        result = self.ai.process(e)
+
+        # Loop ist gelaufen, genau ein Alert
+        self.assertEqual(len(result.loop_results), 1)
+        self.assertEqual(result.loop_results[0].status, "OK")
+        self.assertEqual(len(result.assessments), 1)
+
+        # Mock wurde genau 1x gerufen, Severity abgeleitet
+        self.assertEqual(len(self.mock_calls), 1)
+        call = self.mock_calls[0]
+        self.assertEqual(call["severity"], self._expected_severity(
+            result.assessments[0]))
+        self.assertIn("192.168.178.77", call["title"])
+        self.assertIn("message", call)
+
+        # Audit: loop_result + tool_call
+        entries = self._read_audit()
+        kinds = [x["details"]["kind"] for x in entries]
+        self.assertIn("loop_result", kinds)
+        self.assertIn("tool_call", kinds)
+        tc = [x for x in entries if x["details"]["kind"] == "tool_call"][0]
+        self.assertEqual(tc["details"]["tool"], "telegram_alert")
+        self.assertEqual(tc["details"]["level"], int(Level.SECURITY_ACTION))
+
+    # --- Test 1b: bekanntes Geraet -> kein Loop ---
+
+    def test_bekanntes_geraet_kein_loop(self):
+        ts = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        # Geraet zuerst in die DB bringen
+        self.ai.devices.upsert_seen(
+            "192.168.178.10",
+            entity_name="Bekannt",
+            network_type="Hauptnetz",
+            timestamp=ts,
+        )
+        # dann device_presence mit known=True
+        e = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
+            "identifier": "192.168.178.10",
+            "network_type": "Hauptnetz",
+            "known": True,
+        })
+        result = self.ai.process(e)
+        self.assertEqual(result.loop_results, [])
+        self.assertEqual(self.mock_calls, [])
+
+    # --- Test 2: Gastnetz -> kein Loop ---
+
+    def test_gastnetz_kein_loop(self):
+        ts = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        e = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
+            "identifier": "192.168.179.5",
+            "entity_name": "Gast-Phone",
+            "network_type": "Gastnetz",
+            "known": False,
+        })
+        result = self.ai.process(e)
+        self.assertEqual(result.loop_results, [])
+        self.assertEqual(self.mock_calls, [])
+
+    # --- Test 3: Port-Scan -> Loop ---
+
+    def test_port_scan_loest_telegram_alert_aus(self):
+        base = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        results = []
+        for i in range(15):
+            e = _event(EventType.SYN_PACKET.value,
+                       ts=base + timedelta(seconds=i), data={
+                "src_ip": "192.168.178.87",
+                "dst_ip": "192.168.178.1",
+                "dst_port": 2000 + i,
+                "protocol": "tcp",
+            })
+            results.append(self.ai.process(e))
+
+        all_loops = [lr for r in results for lr in r.loop_results]
+        all_assessments = [a for r in results for a in r.assessments]
+        self.assertGreaterEqual(len(all_loops), 1)
+        self.assertEqual(all_loops[0].status, "OK")
+        self.assertEqual(len(self.mock_calls), 1)
+        # Severity abgeleitet aus Assessment-Kategorie
+        self.assertEqual(self.mock_calls[0]["severity"],
+                         self._expected_severity(all_assessments[0]))
+
+    # --- Test 4: Brute-Force -> Loop mit CRITICAL ---
+
+    def test_brute_force_loest_telegram_alert_aus(self):
+        base = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        results = []
+        for i in range(25):
+            e = _event(EventType.SYN_PACKET.value,
+                       ts=base + timedelta(seconds=i * 0.5), data={
+                "src_ip": "192.168.178.87",
+                "dst_ip": "192.168.178.1",
+                "dst_port": 22,   # immer derselbe Port
+                "protocol": "tcp",
+            })
+            results.append(self.ai.process(e))
+
+        all_loops = [lr for r in results for lr in r.loop_results]
+        all_assessments = [a for r in results for a in r.assessments]
+        self.assertGreaterEqual(len(all_loops), 1)
+        self.assertGreaterEqual(len(self.mock_calls), 1)
+
+        # kind=brute_force -> SecurityPlanModel zieht Severity auf CRITICAL
+        # Assessment-Kategorie sollte CONFIRMED sein
+        self.assertEqual(all_assessments[0].category.value, "CONFIRMED")
+        self.assertEqual(self.mock_calls[0]["severity"], "CRITICAL")
 
 
 
