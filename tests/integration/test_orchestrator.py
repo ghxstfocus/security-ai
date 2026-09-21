@@ -1,12 +1,16 @@
 """Integrationstest: Event durch den ganzen Stack (Inventory -> Detection -> Risk)."""
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from apps.security_ai.orchestrator import SecurityAI
+from apps.security_ai.orchestrator import (
+    ProcessingAuditError,
+    SecurityAI,
+)
 from core.events.event import Event, EventType, Severity, new_event_id
 
 
@@ -244,6 +248,109 @@ class OrchestratorTests(unittest.TestCase):
         })
         r = self.ai.process(e)
         self.assertTrue(r.has_alerts)
+
+class OrchestratorAuditTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.audit_dir = Path(self.tmp.name) / "audit"
+        self.db_path = Path(self.tmp.name) / "inventory.db"
+        self.ai = SecurityAI(
+            db_path=self.db_path,
+            migrations_dir="data/migrations",
+            detection_config_path=RULES_YAML,
+            risk_rules_path=RISK_RULES,
+            audit_base_dir=self.audit_dir,
+        )
+
+    def tearDown(self):
+        self.ai.close()
+        self.tmp.cleanup()
+
+    def _read_audit(self):
+        lines = []
+        for f in sorted(self.audit_dir.glob("*.jsonl")):
+            for line in f.read_text(encoding="utf-8").strip().split("\n"):
+                if line:
+                    lines.append(json.loads(line))
+        return lines
+
+    def test_unknown_device_drei_bis_vier_eintraege(self):
+        ts = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)
+        e = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
+            "identifier": "192.168.178.77",
+            "entity_name": "Neuling",
+            "network_type": "Hauptnetz",
+            "known": False,
+        })
+        self.ai.process(e)
+        entries = self._read_audit()
+        kinds = [x["details"]["kind"] for x in entries]
+        self.assertIn("inventory_update", kinds)
+        self.assertIn("detection_result", kinds)
+        self.assertIn("risk_assessment", kinds)
+        self.assertIn("snapshot", kinds)
+        self.assertEqual(kinds.count("snapshot"), 1)
+
+    def test_details_kind_ist_pflicht(self):
+        e = _event("service_started")
+        self.ai.process(e)
+        for entry in self._read_audit():
+            self.assertIn("details", entry)
+            self.assertIsInstance(entry["details"], dict)
+            self.assertIn("kind", entry["details"])
+
+    def test_snapshot_hash_stabil(self):
+        e1 = _event("service_started")
+        self.ai.process(e1)
+        h1 = [x for x in self._read_audit()
+              if x["details"]["kind"] == "snapshot"][-1]["details"]["inventory_hash"]
+        e2 = _event("service_started")
+        self.ai.process(e2)
+        h2 = [x for x in self._read_audit()
+              if x["details"]["kind"] == "snapshot"][-1]["details"]["inventory_hash"]
+        self.assertEqual(h1, h2)
+
+    def test_inventory_version_gesetzt(self):
+        e = _event("service_started")
+        self.ai.process(e)
+        snap = [x for x in self._read_audit()
+                if x["details"]["kind"] == "snapshot"][-1]
+        self.assertEqual(snap["details"]["inventory_version"], "0002")
+
+    def test_audit_write_fehler_processing_audit_error(self):
+        from harness.audit.writer import AuditWriteError
+
+        class FailingWriter:
+            def log(self, *args, **kwargs):
+                raise AuditWriteError("simuliert")
+
+        ai = SecurityAI(
+            db_path=Path(self.tmp.name) / "inv2.db",
+            migrations_dir="data/migrations",
+            detection_config_path=RULES_YAML,
+            risk_rules_path=RISK_RULES,
+            audit_writer=FailingWriter(),
+        )
+        try:
+            e = _event("service_started")
+            with self.assertRaises(ProcessingAuditError):
+                ai.process(e)
+        finally:
+            ai.close()
+
+    def test_skip_reports_nicht_geloggt(self):
+        e = _event(EventType.DEVICE_PRESENCE.value, data={
+            "identifier": "192.168.178.10",
+            "network_type": "Hauptnetz",
+            "known": True,
+        })
+        self.ai.process(e)
+        entries = self._read_audit()
+        rule_ids = [x["details"].get("rule_id") for x in entries
+                    if x["details"]["kind"] == "detection_result"]
+        self.assertNotIn("port_scan", rule_ids)
+
+
 
 
 if __name__ == "__main__":
