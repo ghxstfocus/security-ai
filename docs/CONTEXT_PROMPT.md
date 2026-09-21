@@ -84,14 +84,35 @@ Orchestrator ruft AgentLoop fuer Alerts mit hoher Risk-Category.
 **Tests: 179 grün** (Unit + Integration).
 Alle Commits auf origin/main.
 
+Phase 3.5 — Lokale KI-Schicht: core/config.py (.env-Loader),
+harness/llm/ (OllamaClient, LLMRequest/Response, Fehlerklassen),
+harness/context/ (ContextBundle, ContextBuilder, Redaction),
+core/access/ (RBAC: Principal, Role, Permission, Checker),
+core/services/access_service.py, apps/security_ai/chat.py
+(ChatService mit chat_query/chat_access_denied/Detail-Pfad),
+scripts/init_db.py (DB + cli-admin), scripts/chat_cli.py
+(--whoami/--question/--detail/--model), .env.example, Tests.
+Erster echter Chat gegen llama3.2:3b erfolgreich.
+
+Phase 3.5.5 — Service-Refactor: AccessChecker mit
+Repo-Injection (principal_repo, role_repo, permission_repo) +
+from_conn-Convenience + check-Alias. role_of -> str | None,
+permissions_of -> frozenset (leer bei unbekannt/inaktiv).
+AccessService und ChatService mit DI. chat_cli.py verdrahtet
+Repos + Checker. tests/unit/test_access.py (19 Tests).
+
+Tests: 345 gruen (Unit + Integration).
+
 ### Was als Nächstes kommt
 
-- **Phase 3.4** — echter nmap-Aufruf (subprocess + Sandbox).
-  Duenne Mock-Version in tools/nmap_scan.py ersetzen.
-  Sandbox-Anforderungen: Timeout, kein Shell, stdout-Parsing.
-- **Phase 4** — Guardrails + Approval-Flow, Change Requests.
-- **Phase 5** — Admin AI (optional, Cloud, MCP).
-- **Phase 6** — Physische Sicherheit (RFID, Zutritt).
+- Phase 3.5.5+ (optional) — Principal-Objekte als API-Rueckgabe,
+  assign_role, strengere Service-Trennung. Aktuell nicht noetig.
+- Phase 3.6 — Web-Dashboard: Flask-App in apps/dashboard/,
+  Login ueber principals, Bereiche: Dashboard, Inventar, Alarme,
+  Approvals, Changes, Chat, Benutzerverwaltung, Rollenverwaltung,
+  Audit, Einstellungen. Ziel: Browser als primaeres Interface.
+- Phase 4+ — Admin AI (setzt lokale KI voraus), physische
+  Sicherheit.
 
 ### Format-Regeln
 
