@@ -38,11 +38,24 @@ from core.inventory.repository import (
 from core.inventory.whitelist import WhitelistRepository
 from core.risk.engine import RiskEngine
 from core.risk.models import RiskAssessment, RiskContext
+from harness.agent_loop.loop import (
+    AgentLoop,
+    LoopBudget,
+    LoopResult,
+)
 from harness.audit.writer import (
     AuditEntry,
     AuditWriter,
     AuditWriteError,
 )
+from harness.policy_engine.engine import PolicyEngine
+from harness.policy_engine.policy import PolicyContext
+from harness.tool_registry.registry import ToolRegistry
+from tools.get_devices import GET_DEVICES_TOOL
+from tools.nmap_scan import NMAP_SCAN_TOOL
+from tools.read_logs import READ_LOGS_TOOL
+from tools.telegram_alert import TELEGRAM_ALERT_TOOL
+from tools.whitelist_check import WHITELIST_CHECK_TOOL
 
 try:
     import yaml  # PyYAML
@@ -52,10 +65,20 @@ except ImportError as exc:  # pragma: no cover
     ) from exc
 
 
+from apps.security_ai.planning import SecurityPlanModel
+
 DEFAULT_RULES_DIR = "core/detection/rules"
 DEFAULT_RULES_PACKAGE = "core.detection.rules"
 DEFAULT_DETECTION_CONFIG = "detection/rules.yaml"
 DEFAULT_RISK_RULES = "core/risk/rules.yaml"
+DEFAULT_POLICY_RULES = "policies/tools.yaml"
+
+# Erlaubte Netzwerke fuer die Policy Engine (nmap etc.)
+DEFAULT_AUTHORIZED_NETWORKS = frozenset({
+    "192.168.178.0/24",
+    "192.168.189.0/24",
+    "127.0.0.1/32",
+})
 
 # Event-Typen, die das Inventory aktualisieren.
 _INVENTORY_EVENTS = frozenset({
@@ -78,6 +101,7 @@ class ProcessingResult:
     reports: list[RuleRunReport] = field(default_factory=list)
     alerts: list[Event] = field(default_factory=list)
     assessments: list[RiskAssessment] = field(default_factory=list)
+    loop_results: list[LoopResult] = field(default_factory=list)
 
     @property
     def has_alerts(self) -> bool:
@@ -88,6 +112,17 @@ class ProcessingResult:
         if not self.assessments:
             return 0.0
         return max(a.score for a in self.assessments)
+
+
+def _build_default_registry() -> ToolRegistry:
+    """Baut die Standard-ToolRegistry mit den 5 Tools."""
+    reg = ToolRegistry()
+    reg.register(NMAP_SCAN_TOOL)
+    reg.register(READ_LOGS_TOOL)
+    reg.register(GET_DEVICES_TOOL)
+    reg.register(WHITELIST_CHECK_TOOL)
+    reg.register(TELEGRAM_ALERT_TOOL)
+    return reg
 
 
 class ProcessingAuditError(Exception):
@@ -119,6 +154,10 @@ class SecurityAI:
         rules_package: str = DEFAULT_RULES_PACKAGE,
         audit_base_dir: Path | str = "audit-logs",
         audit_writer: AuditWriter | None = None,
+        tool_registry: ToolRegistry | None = None,
+        policy_engine: PolicyEngine | None = None,
+        loop_budget: LoopBudget | None = None,
+        authorized_networks: frozenset[str] | None = None,
     ) -> None:
         self._conn = connect(db_path)
         apply_migrations(self._conn, migrations_dir)
@@ -139,6 +178,28 @@ class SecurityAI:
         self._audit = audit_writer or AuditWriter(base_dir=audit_base_dir)
         self._audit_base_dir = Path(audit_base_dir)
         self._inventory_version_cache: str | None = None
+
+        # Tools + Policy
+        self._tool_registry = tool_registry or _build_default_registry()
+        self._policy_engine = policy_engine or PolicyEngine(
+            DEFAULT_POLICY_RULES
+        )
+        self._authorized_networks = (
+            authorized_networks
+            if authorized_networks is not None
+            else DEFAULT_AUTHORIZED_NETWORKS
+        )
+        self._loop_budget = loop_budget or LoopBudget()
+
+        # AgentLoop: stateless, bekommt policy_context pro run()
+        self._loop = AgentLoop(
+            registry=self._tool_registry,
+            audit=self._audit,
+            model=SecurityPlanModel(),
+            budget=self._loop_budget,
+            network_id="homelab-default",
+            policy_engine=self._policy_engine,
+        )
 
     # ------------------------------------------------------------------ #
     # Setup / Config

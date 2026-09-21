@@ -1,0 +1,13 @@
+# Konfiguration der Security AI Orchestrator-Schicht.
+#
+# loop_trigger_categories:
+#   Risk-Kategorien, die einen AgentLoop-Lauf ausloesen.
+#   Alerts mit anderen Kategorien werden nur auditiert,
+#   nicht in Tools umgesetzt.
+#
+# Wenn die Datei fehlt, greift ein Fallback im Orchestrator
+# (SECURITY_ALERT, CONFIRMED).
+
+loop_trigger_categories:
+  - "SECURITY_ALERT"
+  - "CONFIRMED"
