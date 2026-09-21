@@ -184,7 +184,6 @@ class AgentLoop:
         budget: LoopBudget | None = None,
         network_id: str = "homelab-default",
         policy_engine: PolicyEngine | None = None,
-        policy_context: PolicyContext | None = None,
     ) -> None:
         self.registry = registry
         self.audit = audit
@@ -192,9 +191,12 @@ class AgentLoop:
         self.budget = budget or LoopBudget()
         self.network_id = network_id
         self.policy_engine = policy_engine
-        self.policy_context = policy_context
 
-    def run(self, event: Event) -> LoopResult:
+    def run(
+        self,
+        event: Event,
+        policy_context: PolicyContext | None = None,
+    ) -> LoopResult:
         """
         Führt den Loop für ein Event aus.
 
@@ -219,7 +221,9 @@ class AgentLoop:
                 self.budget.check_iteration()
                 self.budget.check_runtime()
 
-                result = self._execute_step(step, event)
+                result = self._execute_step(
+                    step, event, policy_context=policy_context,
+                )
                 steps.append(result)
 
                 if result.status == "APPROVAL_REQUIRED":
@@ -279,7 +283,12 @@ class AgentLoop:
 
     # --- interne Methoden ---
 
-    def _execute_step(self, step: PlanStep, event: Event) -> StepResult:
+    def _execute_step(
+        self,
+        step: PlanStep,
+        event: Event,
+        policy_context: PolicyContext | None = None,
+    ) -> StepResult:
         """Führt einen einzelnen Plan-Schritt aus."""
         started = time.monotonic()
 
@@ -342,13 +351,9 @@ class AgentLoop:
             )
 
         # POLICY CHECK
-        if self.policy_engine is not None:
-            ctx = self.policy_context or PolicyContext(
-                network_id=self.network_id,
-                config={},
-            )
+        if self.policy_engine is not None and policy_context is not None:
             decision = self.policy_engine.evaluate(
-                tool.name, step.args, ctx
+                tool.name, step.args, policy_context
             )
 
             if decision.decision is Decision.FORBIDDEN:
