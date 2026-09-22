@@ -603,5 +603,62 @@ class TimeoutHelperTests(unittest.TestCase):
         self.assertEqual(_timeout_for_model(None), 60)
 
 
+# ---------------------------------------------------------------------- #
+# on_model_selected-Callback (Phase 3.5.7b)
+# ---------------------------------------------------------------------- #
+
+class ChatServiceModelCallbackTests(_ChatBase):
+    def test_callback_wird_vor_llm_aufruf_gerufen(self):
+        calls: list[tuple[str, str]] = []
+
+        def cb(model, reason):
+            calls.append((model, reason))
+            # LLM darf noch nicht gerufen worden sein
+            self.assertEqual(self.llm.calls, [])
+
+        self.llm.calls.clear()
+        self.svc.ask(
+            "admin", "Was ist ein Portscan?",
+            on_model_selected=cb,
+        )
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0], ("llama3.2:3b", "default"))
+        # LLM wurde danach gerufen
+        self.assertEqual(len(self.llm.calls), 1)
+
+    def test_callback_mit_auto_switch(self):
+        calls: list[tuple[str, str]] = []
+
+        def cb(model, reason):
+            calls.append((model, reason))
+
+        self.svc.ask(
+            "admin", "Gab es Auffaelligkeiten?",
+            on_model_selected=cb,
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+            ),
+        )
+        self.assertEqual(calls[0], ("qwen2.5:7b", "auto_critical_state"))
+
+    def test_callback_fehler_wird_nicht_propagiert(self):
+        def bad_cb(model, reason):
+            raise RuntimeError("boom")
+
+        # kein raise nach aussen
+        r = self.svc.ask(
+            "admin", "Was ist ein Portscan?",
+            on_model_selected=bad_cb,
+        )
+        self.assertEqual(r.source, "llm")
+        kinds = [e["details"]["kind"] for e in self._audit_entries()]
+        self.assertIn("chat_model_callback_failed", kinds)
+
+    def test_callback_ohne_parameter_kein_fehler(self):
+        # Standardfall: kein Callback
+        r = self.svc.ask("admin", "Was ist ein Portscan?")
+        self.assertEqual(r.source, "llm")
+
+
 if __name__ == "__main__":
     unittest.main()

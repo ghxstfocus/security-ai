@@ -296,6 +296,7 @@ class ChatService:
         log_excerpts: Any = (),
         max_tokens: int | None = None,
         timeout: float | None = None,
+        on_model_selected: Any | None = None,
     ) -> ChatResponse:
         """
         Beantwortet eine Frage.
@@ -418,6 +419,18 @@ class ChatService:
         effective_model, model_reason, model_timeout = (
             self._select_model(question, context, model)
         )
+
+        # Callback, BEVOR das LLM startet (Warnung an den Nutzer)
+        if on_model_selected is not None:
+            try:
+                on_model_selected(effective_model, model_reason)
+            except Exception as exc:
+                # Callback-Fehler nicht propagieren; Audit
+                self._log(
+                    "chat_model_callback_failed",
+                    error=str(exc),
+                )
+
         prompt = _build_prompt(
             question=question,
             context=context,

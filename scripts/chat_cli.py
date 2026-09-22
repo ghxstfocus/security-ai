@@ -124,19 +124,13 @@ def build_parser() -> argparse.ArgumentParser:
 # ---------------------------------------------------------------------- #
 
 def _print_response(resp) -> None:
+    """
+    Druckt die Antwort. Modell-Hinweis kommt aus
+    _on_model_selected (vor dem LLM-Aufruf).
+    """
     print(resp.answer)
     if resp.source == "detail_append":
         print(f"\n[Quelle: Detail-Anhang]", file=sys.stderr)
-    elif resp.source == "llm" and resp.model:
-        reason = getattr(resp, "model_reason", None)
-        if reason:
-            print(f"\n[Modell: {resp.model} -- {reason}]",
-                  file=sys.stderr)
-            if reason == "auto_critical_state":
-                print("[Auto-Switch zu grossem Modell -- kann "
-                      "1-3 Minuten dauern]", file=sys.stderr)
-        else:
-            print(f"\n[Modell: {resp.model}]", file=sys.stderr)
 
 
 def _print_whoami(svc: AccessService, principal_name: str) -> int:
@@ -154,6 +148,23 @@ def _print_whoami(svc: AccessService, principal_name: str) -> int:
     for code in me["permissions"]:
         print(f"  - {code}")
     return 0
+
+
+# ---------------------------------------------------------------------- #
+# Modell-Warnung (Phase 3.5.7b)
+# ---------------------------------------------------------------------- #
+
+def _on_model_selected(model: str, reason: str) -> None:
+    """
+    Wird vom ChatService aufgerufen, BEVOR das LLM startet.
+    Warnt den Nutzer bei Auto-Switch zum langsamen Modell.
+    """
+    print(f"[Modell: {model} -- {reason}]", file=sys.stderr)
+    if reason == "auto_critical_state":
+        print("[Auto-Switch zu grossem Modell -- kann "
+              "1-3 Minuten dauern]", file=sys.stderr)
+        print("  (mit --no-auto-large oder --model llama3.2:3b "
+              "schneller)", file=sys.stderr)
 
 
 # ---------------------------------------------------------------------- #
@@ -295,7 +306,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     # --question (einmalig)
     if args.question is not None:
         try:
-            resp = svc.ask(args.principal, args.question, **ask_kwargs)
+            resp = svc.ask(
+                args.principal, args.question,
+                on_model_selected=_on_model_selected,
+                **ask_kwargs,
+            )
         except AccessDeniedError as exc:
             print(f"FEHLER: {exc}", file=sys.stderr)
             conn.close()
@@ -323,7 +338,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         if q.lower() in ("exit", "quit"):
             break
         try:
-            resp = svc.ask(args.principal, q, **ask_kwargs)
+            resp = svc.ask(
+                args.principal, q,
+                on_model_selected=_on_model_selected,
+                **ask_kwargs,
+            )
         except AccessDeniedError as exc:
             print(f"FEHLER: {exc}", file=sys.stderr)
             conn.close()
