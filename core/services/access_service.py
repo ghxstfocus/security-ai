@@ -26,6 +26,8 @@ from core.access.models import (
     Principal,
     PrincipalKind,
     Role,
+    hash_password,
+    utc_now,
 )
 from core.access.repository import (
     AccessNotFoundError,
@@ -199,6 +201,51 @@ class AccessService:
             actor=actor,
             name=p.name,
             is_active=p.is_active,
+        )
+        return p
+
+    def set_password(
+        self,
+        actor: str,
+        *,
+        name: str,
+        password: str,
+    ) -> Principal:
+        """
+        Setzt ein neues Passwort fuer einen Principal.
+
+        Sicherheitsverhalten (Auflage 14):
+        - RBAC: actor braucht principal.manage.
+        - Hash: pbkdf2_sha256, 600_000 Iterationen
+          (Default von hash_password).
+        - Alle aktiven Sessions des Principals werden
+          widerrufen (Session-Invalidierung bei
+          Passwort-Aenderung).
+        - Audit: kind="principal_password_changed".
+          NIEMALS Passwort, Hash oder Klartext in den
+          Details.
+
+        Raises:
+            AccessDeniedError: actor ohne principal.manage.
+            AccessServiceError: Principal unbekannt.
+            SessionRepositoryError: Session-Invalidierung
+                fehlgeschlagen. Passwort ist dann bereits
+                geaendert; der Aufrufer MUSS den Fehler
+                an den Nutzer melden.
+        """
+        self.require(actor, "principal.manage")
+        hashed = hash_password(password)
+        try:
+            p = self._principals.set_password_hash(name, hashed)
+        except AccessNotFoundError as exc:
+            raise AccessServiceError(str(exc)) from exc
+        self._session_repo.revoke_all_for_principal(
+            name, now=utc_now(),
+        )
+        self._log(
+            "principal_password_changed",
+            actor=actor,
+            principal=p.name,
         )
         return p
 

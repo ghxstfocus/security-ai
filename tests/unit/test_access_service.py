@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 
 from core.access.checker import AccessChecker
+from core.access.models import PrincipalKind
 from core.access.repository import (
     PermissionRepository,
     PrincipalRepository,
@@ -114,3 +115,199 @@ def test_explicit_session_repo_accepted(
         session_repo=session_repo,
     )
     assert svc._session_repo is session_repo
+
+
+# ---------------------------------------------------------------------- #
+# Fixture fuer set_password-Tests
+# ---------------------------------------------------------------------- #
+
+@pytest.fixture()
+def alice(deps: dict) -> dict:
+    roles = deps["roles"]
+    viewer = roles.get_by_name("viewer")
+    principals = deps["principals"]
+    p = principals.create(
+        name="alice",
+        role_id=viewer.row_id,
+        kind=PrincipalKind.HUMAN,
+        password_hash=None,
+    )
+    return {"principal": p, "role": viewer}
+
+
+@pytest.fixture()
+def alice_sessions(
+    conn: sqlite3.Connection, alice: dict,
+) -> SessionRepository:
+    sr = SessionRepository(conn)
+    sr.create("sid-alice-1", "alice")
+    sr.create("sid-alice-2", "alice")
+    return sr
+
+
+# ---------------------------------------------------------------------- #
+# set_password (Auflage 14, 42, 43, 44, 45)
+# ---------------------------------------------------------------------- #
+
+def test_set_password_requires_permission(
+    deps: dict, audit: AuditWriter, conn: sqlite3.Connection,
+    alice: dict,
+) -> None:
+    sr = SessionRepository(conn)
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=sr,
+    )
+    # alice hat Rolle viewer -> kein principal.manage
+    with pytest.raises(Exception) as exc_info:
+        svc.set_password("alice", name="alice", password="geheim123")
+    assert "principal.manage" in str(exc_info.value)
+
+
+def test_set_password_updates_hash(
+    deps: dict, audit: AuditWriter, conn: sqlite3.Connection,
+    alice: dict,
+) -> None:
+    sr = SessionRepository(conn)
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=sr,
+    )
+    # cli-admin hat Rolle admin; alice anlegen mit admin-Rolle
+    # fuer diesen Test brauchen wir einen actor mit principal.manage
+    # -> nutze einen zweiten admin-Principal
+    admin_role = deps["roles"].get_by_name("admin")
+    deps["principals"].create(
+        name="admin1",
+        role_id=admin_role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    svc.set_password("admin1", name="alice", password="geheim123")
+    updated = deps["principals"].get_by_name("alice")
+    assert updated.password_hash is not None
+    assert updated.password_hash.startswith("pbkdf2_sha256$600000$")
+
+
+def test_set_password_revokes_sessions(
+    deps: dict, audit: AuditWriter, conn: sqlite3.Connection,
+    alice: dict, alice_sessions: SessionRepository,
+) -> None:
+    admin_role = deps["roles"].get_by_name("admin")
+    deps["principals"].create(
+        name="admin1", role_id=admin_role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=alice_sessions,
+    )
+    assert alice_sessions.get("sid-alice-1").revoked_at is None
+    assert alice_sessions.get("sid-alice-2").revoked_at is None
+    svc.set_password("admin1", name="alice", password="geheim123")
+    assert alice_sessions.get("sid-alice-1").revoked_at is not None
+    assert alice_sessions.get("sid-alice-2").revoked_at is not None
+
+
+def test_set_password_audit_kind(
+    deps: dict, audit: AuditWriter, conn: sqlite3.Connection,
+    alice: dict,
+) -> None:
+    admin_role = deps["roles"].get_by_name("admin")
+    deps["principals"].create(
+        name="admin1", role_id=admin_role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    sr = SessionRepository(conn)
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=sr,
+    )
+    svc.set_password("admin1", name="alice", password="geheim123")
+    entries = audit.read_day()
+    kinds = [
+        e.details.get("kind") for e in entries if e.details
+    ]
+    assert "principal_password_changed" in kinds
+
+
+def test_set_password_no_password_in_audit(
+    deps: dict, audit: AuditWriter, conn: sqlite3.Connection,
+    alice: dict,
+) -> None:
+    admin_role = deps["roles"].get_by_name("admin")
+    deps["principals"].create(
+        name="admin1", role_id=admin_role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    sr = SessionRepository(conn)
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=sr,
+    )
+    svc.set_password("admin1", name="alice", password="geheim123")
+    updated = deps["principals"].get_by_name("alice")
+    stored_hash = updated.password_hash
+    # Audit-Tag lesen
+    audit_path = audit.base_dir / (
+        __import__("datetime").datetime.now(
+            __import__("datetime").timezone.utc
+        ).strftime("%Y-%m-%d") + ".jsonl"
+    )
+    content = audit_path.read_text(encoding="utf-8")
+    assert "geheim123" not in content
+    assert stored_hash is not None
+    assert stored_hash not in content
+    assert "pbkdf2_sha256$" not in content
+    assert "pbkdf2_sha256" not in content
+
+
+def test_set_password_unknown_principal(
+    deps: dict, audit: AuditWriter, conn: sqlite3.Connection,
+) -> None:
+    admin_role = deps["roles"].get_by_name("admin")
+    deps["principals"].create(
+        name="admin1", role_id=admin_role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    sr = SessionRepository(conn)
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=sr,
+    )
+    with pytest.raises(AccessServiceError):
+        svc.set_password("admin1", name="nichtda", password="x")
+
+
+def test_set_password_revoke_failure_propagates(
+    deps: dict, audit: AuditWriter, conn: sqlite3.Connection,
+    alice: dict, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from core.access.session_repo import SessionRepositoryError
+
+    admin_role = deps["roles"].get_by_name("admin")
+    deps["principals"].create(
+        name="admin1", role_id=admin_role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    sr = SessionRepository(conn)
+
+    def _boom(*args, **kwargs):
+        raise SessionRepositoryError("simuliert")
+
+    monkeypatch.setattr(
+        sr, "revoke_all_for_principal", _boom,
+    )
+
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=sr,
+    )
+    with pytest.raises(SessionRepositoryError):
+        svc.set_password("admin1", name="alice", password="geheim123")
