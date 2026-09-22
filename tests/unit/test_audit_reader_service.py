@@ -18,7 +18,7 @@ from core.access.repository import (
     RoleRepository,
 )
 from core.services.audit_reader_service import (
-    AuditReaderError,
+    AuditReaderServiceError,
     AuditReaderService,
 )
 from tests.unit._helpers import migrated_conn
@@ -79,7 +79,7 @@ def test_read_day_ok(
 def test_read_day_invalid_date(svc: AuditReaderService) -> None:
     # Auflage 51: drei Varianten
     for bad in ("2026-13-01", "2026-02-30", "2026-2-30"):
-        with pytest.raises(AuditReaderError):
+        with pytest.raises(AuditReaderServiceError):
             svc.read_day("alice", bad)
 
 
@@ -92,7 +92,7 @@ def test_read_day_traversal_blocked(svc: AuditReaderService) -> None:
         "2026-9-22",
         "2026-02-30",
     ):
-        with pytest.raises(AuditReaderError):
+        with pytest.raises(AuditReaderServiceError):
             svc.read_day("alice", bad)
 
 
@@ -138,5 +138,14 @@ def test_find_by_audit_id(
         "alice", "AUD-2099-01-01-00000000"
     ) is None
     # Ungueltiges Format
-    with pytest.raises(AuditReaderError):
+    with pytest.raises(AuditReaderServiceError):
         svc.find_by_audit_id("alice", "kaputt")
+
+
+# ---------------------------------------------------------------------- #
+# Test 3.6.8: ServiceError-Hierarchie
+# ---------------------------------------------------------------------- #
+
+def test_audit_reader_service_error_is_service_error():
+    from core.services import ServiceError
+    assert issubclass(AuditReaderServiceError, ServiceError)

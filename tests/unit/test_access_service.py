@@ -305,3 +305,12 @@ def test_set_password_revoke_failure_propagates(
     )
     with pytest.raises(SessionRepositoryError):
         svc.set_password("admin1", name="alice", password="geheim123")
+
+
+# ---------------------------------------------------------------------- #
+# Test 3.6.8: ServiceError-Hierarchie
+# ---------------------------------------------------------------------- #
+
+def test_access_service_error_is_service_error():
+    from core.services import ServiceError
+    assert issubclass(AccessServiceError, ServiceError)

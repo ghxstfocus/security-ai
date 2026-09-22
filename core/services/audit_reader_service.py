@@ -8,7 +8,7 @@ NICHT direkt auf harness zugreifen (Regel N).
 Design:
 - Lesender Service. Kein Schreiben.
 - RBAC: audit.read vor jedem Zugriff.
-- Input-Validierung (Regex), sonst AuditReaderError.
+- Input-Validierung (Regex), sonst AuditReaderServiceError.
 - Kein DB-Zugriff, nur Datei-Lesen.
 """
 from __future__ import annotations
@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from core.access.checker import AccessChecker
+from core.services import ServiceError
 from harness.audit.writer import AuditWriter
 
 
@@ -25,7 +26,7 @@ AUDIT_ID_RE = re.compile(r"^AUD-\d{4}-\d{2}-\d{2}-[0-9a-f]{8}$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
-class AuditReaderError(RuntimeError):
+class AuditReaderServiceError(ServiceError):
     """Fachlicher Fehler im AuditReaderService."""
 
 
@@ -36,11 +37,11 @@ class AuditReaderService:
         checker: AccessChecker,
     ) -> None:
         if audit_writer is None:
-            raise AuditReaderError(
+            raise AuditReaderServiceError(
                 "audit_writer ist Pflicht (fail closed)"
             )
         if checker is None:
-            raise AuditReaderError(
+            raise AuditReaderServiceError(
                 "checker ist Pflicht (fail closed)"
             )
         self._audit = audit_writer
@@ -51,13 +52,13 @@ class AuditReaderService:
 
     def _validate_date(self, date_str: str) -> str:
         if not isinstance(date_str, str) or not DATE_RE.match(date_str):
-            raise AuditReaderError(
+            raise AuditReaderServiceError(
                 f"Datum muss YYYY-MM-DD sein: {date_str!r}"
             )
         try:
             datetime.strptime(date_str, "%Y-%m-%d")
         except ValueError as exc:
-            raise AuditReaderError(
+            raise AuditReaderServiceError(
                 f"Datum ungueltig: {date_str!r}"
             ) from exc
         return date_str
@@ -103,7 +104,7 @@ class AuditReaderService:
         self._require(actor)
         if not isinstance(audit_id, str) or \
                 not AUDIT_ID_RE.match(audit_id):
-            raise AuditReaderError(
+            raise AuditReaderServiceError(
                 f"audit_id ungueltig: {audit_id!r}"
             )
         date_str = audit_id[4:14]
@@ -115,5 +116,5 @@ class AuditReaderService:
 
 __all__ = [
     "AuditReaderService",
-    "AuditReaderError",
+    "AuditReaderServiceError",
 ]
