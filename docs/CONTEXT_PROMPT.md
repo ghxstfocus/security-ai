@@ -29,8 +29,13 @@ bist du im Kontext.
 Drei KI-Rollen: Human Admin, Security AI (lokal), Admin AI (Cloud).
 Zwei Modi: A autark, B foederiert.
 
-Service-Schicht (neu, Phase 3.5):
+Service-Schicht (Phase 3.5):
 UI (Web/CLI/Telegram) -> Services (core/services) -> Repos (core/).
+
+Frage-Klassifikation (Phase 3.5.8):
+- fact           -> deterministische Antwort, kein LLM
+- concept        -> LLM (3B), kein Kontext-Zwang
+- interpretation -> LLM mit Kontext (7B via Auto-Switch)
 
 Grundprinzipien: Mensch behaelt Kontrolle, Defense in Depth,
 Determinismus wo moeglich, Autarkie, eine Quelle der Wahrheit,
@@ -53,21 +58,35 @@ Append-only Audit, Fail closed, Foederation statt Monolith.
 - Phase 4 — Approval + Change Requests (Migrationen 0003+0004,
   core/approval, core/changes, approvals_cli, changes_cli,
   _notify_approval, ChangeApplier-Stub)
-- Phase 3.5 — Lokale KI (core/config, harness/llm,
-  harness/context, core/access RBAC, core/services,
-  apps/security_ai/chat.py, init_db, chat_cli)
-- Phase 3.5.5 — Service-Refactor (Repo-Injection im
-  AccessChecker, from_conn, DI in ChatService/AccessService)
+- Phase 3.5 — Lokale KI: core/config, harness/llm (Ollama),
+  harness/context (ContextBundle, ContextBuilder, Redaction),
+  core/access (RBAC), core/services (AccessService),
+  apps/security_ai/chat.py (ChatService), scripts/init_db.py,
+  scripts/chat_cli.py
+- Phase 3.5.5 — Service-Refactor: Repo-Injection im
+  AccessChecker + from_conn; DI in ChatService/AccessService
+- Phase 3.5.6 — Kontext-Anschluss: core/reporting/audit_reader
+  (risk_assessments aus JSONL), core/reporting/inventory_snapshot,
+  chat_cli laedt Kontext
+- Phase 3.5.7 — Auto-Switch zu qwen2.5:7b; no_context-Pfad;
+  Prompt-Verbesserungen
+- Phase 3.5.7a — Modellabhaengige Timeouts (3B: 30s, 7B: 180s),
+  --no-auto-large
+- Phase 3.5.7b — on_model_selected-Callback (Warnung vor LLM)
+- Phase 3.5.8 — Frage-Klassifikation (fact/concept/interpretation),
+  Fact-Pfad deterministisch, kein LLM bei Fakten
+- Phase 3.5.9 — Sanity-Check (Denial + Underreporting) + Retry
+  mit 7B; Auto-Switch bei kritischen Assessments ist PFLICHT
 
 Tests: 345 gruen (Unit + Integration).
 
 ### Was als Naechstes kommt
 
-- Phase 3.5.5+ (optional) — Principal-Objekte, assign_role,
-  strengere Service-Trennung. Aktuell nicht noetig.
 - Phase 3.6 — Web-Dashboard (Flask, Login ueber principals,
   Bereiche: Dashboard, Inventar, Alarme, Approvals, Changes,
-  Chat, Benutzer, Rollen, Audit, Einstellungen)
+  Chat, Benutzer, Rollen, Audit, Einstellungen). Baut auf den
+  Services (core/services) auf.
+- Phase 3.5.5+ (optional) — Principal-Objekte, assign_role.
 - Phase 5 — Admin AI (optional, Cloud, MCP). Setzt lokale KI
   voraus.
 
@@ -103,11 +122,12 @@ Tests: 345 gruen (Unit + Integration).
 
 ### Aktuelle Phase
 
-Phase 1-4 abgeschlossen. Phase 3.5 (Lokale KI) und 3.5.5
-(Service-Refactor) abgeschlossen. Keine offenen Blocker.
+Phase 1-4 abgeschlossen. Phase 3.5 inkl. 3.5.5, 3.5.6, 3.5.7,
+3.5.7a, 3.5.7b, 3.5.8, 3.5.9 abgeschlossen.
 
-Naechster Schritt: Phase 3.6 (Web-Dashboard) planen und starten
-oder optional Phase 3.5.5+ (Principal-Objekte, assign_role).
+Naechster Schritt: Phase 3.6 (Web-Dashboard).
+
+Tests: 374 gruen. HEAD auf origin/main.
 
 ### Aufgabe jetzt
 

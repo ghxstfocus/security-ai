@@ -88,6 +88,65 @@ unbekannt/inaktiv). AccessService und ChatService mit DI.
 chat_cli.py verdrahtet Repos + Checker.
 tests/unit/test_access.py.
 
+## Phase 3.5.6 — Kontext-Anschluss  [x]
+
+Commits: 9d4dead, 8d345e6, 7c65f51, c07ea4e
+
+- core/reporting/audit_reader.py — risk_assessments aus JSONL.
+- core/reporting/inventory_snapshot.py — Aggregation.
+- _build_prompt zeigt Kategorien, Regeln, Scores, Zeitraum.
+- chat_cli laedt Kontext und uebergibt an ChatService.
+
+## Phase 3.5.7 — Auto-Switch zu grossem Modell  [x]
+
+Commits: 6ba7b26, 1b2ca83, c857e55, f414626, 7500825
+
+- System-Prompt unterscheidet Konzept- und Zustandsfragen.
+- no_context-Pfad: vage Zustandsfrage ohne Kontext -> ehrliche
+  Antwort.
+- Kategorien-Glossar und WICHTIG-Hinweis im Prompt.
+- Auto-Switch: Zustandsfrage + CONFIRMED/SECURITY_ALERT ->
+  qwen2.5:7b.
+- ChatResponse.model_reason fuer Transparenz.
+
+## Phase 3.5.7a — Timeouts + --no-auto-large  [x]
+
+Commits: 35d34ed
+
+- Modellabhaengige Timeouts (3B: 30s, 7B: 180s, sonst 60s).
+- --no-auto-large als Opt-out.
+- CLI zeigt [Modell: <name> -- <reason>].
+
+## Phase 3.5.7b — Warnung vor LLM  [x]
+
+Commits: 73278e3
+
+- ChatService.ask(on_model_selected=...) Callback.
+- Warnung kommt VOR dem LLM-Aufruf.
+
+## Phase 3.5.8 — Frage-Klassifikation  [x]
+
+Commits: 47ccd04
+
+- fact/concept/interpretation via Regex.
+- fact-Pfad ist deterministisch (kein LLM).
+- Detail-Pfad hat Vorrang vor fact.
+- no_context nur fuer interpretation.
+- _answer_fact fuer "Gab es Auffaelligkeiten?", "Welche
+  Kategorien?", "Wie viele?".
+
+## Phase 3.5.9 — Sanity-Check + Retry  [x]
+
+Commits: cd16bf6, 93354e4, d266bff
+
+- _answer_contradicts_context erkennt Denial UND Underreporting.
+- Retry mit qwen2.5:7b bei Widerspruch.
+- source="llm_retry", Audit chat_answer_contradicts_context.
+- Nur bei Interpretation (nicht concept).
+- Nicht abschaltbar durch --no-auto-large (Sicherheitsschicht).
+- Prompt-Hinweis "Du MUSST die CONFIRMED-Zahlen nennen".
+- CLI-Warnung bei --no-auto-large.
+
 ## Phase 3.5.5+ — optional  [ ]
 
 Principal-Objekte als API-Rueckgabe, assign_role, strengere
