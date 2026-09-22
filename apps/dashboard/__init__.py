@@ -1,8 +1,10 @@
 """
-apps/dashboard — Chat-Interface fuer die lokale KI.
+apps/dashboard — Web-Dashboard fuer die Security AI.
 
-Human Admin fragt, LLM erklaert. Kein Tool-Aufruf aus
-dem Chat. Antworten sind Vorschlaege, keine Aktionen.
-
-Geplant fuer Phase 3.5 (Lokale KI-Schicht).
+Phase 3.6. create_app liegt in apps/dashboard/app.py.
+Routes kommen in eigenen Modulen (routes_*.py).
 """
+from apps.dashboard.app import create_app
+
+
+__all__ = ["create_app"]

@@ -1,0 +1,242 @@
+"""
+Tests fuer apps/dashboard/app.py.
+
+Kategorie 3 (RBAC, Session, Fehlerbehandlung).
+
+Auflage 67: TESTING bleibt False. Wir testen
+Produktions-Verhalten (generische 500).
+Auflage 68: Cookie-Flags explizit (secure, httponly,
+samesite).
+Auflage 71: test_access_denied_errorhandler_403 loest
+echten 403 aus (viewer ohne principal.manage).
+Auflage 72: test_two_requests_ok_after_teardown
+(statt "conn geschlossen"-Pseudotest).
+Auflage 73: Sicherheitsnetz-Tests umbenannt
+(_mit_session / _ohne_session).
+Auflage 74: test_alle_routen_haben_permission
+zaehlt geprueft.
+Auflage 106: Test 12 bleibt leer-tolerant, neuer
+Test 13 prueft den Mechanismus.
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from core.access.models import PrincipalKind
+from core.access.repository import (
+    PrincipalRepository,
+    RoleRepository,
+)
+from core.access.session_repo import SessionRepository
+from core.inventory.repository import (
+    DEFAULT_MIGRATIONS_DIR,
+    apply_migrations,
+    connect,
+)
+from apps.dashboard.app import create_app
+from apps.dashboard.decorators import (
+    PUBLIC_PATHS,
+    require_permission,
+    SESSION_COOKIE_NAME,
+)
+
+
+@pytest.fixture()
+def app(tmp_path: Path):
+    db = tmp_path / "t.db"
+    app = create_app(
+        db_path=db,
+        migrations_dir=DEFAULT_MIGRATIONS_DIR,
+        audit_base_dir=str(tmp_path / "audit"),
+        secret_key="x" * 48,
+    )
+    conn = connect(db)
+    apply_migrations(conn, DEFAULT_MIGRATIONS_DIR)
+    roles = RoleRepository(conn)
+    principals = PrincipalRepository(conn)
+    admin_role = roles.get_by_name("admin")
+    viewer_role = roles.get_by_name("viewer")
+    principals.create(
+        name="admin1", role_id=admin_role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    principals.create(
+        name="viewer1", role_id=viewer_role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    sr = SessionRepository(conn)
+    sr.create("sid-1", "admin1")
+    sr.create("sid-viewer", "viewer1")
+    conn.close()
+    return app
+
+
+def _set_cookie(client, value):
+    client.set_cookie(
+        SESSION_COOKIE_NAME, value,
+        domain="localhost",
+        secure=True, httponly=True, samesite="Strict",
+    )
+    return client
+
+
+@pytest.fixture()
+def client(app):
+    c = app.test_client()
+    _set_cookie(c, "sid-1")
+    return c
+
+
+@pytest.fixture()
+def viewer_client(app):
+    c = app.test_client()
+    _set_cookie(c, "sid-viewer")
+    return c
+
+
+# ---------------------------------------------------------------------- #
+# Tests 1-4
+# ---------------------------------------------------------------------- #
+
+def test_public_paths_has_login():
+    assert "/login" in PUBLIC_PATHS
+
+
+def test_create_app_registers_before_request(app):
+    assert app.before_request_funcs
+
+
+def test_require_permission_sets_attribute():
+    def fn():
+        return "ok"
+    wrapped = require_permission("device.read")(fn)
+    assert wrapped._required_permission == "device.read"
+
+
+def test_route_without_permission_returns_403_mit_session(
+    app, client,
+):
+    @app.route("/noperm1")
+    def _leak1():
+        return "should not happen"
+    r = client.get("/noperm1")
+    assert r.status_code == 403
+    assert b"should not happen" not in r.data
+
+
+# ---------------------------------------------------------------------- #
+# Tests 5-8
+# ---------------------------------------------------------------------- #
+
+def test_route_without_permission_returns_403_ohne_session(app):
+    @app.route("/noperm2")
+    def _leak2():
+        return "should not happen"
+    c = app.test_client()
+    r = c.get("/noperm2")
+    assert r.status_code == 403
+    assert b"should not happen" not in r.data
+
+
+def test_route_with_permission_ok(app, client):
+    @app.route("/ok")
+    @require_permission("device.read")
+    def _ok():
+        return "ok", 200
+    r = client.get("/ok")
+    assert r.status_code == 200
+    assert r.data == b"ok"
+
+
+def test_public_route_no_redirect(app):
+    @app.route("/login")
+    def login():
+        return "login", 200
+    c = app.test_client()
+    r = c.get("/login")
+    assert r.status_code == 200
+    assert r.data == b"login"
+
+
+def test_no_session_redirects_to_login(app):
+    @app.route("/secret")
+    @require_permission("device.read")
+    def _secret():
+        return "secret", 200
+    c = app.test_client()
+    r = c.get("/secret")
+    assert r.status_code == 302
+    assert "/login" in r.headers["Location"]
+
+
+# ---------------------------------------------------------------------- #
+# Tests 9-13
+# ---------------------------------------------------------------------- #
+
+def test_two_requests_ok_after_teardown(app, client):
+    @app.route("/twice")
+    @require_permission("device.read")
+    def _twice():
+        return "x", 200
+    r1 = client.get("/twice")
+    r2 = client.get("/twice")
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+
+
+def test_access_denied_errorhandler_403(app, viewer_client):
+    @app.route("/need-admin")
+    @require_permission("principal.manage")
+    def _need_admin():
+        return "should not happen"
+    r = viewer_client.get("/need-admin")
+    assert r.status_code == 403
+    assert b"should not happen" not in r.data
+
+
+def test_500_errorhandler_generisch(app, client):
+    @app.route("/boom")
+    @require_permission("device.read")
+    def _boom():
+        raise RuntimeError("interner Fehler")
+    r = client.get("/boom")
+    assert r.status_code == 500
+    assert b"interner Fehler" not in r.data
+
+
+def test_alle_routen_haben_permission(app):
+    # Auflage 106: leer-tolerant heute. Ab 3.6.6 mit
+    # produktiven Routen wird dieser Test wertvoll.
+    geprueft = 0
+    for rule in app.url_map.iter_rules():
+        path = rule.rule
+        if path in PUBLIC_PATHS:
+            continue
+        if path.startswith("/static/"):
+            continue
+        fn = app.view_functions.get(rule.endpoint)
+        assert hasattr(fn, "_required_permission"), (
+            f"Route {rule.endpoint} ({path}) ohne "
+            f"@require_permission"
+        )
+        geprueft += 1
+
+
+def test_alle_routen_mechanismus_mit_dekorierter_route(app):
+    # Auflage 106: Mechanismus mit eigener Route.
+    @app.route("/dekoriert")
+    @require_permission("device.read")
+    def _d():
+        return "d", 200
+    geprueft = 0
+    for rule in app.url_map.iter_rules():
+        if rule.rule in PUBLIC_PATHS:
+            continue
+        if rule.rule.startswith("/static/"):
+            continue
+        fn = app.view_functions.get(rule.endpoint)
+        assert hasattr(fn, "_required_permission")
+        geprueft += 1
+    assert geprueft >= 1
