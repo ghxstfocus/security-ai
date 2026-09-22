@@ -282,6 +282,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         conn.close()
         return rc
 
+    # Warnung bei --no-auto-large
+    if args.no_auto_large:
+        print("[WARNUNG: --no-auto-large aktiv -- bei kritischen "
+              "Assessments kann das Modell untertreiben]",
+              file=sys.stderr)
+
     # Kontext aus DB + Audit laden
     try:
         ctx = _load_context(

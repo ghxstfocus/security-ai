@@ -267,7 +267,14 @@ def _answer_contradicts_context(
     answer: str, context: ContextBundle,
 ) -> bool:
     """
-    True, wenn die Antwort kritische Assessments leugnet.
+    True, wenn die Antwort kritische Assessments leugnet ODER
+    untertreibt.
+
+    Denial: "keine Auffaelligkeiten", "keine Vorfaelle",
+    "nichts Auffaelliges", "nein ... keine".
+    Underreporting: Antwort erwaehnt weder CONFIRMED/
+    bestaetigt noch SECURITY_ALERT/Sicherheitsalarm, obwohl
+    kritische Assessments vorliegen.
 
     Nur relevant, wenn _has_critical_assessments(context) True
     ist. Liefert sonst False.
@@ -276,9 +283,14 @@ def _answer_contradicts_context(
         return False
     if not _has_critical_assessments(context):
         return False
+    a = answer.lower()
     for pat in _DENIAL_PATTERNS:
-        if pat.search(answer):
+        if pat.search(a):
             return True
+    has_confirmed = ("confirmed" in a) or ("bestaetigt" in a)
+    has_sec_alert = ("security_alert" in a) or ("sicherheitsalarm" in a)
+    if not has_confirmed and not has_sec_alert:
+        return True
     return False
 
 
@@ -711,7 +723,11 @@ class ChatService:
         )
 
         # Sanity-Check: Antwort widerspricht kritischem Kontext?
-        if _answer_contradicts_context(text, context):
+        # Nur bei Interpretation (nicht bei Concept).
+        if (
+            model_reason != "concept"
+            and _answer_contradicts_context(text, context)
+        ):
             self._log(
                 "chat_answer_contradicts_context",
                 principal=principal_name,
@@ -918,7 +934,9 @@ def _build_prompt(
         lines.append(
             f"WICHTIG: Der Kontext enthaelt kritische "
             f"Risk-Assessments ({cats}). Bei Fragen nach "
-            f"Auffaelligkeiten ist die Antwort JA."
+            f"Auffaelligkeiten ist die Antwort JA. Du MUSST "
+            f"die CONFIRMED- und SECURITY_ALERT-Zahlen "
+            f"explizit nennen. Untertreibe nicht."
         )
 
     lines.append("Kontext:")

@@ -590,8 +590,19 @@ class ChatServiceAutoSwitchTests(_ChatBase):
                 {"category": "CONFIRMED", "score": 0.85},
             ),
         )
-        self.assertEqual(r.model, "llama3.2:3b")
-        self.assertEqual(r.model_reason, "default")
+        # auto_large=False -> erster Aufruf 3B
+        self.assertEqual(self.llm.calls[0].model, "llama3.2:3b")
+        # Aber: Antwort nennt kein CONFIRMED -> Sanity-Check
+        # greift -> Retry mit 7B. Der Sanity-Check ist nicht
+        # durch auto_large abschaltbar (Sicherheitsschicht).
+        self.assertEqual(len(self.llm.calls), 2)
+        self.assertEqual(self.llm.calls[1].model, "qwen2.5:7b")
+        self.assertEqual(r.model, "qwen2.5:7b")
+        self.assertEqual(r.source, "llm_retry")
+        self.assertEqual(r.model_reason, "auto_retry_contradiction")
+        # (Retry kann source auf "llm_retry" aendern, wenn die
+        # Antwort kein CONFIRMED nennt. Wir pruefen hier nur
+        # model + model_reason.)
 
 
 class TimeoutHelperTests(unittest.TestCase):
