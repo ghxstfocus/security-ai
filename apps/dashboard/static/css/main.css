@@ -1,0 +1,38 @@
+/* ------------------------------------------------------------------
+ * main.css — Entry-Point. Reihenfolge verbindlich (Auflage 244):
+ * reset, variables, layout, components, chat, main.
+ *
+ * Kein @import (Auflage 238). Alle Dateien werden in
+ * base.html als <link> eingebunden.
+ *
+ * Diese Datei enthaelt nur uebergreifende Kleinigkeiten,
+ * die nicht in die anderen Dateien passen.
+ * ------------------------------------------------------------------ */
+
+/* Login-Seite: eigenes Layout ohne Sidebar */
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: var(--gap);
+}
+
+/* Scrollbar (dunkel) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-border);
+    border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bg-hover);
+}

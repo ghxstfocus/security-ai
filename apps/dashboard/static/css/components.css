@@ -1,0 +1,155 @@
+/* ------------------------------------------------------------------
+ * components.css — Cards, Buttons, Badges, Tabellen, Formulare
+ * ------------------------------------------------------------------ */
+
+/* Cards */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.card-title {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.card-value {
+    font-size: var(--font-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    margin: 8px 0;
+}
+
+.card-label {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+}
+
+.card-accent-cyan { border-left: 3px solid var(--accent-cyan); }
+.card-accent-green { border-left: 3px solid var(--accent-green); }
+.card-accent-yellow { border-left: 3px solid var(--accent-yellow); }
+.card-accent-red { border-left: 3px solid var(--accent-red); }
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-sm);
+    font-weight: 500;
+    transition: background 0.15s;
+}
+
+.btn-primary {
+    background: var(--accent-cyan);
+    color: var(--bg-primary);
+}
+
+.btn-primary:hover {
+    background: var(--accent-green);
+}
+
+.btn-ghost {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.btn-ghost:hover {
+    background: var(--bg-border);
+}
+
+.btn-danger {
+    background: var(--accent-red);
+    color: var(--text-primary);
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    font-family: var(--font-mono);
+}
+
+.badge-cyan { background: rgba(0, 217, 255, 0.15); color: var(--accent-cyan); }
+.badge-green { background: rgba(0, 255, 136, 0.15); color: var(--accent-green); }
+.badge-yellow { background: rgba(251, 191, 36, 0.15); color: var(--accent-yellow); }
+.badge-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+
+/* Tabellen */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-sm);
+}
+
+.table th {
+    text-align: left;
+    padding: 10px 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    border-bottom: 1px solid var(--bg-border);
+}
+
+.table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--bg-border);
+    color: var(--text-primary);
+}
+
+.table tr:hover td {
+    background: var(--bg-hover);
+}
+
+/* Formulare */
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.form-label {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+}
+
+.form-input {
+    padding: 10px 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--font-md);
+    transition: border-color 0.15s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+}
+
+.form-error {
+    color: var(--accent-red);
+    font-size: var(--font-sm);
+    padding: 10px 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+}

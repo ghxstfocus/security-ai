@@ -1,0 +1,102 @@
+/* ------------------------------------------------------------------
+ * chat.css — Chat-Widget (Startseite + spaeter /chat)
+ * ------------------------------------------------------------------ */
+
+.chat-widget {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 400px;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--bg-border);
+    margin-bottom: 12px;
+}
+
+.chat-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-green);
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 8px;
+    margin-bottom: 12px;
+}
+
+.chat-msg {
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-sm);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.chat-msg-user {
+    align-self: flex-end;
+    background: var(--bg-hover);
+    max-width: 80%;
+}
+
+.chat-msg-assistant {
+    align-self: flex-start;
+    background: var(--bg-primary);
+    border: 1px solid var(--bg-border);
+    max-width: 90%;
+    font-family: var(--font-mono);
+}
+
+.chat-msg-info {
+    align-self: center;
+    color: var(--text-muted);
+    font-size: var(--font-xs);
+    font-style: italic;
+}
+
+.chat-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.chat-input {
+    flex: 1;
+    resize: none;
+    min-height: 40px;
+    max-height: 120px;
+    padding: 10px 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--font-sm);
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+}
+
+.chat-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--bg-border);
+    margin-top: 12px;
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+}
