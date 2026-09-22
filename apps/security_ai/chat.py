@@ -311,6 +311,28 @@ class ChatService:
                 model=None,
             )
 
+        # 4b) no_context-Pfad: Zustandsfrage ohne Kontext -> ehrlich
+        if _is_state_question(question) and context.is_empty():
+            self._log(
+                "chat_answered",
+                principal=principal_name,
+                source="no_context",
+                context_counts=context.counts(),
+                context_redacted=context.redacted,
+            )
+            return ChatResponse(
+                answer=(
+                    "Ich habe aktuell keine Daten zu dieser Frage. "
+                    "Der Kontext ist leer."
+                ),
+                principal=principal_name,
+                question=question,
+                context_used=context,
+                used_llm=False,
+                source="no_context",
+                model=None,
+            )
+
         # 5) Normaler LLM-Pfad
         effective_model = model if model is not None else self._default_model
         prompt = _build_prompt(
