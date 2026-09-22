@@ -156,6 +156,8 @@ Tests: 477 gruen (Unit + Integration, venv).
   approvals_cli, changes_cli)
 - docs/WEB_SECURITY_CHECKLIST.md — verbindliche
   Security-Checkliste fuer Phase 3.6 (Web-Dashboard)
+- docs/REVIEWER_HANDOFF.md — Handoff-Prompt fuer
+  den externen Reviewer-Chat (Kategorie 3)
 
 ### Aktuelle Phase
 
