@@ -1,0 +1,15 @@
+{#
+  stat_card.html — Eine Kennzahl-Karte.
+
+  Parameter (via {% with %} im Aufrufer):
+    label  — Beschriftung
+    value  — Zahl
+    accent — cyan|green|yellow|red
+
+  Auflage 262: kein style="..." im Template.
+  Akzent-Farbe via Klasse.
+#}
+<div class="card card-accent-{{ accent|default('cyan') }}">
+    <div class="card-label">{{ label|default('—') }}</div>
+    <div class="card-value">{{ value|default('—') }}</div>
+</div>

@@ -1,0 +1,60 @@
+{#
+  sidebar.html — Hauptnavigation.
+
+  Auflage 249: Aktive Seite via request.path.
+    {# TODO 3.6.8+: path.startswith('/inventory') #}
+  Auflage 250: Badge leer, kein "0".
+  Auflage 256: Jinja-Kommentare statt HTML.
+#}
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <img class="sidebar-logo" alt="Security AI"
+             src="{{ url_for('static', filename='img/logo.svg') }}">
+        <span class="sidebar-title">Security AI</span>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link{% if request.path == '/' %} active{% endif %}"
+           href="/">
+            <span>Dashboard</span>
+        </a>
+        <a class="sidebar-link{% if request.path == '/inventory' %} active{% endif %}"
+           href="/inventory">
+            <span>Inventar</span>
+        </a>
+        <a class="sidebar-link{% if request.path == '/alerts' %} active{% endif %}"
+           href="/alerts">
+            <span>Alarme</span>
+            <span class="badge badge-red" data-badge="alerts"></span>
+        </a>
+        <a class="sidebar-link{% if request.path == '/approvals' %} active{% endif %}"
+           href="/approvals">
+            <span>Approvals</span>
+            <span class="badge badge-yellow" data-badge="approvals"></span>
+        </a>
+        <a class="sidebar-link{% if request.path == '/changes' %} active{% endif %}"
+           href="/changes">
+            <span>Changes</span>
+        </a>
+        <a class="sidebar-link{% if request.path == '/chat' %} active{% endif %}"
+           href="/chat">
+            <span>Chat mit KI</span>
+        </a>
+        <div class="sidebar-divider"></div>
+        <a class="sidebar-link{% if request.path == '/users' %} active{% endif %}"
+           href="/users">
+            <span>Benutzer</span>
+        </a>
+        <a class="sidebar-link{% if request.path == '/roles' %} active{% endif %}"
+           href="/roles">
+            <span>Rollen</span>
+        </a>
+        <a class="sidebar-link{% if request.path == '/audit' %} active{% endif %}"
+           href="/audit">
+            <span>Audit</span>
+        </a>
+        <a class="sidebar-link{% if request.path == '/settings' %} active{% endif %}"
+           href="/settings">
+            <span>Einstellungen</span>
+        </a>
+    </nav>
+</aside>

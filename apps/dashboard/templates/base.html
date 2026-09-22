@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Security AI{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml"
+          href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/reset.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chat.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="app">
+        {% include 'partials/sidebar.html' %}
+        <div class="main">
+            {% include 'partials/topbar.html' %}
+            <main class="content">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"
+            defer></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

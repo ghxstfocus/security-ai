@@ -200,3 +200,64 @@ def test_alle_routen_mechanismus_mit_dekorierter_route(app):
         assert hasattr(fn, "_required_permission")
         geprueft += 1
     assert geprueft >= 1
+
+
+# ---------------------------------------------------------------------- #
+# Tests 3.6.7b: CSP + Security-Header + XSS
+# ---------------------------------------------------------------------- #
+
+def test_csp_header_present(app):
+    # Auflage 252: /login liefert HTML-Response.
+    c = app.test_client()
+    r = c.get("/login")
+    assert r.status_code == 200
+    csp = r.headers.get("Content-Security-Policy", "")
+    assert "default-src 'self'" in csp
+    assert "script-src 'self'" in csp
+    assert "style-src 'self'" in csp
+    assert "object-src 'none'" in csp
+    # Auflage 228: kein unsafe-inline
+    assert "unsafe-inline" not in csp
+
+
+def test_security_headers_present(app):
+    c = app.test_client()
+    r = c.get("/login")
+    assert r.headers.get("X-Content-Type-Options") == "nosniff"
+    assert r.headers.get("X-Frame-Options") == "DENY"
+    assert r.headers.get("Referrer-Policy") == "same-origin"
+    perms = r.headers.get("Permissions-Policy", "")
+    assert "geolocation=()" in perms
+    assert "camera=()" in perms
+    assert "microphone=()" in perms
+
+
+def test_csp_header_on_500(app, client):
+    @app.route("/boom_csp")
+    @require_permission("device.read")
+    def _boom_csp():
+        raise RuntimeError("test")
+    r = client.get("/boom_csp")
+    assert r.status_code == 500
+    assert "Content-Security-Policy" in r.headers
+
+
+def test_login_form_escapes_next_param_ok_prefix(app):
+    c = app.test_client()
+    r = c.get(
+        "/login?next=/foo<script>alert(1)</script>",
+    )
+    assert r.status_code == 200
+    assert b"<script>" not in r.data
+    assert b"&lt;script&gt;" in r.data
+
+
+def test_login_form_reduces_next_to_slash_on_no_slash(app):
+    c = app.test_client()
+    r = c.get(
+        "/login?next=<script>alert(1)</script>",
+    )
+    assert r.status_code == 200
+    assert b"<script>" not in r.data
+    assert b"name='next'" in r.data
+    assert b"value='/'" in r.data

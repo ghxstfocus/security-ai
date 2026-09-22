@@ -1,0 +1,11 @@
+{#
+  _helpers.html — Jinja-Makros.
+
+  Auflage 247: csrf_field-Makro.
+  Token wird als Kontext-Variable uebergeben
+  (Auflage 248).
+#}
+
+{% macro csrf_field(token) %}
+<input type="hidden" name="_csrf_token" value="{{ token }}">
+{% endmacro %}

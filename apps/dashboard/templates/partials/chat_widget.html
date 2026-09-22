@@ -1,0 +1,25 @@
+{#
+  chat_widget.html — Chat-Widget (Struktur).
+
+  Auflage 239: keine inline-Scripts.
+  Auflage 260: <script src="..."> nur in base.html.
+  Auflage 262: kein style="..." im Template.
+#}
+<div class="card chat-widget">
+    <div class="chat-header">
+        <span class="chat-status-dot"></span>
+        <span class="card-title">Security AI</span>
+    </div>
+    <div id="chat-messages" class="chat-messages">
+        {# Nachrichten kommen per JS. #}
+    </div>
+    <div class="chat-input-row">
+        <textarea id="chat-input" class="chat-input"
+                  rows="1" placeholder="Frage an die KI..."></textarea>
+        <button id="chat-send" class="btn btn-primary" type="button">Senden</button>
+    </div>
+    <div class="chat-footer">
+        <input type="checkbox" id="chat-deep">
+        <label for="chat-deep">Tiefes Modell (Qwen, langsamer)</label>
+    </div>
+</div>

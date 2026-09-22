@@ -166,6 +166,29 @@ def create_app(
     from apps.dashboard.auth import register_auth_routes
     register_auth_routes(app)
 
+    @app.after_request
+    def _security_headers(response):
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self'; "
+            "style-src 'self'; "
+            "img-src 'self' data:; "
+            "font-src 'self'; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'; "
+            "base-uri 'self'; "
+            "form-action 'self'; "
+            "object-src 'none'"
+        )
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "same-origin"
+        response.headers["Permissions-Policy"] = (
+            "geolocation=(), camera=(), microphone=(), "
+            "payment=(), usb=(), interest-cohort=()"
+        )
+        return response
+
     return app
 
 
