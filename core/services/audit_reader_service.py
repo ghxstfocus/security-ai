@@ -1,0 +1,119 @@
+"""
+AuditReaderService: Service-Schicht fuer Audit-Lesen.
+
+Kapselt harness.audit.writer.AuditWriter.read_day().
+Der Web-Layer (apps/dashboard/routes_audit.py) darf
+NICHT direkt auf harness zugreifen (Regel N).
+
+Design:
+- Lesender Service. Kein Schreiben.
+- RBAC: audit.read vor jedem Zugriff.
+- Input-Validierung (Regex), sonst AuditReaderError.
+- Kein DB-Zugriff, nur Datei-Lesen.
+"""
+from __future__ import annotations
+
+import re
+from datetime import datetime, timezone
+from typing import Any
+
+from core.access.checker import AccessChecker
+from harness.audit.writer import AuditWriter
+
+
+AUDIT_ID_RE = re.compile(r"^AUD-\d{4}-\d{2}-\d{2}-[0-9a-f]{8}$")
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+class AuditReaderError(RuntimeError):
+    """Fachlicher Fehler im AuditReaderService."""
+
+
+class AuditReaderService:
+    def __init__(
+        self,
+        audit_writer: AuditWriter,
+        checker: AccessChecker,
+    ) -> None:
+        if audit_writer is None:
+            raise AuditReaderError(
+                "audit_writer ist Pflicht (fail closed)"
+            )
+        if checker is None:
+            raise AuditReaderError(
+                "checker ist Pflicht (fail closed)"
+            )
+        self._audit = audit_writer
+        self._checker = checker
+
+    def _require(self, actor: str) -> None:
+        self._checker.require_permission(actor, "audit.read")
+
+    def _validate_date(self, date_str: str) -> str:
+        if not isinstance(date_str, str) or not DATE_RE.match(date_str):
+            raise AuditReaderError(
+                f"Datum muss YYYY-MM-DD sein: {date_str!r}"
+            )
+        try:
+            datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError as exc:
+            raise AuditReaderError(
+                f"Datum ungueltig: {date_str!r}"
+            ) from exc
+        return date_str
+
+    def _read_day_impl(self, date_str: str) -> list[dict[str, Any]]:
+        when = datetime.strptime(date_str, "%Y-%m-%d").replace(
+            tzinfo=timezone.utc,
+        )
+        return [e.to_dict() for e in self._audit.read_day(when)]
+
+    def read_day(
+        self, actor: str, date_str: str,
+    ) -> list[dict[str, Any]]:
+        self._require(actor)
+        self._validate_date(date_str)
+        return self._read_day_impl(date_str)
+
+    def read_all(self, actor: str) -> list[dict[str, Any]]:
+        self._require(actor)
+        result: list[dict[str, Any]] = []
+        base = self._audit.base_dir
+        if not base.exists():
+            return []
+        for path in base.glob("*.jsonl"):
+            date_str = path.stem
+            if not DATE_RE.match(date_str):
+                continue
+            try:
+                datetime.strptime(date_str, "%Y-%m-%d")
+            except ValueError:
+                continue
+            for e in self._read_day_impl(date_str):
+                result.append(e)
+        result.sort(
+            key=lambda d: d.get("timestamp", ""),
+            reverse=True,
+        )
+        return result
+
+    def find_by_audit_id(
+        self, actor: str, audit_id: str,
+    ) -> dict[str, Any] | None:
+        self._require(actor)
+        if not isinstance(audit_id, str) or \
+                not AUDIT_ID_RE.match(audit_id):
+            raise AuditReaderError(
+                f"audit_id ungueltig: {audit_id!r}"
+            )
+        date_str = audit_id[4:14]
+        for e in self._read_day_impl(date_str):
+            if e.get("audit_id") == audit_id:
+                return e
+        return None
+
+
+__all__ = [
+    "AuditReaderService",
+    "AuditReaderError",
+]
