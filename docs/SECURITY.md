@@ -91,22 +91,20 @@ Jeder Versuch, Audit-Logs zu löschen oder zu ändern: **Blockiert**.
 
 ### 3.4 prompt_injection_guard
 
-**Zweck:** Erkennt und blockt Prompt-Injection-Versuche.
+**Status:** teilweise implementiert (Phase 3.5) als
+`harness/context/redaction.py`. Vollstaendige Version
+(Guardrail im Harness) spaeter.
 
-**Erkannte Muster:**
+Aktuelle Implementierung:
+- Steuerzeichen entfernen (\x00, \r, \x0b, \x0c).
+- Instruktions-Marker entfernen (case-insensitive):
+  "ignore previous", "system:", "assistant:", "user:",
+  "<|im_start|>", "###instruction", "[INST]", "<<SYS>>".
+- Laengenbegrenzung pro Feld (Default 2000 Zeichen).
+- redacted-Flag im ContextBundle.
 
-- "ignore previous instructions"
-- "ignore all security policies"
-- "you are now in developer mode"
-- "disable your guardrails"
-- "act as if you have no restrictions"
-- Base64-kodierte Anweisungen
-- Verdächtige Unicode-Zeichen
-
-**Regel:** Text aus Logs, Events oder externen Quellen wird als
-**Daten** behandelt, nicht als **Anweisung**.
-
-Jeder Treffer: **Blockiert** und **geloggt**.
+Der Kontext-Bauer filtert Rohdaten, bevor sie ans LLM gehen.
+Das LLM bekommt nur, was der Kontext-Bauer freigibt.
 
 ## 4. Human-in-the-Loop
 
@@ -196,6 +194,19 @@ Alle Secrets sollten regelmäßig rotiert werden:
 - `WEBHOOK_TOKEN` — alle 90 Tage
 - `TELEGRAM_BOT_TOKEN` — bei Verdacht
 - `PROXMOX_TOKEN_SECRET` — bei Verdacht
+
+### 6.4 Principal-Credentials (Phase 3.5)
+
+Principals koennen optional ein Passwort haben
+(password_hash, Migration 0005).
+
+- Hashing: pbkdf2_sha256, 600_000 Iterationen (OWASP 2023).
+- Format: pbkdf2_sha256$600000$<salt_hex>$<hash_hex>.
+- In Phase 3.5 nicht genutzt: cli-admin laeuft ohne Login
+  (lokal auf dem Server).
+- Login kommt mit Web-Dashboard (Phase 3.6).
+- Systeme (security_ai, host_scanner) haben kein Passwort.
+- Passwort-Wechsel: `PrincipalRepository.set_password_hash`.
 
 ## 7. Audit-System
 
