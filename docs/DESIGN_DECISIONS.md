@@ -967,3 +967,143 @@ Nutzer, dass Redaktion stattfand.
 - Redaction: schuetzt vor Injection **vom Kontext ins LLM**.
 - Sanity-Check: schuetzt vor falschen **Antworten des LLM**
   (Denial, Underreporting).
+
+## 16. Web-Dashboard-Sicherheit (Phase 3.6.7)
+
+### CSP streng ohne unsafe-inline
+
+Der CSP-Header ist streng:
+
+    default-src 'self';
+    script-src 'self';
+    style-src 'self';
+    img-src 'self' data:;
+    font-src 'self';
+    connect-src 'self';
+    frame-ancestors 'none';
+    base-uri 'self';
+    form-action 'self';
+    object-src 'none'
+
+Kein 'unsafe-inline', kein 'unsafe-eval'.
+
+Grund: Style-Injection ist ein realer XSS-Vektor
+(CSS-Exfiltration, Clickjacking-Vorbereitung).
+'unsafe-inline' in style-src schwaecht die ganze CSP.
+
+Konsequenz:
+
+- Kein `style="..."` in Templates.
+- Kein `<style>`-Block.
+- Kein `onclick=`, `onchange=`, `onsubmit=` usw.
+- Kein inline `<script>`.
+- Externe Stylesheets und Scripts nur lokal.
+
+Dynamische Styles (Chart-Balken, Progress) nur via
+`element.style.setProperty(...)` in JS. `<div
+style="width:50%">` wird von `style-src 'self'`
+blockiert. `el.style.width = "50%"` ist erlaubt
+(CSSOM wird nicht von style-src blockiert).
+
+### Weitere Security-Header
+
+    X-Content-Type-Options: nosniff
+    X-Frame-Options: DENY
+    Referrer-Policy: same-origin
+    Permissions-Policy: geolocation=(), camera=(),
+                        microphone=(), payment=(),
+                        usb=(), interest-cohort=()
+
+### after_request
+
+Alle Security-Header werden in `@app.after_request`
+gesetzt. Greift auch auf 500er und Redirects.
+
+### CSRF-Makro
+
+`_helpers.html` enthaelt `csrf_field(token)` als Makro.
+Token wird als Kontext-Variable uebergeben (nicht als
+globale Jinja-Funktion). Kein context_processor.
+
+### |safe-Verbot
+
+`|safe` nur mit:
+
+1. Dokumentation in dieser Datei.
+2. Test in `tests/unit/test_templates_xss.py`.
+
+Kein `|safe` fuer User-Input.
+
+### _safe_next (Open-Redirect-Schutz)
+
+`_safe_next(raw)` schuetzt vor Open-Redirect:
+
+- Blockt `""` (leer) -> `/`
+- Blockt Werte ohne fuehrendes `/`
+- Blockt `//` (protokoll-relativ)
+- Blockt `/\` (Backslash-Bypass in Chrome)
+- Blockt `\r`, `\n`, `\x00` (Header-Injection)
+- URL-Decode einmal (urllib.parse.unquote) VOR der
+  Validierung: `%2F%2Fevil.com` und `/%%5Cevil.com`
+  werden erkannt.
+
+### html.escape in auth.py entfernt
+
+`login_form` uebergibt `next` **roh** an das Template.
+Jinja escaped automatisch (`autoescape=True`).
+Doppeltes Escaping (`html.escape` + Jinja) wuerde
+`&amp;lt;` statt `&lt;` erzeugen.
+
+### stat_card.html als Makro
+
+`{% include "x.html" with a=1 %}` ist **keine** gueltige
+Jinja2-Syntax. Fuer Partial-Parameter wird ein Makro
+verwendet:
+
+    {% macro stat_card(label, value, accent="cyan") %}
+    <div class="card card-accent-{{ accent }}">
+      <div class="card-label">{{ label }}</div>
+      <div class="card-value">{{ value }}</div>
+    </div>
+    {% endmacro %}
+
+### Test-Fixtures in _helpers.py
+
+Dashboard-spezifische Fixtures (`build_dashboard_app`,
+`set_session_cookie`) liegen in
+`tests/unit/_helpers.py`, NICHT in `tests/unit/conftest.py`.
+
+Grund: `conftest.py` gilt fuer ALLE Unit-Tests. Andere
+Tests koennten die dashboard-spezifische Fixture
+versehentlich anfordern und einen unerwarteten Zustand
+bekommen.
+
+### venv und CWD
+
+- Immer `/opt/security-ai/.venv/bin/python3`.
+  Nicht `/usr/bin/python3`.
+- Tests immer aus `/opt/security-ai` (CWD).
+  Grund: `detection/rules.yaml`, `policies/tools.yaml`,
+  `core/risk/rules.yaml` werden relativ zum CWD geladen.
+- `scripts/*` sind Werkzeuge, keine Bibliothek.
+
+### Test-Fixtures: Cookie-Flags
+
+Der Test-Client setzt Session-Cookies mit den gleichen
+Flags wie die Produktion:
+
+    secure=True, httponly=True, samesite="Strict"
+
+Sonst wird nicht das echte Verhalten getestet.
+
+### HTML-Formular login
+
+`login.html` ist standalone (kein `extends base.html`):
+
+- Kein Sidebar, kein Topbar.
+- Eigenes `<head>` mit CSS-Links.
+- `variables.css` ZUERST, dann `reset.css`,
+  `layout.css`, `components.css`, `main.css`.
+- Kein `chat.css` (Login hat keinen Chat).
+- CSRF-Feld via `csrf_field(token)`-Makro.
+- `action="/login"` (doppelte Quotes).
