@@ -206,6 +206,8 @@ Commits: e8ff4d2
 
 ## Phase 3.6.6 — Login + Logout + CSRF + Rate-Limit + Audit  [x]
 
+Commit: c2e5e9d, b3558db
+
 Notizen:
 
 - Login-Flow: CSRF, Rate-Limit pro IP,
@@ -258,7 +260,7 @@ Commit: 63f6988
 
 ## Phase 3.6.7e — CSP-Test + PHASES  [x]
 
-Commit: 06f6f48
+Commit: 06f6f48, 3a3f926
 
 - test_csp_all_directives_present.
 - Diese Notizen.
