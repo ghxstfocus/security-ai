@@ -78,7 +78,7 @@ Append-only Audit, Fail closed, Foederation statt Monolith.
 - Phase 3.5.9 — Sanity-Check (Denial + Underreporting) + Retry
   mit 7B; Auto-Switch bei kritischen Assessments ist PFLICHT
 
-Tests: 345 gruen (Unit + Integration).
+Tests: 374 gruen (Unit + Integration).
 
 ### Was als Naechstes kommt
 

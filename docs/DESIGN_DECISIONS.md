@@ -200,6 +200,10 @@ die Admin AI dazukommt.
 | Orchestrator (Snapshot)        | orchestrator           |
 | Orchestrator (Loop-Result)     | agent_loop             |
 | AgentLoop (Tool-Call)          | telegram_alert, nmap_scan, etc. |
+| ChatService (Service)          | chat_service           |
+| AccessService (Service)        | access_service         |
+| CLI (approvals_cli)            | approvals_cli          |
+| CLI (changes_cli)              | changes_cli            |
 
 ### details.kind = Aktion
 
@@ -221,6 +225,27 @@ Bei inventory_update:
 - upsert_seen
 - mark_offline
 - record_history
+
+### Phase 3.5: Chat-Kinds
+
+- chat_query          (immer, vor RBAC)
+- chat_answered       (Antwort erzeugt; source-Werte s. u.)
+- chat_access_denied  (RBAC-Verweigerung)
+- chat_llm_error      (LLM-Fehler, fail closed)
+- chat_answer_contradicts_context
+                      (Sanity-Check erkannte Widerspruch)
+- chat_model_callback_failed
+                      (on_model_selected warf Exception)
+
+### source-Werte in chat_answered
+
+| source         | Bedeutung                                    |
+|----------------|----------------------------------------------|
+| llm            | LLM-Antwort (concept oder interpretation)    |
+| fact           | deterministische Faktenantwort (kein LLM)    |
+| detail_append  | Detail-Anhang (kein LLM)                     |
+| no_context     | Interpretation ohne Kontext (kein LLM)       |
+| llm_retry      | Retry mit grossem Modell                     |
 
 ### Phase 4a: Approval-Kinds
 
