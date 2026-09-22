@@ -120,7 +120,8 @@ class _ChatBase(unittest.TestCase):
 
 class ChatServiceHappyPathTests(_ChatBase):
     def test_llm_pfad(self):
-        r = self.svc.ask("admin", "Was ist passiert?")
+        # Konzeptfrage, kein Kontext noetig -> LLM-Pfad
+        r = self.svc.ask("admin", "Was ist ein Portscan?")
         self.assertIsInstance(r, ChatResponse)
         self.assertEqual(r.answer, "Antwort.")
         self.assertEqual(r.source, "llm")
@@ -423,6 +424,16 @@ class ChatServiceNoContextTests(_ChatBase):
         self.assertEqual(r.source, "llm")
         self.assertTrue(r.used_llm)
         self.assertEqual(len(self.llm.calls), 1)
+
+    def test_vage_zustandsfrage_ohne_kontext(self):
+        # "Was ist passiert?" ist mehrdeutig. Ohne Kontext
+        # greift der no_context-Pfad.
+        self.llm.calls.clear()
+        r = self.svc.ask("admin", "Was ist passiert?")
+        self.assertEqual(r.source, "no_context")
+        self.assertFalse(r.used_llm)
+        self.assertIn("keine daten", r.answer.lower())
+        self.assertEqual(self.llm.calls, [])
 
     def test_no_context_audit_eintrag(self):
         self.svc.ask("admin", "Gab es heute Auffaelligkeiten?")
