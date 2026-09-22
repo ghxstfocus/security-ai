@@ -445,5 +445,60 @@ class ChatServiceNoContextTests(_ChatBase):
         self.assertEqual(answered[0]["details"]["source"], "no_context")
 
 
+# ---------------------------------------------------------------------- #
+# Prompt-Anreicherung fuer risk_assessments
+# ---------------------------------------------------------------------- #
+
+class ChatServicePromptEnrichmentTests(_ChatBase):
+    def test_prompt_enthaelt_categories_rules_top_scores(self):
+        self.svc.ask(
+            "admin", "Was ist ein Portscan?",  # Konzeptfrage -> LLM-Pfad
+            risk_assessments=(
+                {"category": "CONFIRMED", "rule_id": "unknown_device",
+                 "score": 0.85,
+                 "timestamp": "2026-09-22T06:00:00+00:00"},
+                {"category": "SUSPICION", "rule_id": "port_scan",
+                 "score": 0.5,
+                 "timestamp": "2026-09-22T06:30:00+00:00"},
+            ),
+        )
+        prompt = self.llm.calls[-1].prompt
+        self.assertIn("risk_assessments.categories", prompt)
+        self.assertIn("CONFIRMED=1", prompt)
+        self.assertIn("SUSPICION=1", prompt)
+        self.assertIn("risk_assessments.rules", prompt)
+        self.assertIn("port_scan=1", prompt)
+        self.assertIn("risk_assessments.top_scores", prompt)
+        self.assertIn("0.85", prompt)
+        self.assertIn("risk_assessments.time_range", prompt)
+
+    def test_prompt_ohne_risk_assessments_kein_zusatzblock(self):
+        self.svc.ask("admin", "Was ist ein Portscan?")
+        prompt = self.llm.calls[-1].prompt
+        self.assertNotIn("risk_assessments.categories", prompt)
+        self.assertNotIn("risk_assessments.rules", prompt)
+        self.assertNotIn("risk_assessments.top_scores", prompt)
+
+    def test_prompt_mit_objekt_form(self):
+        class RA:
+            def __init__(self, cat, rule, score, ts):
+                self.category = cat
+                self.rule_id = rule
+                self.score = score
+                self.timestamp = ts
+
+        self.svc.ask(
+            "admin", "Was ist ein Portscan?",
+            risk_assessments=(
+                RA("SECURITY_ALERT", "port_scan", 0.9,
+                   "2026-09-22T07:00:00+00:00"),
+            ),
+        )
+        prompt = self.llm.calls[-1].prompt
+        self.assertIn("SECURITY_ALERT=1", prompt)
+        self.assertIn("port_scan=1", prompt)
+        self.assertIn("0.90", prompt)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -425,6 +425,78 @@ def _build_detail_suffix(context: ContextBundle) -> str:
 # Prompt-Bau
 # ---------------------------------------------------------------------- #
 
+# ---------------------------------------------------------------------- #
+# Aggregation fuer den Prompt
+# ---------------------------------------------------------------------- #
+
+def _get_field(obj, name, default=None):
+    """Liest aus dict oder Objekt. Beide Typen unterstuetzt."""
+    if isinstance(obj, dict):
+        return obj.get(name, default)
+    return getattr(obj, name, default)
+
+
+def _ra_field(ra, name, default=None):
+    """Liest Feld aus einem risk_assessment-Eintrag.
+
+    Unterstuetzt zwei Formen:
+    - dict (aus core/reporting/audit_reader.read_risk_assessments)
+    - Objekt mit Attributen (z. B. RiskAssessment)
+    """
+    return _get_field(ra, name, default)
+
+
+def _format_categories(entries) -> str:
+    counts: dict[str, int] = {}
+    for e in entries:
+        cat = _ra_field(e, "category")
+        if not isinstance(cat, str) or not cat:
+            cat = "UNKNOWN"
+        counts[cat] = counts.get(cat, 0) + 1
+    if not counts:
+        return ""
+    return ", ".join(
+        f"{k}={v}" for k, v in sorted(counts.items())
+    )
+
+
+def _format_rules(entries) -> str:
+    counts: dict[str, int] = {}
+    for e in entries:
+        r = _ra_field(e, "rule_id")
+        if not isinstance(r, str) or not r:
+            continue
+        counts[r] = counts.get(r, 0) + 1
+    if not counts:
+        return ""
+    return ", ".join(
+        f"{k}={v}" for k, v in sorted(counts.items())
+    )
+
+
+def _format_time_range(entries) -> str:
+    ts = [
+        _ra_field(e, "timestamp")
+        for e in entries
+        if isinstance(_ra_field(e, "timestamp"), str)
+    ]
+    if not ts:
+        return ""
+    return f"{min(ts)} .. {max(ts)}"
+
+
+def _format_top_scores(entries, limit: int = 5) -> str:
+    scores = []
+    for e in entries:
+        s = _ra_field(e, "score")
+        if isinstance(s, (int, float)):
+            scores.append(float(s))
+    if not scores:
+        return ""
+    top = sorted(scores, reverse=True)[:limit]
+    return ", ".join(f"{s:.2f}" for s in top)
+
+
 _DEFAULT_SYSTEM_PROMPT = (
     "Du bist eine Security-KI fuer ein "
     "Homelab-Sicherheitssystem.\n"
@@ -465,6 +537,23 @@ def _build_prompt(
     counts = context.counts()
     for k, v in counts.items():
         lines.append(f"- {k}: {v}")
+
+    # Risk-Assessments aufschluesseln
+    ra = context.risk_assessments
+    if ra:
+        cats = _format_categories(ra)
+        if cats:
+            lines.append(f"- risk_assessments.categories: {cats}")
+        rules = _format_rules(ra)
+        if rules:
+            lines.append(f"- risk_assessments.rules: {rules}")
+        tr = _format_time_range(ra)
+        if tr:
+            lines.append(f"- risk_assessments.time_range: {tr}")
+        top = _format_top_scores(ra, limit=5)
+        if top:
+            lines.append(f"- risk_assessments.top_scores: {top}")
+
     if context.redacted:
         lines.append("- Hinweis: Kontext wurde redigiert.")
     if context.inventory_snapshot:
