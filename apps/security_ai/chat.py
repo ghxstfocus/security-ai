@@ -251,6 +251,37 @@ def _answer_fact(question: str, context: ContextBundle) -> str:
     )
 
 
+_DENIAL_PATTERNS = (
+    re.compile(r"\bkeine\s+auff(?:a|ae|\u00e4)lligkeiten\b",
+               re.IGNORECASE),
+    re.compile(r"\bkeine\s+vorf(?:ae|a|\u00e4)lle\b",
+               re.IGNORECASE),
+    re.compile(r"\bkeine\s+ereignisse\b", re.IGNORECASE),
+    re.compile(r"\bnein\b.{0,30}\bkeine\b", re.IGNORECASE),
+    re.compile(r"\bnichts\s+auff(?:a|ae|\u00e4)lliges\b",
+               re.IGNORECASE),
+)
+
+
+def _answer_contradicts_context(
+    answer: str, context: ContextBundle,
+) -> bool:
+    """
+    True, wenn die Antwort kritische Assessments leugnet.
+
+    Nur relevant, wenn _has_critical_assessments(context) True
+    ist. Liefert sonst False.
+    """
+    if not isinstance(answer, str) or not answer:
+        return False
+    if not _has_critical_assessments(context):
+        return False
+    for pat in _DENIAL_PATTERNS:
+        if pat.search(answer):
+            return True
+    return False
+
+
 def _has_critical_assessments(context: ContextBundle) -> bool:
     for ra in context.risk_assessments:
         cat = _get_field(ra, "category")
@@ -384,6 +415,43 @@ class ChatService:
             "default",
             _timeout_for_model(self._default_model),
         )
+
+    # ------------------------------------------------------------------ #
+    # LLM-Aufruf (Helfer)
+    # ------------------------------------------------------------------ #
+
+    def _call_llm(
+        self,
+        question: str,
+        context: ContextBundle,
+        model: str,
+        *,
+        include_details: bool = False,
+        max_tokens: int | None = None,
+        timeout: float | None = None,
+    ):
+        """
+        Baut den Prompt und ruft das LLM.
+        timeout=None -> _timeout_for_model(model).
+        Liefert die LLMResponse.
+        """
+        prompt = _build_prompt(
+            question=question,
+            context=context,
+            include_details=include_details,
+        )
+        effective_timeout = (
+            float(timeout) if timeout is not None
+            else float(_timeout_for_model(model))
+        )
+        request = LLMRequest(
+            prompt=prompt,
+            system=self._system_prompt,
+            model=model,
+            max_tokens=max_tokens if max_tokens is not None else 512,
+            timeout=effective_timeout,
+        )
+        return self._llm.generate(request)
 
     # ------------------------------------------------------------------ #
     # Audit
@@ -622,8 +690,6 @@ class ChatService:
         text = getattr(response, "text", None)
         resp_model = getattr(response, "model", effective_model)
         if not isinstance(text, str):
-            # Fail closed: ein Client, der kein LLMResponse liefert,
-            # ist ein Programmierfehler.
             self._log(
                 "chat_llm_error",
                 principal=principal_name,
@@ -643,6 +709,52 @@ class ChatService:
             context_counts=context.counts(),
             context_redacted=context.redacted,
         )
+
+        # Sanity-Check: Antwort widerspricht kritischem Kontext?
+        if _answer_contradicts_context(text, context):
+            self._log(
+                "chat_answer_contradicts_context",
+                principal=principal_name,
+                model=resp_model,
+                question_hash=q_hash,
+                answer_hash=hashlib.sha256(
+                    text.encode("utf-8")
+                ).hexdigest(),
+            )
+            # Retry mit grossem Modell, wenn noch nicht dort
+            if resp_model != self._large_model:
+                retry_response = self._call_llm(
+                    question, context, self._large_model,
+                    include_details=include_details,
+                    max_tokens=max_tokens,
+                    timeout=timeout,
+                )
+                retry_text = getattr(retry_response, "text", None)
+                retry_model = getattr(
+                    retry_response, "model", self._large_model
+                )
+                if isinstance(retry_text, str):
+                    self._log(
+                        "chat_answered",
+                        principal=principal_name,
+                        source="llm_retry",
+                        model=retry_model,
+                        model_reason="auto_retry_contradiction",
+                        include_details=include_details,
+                        context_counts=context.counts(),
+                        context_redacted=context.redacted,
+                    )
+                    return ChatResponse(
+                        answer=retry_text,
+                        principal=principal_name,
+                        question=question,
+                        context_used=context,
+                        used_llm=True,
+                        source="llm_retry",
+                        model=retry_model,
+                        model_reason="auto_retry_contradiction",
+                    )
+
         return ChatResponse(
             answer=text,
             principal=principal_name,

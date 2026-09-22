@@ -685,5 +685,133 @@ class ChatServiceModelCallbackTests(_ChatBase):
         self.assertEqual(calls, [])
 
 
+# ---------------------------------------------------------------------- #
+# Sanity-Check + Retry (Phase 3.5.9)
+# ---------------------------------------------------------------------- #
+
+class _FailThenPassLLM:
+    """Erste Antwort leugnet, zweite Antwort bestaetigt."""
+    def __init__(self):
+        self.calls = []
+
+    def generate(self, request):
+        from harness.llm.models import LLMResponse
+        self.calls.append(request)
+        if len(self.calls) == 1:
+            text = "NEIN, es gab keine Auffaelligkeiten."
+        else:
+            text = "JA. CONFIRMED=31 und SECURITY_ALERT=12."
+        return LLMResponse(text=text, model=request.model)
+
+
+class ChatServiceSanityRetryTests(_ChatBase):
+    def test_answer_contradicts_context_mit_31_confirmed(self):
+        from apps.security_ai.chat import _answer_contradicts_context
+        from harness.context.models import ContextBundle
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        ctx = ContextBundle(
+            built_at=now,
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+                {"category": "CONFIRMED", "score": 0.8},
+                {"category": "SECURITY_ALERT", "score": 0.6},
+            ),
+        )
+        self.assertTrue(
+            _answer_contradicts_context(
+                "NEIN, keine Auffaelligkeiten.", ctx
+            )
+        )
+        self.assertFalse(
+            _answer_contradicts_context("JA. CONFIRMED=31.", ctx)
+        )
+
+    def test_answer_ok_kein_retry(self):
+        # Normale Antwort -> kein Retry
+        self.llm.calls.clear()
+        r = self.svc.ask(
+            "admin", "Warum ist das verdaechtig?",
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+            ),
+        )
+        # FakeLLM antwortet "Antwort." -> kein Widerspruch
+        self.assertEqual(r.source, "llm")
+        self.assertEqual(len(self.llm.calls), 1)
+
+    def test_answer_contradicts_context_retry_mit_grossem(self):
+        # Erste Antwort widerspricht -> Retry mit 7B
+        fail_then_pass = _FailThenPassLLM()
+        svc = ChatService(
+            audit_writer=self.audit,
+            llm_client=fail_then_pass,
+            checker=self.checker,
+            default_model="llama3.2:3b",
+            large_model="qwen2.5:7b",
+            auto_large=False,  # Auto-Switch aus, damit 3B zuerst
+        )
+        r = svc.ask(
+            "admin", "Warum ist das verdaechtig?",
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+            ),
+        )
+        # Retry mit 7B
+        self.assertEqual(len(fail_then_pass.calls), 2)
+        self.assertEqual(fail_then_pass.calls[0].model, "llama3.2:3b")
+        self.assertEqual(fail_then_pass.calls[1].model, "qwen2.5:7b")
+        # Antwort ist der 7B-Text
+        self.assertEqual(r.source, "llm_retry")
+        self.assertEqual(r.model, "qwen2.5:7b")
+        self.assertEqual(r.model_reason, "auto_retry_contradiction")
+        self.assertIn("JA", r.answer)
+
+    def test_answer_contradicts_audit_eintrag(self):
+        fail_then_pass = _FailThenPassLLM()
+        svc = ChatService(
+            audit_writer=self.audit,
+            llm_client=fail_then_pass,
+            checker=self.checker,
+            default_model="llama3.2:3b",
+            large_model="qwen2.5:7b",
+            auto_large=False,
+        )
+        svc.ask(
+            "admin", "Warum ist das verdaechtig?",
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+            ),
+        )
+        kinds = [e["details"]["kind"] for e in self._audit_entries()]
+        self.assertIn("chat_answer_contradicts_context", kinds)
+        self.assertIn("chat_answered", kinds)
+
+    def test_retry_source_ist_llm_retry(self):
+        fail_then_pass = _FailThenPassLLM()
+        svc = ChatService(
+            audit_writer=self.audit,
+            llm_client=fail_then_pass,
+            checker=self.checker,
+            default_model="llama3.2:3b",
+            large_model="qwen2.5:7b",
+            auto_large=False,
+        )
+        r = svc.ask(
+            "admin", "Warum ist das verdaechtig?",
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+            ),
+        )
+        self.assertEqual(r.source, "llm_retry")
+        answered = [
+            e for e in self._audit_entries()
+            if e["details"]["kind"] == "chat_answered"
+        ]
+        sources = [e["details"].get("source") for e in answered]
+        self.assertIn("llm", sources)
+        self.assertIn("llm_retry", sources)
+
+
 if __name__ == "__main__":
     unittest.main()
