@@ -152,12 +152,72 @@ Commits: cd16bf6, 93354e4, d266bff
 Principal-Objekte als API-Rueckgabe, assign_role, strengere
 Service-Trennung. Aktuell nicht noetig.
 
-## Phase 3.6 — Web-Dashboard  [ ]
+## Phase 3.6 — Web-Dashboard  [~]
 
 Flask-App in apps/dashboard/. Login ueber principals.
 Bereiche: Dashboard, Inventar, Alarme, Approvals, Changes,
 Chat, Benutzerverwaltung, Rollenverwaltung, Audit,
 Einstellungen. Ziel: Browser als primaeres Interface.
+
+## Phase 3.6.1 — Session-Modell + Repository  [x]
+
+Commits: d3b6689, 84511c4, cd6eda4, 9fc4a83,
+         0a0c5b2, cf0d30c
+
+- Migration 0006 (sessions, login_attempts).
+- Session-Dataclass in core/access/models.py.
+- SessionRepository + LoginAttemptRepository.
+- AccessService(session_repo Pflicht).
+
+## Phase 3.6.2 — get_secret_key  [x]
+
+Commits: 4b4a82b
+
+- core/config.py::get_secret_key.
+- ConfigError (fail closed).
+- Byte-Laenge, nicht Zeichen-Laenge.
+
+## Phase 3.6.3 — AccessService.set_password  [x]
+
+Commits: 644993a
+
+- set_password (RBAC + Session-Invalidierung).
+- revoke_all_for_principal bei Passwort-Aenderung.
+- Auflage 14.
+
+## Phase 3.6.4 — AuditReaderService  [x]
+
+Commits: 4a4e2ab
+
+- core/services/audit_reader_service.py.
+- RBAC (audit.read), Input-Validierung.
+- Nur Lesen.
+
+## Phase 3.6.5 — Flask-App-Factory + RBAC  [x]
+
+Commits: e8ff4d2
+
+- apps/dashboard/app.py + decorators.py.
+- create_app + before_request + Sicherheitsnetz.
+- Errorhandler (403 + 500 generisch).
+- 13 Tests in test_dashboard_app.py.
+- Auflagen 53-74, 106, 108.
+- venv-Umstellung (pyproject-konform) parallel.
+
+## Phase 3.6.6 — Login + Logout + CSRF + Rate-Limit + Audit  [ ]
+
+Notizen:
+
+- Login-Flow: CSRF, Rate-Limit pro IP,
+  User-Enumeration-Schutz, Session-Fixation-
+  Schutz, Audit (login_success, login_failed,
+  login_locked, logout).
+- Routen: /login, /logout, /whoami.
+- Test 7 (test_public_route_no_redirect) auf
+  reale /login-Route umstellen.
+- Kategorie 3.
+- Details: docs/WEB_SECURITY_CHECKLIST.md
+  Abschnitt A, B, C, I.
 
 ## Phase 5 — Admin AI  [ ]
 
