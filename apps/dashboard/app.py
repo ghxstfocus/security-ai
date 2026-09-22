@@ -163,6 +163,9 @@ def create_app(
             {"Content-Type": "text/plain; charset=utf-8"},
         )
 
+    from apps.dashboard.auth import register_auth_routes
+    register_auth_routes(app)
+
     return app
 
 
