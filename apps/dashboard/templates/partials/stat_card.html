@@ -1,15 +1,13 @@
 {#
-  stat_card.html — Eine Kennzahl-Karte.
+  stat_card.html — Makro fuer Kennzahl-Karten.
 
-  Parameter (via {% with %} im Aufrufer):
-    label  — Beschriftung
-    value  — Zahl
-    accent — cyan|green|yellow|red
-
-  Auflage 262: kein style="..." im Template.
-  Akzent-Farbe via Klasse.
+  Auflage 297: Makro statt include-with.
+  Kein |safe, kein style="...".
+  accent default cyan.
 #}
-<div class="card card-accent-{{ accent|default('cyan') }}">
-    <div class="card-label">{{ label|default('—') }}</div>
-    <div class="card-value">{{ value|default('—') }}</div>
+{% macro stat_card(label, value, accent="cyan") %}
+<div class="card card-accent-{{ accent }}">
+    <div class="card-label">{{ label }}</div>
+    <div class="card-value">{{ value }}</div>
 </div>
+{% endmacro %}

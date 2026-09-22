@@ -166,6 +166,9 @@ def create_app(
     from apps.dashboard.auth import register_auth_routes
     register_auth_routes(app)
 
+    from apps.dashboard.routes_index import register_index_routes
+    register_index_routes(app)
+
     @app.after_request
     def _security_headers(response):
         response.headers["Content-Security-Policy"] = (

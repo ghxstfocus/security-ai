@@ -1,0 +1,24 @@
+{#
+  index.html — Dashboard-Startseite.
+
+  Auflage 291: extends base.html, {% block content %}.
+  Auflage 299: {% from %} vor {% block %}.
+  Auflage 300: stat_card als Makro, timeline + chat_widget als include.
+  Auflage 285: em-dash "—" als Platzhalter.
+  Auflage 287: keine fetch-Aufrufe.
+#}
+{% extends "base.html" %}
+{% from "partials/stat_card.html" import stat_card %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <div class="stat-cards">
+        {{ stat_card("Geraete", "—") }}
+        {{ stat_card("Alarme", "—", "red") }}
+        {{ stat_card("Approvals", "—", "yellow") }}
+        {{ stat_card("Changes", "—", "green") }}
+    </div>
+    {% include "partials/timeline.html" %}
+    {% include "partials/chat_widget.html" %}
+</div>
+{% endblock %}

@@ -261,3 +261,34 @@ def test_login_form_reduces_next_to_slash_on_no_slash(app):
     assert b"<script>" not in r.data
     assert b'name="next"' in r.data
     assert b'value="/"' in r.data
+
+
+# ---------------------------------------------------------------------- #
+# Tests 3.6.7d: Index-Seite
+# ---------------------------------------------------------------------- #
+
+def test_index_renders_200(app, client):
+    r = client.get("/")
+    assert r.status_code == 200
+    assert b"dashboard-grid" in r.data
+
+
+def test_csp_header_on_index(app, client):
+    r = client.get("/")
+    csp = r.headers.get("Content-Security-Policy", "")
+    assert csp
+    assert "'unsafe-inline'" not in csp
+    assert "default-src 'self'" in csp
+
+
+def test_index_requires_session(app):
+    c = app.test_client()
+    r = c.get("/")
+    assert r.status_code == 302
+    assert "/login" in r.headers["Location"]
+
+
+def test_index_contains_stat_cards(app, client):
+    r = client.get("/")
+    assert r.status_code == 200
+    assert r.data.count(b"card-label") >= 4
