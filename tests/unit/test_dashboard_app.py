@@ -116,8 +116,8 @@ def test_login_form_renders_csrf_input(app):
     assert r.headers["Content-Type"].startswith(
         "text/html",
     )
-    assert b"action='/login'" in r.data
-    assert b"name='_csrf_token'" in r.data
+    assert b'action="/login"' in r.data
+    assert b'name="_csrf_token"' in r.data
 
 
 def test_no_session_redirects_to_login(app):
@@ -259,5 +259,5 @@ def test_login_form_reduces_next_to_slash_on_no_slash(app):
     )
     assert r.status_code == 200
     assert b"<script>" not in r.data
-    assert b"name='next'" in r.data
-    assert b"value='/'" in r.data
+    assert b'name="next"' in r.data
+    assert b'value="/"' in r.data

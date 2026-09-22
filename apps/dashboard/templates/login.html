@@ -1,0 +1,54 @@
+{#
+  login.html — Anmeldeseite.
+
+  Standalone (kein extends base.html).
+  Kein Sidebar, kein Topbar.
+
+  Auflage 272: Import oben, nicht in Block.
+  Auflage 278: variables.css zuerst, kein chat.css.
+  Auflage 279: required, autocomplete.
+  Auflage 280: kein |safe.
+#}
+{% from "_helpers.html" import csrf_field %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login — Security AI</title>
+    <link rel="icon" type="image/svg+xml"
+          href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/reset.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body class="login-page">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Anmeldung</span>
+        </div>
+        <form method="post" action="/login">
+            {{ csrf_field(token) }}
+            <input type="hidden" name="next" value="{{ next_path }}">
+            <div class="form-field">
+                <label class="form-label" for="principal">Benutzer</label>
+                <input class="form-input" id="principal"
+                       name="principal" type="text"
+                       autocomplete="username" required>
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="password">Passwort</label>
+                <input class="form-input" id="password"
+                       name="password" type="password"
+                       autocomplete="current-password" required>
+            </div>
+            <button class="btn btn-primary" type="submit">Anmelden</button>
+        </form>
+    </div>
+</body>
+</html>

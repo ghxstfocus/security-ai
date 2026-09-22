@@ -7,13 +7,13 @@ Auflagen 115-167.
 """
 from __future__ import annotations
 
-import html
 import secrets
 import urllib.parse as _urlparse
 from enum import Enum
 
 from flask import (
-    Flask, g, jsonify, redirect, request, session,
+    Flask, g, jsonify, redirect, render_template,
+    request, session,
 )
 
 from core.access.repository import (
@@ -115,22 +115,11 @@ def register_auth_routes(app: Flask) -> None:
     def login_form():
         token = csrf.get_or_create(session)
         nxt = _safe_next(request.args.get("next"))
-        nxt_esc = html.escape(nxt, quote=True)
-        body = (
-            "<!doctype html><html><body>"
-            "<form method='post' action='/login'>"
-            f"<input type='hidden' name='_csrf_token' "
-            f"value='{token}'>"
-            f"<input type='hidden' name='next' "
-            f"value='{nxt_esc}'>"
-            "<input name='principal' autocomplete='off'>"
-            "<input name='password' type='password' "
-            "autocomplete='current-password'>"
-            "<button type='submit'>login</button>"
-            "</form></body></html>"
+        return render_template(
+            "login.html",
+            token=token,
+            next_path=nxt,
         )
-        return (body, 200,
-                {"Content-Type": "text/html; charset=utf-8"})
 
     @app.route("/login", methods=["POST"])
     def login_post():
