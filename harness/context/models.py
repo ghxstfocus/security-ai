@@ -142,6 +142,13 @@ class ContextBundle:
     # Hilfsmethoden
     # ------------------------------------------------------------------ #
 
+    def has_data(self) -> bool:
+        """
+        Kehrwert von is_empty(): True, wenn irgendein Feld
+        befuellt ist.
+        """
+        return not self.is_empty()
+
     def is_empty(self) -> bool:
         """
         True, wenn ausser built_at nichts befuellt ist.

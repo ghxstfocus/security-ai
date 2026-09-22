@@ -112,6 +112,45 @@ def _is_state_question(question: str) -> bool:
 # schaltet der Service auf das grosse Modell um.
 _CRITICAL_CATEGORIES = frozenset({"CONFIRMED", "SECURITY_ALERT"})
 
+
+# ---------------------------------------------------------------------- #
+# Frage-Klassifikation (Phase 3.5.8)
+# ---------------------------------------------------------------------- #
+# fact          -> deterministische Antwort aus context, KEIN LLM
+# concept       -> LLM, kein Kontext-Zwang
+# interpretation -> LLM mit Kontext (7B via Auto-Switch)
+
+_FACT_RE = re.compile(
+    r"\b(wie\s+viele|wieviele|welche\s+kategorien|"
+    r"wie\s+hoch|wie\s+oft|wie\s+lange|"
+    r"gab\s+es|liste|zeig\s+mir)\b",
+    re.IGNORECASE,
+)
+
+_CONCEPT_RE = re.compile(
+    r"\b(was\s+ist|was\s+bedeutet|wie\s+funktioniert|"
+    r"erklaere|was\s+sind)\b",
+    re.IGNORECASE,
+)
+
+
+def _classify_question(question: str) -> str:
+    """
+    Liefert "fact" | "concept" | "interpretation".
+
+    Reihenfolge: fact, dann concept, sonst interpretation.
+    fact gewinnt, damit "Was ist die Anzahl der Events?"
+    als fact erkannt wird.
+    """
+    if not isinstance(question, str) or not question.strip():
+        return "interpretation"
+    q = question.lower()
+    if _FACT_RE.search(q):
+        return "fact"
+    if _CONCEPT_RE.search(q):
+        return "concept"
+    return "interpretation"
+
 # Modellabhaengige Timeouts (Sekunden). Fallback 60.
 _MODEL_TIMEOUTS = {
     "llama3.2:3b": 30,
@@ -123,6 +162,93 @@ def _timeout_for_model(model: str) -> int:
     if not isinstance(model, str) or not model:
         return 60
     return _MODEL_TIMEOUTS.get(model, 60)
+
+
+def _ra_counts_by_category(context: ContextBundle) -> dict[str, int]:
+    """Zaehlt risk_assessments pro category."""
+    counts: dict[str, int] = {}
+    for ra in context.risk_assessments:
+        cat = _get_field(ra, "category")
+        if not isinstance(cat, str) or not cat:
+            cat = "UNKNOWN"
+        counts[cat] = counts.get(cat, 0) + 1
+    return counts
+
+
+def _answer_fact(question: str, context: ContextBundle) -> str:
+    """
+    Deterministische Antwort auf eine Faktenfrage aus dem Kontext.
+
+    Kein LLM-Aufruf. Liefert Klartext.
+    """
+    counts = _ra_counts_by_category(context)
+    total = sum(counts.values())
+    critical = sum(
+        n for cat, n in counts.items() if cat in _CRITICAL_CATEGORIES
+    )
+    q = question.lower()
+
+    # "Gab es Auffaelligkeiten?" / "... Verdaechtiges?" / "... etwas?"
+    if any(w in q for w in ("auff", "verdaecht", "anomal",
+                            "passiert", "vorgefallen", "aufgefallen")):
+        if critical > 0:
+            teile = ", ".join(
+                f"{cat}={counts[cat]}"
+                for cat in sorted(counts) if cat in _CRITICAL_CATEGORIES
+            )
+            return (
+                f"JA. {teile} in den letzten 24 Stunden "
+                f"(insgesamt {total} Assessments)."
+            )
+        if total > 0:
+            teile = ", ".join(
+                f"{cat}={n}" for cat, n in sorted(counts.items())
+            )
+            return (
+                f"NEIN. Keine CONFIRMED- oder SECURITY_ALERT-"
+                f"Assessments. Andere Kategorien: {teile}."
+            )
+        return "NEIN. Keine Assessments im Kontext."
+
+    # "Welche Kategorien?"
+    if "kategorie" in q:
+        if not counts:
+            return "Keine Kategorien im Kontext."
+        return ", ".join(
+            f"{cat}={n}" for cat, n in sorted(counts.items())
+        )
+
+    # "Wie viele ...?"
+    if "wie" in q and ("viele" in q or "viele" in q or "oft" in q):
+        if not total:
+            return "0 Assessments im Kontext."
+        return (
+            f"{total} Assessments: "
+            + ", ".join(f"{cat}={n}" for cat, n in sorted(counts.items()))
+        )
+
+    # "Liste alle ..." / "Zeig mir ..."
+    if "liste" in q or "zeig" in q:
+        lines = []
+        inv = context.inventory_snapshot or {}
+        if inv:
+            for k, v in inv.items():
+                lines.append(f"- inventory.{k}: {v}")
+        if counts:
+            for cat, n in sorted(counts.items()):
+                lines.append(f"- risk_assessments.{cat}: {n}")
+        lines.append(f"- open_approvals: {len(context.open_approvals)}")
+        lines.append(f"- open_changes: {len(context.open_changes)}")
+        return "\n".join(lines) if lines else "Keine Daten im Kontext."
+
+    # Fallback: Gesamtuebersicht
+    if not total and not context.inventory_snapshot:
+        return "Der Kontext enthaelt keine passenden Daten."
+    return (
+        f"Assessments: {total}. "
+        f"Kategorien: "
+        + ", ".join(f"{cat}={n}" for cat, n in sorted(counts.items()))
+    )
 
 
 def _has_critical_assessments(context: ContextBundle) -> bool:
@@ -237,6 +363,14 @@ class ChatService:
                 "explicit_user",
                 _timeout_for_model(explicit_model),
             )
+        # Konzeptfragen: 3B reicht, kein Auto-Switch
+        if _classify_question(question) == "concept":
+            return (
+                self._default_model,
+                "concept",
+                _timeout_for_model(self._default_model),
+            )
+        # Interpretationsfragen mit kritischen Assessments: 7B
         if self._auto_large and _is_critical_state_question(
             question, context
         ):
@@ -359,7 +493,10 @@ class ChatService:
                 )
                 raise
 
-        # 4) Detail-Pfad
+        # 3c) Frage-Klassifikation
+        kind = _classify_question(question)
+
+        # 4) Detail-Pfad (hat Vorrang)
         is_detail_question = detail or _matches_detail_regex(question)
         if is_detail_question:
             try:
@@ -393,8 +530,36 @@ class ChatService:
                 model=None,
             )
 
-        # 4b) no_context-Pfad: Zustandsfrage ohne Kontext -> ehrlich
-        if _is_state_question(question) and context.is_empty():
+        # 4a) Fact-Pfad: deterministisch, kein LLM
+        if kind == "fact":
+            if context.has_data():
+                answer = _answer_fact(question, context)
+            else:
+                answer = "Der Kontext enthaelt keine passenden Daten."
+            self._log(
+                "chat_answered",
+                principal=principal_name,
+                source="fact",
+                context_counts=context.counts(),
+                context_redacted=context.redacted,
+            )
+            return ChatResponse(
+                answer=answer,
+                principal=principal_name,
+                question=question,
+                context_used=context,
+                used_llm=False,
+                source="fact",
+                model=None,
+                model_reason="fact",
+            )
+
+        # 4b) no_context-Pfad: Interpretation ohne Kontext -> ehrlich
+        if (
+            kind == "interpretation"
+            and _is_state_question(question)
+            and not context.has_data()
+        ):
             self._log(
                 "chat_answered",
                 principal=principal_name,

@@ -398,25 +398,31 @@ class ChatServiceAuditTests(_ChatBase):
 # ---------------------------------------------------------------------- #
 
 class ChatServiceNoContextTests(_ChatBase):
-    def test_zustandsfrage_leerer_kontext_kein_llm(self):
-        self.llm.calls.clear()
-        r = self.svc.ask("admin", "Gab es heute Nacht Auffaelligkeiten?")
-        self.assertEqual(r.source, "no_context")
-        self.assertFalse(r.used_llm)
-        self.assertEqual(r.model, None)
-        self.assertIn("keine Daten", r.answer)
-        self.assertEqual(self.llm.calls, [])
-
-    def test_zustandsfrage_mit_kontext_llm_pfad(self):
+    def test_faktfrage_leerer_kontext_kein_llm(self):
+        # "Gab es Auffaelligkeiten?" ist fact -> kein LLM.
         self.llm.calls.clear()
         r = self.svc.ask(
-            "admin", "Welche Geraete sind neu?",
-            inventory_snapshot={"device_count": 3,
-                                "recently_added": ["10.0.0.1"]},
+            "admin", "Gab es heute Nacht Auffaelligkeiten?"
         )
-        self.assertEqual(r.source, "llm")
-        self.assertTrue(r.used_llm)
-        self.assertEqual(len(self.llm.calls), 1)
+        self.assertEqual(r.source, "fact")
+        self.assertFalse(r.used_llm)
+        self.assertEqual(r.model, None)
+        self.assertIn("keine", r.answer.lower())
+        self.assertEqual(self.llm.calls, [])
+
+    def test_faktfrage_mit_kontext_deterministisch(self):
+        self.llm.calls.clear()
+        r = self.svc.ask(
+            "admin", "Gab es Auffaelligkeiten?",
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+            ),
+        )
+        self.assertEqual(r.source, "fact")
+        self.assertFalse(r.used_llm)
+        self.assertIn("JA", r.answer)
+        self.assertIn("CONFIRMED=1", r.answer)
+        self.assertEqual(self.llm.calls, [])
 
     def test_konzeptfrage_leerer_kontext_llm_pfad(self):
         self.llm.calls.clear()
@@ -425,18 +431,18 @@ class ChatServiceNoContextTests(_ChatBase):
         self.assertTrue(r.used_llm)
         self.assertEqual(len(self.llm.calls), 1)
 
-    def test_vage_zustandsfrage_ohne_kontext(self):
-        # "Was ist passiert?" ist mehrdeutig. Ohne Kontext
-        # greift der no_context-Pfad.
+    def test_interpretation_leerer_kontext_no_context(self):
+        # Interpretation + vage Zustandsfrage + kein Kontext
+        # -> no_context
         self.llm.calls.clear()
-        r = self.svc.ask("admin", "Was ist passiert?")
+        r = self.svc.ask("admin", "Warum ist das verdaechtig?")
         self.assertEqual(r.source, "no_context")
         self.assertFalse(r.used_llm)
         self.assertIn("keine daten", r.answer.lower())
         self.assertEqual(self.llm.calls, [])
 
     def test_no_context_audit_eintrag(self):
-        self.svc.ask("admin", "Gab es heute Auffaelligkeiten?")
+        self.svc.ask("admin", "Warum ist das verdaechtig?")
         answered = [
             e for e in self._audit_entries()
             if e["details"]["kind"] == "chat_answered"
@@ -505,10 +511,14 @@ class ChatServicePromptEnrichmentTests(_ChatBase):
 # ---------------------------------------------------------------------- #
 
 class ChatServiceAutoSwitchTests(_ChatBase):
+    # Auto-Switch greift nur bei Interpretationsfragen (nicht
+    # fact, nicht concept).
+    _FRAGE = "Warum ist das verdaechtig?"
+
     def test_auto_switch_bei_confirmed(self):
         self.llm.calls.clear()
         r = self.svc.ask(
-            "admin", "Gab es Auffaelligkeiten?",
+            "admin", self._FRAGE,
             risk_assessments=(
                 {"category": "CONFIRMED", "score": 0.85},
             ),
@@ -521,7 +531,7 @@ class ChatServiceAutoSwitchTests(_ChatBase):
     def test_auto_switch_bei_security_alert(self):
         self.llm.calls.clear()
         r = self.svc.ask(
-            "admin", "Gab es Auffaelligkeiten?",
+            "admin", self._FRAGE,
             risk_assessments=(
                 {"category": "SECURITY_ALERT", "score": 0.6},
             ),
@@ -532,13 +542,11 @@ class ChatServiceAutoSwitchTests(_ChatBase):
     def test_kein_auto_switch_bei_event_only(self):
         self.llm.calls.clear()
         r = self.svc.ask(
-            "admin", "Gab es Auffaelligkeiten?",
+            "admin", self._FRAGE,
             risk_assessments=(
                 {"category": "EVENT", "score": 0.1},
             ),
         )
-        # Zustandsfrage + nur EVENT -> kein no_context (Kontext
-        # ist nicht leer), aber auch kein Auto-Switch.
         self.assertEqual(r.model, "llama3.2:3b")
         self.assertEqual(r.model_reason, "default")
         self.assertEqual(self.llm.calls[-1].timeout, 30.0)
@@ -552,12 +560,12 @@ class ChatServiceAutoSwitchTests(_ChatBase):
             ),
         )
         self.assertEqual(r.model, "llama3.2:3b")
-        self.assertEqual(r.model_reason, "default")
+        self.assertEqual(r.model_reason, "concept")
 
     def test_explicit_model_gewinnt(self):
         self.llm.calls.clear()
         r = self.svc.ask(
-            "admin", "Gab es Auffaelligkeiten?",
+            "admin", self._FRAGE,
             model="qwen2.5:7b",
             risk_assessments=(
                 {"category": "CONFIRMED", "score": 0.85},
@@ -567,7 +575,6 @@ class ChatServiceAutoSwitchTests(_ChatBase):
         self.assertEqual(r.model_reason, "explicit_user")
 
     def test_auto_large_false_deaktiviert(self):
-        # neuer Service mit auto_large=False
         svc = ChatService(
             audit_writer=self.audit,
             llm_client=self.llm,
@@ -578,7 +585,7 @@ class ChatServiceAutoSwitchTests(_ChatBase):
         )
         self.llm.calls.clear()
         r = svc.ask(
-            "admin", "Gab es Auffaelligkeiten?",
+            "admin", self._FRAGE,
             risk_assessments=(
                 {"category": "CONFIRMED", "score": 0.85},
             ),
@@ -622,7 +629,8 @@ class ChatServiceModelCallbackTests(_ChatBase):
             on_model_selected=cb,
         )
         self.assertEqual(len(calls), 1)
-        self.assertEqual(calls[0], ("llama3.2:3b", "default"))
+        # "Was ist ein Portscan?" ist concept -> 3B
+        self.assertEqual(calls[0], ("llama3.2:3b", "concept"))
         # LLM wurde danach gerufen
         self.assertEqual(len(self.llm.calls), 1)
 
@@ -632,8 +640,9 @@ class ChatServiceModelCallbackTests(_ChatBase):
         def cb(model, reason):
             calls.append((model, reason))
 
+        # Interpretationsfrage + CONFIRMED -> 7B
         self.svc.ask(
-            "admin", "Gab es Auffaelligkeiten?",
+            "admin", "Warum ist das verdaechtig?",
             on_model_selected=cb,
             risk_assessments=(
                 {"category": "CONFIRMED", "score": 0.85},
@@ -658,6 +667,22 @@ class ChatServiceModelCallbackTests(_ChatBase):
         # Standardfall: kein Callback
         r = self.svc.ask("admin", "Was ist ein Portscan?")
         self.assertEqual(r.source, "llm")
+
+    def test_callback_nicht_bei_fact(self):
+        # Fact-Pfad ruft kein LLM -> kein Callback.
+        calls: list[tuple[str, str]] = []
+
+        def cb(model, reason):
+            calls.append((model, reason))
+
+        self.svc.ask(
+            "admin", "Gab es Auffaelligkeiten?",
+            on_model_selected=cb,
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+            ),
+        )
+        self.assertEqual(calls, [])
 
 
 if __name__ == "__main__":
