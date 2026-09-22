@@ -204,7 +204,7 @@ Commits: e8ff4d2
 - Auflagen 53-74, 106, 108.
 - venv-Umstellung (pyproject-konform) parallel.
 
-## Phase 3.6.6 — Login + Logout + CSRF + Rate-Limit + Audit  [ ]
+## Phase 3.6.6 — Login + Logout + CSRF + Rate-Limit + Audit  [x]
 
 Notizen:
 
@@ -218,6 +218,50 @@ Notizen:
 - Kategorie 3.
 - Details: docs/WEB_SECURITY_CHECKLIST.md
   Abschnitt A, B, C, I.
+
+## Phase 3.6.7a — Static (CSS, JS, img)  [x]
+
+Commit: 57081d3
+
+- 9 Dateien: 6 CSS, 1 JS, 2 SVG.
+- Kein CDN, keine externen Fonts.
+- SVG-Favicon.
+
+## Phase 3.6.7b — base.html + Partials + CSP  [x]
+
+Commit: d6d8e95
+
+- base.html + 6 Partials + _helpers.html.
+- CSP-Header in after_request.
+- Security-Header (X-Content-Type-Options,
+  X-Frame-Options, Referrer-Policy,
+  Permissions-Policy).
+- XSS-Tests (test_templates_xss.py).
+
+## Phase 3.6.7c — login.html als Template  [x]
+
+Commit: 8b75f0a
+
+- login.html (standalone, kein extends).
+- login_form rendert Template.
+- html.escape entfernt (Jinja escaped).
+
+## Phase 3.6.7d — index.html + Route /  [x]
+
+Commit: 63f6988
+
+- routes_index.py mit @require_permission
+  ("device.read").
+- index.html (extends base).
+- stat_card.html als Makro.
+- 4 Stat-Cards mit Platzhalter em-dash.
+
+## Phase 3.6.7e — CSP-Test + PHASES  [x]
+
+Commit: 06f6f48
+
+- test_csp_all_directives_present.
+- Diese Notizen.
 
 ## Phase 5 — Admin AI  [ ]
 
