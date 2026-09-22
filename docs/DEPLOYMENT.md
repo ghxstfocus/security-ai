@@ -52,11 +52,11 @@
 
 ### 2.4 Dependencies installieren
 
-    pip install -e ".[dev]"
+    .venv/bin/pip install -e ".[dev]"
 
 Oder nur Runtime:
 
-    pip install -e .
+    .venv/bin/pip install -e .
 
 Voraussetzung: `pyproject.toml` enthaelt einen
 `[tool.setuptools.packages.find]`-Block mit
@@ -90,9 +90,8 @@ Dateirechte:
 
 Manuell starten, um zu sehen, dass alles laeuft:
 
-    cd /opt/security-ai
-    source .venv/bin/activate
-    .venv/bin/python3 -m apps.security_ai
+    cd /opt/security-ai && \
+      .venv/bin/python3 -m apps.security_ai
 
 ### 2.7 Arbeitsverzeichnis
 
