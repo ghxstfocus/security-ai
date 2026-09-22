@@ -390,6 +390,62 @@ oder Change-Freigaben.
 
 Details: docs/DESIGN_DECISIONS.md, Abschnitt 8.
 
+### 3.14 harness/llm — Ollama-Client (Phase 3.5)
+
+**Status:** implementiert (Phase 3.5).
+
+Duennes HTTP-Wrapper-Modul fuer Ollama.
+
+- errors.py — LLMError, LLMUnavailable, LLMTimeout.
+- models.py — LLMRequest, LLMResponse.
+- client.py — OllamaClient (HTTP POST /api/generate).
+
+Eigenschaften:
+- Synchron, kein Streaming.
+- Kein Cloud-Zugriff (nur http://127.0.0.1:11434).
+- Client bleibt dumm: Modell + Timeout sind Parameter, kein
+  os.environ.
+- Fail closed: HTTP != 2xx -> LLMError, nicht erreichbar ->
+  LLMUnavailable, Timeout -> LLMTimeout.
+
+### 3.15 core/reporting — Reporting & Kontext (Phase 3.5.6)
+
+**Status:** implementiert (Phase 3.5.6).
+
+- audit_reader.py — liest audit-logs/*.jsonl, filtert
+  risk_assessments nach Zeitfenster. Kein DB-Zugriff.
+- inventory_snapshot.py — reine Aggregation aus Device-Liste
+  + Whitelist-Set. Kein DB-Zugriff.
+
+Zweck: Kontext fuer den Chat aufbereiten, ohne dass der
+ChatService selbst an die DB geht.
+
+### 3.16 core/access — RBAC (Phase 3.5)
+
+**Status:** implementiert (Phase 3.5).
+
+- models.py — Principal, PrincipalKind, Role, Permission,
+  hash_password / verify_password (pbkdf2_sha256, 600k).
+- repository.py — PrincipalRepository, RoleRepository,
+  PermissionRepository, RolePermissionRepository.
+- checker.py — AccessChecker (check, require_permission,
+  role_of, permissions_of, from_conn).
+
+Regel: Lesen -> Checker, Schreiben -> AccessService.
+
+### 3.17 core/services — Service-Schicht (Phase 3.5)
+
+**Status:** implementiert (Phase 3.5).
+
+- access_service.py — AccessService (RBAC-Verwaltung,
+  whoami, create_principal, assign_permission).
+- ChatService (apps/security_ai/chat.py) ist ebenfalls
+  Service-Schicht, liegt aber in apps/ (kennt den
+  Kontext-Bauer und das LLM).
+
+Design: UI (Web/CLI/Telegram) -> Services -> Repos.
+Keine Fachlogik in der UI.
+
 ## 4. Datenfluss — Beispiel
 
 Szenario: Unbekanntes Gerät im Hauptnetz.
