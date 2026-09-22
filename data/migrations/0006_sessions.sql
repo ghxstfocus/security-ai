@@ -13,11 +13,11 @@
 --     last_seen_at < now - 30 Tage
 --   - login_attempts mit attempted_at < now - 30 Tage
 --
--- Hinweis: FOREIGN KEY wird nur durchgesetzt, wenn die
--- Connection PRAGMA foreign_keys = ON setzt. Aktuell
--- nicht gesetzt -> FK ist Dokumentation, keine harte
--- Constraint. RBAC prueft principal_name ohnehin
--- serverseitig.
+-- Hinweis: FK ist AKTIV, weil connect() PRAGMA
+-- foreign_keys = ON setzt. Ein INSERT mit unbekanntem
+-- principal_name schlaegt mit IntegrityError fehl.
+-- RBAC prueft principal_name zusaetzlich serverseitig
+-- (Defense in Depth).
 
 CREATE TABLE IF NOT EXISTS sessions (
     id             TEXT PRIMARY KEY,
