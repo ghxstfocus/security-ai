@@ -63,6 +63,43 @@ def _require_str(value: str, field_name: str) -> str:
         raise ValueError(f"{field_name} darf nicht leer sein")
     return value
 
+def utc_now() -> datetime:
+    """datetime, fuer timedelta-Rechnungen (nicht fuer Modelle)."""
+    return datetime.now(timezone.utc)
+
+
+def to_utc(value: datetime | str) -> datetime:
+    """
+    Normalisiert datetime | str auf UTC-aware datetime.
+
+    Regeln:
+    - datetime mit tzinfo=None -> ValueError (fail closed).
+    - datetime mit tzinfo != UTC -> auf UTC konvertiert.
+    - str -> datetime.fromisoformat, muss tzinfo haben.
+    """
+    if isinstance(value, str):
+        try:
+            dt = datetime.fromisoformat(value)
+        except ValueError as exc:
+            raise ValueError(
+                f"Zeit nicht parsebar: {value!r}"
+            ) from exc
+    elif isinstance(value, datetime):
+        dt = value
+    else:
+        raise ValueError(
+            f"Zeit muss datetime oder str sein, "
+            f"nicht {type(value).__name__}"
+        )
+    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
+        raise ValueError("Zeit muss timezone-aware sein")
+    return dt.astimezone(timezone.utc)
+
+
+def to_iso(value: datetime | str) -> str:
+    """Normalisiert auf UTC-aware ISO-8601-String."""
+    return to_utc(value).isoformat()
+
 
 # ---------------------------------------------------------------------- #
 # Passwort-Hashing (pbkdf2_sha256, OWASP 2023)
@@ -224,11 +261,61 @@ class Principal:
         )
 
 
+# ---------------------------------------------------------------------- #
+# Session
+# ---------------------------------------------------------------------- #
+
+@dataclass(frozen=True)
+class Session:
+    """
+    Eine serverseitige Session.
+
+    id ist TEXT-Primary-Key (fachlich), kein row_id.
+    revoked_at NULL -> aktiv.
+    """
+
+    id: str
+    principal_name: str
+    created_at: str
+    last_seen_at: str
+    revoked_at: str | None = None
+    ip: str | None = None
+    user_agent: str | None = None
+
+    def __post_init__(self) -> None:
+        _require_str(self.id, "Session.id")
+        _require_str(self.principal_name, "Session.principal_name")
+        require_utc_iso(self.created_at, "Session.created_at")
+        require_utc_iso(self.last_seen_at, "Session.last_seen_at")
+        if self.revoked_at is not None:
+            require_utc_iso(self.revoked_at, "Session.revoked_at")
+
+    @property
+    def is_active(self) -> bool:
+        return self.revoked_at is None
+
+    @classmethod
+    def from_row(cls, row: Mapping[str, Any]) -> "Session":
+        return cls(
+            id=row["id"],
+            principal_name=row["principal_name"],
+            created_at=row["created_at"],
+            last_seen_at=row["last_seen_at"],
+            revoked_at=row["revoked_at"],
+            ip=row["ip"],
+            user_agent=row["user_agent"],
+        )
+
+
 __all__ = [
     "PrincipalKind",
     "Permission",
     "Role",
     "Principal",
+    "Session",
+    "utc_now",
+    "to_utc",
+    "to_iso",
     "hash_password",
     "verify_password",
     "PBKDF2_ITERATIONS",
