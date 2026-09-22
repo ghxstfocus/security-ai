@@ -146,12 +146,25 @@ class ChatServiceHappyPathTests(_ChatBase):
         with self.assertRaises(ChatServiceError):
             ChatService(self.conn, self.audit, None)
 
-    def test_system_prompt_verbietet_spekulation(self):
+    def test_system_prompt_unterscheidet_konzept_und_zustand(self):
         from apps.security_ai.chat import _DEFAULT_SYSTEM_PROMPT
         sp = _DEFAULT_SYSTEM_PROMPT
+        # Konzeptfragen
+        self.assertIn("Konzeptfragen", sp)
+        self.assertIn("aus deinem", sp)
+        # Zustandsfragen
+        self.assertIn("Zustandsfragen", sp)
         self.assertIn("NUR auf Basis des mitgelieferten Kontexts", sp)
+        # Ehrlichkeit statt Spekulation
+        self.assertIn("sage das ehrlich", sp)
         self.assertIn("Spekuliere nicht", sp)
-        self.assertIn("Kontext enthaelt keine passenden Daten", sp)
+
+    def test_system_prompt_verbietet_entscheidungen(self):
+        from apps.security_ai.chat import _DEFAULT_SYSTEM_PROMPT
+        sp = _DEFAULT_SYSTEM_PROMPT
+        self.assertIn("Du entscheidest nicht", sp)
+        self.assertIn("Du erklaerst", sp)
+        self.assertIn("ohne Freigabe", sp)
 
 
 # ---------------------------------------------------------------------- #
