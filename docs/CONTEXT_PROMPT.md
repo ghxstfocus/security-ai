@@ -124,6 +124,8 @@ Tests: 374 gruen (Unit + Integration).
 - docs/PHASES.md — Phasenuebersicht mit Status
 - docs/WERKZEUGE.md — Skripte und CLIs (init_db, chat_cli,
   approvals_cli, changes_cli)
+- docs/WEB_SECURITY_CHECKLIST.md — verbindliche
+  Security-Checkliste fuer Phase 3.6 (Web-Dashboard)
 
 ### Aktuelle Phase
 

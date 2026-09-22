@@ -15,6 +15,11 @@ Index der Detail-Dokumentation.
 - [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md) — Design-
   Entscheidungen, Audit-Nomenklatur, Test-Ebenen.
 
+## Web-Dashboard (Phase 3.6)
+
+- [WEB_SECURITY_CHECKLIST.md](WEB_SECURITY_CHECKLIST.md) —
+  verbindliche Security-Checkliste fuer das Dashboard.
+
 ## Sicherheit und Berechtigungen
 
 - [SECURITY.md](SECURITY.md) — Threat Model, Guardrails, Audit.
