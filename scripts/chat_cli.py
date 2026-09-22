@@ -59,6 +59,12 @@ from core.access.repository import (
     RolePermissionRepository,
     RoleRepository,
 )
+from core.approval.repository import ApprovalRepository
+from core.changes.repository import ChangeRepository
+from core.inventory.repository import DeviceRepository
+from core.inventory.whitelist import WhitelistRepository
+from core.reporting.audit_reader import read_risk_assessments
+from core.reporting.inventory_snapshot import build_inventory_snapshot
 from harness.audit.writer import AuditWriter
 from harness.llm.client import OllamaClient
 from harness.llm.errors import LLMError
@@ -96,6 +102,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--no-bootstrap", action="store_true",
                    help="Kein Auto-Bootstrap: fail closed, wenn DB fehlt "
                         "oder cli-admin fehlt")
+    p.add_argument("--context-hours", type=int, default=24,
+                   help="Zeitfenster fuer Kontext (Default: 24)")
+    p.add_argument("--context-max-assessments", type=int, default=50,
+                   help="Max risk_assessments im Kontext (Default: 50)")
     p.add_argument("--base-url", default=None,
                    help=f"Ollama-Base-URL (Default aus .env: "
                         f"{get_ollama_base_url()})")
@@ -134,6 +144,41 @@ def _print_whoami(svc: AccessService, principal_name: str) -> int:
     for code in me["permissions"]:
         print(f"  - {code}")
     return 0
+
+
+# ---------------------------------------------------------------------- #
+# Kontext-Anschluss (Phase 3.5.6)
+# ---------------------------------------------------------------------- #
+
+def _load_context(conn, audit_base_dir: str,
+                  since_hours: int = 24,
+                  max_assessments: int = 50) -> dict:
+    """
+    Laedt DB + Audit-Log und baut den Kontext fuer ChatService.ask.
+
+    Kein DB-Zugriff im Service — hier im CLI ist er erlaubt.
+    Fail-soft: fehlende Teile werden leer uebergeben.
+    """
+    devices = DeviceRepository(conn).list_all()
+    whitelist_ids = WhitelistRepository(conn).identifiers()
+    inventory_snapshot = build_inventory_snapshot(
+        devices, whitelist_ids,
+    )
+    open_approvals = tuple(ApprovalRepository(conn).list_pending())
+    open_changes = tuple(ChangeRepository(conn).list_pending())
+    risk_assessments = tuple(read_risk_assessments(
+        audit_base_dir,
+        since_hours=since_hours,
+        max_entries=max_assessments,
+    ))
+    return {
+        "recent_events": (),
+        "inventory_snapshot": inventory_snapshot,
+        "risk_assessments": risk_assessments,
+        "open_approvals": open_approvals,
+        "open_changes": open_changes,
+        "log_excerpts": (),
+    }
 
 
 # ---------------------------------------------------------------------- #
@@ -215,12 +260,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         conn.close()
         return rc
 
+    # Kontext aus DB + Audit laden
+    try:
+        ctx = _load_context(
+            conn, args.audit_base_dir,
+            since_hours=args.context_hours,
+            max_assessments=args.context_max_assessments,
+        )
+    except Exception as exc:
+        print(f"FEHLER: Kontext laden: {exc}", file=sys.stderr)
+        conn.close()
+        return 1
+
     # gemeinsame ask-Parameter
     ask_kwargs: dict = {
         "include_details": args.include_details,
         "detail": args.detail,
         "model": args.model,
         "timeout": args.timeout,
+        **ctx,
     }
 
     # --question (einmalig)
