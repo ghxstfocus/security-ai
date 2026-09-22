@@ -292,3 +292,29 @@ def test_index_contains_stat_cards(app, client):
     r = client.get("/")
     assert r.status_code == 200
     assert r.data.count(b"card-label") >= 4
+
+
+# ---------------------------------------------------------------------- #
+# Test 3.6.7e: CSP alle Direktiven
+# ---------------------------------------------------------------------- #
+
+def test_csp_all_directives_present(app):
+    c = app.test_client()
+    r = c.get("/login")
+    csp = r.headers.get("Content-Security-Policy", "")
+    assert csp, "CSP-Header fehlt"
+    for directive in (
+        "default-src 'self'",
+        "script-src 'self'",
+        "style-src 'self'",
+        "img-src 'self' data:",
+        "font-src 'self'",
+        "connect-src 'self'",
+        "frame-ancestors 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "object-src 'none'",
+    ):
+        assert directive in csp, f"{directive} fehlt"
+    assert "unsafe-inline" not in csp
+    assert "unsafe-eval" not in csp
