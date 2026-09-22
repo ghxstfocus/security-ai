@@ -785,3 +785,69 @@ geantwortet hat.
 
 Der Auto-Switch ist eine Heuristik, keine harte Regel. Der
 Mensch kann mit --model oder --no-auto-large eingreifen.
+
+## 14. Frage-Klassifikation (Phase 3.5.8)
+
+### Drei Arten von Fragen
+
+1. fact            -> deterministische Antwort aus context,
+                      KEIN LLM-Aufruf.
+2. concept         -> LLM (3B), kein Kontext-Zwang.
+3. interpretation  -> LLM mit Kontext (7B via Auto-Switch).
+
+### Regex
+
+    _FACT_RE:
+        wie viele | wieviele | welche kategorien |
+        wie hoch | wie oft | wie lange |
+        gab es | liste | zeig mir
+
+    _CONCEPT_RE:
+        was ist | was bedeutet | wie funktioniert |
+        erklaere | was sind
+
+    sonst: interpretation
+
+Hinweis: "welche IP" ist Detail, NICHT Fact.
+Der Detail-Pfad greift VOR dem Fact-Pfad.
+
+### Reihenfolge in ask()
+
+1. chat_query (immer, vor RBAC)
+2. RBAC chat.ask
+3. Detail-Pfad (Detail-Regex ODER --detail Flag)
+4. Fact-Pfad (_FACT_RE, context.has_data())
+5. no_context-Pfad (Interpretation + Zustandsfrage ohne Kontext)
+6. Concept-Pfad (_CONCEPT_RE, LLM mit default_model)
+7. Interpretation-Pfad (LLM, Auto-Switch bei kritisch)
+
+### source-Werte
+
+- "detail_append"  Detail
+- "fact"           Faktenantwort
+- "no_context"     keine Daten fuer Interpretation
+- "llm"            Concept oder Interpretation
+- "llm_error"      LLM-Fehler
+
+### Warum das die richtige Architektur ist
+
+Ein LLM darf keine Fakten erfinden. Ein 3B-Modell schliesst
+falsch. Ein 7B-Modell ist zu langsam fuer jede Frage.
+
+Konsequenz: Alles, was deterministisch aus dem Kontext
+ableitbar ist, wird deterministisch beantwortet. Das LLM
+macht nur, was es wirklich kann: formulieren und
+interpretieren.
+
+### --no-auto-large bleibt
+
+Trotz fact-Pfad bleibt --no-auto-large sinnvoll:
+- Bei Interpretationsfragen mit kritischen Assessments
+  ist 3B unzuverlaessig.
+- Der Nutzer kann es bewusst abschalten (Tests, Debugging).
+
+### Sanity-Check (Phase 3.5.9, spaeter)
+
+Wenn interpretation und LLM-Antwort dem Kontext widerspricht:
+- Audit chat_answer_contradicts_context.
+- Optional Retry mit 7B.
