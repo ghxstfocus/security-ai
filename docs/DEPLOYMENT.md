@@ -58,6 +58,14 @@ Oder nur Runtime:
 
     pip install -e .
 
+Voraussetzung: `pyproject.toml` enthaelt einen
+`[tool.setuptools.packages.find]`-Block mit
+`include`/`exclude`. Ohne diesen Block scheitert
+`pip install -e .` mit:
+
+    error: Multiple top-level packages discovered
+    in a flat-layout
+
 ### 2.5 .env anlegen
 
     cp .env.example .env
@@ -84,7 +92,28 @@ Manuell starten, um zu sehen, dass alles laeuft:
 
     cd /opt/security-ai
     source .venv/bin/activate
-    python -m apps.security_ai
+    .venv/bin/python3 -m apps.security_ai
+
+### 2.7 Arbeitsverzeichnis
+
+Alle Service-Aufrufe muessen aus `/opt/security-ai`
+erfolgen. Grund:
+
+- `detection/rules.yaml`, `policies/tools.yaml`,
+  `core/risk/rules.yaml` werden relativ zum CWD
+  geladen.
+- `scripts/*` sind Werkzeuge, keine Bibliothek.
+  Nur aus `/opt/security-ai` importierbar (siehe
+  `docs/WERKZEUGE.md`).
+
+Konsequenz fuer den systemd-Service:
+
+    WorkingDirectory=/opt/security-ai
+
+Konsequenz fuer CLI-Aufrufe:
+
+    cd /opt/security-ai && \
+      .venv/bin/python3 scripts/chat_cli.py ...
 
 ## 3. Systemd-Service
 

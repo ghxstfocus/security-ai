@@ -12,7 +12,7 @@ bist du im Kontext.
 - GitHub: git@github.com:ghxstfocus/security-ai.git
   (privat, Branch main, alles gepusht)
 - Alter Container CT101 (192.168.178.116) ruht, bleibt unberuehrt
-- Debian 12, Python 3.11, pytest 7.2.1
+- Debian 12, Python 3.11, pytest 9.1.1 (venv)
 - CT102: 16 GB Disk, 12 GB RAM, 4 Kerne
 - Ollama laeuft lokal (llama3.2:3b Default, qwen2.5:7b Large)
 
@@ -78,7 +78,7 @@ Append-only Audit, Fail closed, Foederation statt Monolith.
 - Phase 3.5.9 — Sanity-Check (Denial + Underreporting) + Retry
   mit 7B; Auto-Switch bei kritischen Assessments ist PFLICHT
 
-Tests: 374 gruen (Unit + Integration).
+Tests: 429 gruen (Unit + Integration).
 
 ### Was als Naechstes kommt
 
@@ -109,6 +109,15 @@ Tests: 374 gruen (Unit + Integration).
 - Keine Umlaute in Code-Bloecken (oe, ue, ae, ss).
 - Kein sed auf Python-Code. Patches per Python-Skript.
 - Nach jedem Schritt: wc -l, py_compile, pytest -q, git commit.
+- **Immer `/opt/security-ai/.venv/bin/python3` verwenden**,
+  nicht `/usr/bin/python3`. Grund: System-Python hat nicht
+  die pyproject-Dependencies (Flask, PyYAML, requests,
+  psutil).
+- Tests immer aus `/opt/security-ai` ausfuehren.
+  `detection/rules.yaml`, `policies/tools.yaml`,
+  `core/risk/rules.yaml` werden relativ zum CWD geladen.
+- `scripts/*` sind Werkzeuge, keine Bibliothek.
+  Nur aus `/opt/security-ai` importierbar.
 
 ### Wo Details stehen
 
@@ -129,12 +138,14 @@ Tests: 374 gruen (Unit + Integration).
 
 ### Aktuelle Phase
 
-Phase 1-4 abgeschlossen. Phase 3.5 inkl. 3.5.5, 3.5.6, 3.5.7,
-3.5.7a, 3.5.7b, 3.5.8, 3.5.9 abgeschlossen.
+Phase 1-4 abgeschlossen. Phase 3.5 inkl. 3.5.5-3.5.9
+abgeschlossen. Phase 3.6 (Web-Dashboard) in Arbeit:
+3.6.1-3.6.4 fertig, 3.6.5 teilweise.
 
-Naechster Schritt: Phase 3.6 (Web-Dashboard).
+HEAD: lokal, nicht gepusht (Stand 4a4e2ab + Umstellungs-
+Commit). Naechster Schritt: 3.6.5 Dashboard-Tests.
 
-Tests: 374 gruen. HEAD auf origin/main.
+Tests: 429 gruen (venv, pytest 9.1.1).
 
 ### Aufgabe jetzt
 

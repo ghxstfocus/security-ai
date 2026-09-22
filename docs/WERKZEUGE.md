@@ -3,6 +3,10 @@
 Uebersicht der Skripte und CLIs. Alle im Projekt-Root
 ausfuehrbar.
 
+Voraussetzung: venv ist aktiv oder der explizite Pfad
+`.venv/bin/python3` wird verwendet. Alle Beispiele in
+dieser Datei nutzen `.venv/bin/python3`.
+
 ## scripts/init_db.py
 
 Legt die SQLite-Datenbank an, wendet alle Migrationen aus
@@ -12,16 +16,16 @@ Legt die SQLite-Datenbank an, wendet alle Migrationen aus
 Idempotent: existierende DB und existierender Principal werden
 nicht ueberschrieben.
 
-    python3 scripts/init_db.py
+    .venv/bin/python3 scripts/init_db.py
         # DB + cli-admin (role=admin)
 
-    python3 scripts/init_db.py --no-principal
+    .venv/bin/python3 scripts/init_db.py --no-principal
         # nur DB + Migrationen
 
-    python3 scripts/init_db.py --principal admin --role operator
+    .venv/bin/python3 scripts/init_db.py --principal admin --role operator
         # anderer Principal
 
-    python3 scripts/init_db.py --db /pfad/zur/db.sqlite
+    .venv/bin/python3 scripts/init_db.py --db /pfad/zur/db.sqlite
         # anderer DB-Pfad (Default: data/inventory.db)
 
 Exit-Code 0 bei Erfolg, 1 bei Fehler.
@@ -31,14 +35,14 @@ Exit-Code 0 bei Erfolg, 1 bei Fehler.
 Chat mit der lokalen KI (Ollama). Nutzt ChatService
 (Service-Schicht).
 
-    python3 scripts/chat_cli.py --principal cli-admin
+    .venv/bin/python3 scripts/chat_cli.py --principal cli-admin
         # interaktiv, "exit" beendet
 
-    python3 scripts/chat_cli.py --principal cli-admin \
+    .venv/bin/python3 scripts/chat_cli.py --principal cli-admin \
         --question "Was kannst du?"
         # einmalige Frage
 
-    python3 scripts/chat_cli.py --principal cli-admin --whoami
+    .venv/bin/python3 scripts/chat_cli.py --principal cli-admin --whoami
         # Rolle + Permissions anzeigen
 
 Optionen:
@@ -65,39 +69,39 @@ Auto-Bootstrap: fehlt die DB, wird sie angelegt und `cli-admin`
 
 Approvals verwalten. DB muss existieren (fail closed).
 
-    python3 scripts/approvals_cli.py list [--all]
-    python3 scripts/approvals_cli.py show <request_id>
-    python3 scripts/approvals_cli.py approve <request_id> --by X
-    python3 scripts/approvals_cli.py reject  <request_id> --by X \
+    .venv/bin/python3 scripts/approvals_cli.py list [--all]
+    .venv/bin/python3 scripts/approvals_cli.py show <request_id>
+    .venv/bin/python3 scripts/approvals_cli.py approve <request_id> --by X
+    .venv/bin/python3 scripts/approvals_cli.py reject  <request_id> --by X \
         [--reason Y]
-    python3 scripts/approvals_cli.py expire
-    python3 scripts/approvals_cli.py count
+    .venv/bin/python3 scripts/approvals_cli.py expire
+    .venv/bin/python3 scripts/approvals_cli.py count
 
 ## scripts/changes_cli.py
 
 Change Requests verwalten. DB muss existieren (fail closed).
 
-    python3 scripts/changes_cli.py list [--status STATUS] [--all]
-    python3 scripts/changes_cli.py show <change_id>
-    python3 scripts/changes_cli.py create --title X --description Y \
+    .venv/bin/python3 scripts/changes_cli.py list [--status STATUS] [--all]
+    .venv/bin/python3 scripts/changes_cli.py show <change_id>
+    .venv/bin/python3 scripts/changes_cli.py create --title X --description Y \
         --by Z --type T
-    python3 scripts/changes_cli.py decide <change_id> --by X
-    python3 scripts/changes_cli.py reject <change_id> --by X \
+    .venv/bin/python3 scripts/changes_cli.py decide <change_id> --by X
+    .venv/bin/python3 scripts/changes_cli.py reject <change_id> --by X \
         [--reason Y]
-    python3 scripts/changes_cli.py deploy <change_id>
-    python3 scripts/changes_cli.py rollback <change_id> --by X \
+    .venv/bin/python3 scripts/changes_cli.py deploy <change_id>
+    .venv/bin/python3 scripts/changes_cli.py rollback <change_id> --by X \
         [--reason Y]
-    python3 scripts/changes_cli.py cancel <change_id> --by X \
+    .venv/bin/python3 scripts/changes_cli.py cancel <change_id> --by X \
         [--reason Y]
-    python3 scripts/changes_cli.py export <change_id> [--out DIR]
-    python3 scripts/changes_cli.py count
+    .venv/bin/python3 scripts/changes_cli.py export <change_id> [--out DIR]
+    .venv/bin/python3 scripts/changes_cli.py count
 
 ## Tests
 
-    python3 -m pytest tests/ -q
+    .venv/bin/python3 -m pytest tests/ -q
         # alle Tests
 
-    python3 -m pytest tests/unit/test_chat.py -q
+    .venv/bin/python3 -m pytest tests/unit/test_chat.py -q
         # einzelne Datei
 
 Erwartung nach jedem groesseren Schritt: alle gruen.

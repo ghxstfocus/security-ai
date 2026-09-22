@@ -11,6 +11,7 @@ dependencies = [
     "flask>=3.0",
     "requests>=2.31",
     "psutil>=5.9",
+    "PyYAML>=6.0",
 ]
 
 [project.optional-dependencies]
@@ -39,6 +40,25 @@ python_version = "3.11"
 warn_unused_ignores = true
 warn_redundant_casts = true
 disallow_untyped_defs = true
+
+[tool.setuptools.packages.find]
+include = [
+    "apps*",
+    "core*",
+    "harness*",
+    "tools*",
+]
+exclude = [
+    "data*",
+    "deploy*",
+    "changes*",
+    "policies*",
+    "detection*",
+    "tests*",
+    "docs*",
+    "scripts*",
+    "audit-logs*",
+]
 
 [build-system]
 requires = ["setuptools>=68"]
