@@ -289,3 +289,94 @@ Jeder Tool-Aufruf wird auditiert mit:
 
 ---
 Letzte Aktualisierung: 2026-09-20
+
+## 13. RBAC — zweite Berechtigungsebene (Phase 3.5)
+
+Zusaetzlich zu Level 0-5 (Tool-Permissions) gibt es seit
+Phase 3.5 eine zweite Ebene: rollenbasierte Berechtigungen
+fuer Principals. Sie steuert, **wer** einen Service oder
+eine Aktion aufrufen darf.
+
+### Warum zwei Ebenen
+
+- Level 0-5 (PERMISSIONS § 1-7): "Was darf dieses Tool?"
+  (Tool-Sicht, unabhaengig vom Aufrufer).
+- RBAC (dieser Abschnitt): "Wer darf diesen Aufruf machen?"
+  (Aufrufer-Sicht, unabhaengig vom Tool).
+
+Beide Ebenen greifen. Ein Aufruf ist nur erlaubt, wenn
+Level UND Permission erfuellt sind.
+
+### Entitaeten (SQLite, Migration 0005)
+
+- principals   — alles, was authentifiziert werden kann.
+                 kind: human | system | service.
+                 password_hash NULL = kein Login.
+                 is_active False = gesperrt.
+- roles        — admin, operator, viewer, system.
+- permissions  — feingranulare Codes.
+- role_permissions — n:m zwischen Rollen und Permissions.
+
+### Permissions (Phase 3.5)
+
+- chat.ask               — Chat-Frage stellen
+- chat.detail            — Detail-Antwort ohne LLM
+- chat.include_details   — Rohdaten in den Prompt
+- device.read / device.write
+- approval.view / approval.decide
+- change.view / change.create / change.decide / change.deploy
+- audit.read / audit.write
+- principal.manage / role.manage
+
+### Rollen-Zuordnung
+
+| Rolle     | Permissions                                          |
+|-----------|------------------------------------------------------|
+| admin     | alle                                                 |
+| operator  | chat.*, device.read, approval.view, approval.decide, |
+|           | change.view, change.create, change.decide,           |
+|           | audit.read                                           |
+| viewer    | chat.ask, device.read, audit.read                    |
+| system    | chat.ask, device.read, audit.write                   |
+
+### AccessChecker
+
+- check(name, code) -> bool  (fail closed, kein raise)
+- require_permission(name, code)  (wirft AccessDeniedError)
+- role_of(name) -> str | None     (None bei unbekannt/inaktiv)
+- permissions_of(name) -> frozenset
+
+Regel: Lesen -> Checker, Schreiben -> AccessService.
+
+### Fail closed
+
+- Principal unbekannt -> check=False, require wirft.
+- Principal inaktiv -> check=False, require wirft.
+- Permission-Code unbekannt -> check=False.
+- Kein Wildcard, kein Prefix-Match. Nur exakte Codes.
+
+### Passwort-Hashing (Phase 3.6+)
+
+- pbkdf2_sha256, 600_000 Iterationen (OWASP 2023).
+- Format: pbkdf2_sha256$600000$<salt_hex>$<hash_hex>.
+- In Phase 3.5 noch nicht genutzt: cli-admin laeuft ohne
+  Login (lokal auf Server).
+
+### Audit
+
+Jede Schreib-Aktion des AccessService schreibt
+details.kind:
+- principal_created
+- principal_active_changed
+- permission_assigned
+- permission_revoked
+
+### Verhaeltnis zu Level 0-5
+
+- Level bleibt am Tool (Tool-Definition).
+- RBAC bleibt am Principal (Rolle + Permission).
+- Ein Aufruf mit falscher Rolle wird abgelehnt, selbst wenn
+  das Tool Level 0 hat.
+- Ein Aufruf mit richtiger Rolle, aber verbotenem Tool-Level
+  (5) wird ebenfalls abgelehnt.
+
