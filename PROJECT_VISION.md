@@ -166,7 +166,7 @@ Der Datenfluss geht **aufwärts** (Events, Beobachtungen) und
 **abwärts** (Change Requests, Entscheidungen). Keine Ebene
 überspringt eine andere.
 
-## 6. Skalierungspfad (6 Stufen)
+## 6. Skalierungspfad (7 Stufen)
 
 ### Stufe 1 — Netzwerk Homelab (heute)
 Ein Netzwerk. Eine Security AI. Keine Admin AI.
@@ -177,6 +177,21 @@ Telegram-Alarme. SQLite-Datenbank.
 Change-Request-Generator. Human-in-the-Loop mit Approval-Queue.
 Lokales LLM wird für Kontext und Erklärungen genutzt.
 Der Mensch arbeitet mit dem System, nicht nur daneben.
+
+### Stufe 2.5 — Lokale KI (Monate)
+
+Lokales LLM (Ollama) für Erklärungen.
+Chat-Interface im Dashboard.
+Kontext-Bau aus Events, DB, Logs.
+LLM erklärt, entscheidet nicht.
+
+Status (2026-09-22): Kern implementiert.
+- Ollama (llama3.2:3b Default, qwen2.5:7b Large)
+- Chat-CLI mit RBAC (Phase 3.5)
+- Frage-Klassifikation: fact (deterministisch),
+  concept (3B), interpretation (7B via Auto-Switch)
+- Sanity-Check gegen Denial und Underreporting
+- Web-Dashboard folgt in Phase 3.6
 
 ### Stufe 3 — Föderation (später)
 Mehrere isolierte Netzwerke. Zentrale Admin AI (Cloud).

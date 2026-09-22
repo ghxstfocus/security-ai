@@ -42,13 +42,20 @@ Augmentation menschlicher Administratoren.
 - [x] Telegram-Alarme
 - [x] SQLite-Event-Datenbank
 - [x] systemd-Service
-- [ ] Change-Request-Generator
-- [ ] Lokales LLM für Erklärungen
+- [x] Policy Engine (Allowed / Approval / Forbidden)
+- [x] Approval-Flow + Change Requests (SQLite, CLI)
+- [x] Lokales LLM (Ollama, llama3.2:3b + qwen2.5:7b)
+- [x] RBAC (Principals, Rollen, Permissions)
+- [x] Frage-Klassifikation (fact / concept / interpretation)
+- [x] Chat-CLI (`scripts/chat_cli.py`)
+- [ ] Web-Dashboard (Phase 3.6)
 - [ ] Admin AI
 - [ ] Föderation (Multi-Netzwerk)
 
 ## Architektur
 
+4-Ebenen-Modell: Human -> Admin AI -> Harness -> Security AI -> Tools.
+Details: `docs/ARCHITECTURE.md`
 
 ## Sicherheit
 
@@ -70,6 +77,9 @@ Details: `docs/SECURITY.md`
 - [Protokoll](docs/PROTOCOL.md)
 - [Berechtigungen](docs/PERMISSIONS.md)
 - [Deployment](docs/DEPLOYMENT.md)
+- [Design-Entscheidungen](docs/DESIGN_DECISIONS.md)
+- [Phasen](docs/PHASES.md)
+- [Werkzeuge](docs/WERKZEUGE.md)
 
 ## Status
 
@@ -77,4 +87,4 @@ Aktiv in Entwicklung. Homelab-Referenz mit dem Ziel, die
 Architektur für föderierte, KI-gestützte Security- und
 Admin-Systeme zu demonstrieren.
 
-Letzte Aktualisierung: 2026-09-20
+Letzte Aktualisierung: 2026-09-22

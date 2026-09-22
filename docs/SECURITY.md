@@ -106,6 +106,21 @@ Aktuelle Implementierung:
 Der Kontext-Bauer filtert Rohdaten, bevor sie ans LLM gehen.
 Das LLM bekommt nur, was der Kontext-Bauer freigibt.
 
+### 3.5 RBAC als zweite Ebene (Phase 3.5)
+
+Neben Tool-Level 0-5 gibt es seit Phase 3.5 eine zweite
+Berechtigungsebene: rollenbasierte Principals.
+
+- Principal: alles, was authentifiziert werden kann
+  (human, system, service).
+- Rollen: admin, operator, viewer, system.
+- Permissions: chat.ask, approval.decide, principal.manage,
+  usw.
+- Fail closed: unbekannter Principal oder Permission-Code
+  -> Ablehnung.
+
+Details: `docs/PERMISSIONS.md` § 13.
+
 ## 4. Human-in-the-Loop
 
 ### 4.1 Drei Kategorien
