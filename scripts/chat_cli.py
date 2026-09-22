@@ -59,6 +59,7 @@ from core.access.repository import (
     RolePermissionRepository,
     RoleRepository,
 )
+from core.access.session_repo import SessionRepository
 from core.approval.repository import ApprovalRepository
 from core.changes.repository import ChangeRepository
 from core.inventory.repository import DeviceRepository
@@ -263,9 +264,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             checker=checker,
             auto_large=not args.no_auto_large,
         )
+        session_repo = SessionRepository(conn)
         access_svc = AccessService(
             principals, roles, perms, role_perms,
             checker, audit,
+            session_repo=session_repo,
         )
     except ChatServiceError as exc:
         print(f"FEHLER: {exc}", file=sys.stderr)

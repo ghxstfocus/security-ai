@@ -35,6 +35,7 @@ from core.access.repository import (
     RolePermissionRepository,
     RoleRepository,
 )
+from core.access.session_repo import SessionRepository
 from harness.audit.writer import AuditWriter
 
 
@@ -55,6 +56,8 @@ class AccessService:
         role_permission_repo: RolePermissionRepository,
         checker: AccessChecker,
         audit_writer: AuditWriter,
+        *,
+        session_repo: SessionRepository,
     ) -> None:
         if audit_writer is None:
             raise AccessServiceError(
@@ -64,12 +67,18 @@ class AccessService:
             raise AccessServiceError(
                 "checker ist Pflicht (fail closed)"
             )
+        if session_repo is None:
+            raise AccessServiceError(
+                "session_repo ist Pflicht (fail closed, "
+                "Auflage 19)"
+            )
         self._principals = principal_repo
         self._roles = role_repo
         self._perms = permission_repo
         self._role_perms = role_permission_repo
         self._checker = checker
         self._audit = audit_writer
+        self._session_repo = session_repo
 
     @classmethod
     def from_conn(
@@ -83,7 +92,11 @@ class AccessService:
         perms = PermissionRepository(conn)
         rp = RolePermissionRepository(conn)
         checker = AccessChecker(principals, roles, perms)
-        return cls(principals, roles, perms, rp, checker, audit_writer)
+        session_repo = SessionRepository(conn)
+        return cls(
+            principals, roles, perms, rp, checker, audit_writer,
+            session_repo=session_repo,
+        )
 
     # ------------------------------------------------------------------ #
     # Audit
