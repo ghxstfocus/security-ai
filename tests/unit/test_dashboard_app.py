@@ -36,7 +36,10 @@ from core.inventory.repository import (
     connect,
 )
 from apps.dashboard.app import create_app
-from tests.unit._helpers import set_session_cookie
+from tests.unit._helpers import (
+    build_dashboard_app,
+    set_session_cookie,
+)
 from apps.dashboard.decorators import (
     PUBLIC_PATHS,
     require_permission,
@@ -45,32 +48,7 @@ from apps.dashboard.decorators import (
 
 @pytest.fixture()
 def app(tmp_path: Path):
-    db = tmp_path / "t.db"
-    app = create_app(
-        db_path=db,
-        migrations_dir=DEFAULT_MIGRATIONS_DIR,
-        audit_base_dir=str(tmp_path / "audit"),
-        secret_key="x" * 48,
-    )
-    conn = connect(db)
-    apply_migrations(conn, DEFAULT_MIGRATIONS_DIR)
-    roles = RoleRepository(conn)
-    principals = PrincipalRepository(conn)
-    admin_role = roles.get_by_name("admin")
-    viewer_role = roles.get_by_name("viewer")
-    principals.create(
-        name="admin1", role_id=admin_role.row_id,
-        kind=PrincipalKind.HUMAN,
-    )
-    principals.create(
-        name="viewer1", role_id=viewer_role.row_id,
-        kind=PrincipalKind.HUMAN,
-    )
-    sr = SessionRepository(conn)
-    sr.create("sid-1", "admin1")
-    sr.create("sid-viewer", "viewer1")
-    conn.close()
-    return app
+    return build_dashboard_app(tmp_path)
 
 
 @pytest.fixture()
@@ -141,14 +119,17 @@ def test_route_with_permission_ok(app, client):
     assert r.data == b"ok"
 
 
-def test_public_route_no_redirect(app):
-    @app.route("/login")
-    def login():
-        return "login", 200
+def test_login_form_renders_csrf_input(app):
+    # Auflage 168: echte /login-Route (kein
+    # Test-Override). Prueft CSRF-Input.
     c = app.test_client()
     r = c.get("/login")
     assert r.status_code == 200
-    assert r.data == b"login"
+    assert r.headers["Content-Type"].startswith(
+        "text/html",
+    )
+    assert b"action='/login'" in r.data
+    assert b"name='_csrf_token'" in r.data
 
 
 def test_no_session_redirects_to_login(app):
