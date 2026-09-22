@@ -34,7 +34,7 @@ from datetime import datetime
 from typing import Any, Protocol
 
 from core.access.checker import AccessChecker, AccessDeniedError
-from core.config import get_model_default
+from core.config import get_model_default, get_model_large
 from harness.audit.writer import AuditWriter
 from harness.context.builder import ContextBuilder
 from harness.context.models import ContextBundle
@@ -83,8 +83,10 @@ def _matches_detail_regex(question: str) -> bool:
 _STATE_QUESTION_RE = re.compile(
     r"\b(heute|gestern|vorgestern|letzte[sn]?|"
     r"diese[sn]?|"
-    r"passiert|vorgefallen|aufgefallen|"
-    r"auffaellig|verdaechtig|anomal|"
+    r"passiert\w*|vorgefallen\w*|aufgefallen\w*|"
+    r"auff(?:a|ae|\u00e4)llig\w*|"
+    r"verd(?:ae|a|\u00e4)chtig\w*|"
+    r"anomal\w*|"
     r"online|offline|aktiv|inaktiv|"
     r"neu|unbekannt|"
     r"welche\s+(ip|geraet|host|person)|"
@@ -104,6 +106,27 @@ def _is_state_question(question: str) -> bool:
     if not isinstance(question, str):
         return False
     return _STATE_QUESTION_RE.search(question) is not None
+
+
+# Kritische Kategorien: bei Zustandsfrage mit diesen Werten
+# schaltet der Service auf das grosse Modell um.
+_CRITICAL_CATEGORIES = frozenset({"CONFIRMED", "SECURITY_ALERT"})
+
+
+def _has_critical_assessments(context: ContextBundle) -> bool:
+    for ra in context.risk_assessments:
+        cat = _get_field(ra, "category")
+        if isinstance(cat, str) and cat in _CRITICAL_CATEGORIES:
+            return True
+    return False
+
+
+def _is_critical_state_question(
+    question: str, context: ContextBundle,
+) -> bool:
+    return _is_state_question(question) and _has_critical_assessments(
+        context
+    )
 
 
 # ---------------------------------------------------------------------- #
@@ -130,6 +153,7 @@ class ChatResponse:
     source: str = "llm"
     # Werte: "llm" | "detail_append" | "no_context" | "llm_error"
     model: str | None = None
+    model_reason: str | None = None
     denied: bool = False
 
 
@@ -147,6 +171,7 @@ class ChatService:
         context_builder: ContextBuilder | None = None,
         system_prompt: str | None = None,
         default_model: str | None = None,
+        large_model: str | None = None,
     ) -> None:
         if audit_writer is None:
             raise ChatServiceError(
@@ -169,6 +194,34 @@ class ChatService:
             default_model if default_model is not None
             else get_model_default()
         )
+        self._large_model = (
+            large_model if large_model is not None
+            else get_model_large()
+        )
+
+    # ------------------------------------------------------------------ #
+    # Modellwahl
+    # ------------------------------------------------------------------ #
+
+    def _select_model(
+        self,
+        question: str,
+        context: ContextBundle,
+        explicit_model: str | None,
+    ) -> tuple[str, str]:
+        """
+        Liefert (model, reason).
+
+        Prioritaet:
+        1. explicit_model (CLI --model)
+        2. large_model, wenn kritische Zustandsfrage
+        3. default_model
+        """
+        if explicit_model:
+            return (explicit_model, "explicit")
+        if _is_critical_state_question(question, context):
+            return (self._large_model, "auto_critical_state")
+        return (self._default_model, "default")
 
     # ------------------------------------------------------------------ #
     # Audit
@@ -334,7 +387,9 @@ class ChatService:
             )
 
         # 5) Normaler LLM-Pfad
-        effective_model = model if model is not None else self._default_model
+        effective_model, model_reason = self._select_model(
+            question, context, model,
+        )
         prompt = _build_prompt(
             question=question,
             context=context,
@@ -377,6 +432,7 @@ class ChatService:
             principal=principal_name,
             source="llm",
             model=resp_model,
+            model_reason=model_reason,
             include_details=include_details,
             context_counts=context.counts(),
             context_redacted=context.redacted,
@@ -389,6 +445,7 @@ class ChatService:
             used_llm=True,
             source="llm",
             model=resp_model,
+            model_reason=model_reason,
         )
 
 
@@ -513,6 +570,9 @@ _DEFAULT_SYSTEM_PROMPT = (
     "Kontext keine Antwort enthaelt, sage das ehrlich. "
     "Spekuliere nicht. Erfinde keine Zahlen, Zeiten, IPs "
     "oder Ereignisse.\n"
+    "Bei Zustandsfragen mit CONFIRMED- oder "
+    "SECURITY_ALERT-Assessments ist die Antwort JA "
+    "(es gab Auffaelligkeiten). Verweise auf die Zahlen.\n"
     "\n"
     "Du entscheidest nicht. Du erklaerst.\n"
     "Du empfiehlst keine Aktionen ohne Freigabe.\n"
@@ -533,6 +593,16 @@ def _build_prompt(
     True ist. Sonst nur aggregierte Zaehler.
     """
     lines: list[str] = []
+
+    # Harter Hinweis bei kritischen Assessments
+    if _has_critical_assessments(context):
+        cats = _format_categories(context.risk_assessments)
+        lines.append(
+            f"WICHTIG: Der Kontext enthaelt kritische "
+            f"Risk-Assessments ({cats}). Bei Fragen nach "
+            f"Auffaelligkeiten ist die Antwort JA."
+        )
+
     lines.append("Kontext:")
     counts = context.counts()
     for k, v in counts.items():
@@ -544,6 +614,12 @@ def _build_prompt(
         cats = _format_categories(ra)
         if cats:
             lines.append(f"- risk_assessments.categories: {cats}")
+            lines.append(
+                "  (CONFIRMED = bestaetigter Vorfall, "
+                "SECURITY_ALERT = Sicherheitsalarm, "
+                "SUSPICION = Verdacht, ANOMALY = Anomalie, "
+                "EVENT = normales Ereignis)"
+            )
         rules = _format_rules(ra)
         if rules:
             lines.append(f"- risk_assessments.rules: {rules}")
