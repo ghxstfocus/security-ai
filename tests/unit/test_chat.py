@@ -392,5 +392,47 @@ class ChatServiceAuditTests(_ChatBase):
         self.assertNotIn("question", entry["details"])
 
 
+# ---------------------------------------------------------------------- #
+# no_context-Pfad
+# ---------------------------------------------------------------------- #
+
+class ChatServiceNoContextTests(_ChatBase):
+    def test_zustandsfrage_leerer_kontext_kein_llm(self):
+        self.llm.calls.clear()
+        r = self.svc.ask("admin", "Gab es heute Nacht Auffaelligkeiten?")
+        self.assertEqual(r.source, "no_context")
+        self.assertFalse(r.used_llm)
+        self.assertEqual(r.model, None)
+        self.assertIn("keine Daten", r.answer)
+        self.assertEqual(self.llm.calls, [])
+
+    def test_zustandsfrage_mit_kontext_llm_pfad(self):
+        self.llm.calls.clear()
+        r = self.svc.ask(
+            "admin", "Welche Geraete sind neu?",
+            inventory_snapshot={"device_count": 3,
+                                "recently_added": ["10.0.0.1"]},
+        )
+        self.assertEqual(r.source, "llm")
+        self.assertTrue(r.used_llm)
+        self.assertEqual(len(self.llm.calls), 1)
+
+    def test_konzeptfrage_leerer_kontext_llm_pfad(self):
+        self.llm.calls.clear()
+        r = self.svc.ask("admin", "Was ist ein Portscan?")
+        self.assertEqual(r.source, "llm")
+        self.assertTrue(r.used_llm)
+        self.assertEqual(len(self.llm.calls), 1)
+
+    def test_no_context_audit_eintrag(self):
+        self.svc.ask("admin", "Gab es heute Auffaelligkeiten?")
+        answered = [
+            e for e in self._audit_entries()
+            if e["details"]["kind"] == "chat_answered"
+        ]
+        self.assertEqual(len(answered), 1)
+        self.assertEqual(answered[0]["details"]["source"], "no_context")
+
+
 if __name__ == "__main__":
     unittest.main()

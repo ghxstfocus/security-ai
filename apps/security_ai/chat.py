@@ -78,6 +78,34 @@ def _matches_detail_regex(question: str) -> bool:
     return _DETAIL_RE.search(question) is not None
 
 
+# Zustandsfragen: beziehen sich auf konkrete Zeitpunkte, Ereignisse,
+# Geraete. Werden ohne Kontext ehrlich abgelehnt (no_context-Pfad).
+_STATE_QUESTION_RE = re.compile(
+    r"\b(heute|gestern|vorgestern|letzte[sn]?|"
+    r"diese[sn]?|"
+    r"passiert|vorgefallen|aufgefallen|"
+    r"auffaellig|verdaechtig|anomal|"
+    r"online|offline|aktiv|inaktiv|"
+    r"neu|unbekannt|"
+    r"welche\s+(ip|geraet|host|person)|"
+    r"wie\s+viele|wieviele|"
+    r"seit\s+wann|"
+    r"wer\s+(war|hat|ist)|"
+    r"wo\s+(war|ist)|"
+    r"wann\s+(war|hat)|"
+    r"status|zustand|"
+    r"zeig\s+mir|"
+    r"liste\s+(alle|mir))\b",
+    re.IGNORECASE,
+)
+
+
+def _is_state_question(question: str) -> bool:
+    if not isinstance(question, str):
+        return False
+    return _STATE_QUESTION_RE.search(question) is not None
+
+
 # ---------------------------------------------------------------------- #
 # Ergebnis-Typen
 # ---------------------------------------------------------------------- #
@@ -94,12 +122,13 @@ class ChatResponse:
     principal: str
     question: str
     context_used: ContextBundle
-    used_llm: bool
+    used_llm: bool = False
     llm_error: str | None = None
     answer_id: str | None = None
     created_at: datetime | None = None
     # Phase 3.5 Erweiterungen
-    source: str = "llm"      # "llm" | "detail_append"
+    source: str = "llm"
+    # Werte: "llm" | "detail_append" | "no_context" | "llm_error"
     model: str | None = None
     denied: bool = False
 
