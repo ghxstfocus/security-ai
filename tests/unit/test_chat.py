@@ -500,5 +500,108 @@ class ChatServicePromptEnrichmentTests(_ChatBase):
         self.assertIn("0.90", prompt)
 
 
+# ---------------------------------------------------------------------- #
+# Auto-Switch + Timeouts
+# ---------------------------------------------------------------------- #
+
+class ChatServiceAutoSwitchTests(_ChatBase):
+    def test_auto_switch_bei_confirmed(self):
+        self.llm.calls.clear()
+        r = self.svc.ask(
+            "admin", "Gab es Auffaelligkeiten?",
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+            ),
+        )
+        self.assertEqual(r.model, "qwen2.5:7b")
+        self.assertEqual(r.model_reason, "auto_critical_state")
+        self.assertEqual(self.llm.calls[-1].model, "qwen2.5:7b")
+        self.assertEqual(self.llm.calls[-1].timeout, 180.0)
+
+    def test_auto_switch_bei_security_alert(self):
+        self.llm.calls.clear()
+        r = self.svc.ask(
+            "admin", "Gab es Auffaelligkeiten?",
+            risk_assessments=(
+                {"category": "SECURITY_ALERT", "score": 0.6},
+            ),
+        )
+        self.assertEqual(r.model, "qwen2.5:7b")
+        self.assertEqual(r.model_reason, "auto_critical_state")
+
+    def test_kein_auto_switch_bei_event_only(self):
+        self.llm.calls.clear()
+        r = self.svc.ask(
+            "admin", "Gab es Auffaelligkeiten?",
+            risk_assessments=(
+                {"category": "EVENT", "score": 0.1},
+            ),
+        )
+        # Zustandsfrage + nur EVENT -> kein no_context (Kontext
+        # ist nicht leer), aber auch kein Auto-Switch.
+        self.assertEqual(r.model, "llama3.2:3b")
+        self.assertEqual(r.model_reason, "default")
+        self.assertEqual(self.llm.calls[-1].timeout, 30.0)
+
+    def test_kein_auto_switch_bei_konzeptfrage(self):
+        self.llm.calls.clear()
+        r = self.svc.ask(
+            "admin", "Was ist ein Portscan?",
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+            ),
+        )
+        self.assertEqual(r.model, "llama3.2:3b")
+        self.assertEqual(r.model_reason, "default")
+
+    def test_explicit_model_gewinnt(self):
+        self.llm.calls.clear()
+        r = self.svc.ask(
+            "admin", "Gab es Auffaelligkeiten?",
+            model="qwen2.5:7b",
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+            ),
+        )
+        self.assertEqual(r.model, "qwen2.5:7b")
+        self.assertEqual(r.model_reason, "explicit_user")
+
+    def test_auto_large_false_deaktiviert(self):
+        # neuer Service mit auto_large=False
+        svc = ChatService(
+            audit_writer=self.audit,
+            llm_client=self.llm,
+            checker=self.checker,
+            auto_large=False,
+            default_model="llama3.2:3b",
+            large_model="qwen2.5:7b",
+        )
+        self.llm.calls.clear()
+        r = svc.ask(
+            "admin", "Gab es Auffaelligkeiten?",
+            risk_assessments=(
+                {"category": "CONFIRMED", "score": 0.85},
+            ),
+        )
+        self.assertEqual(r.model, "llama3.2:3b")
+        self.assertEqual(r.model_reason, "default")
+
+
+class TimeoutHelperTests(unittest.TestCase):
+    def test_bekannte_modelle(self):
+        from apps.security_ai.chat import _timeout_for_model
+        self.assertEqual(_timeout_for_model("llama3.2:3b"), 30)
+        self.assertEqual(_timeout_for_model("qwen2.5:7b"), 180)
+
+    def test_unbekanntes_modell(self):
+        from apps.security_ai.chat import _timeout_for_model
+        self.assertEqual(_timeout_for_model("unbekannt:1b"), 60)
+
+    def test_leerer_string(self):
+        from apps.security_ai.chat import _timeout_for_model
+        self.assertEqual(_timeout_for_model(""), 60)
+        self.assertEqual(_timeout_for_model(None), 60)
+
+
 if __name__ == "__main__":
     unittest.main()

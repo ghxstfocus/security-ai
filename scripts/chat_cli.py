@@ -102,6 +102,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--no-bootstrap", action="store_true",
                    help="Kein Auto-Bootstrap: fail closed, wenn DB fehlt "
                         "oder cli-admin fehlt")
+    p.add_argument("--no-auto-large", action="store_true",
+                   help="Auto-Switch zu grossem Modell deaktivieren")
     p.add_argument("--context-hours", type=int, default=24,
                    help="Zeitfenster fuer Kontext (Default: 24)")
     p.add_argument("--context-max-assessments", type=int, default=50,
@@ -126,7 +128,15 @@ def _print_response(resp) -> None:
     if resp.source == "detail_append":
         print(f"\n[Quelle: Detail-Anhang]", file=sys.stderr)
     elif resp.source == "llm" and resp.model:
-        print(f"\n[Modell: {resp.model}]", file=sys.stderr)
+        reason = getattr(resp, "model_reason", None)
+        if reason:
+            print(f"\n[Modell: {resp.model} -- {reason}]",
+                  file=sys.stderr)
+            if reason == "auto_critical_state":
+                print("[Auto-Switch zu grossem Modell -- kann "
+                      "1-3 Minuten dauern]", file=sys.stderr)
+        else:
+            print(f"\n[Modell: {resp.model}]", file=sys.stderr)
 
 
 def _print_whoami(svc: AccessService, principal_name: str) -> int:
@@ -240,6 +250,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             audit_writer=audit,
             llm_client=llm,
             checker=checker,
+            auto_large=not args.no_auto_large,
         )
         access_svc = AccessService(
             principals, roles, perms, role_perms,

@@ -112,6 +112,18 @@ def _is_state_question(question: str) -> bool:
 # schaltet der Service auf das grosse Modell um.
 _CRITICAL_CATEGORIES = frozenset({"CONFIRMED", "SECURITY_ALERT"})
 
+# Modellabhaengige Timeouts (Sekunden). Fallback 60.
+_MODEL_TIMEOUTS = {
+    "llama3.2:3b": 30,
+    "qwen2.5:7b": 180,
+}
+
+
+def _timeout_for_model(model: str) -> int:
+    if not isinstance(model, str) or not model:
+        return 60
+    return _MODEL_TIMEOUTS.get(model, 60)
+
 
 def _has_critical_assessments(context: ContextBundle) -> bool:
     for ra in context.risk_assessments:
@@ -172,6 +184,7 @@ class ChatService:
         system_prompt: str | None = None,
         default_model: str | None = None,
         large_model: str | None = None,
+        auto_large: bool = True,
     ) -> None:
         if audit_writer is None:
             raise ChatServiceError(
@@ -198,6 +211,7 @@ class ChatService:
             large_model if large_model is not None
             else get_model_large()
         )
+        self._auto_large = bool(auto_large)
 
     # ------------------------------------------------------------------ #
     # Modellwahl
@@ -208,20 +222,34 @@ class ChatService:
         question: str,
         context: ContextBundle,
         explicit_model: str | None,
-    ) -> tuple[str, str]:
+    ) -> tuple[str, str, int]:
         """
-        Liefert (model, reason).
+        Liefert (model, reason, timeout).
 
         Prioritaet:
         1. explicit_model (CLI --model)
-        2. large_model, wenn kritische Zustandsfrage
+        2. large_model, wenn auto_large und kritische Zustandsfrage
         3. default_model
         """
         if explicit_model:
-            return (explicit_model, "explicit")
-        if _is_critical_state_question(question, context):
-            return (self._large_model, "auto_critical_state")
-        return (self._default_model, "default")
+            return (
+                explicit_model,
+                "explicit_user",
+                _timeout_for_model(explicit_model),
+            )
+        if self._auto_large and _is_critical_state_question(
+            question, context
+        ):
+            return (
+                self._large_model,
+                "auto_critical_state",
+                _timeout_for_model(self._large_model),
+            )
+        return (
+            self._default_model,
+            "default",
+            _timeout_for_model(self._default_model),
+        )
 
     # ------------------------------------------------------------------ #
     # Audit
@@ -387,8 +415,8 @@ class ChatService:
             )
 
         # 5) Normaler LLM-Pfad
-        effective_model, model_reason = self._select_model(
-            question, context, model,
+        effective_model, model_reason, model_timeout = (
+            self._select_model(question, context, model)
         )
         prompt = _build_prompt(
             question=question,
@@ -400,7 +428,7 @@ class ChatService:
             system=self._system_prompt,
             model=effective_model,
             max_tokens=max_tokens if max_tokens is not None else 512,
-            timeout=timeout if timeout is not None else 30.0,
+            timeout=timeout if timeout is not None else float(model_timeout),
         )
 
         try:

@@ -725,3 +725,63 @@ gesetzt ist, wird der Detail-Pfad genutzt:
 - Kein Login (Phase 3.6).
 - Kein Streaming (spaeter).
 - Keine Session-Historie (harness/memory, spaeter).
+
+## 12. Auto-Switch zu grossem Modell (Phase 3.5.7)
+
+### Prinzip
+
+Zustandsfragen mit kritischen Assessments werden mit dem
+grossen Modell beantwortet (qwen2.5:7b). Alle anderen Fragen
+mit dem Default (llama3.2:3b).
+
+Grund: Das 3B-Modell erkennt zwar die Zahlen, interpretiert
+sie aber falsch ("keine Auffaelligkeiten" bei 31 CONFIRMED).
+Das 7B-Modell beantwortet dieselbe Frage korrekt, ist auf
+CPU-only aber deutlich langsamer (1-3 Minuten).
+
+### Regel
+
+    if explicit_model:
+        -> explicit_user
+    elif auto_large and is_critical_state_question:
+        -> auto_critical_state
+    else:
+        -> default
+
+Kritisch = _is_state_question(question) UND
+           risk_assessments enthaelt CONFIRMED oder
+           SECURITY_ALERT.
+
+auto_large ist Default True, per --no-auto-large oder
+ChatService(auto_large=False) abschaltbar.
+
+### Timeouts
+
+Modellabhaengig:
+
+    llama3.2:3b  -> 30 s
+    qwen2.5:7b   -> 180 s
+    unbekannt    -> 60 s
+
+--timeout ueberschreibt.
+
+### Transparenz
+
+ChatResponse.model_reason: "default" | "auto_critical_state" |
+"explicit_user".
+
+CLI zeigt:
+
+    [Modell: qwen2.5:7b -- auto_critical_state]
+    [Auto-Switch zu grossem Modell -- kann 1-3 Minuten dauern]
+
+### Audit
+
+chat_answered enthaelt model und model_reason. Damit ist
+nachvollziehbar, welches Modell mit welcher Begruendung
+geantwortet hat.
+
+### Modellwahl bleibt Empfehlung
+
+Der Auto-Switch ist eine Heuristik, keine harte Regel. Der
+Mensch kann mit --model oder --no-auto-large eingreifen.
