@@ -92,6 +92,11 @@ Tests: 374 gruen (Unit + Integration).
 
 ### Format-Regeln
 
+- **Vor jedem Patch einer bestehenden Datei: erst `cat`en.**
+  Anker-Strings muessen aus dem echten Inhalt stammen, nicht
+  aus dem Gedaechtnis. Sonst gehen Inhalte verloren (Beispiel:
+  `.env.example`, `PROJECT_VISION.md` Stufe 2.5).
+
 - Lies IMMER erst den Code, bevor du baust. Der Chat plant die
   Richtung, der Code ist die Wahrheit.
 - Nie `cat > datei << EOF` bei bestehenden Config- oder
