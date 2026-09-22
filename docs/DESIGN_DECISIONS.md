@@ -753,7 +753,10 @@ Kritisch = _is_state_question(question) UND
            SECURITY_ALERT.
 
 auto_large ist Default True, per --no-auto-large oder
-ChatService(auto_large=False) abschaltbar.
+ChatService(auto_large=False) abschaltbar. Aber:
+- Fakt-Fragen gehen nie ans LLM (Abschnitt 14).
+- Concept-Fragen ignorieren den Auto-Switch (Abschnitt 14).
+- Der Sanity-Check bleibt unabhaengig von auto_large aktiv.
 
 ### Timeouts
 
@@ -781,10 +784,40 @@ chat_answered enthaelt model und model_reason. Damit ist
 nachvollziehbar, welches Modell mit welcher Begruendung
 geantwortet hat.
 
-### Modellwahl bleibt Empfehlung
+### Auto-Switch ist PFLICHT bei kritischen Assessments
 
-Der Auto-Switch ist eine Heuristik, keine harte Regel. Der
-Mensch kann mit --model oder --no-auto-large eingreifen.
+llama3.2:3b ist bei kritischen Assessments unzuverlaessig.
+Zwei Live-Tests haben das gezeigt:
+
+1. Phase 3.5.7: Antwort "NEIN, keine Auffaelligkeiten"
+   trotz 31 CONFIRMED + 12 SECURITY_ALERT im Kontext.
+2. Phase 3.5.9: Antwort "7 SUSPICION-Auffaelligkeiten"
+   trotz 31 CONFIRMED (Underreporting).
+
+Beide Faelle sind kein Prompt-Problem. Ein 3B-Modell kann
+nicht zuverlaessig schliessen.
+
+Konsequenz:
+
+- Auto-Switch zu qwen2.5:7b bei Interpretation mit kritischen
+  Assessments ist PFLICHT, nicht Robustheit.
+- --no-auto-large riskiert Underreporting. CLI-Warnung.
+- Der Sanity-Check (Denial + Underreporting) ist NICHT durch
+  auto_large abschaltbar. Sicherheitsschicht.
+- Der Sanity-Check greift nur bei Interpretation, nicht bei
+  concept (Konzeptfragen reden nicht ueber den Kontext).
+
+### Abgrenzung zu Fakt-Fragen
+
+Faktenfragen ("Gab es Auffaelligkeiten?", "Wie viele Events?")
+laufen NICHT ans LLM. Sie sind deterministisch (Abschnitt 14).
+Der Auto-Switch ist nur fuer Interpretationsfragen relevant.
+
+### Modellwahl bleibt Empfehlung (nur bei Interpretation)
+
+Wenn keine kritischen Assessments vorliegen, ist die
+Modellwahl eine Empfehlung. Der Mensch kann mit --model
+eingreifen. Bei kritischen Assessments greift die Pflicht.
 
 ## 14. Frage-Klassifikation (Phase 3.5.8)
 
