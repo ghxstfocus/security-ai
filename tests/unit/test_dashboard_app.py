@@ -36,10 +36,10 @@ from core.inventory.repository import (
     connect,
 )
 from apps.dashboard.app import create_app
+from tests.unit._helpers import set_session_cookie
 from apps.dashboard.decorators import (
     PUBLIC_PATHS,
     require_permission,
-    SESSION_COOKIE_NAME,
 )
 
 
@@ -73,26 +73,17 @@ def app(tmp_path: Path):
     return app
 
 
-def _set_cookie(client, value):
-    client.set_cookie(
-        SESSION_COOKIE_NAME, value,
-        domain="localhost",
-        secure=True, httponly=True, samesite="Strict",
-    )
-    return client
-
-
 @pytest.fixture()
 def client(app):
     c = app.test_client()
-    _set_cookie(c, "sid-1")
+    set_session_cookie(c, "sid-1")
     return c
 
 
 @pytest.fixture()
 def viewer_client(app):
     c = app.test_client()
-    _set_cookie(c, "sid-viewer")
+    set_session_cookie(c, "sid-viewer")
     return c
 
 
