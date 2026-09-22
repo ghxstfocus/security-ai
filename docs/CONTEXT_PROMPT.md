@@ -77,15 +77,33 @@ Append-only Audit, Fail closed, Foederation statt Monolith.
   Fact-Pfad deterministisch, kein LLM bei Fakten
 - Phase 3.5.9 — Sanity-Check (Denial + Underreporting) + Retry
   mit 7B; Auto-Switch bei kritischen Assessments ist PFLICHT
+- Phase 3.6.1 — Session-Modell + SessionRepository +
+  LoginAttemptRepository (Migration 0006)
+- Phase 3.6.2 — get_secret_key + ConfigError (fail closed)
+- Phase 3.6.3 — AccessService.set_password
+  (RBAC + Session-Invalidierung)
+- Phase 3.6.4 — AuditReaderService (RBAC, nur Lesen)
+- Phase 3.6.5 — Flask-App-Factory + RBAC-Middleware
+  (before_request, Sicherheitsnetz, Errorhandler)
+- Phase 3.6.6 — Login + Logout + CSRF + Rate-Limit
+  + Audit (csrf.py, auth.py)
+- Phase 3.6.7a — Static (CSS, JS, SVG-Favicon)
+- Phase 3.6.7b — base.html + Partials + CSP-Header
+  (strict, kein unsafe-inline)
+- Phase 3.6.7c — login.html als Template
+- Phase 3.6.7d — index.html + Route / (device.read)
+- Phase 3.6.7e — CSP-Header-Test (alle Direktiven)
 
-Tests: 429 gruen (Unit + Integration).
+Tests: 477 gruen (Unit + Integration, venv).
 
 ### Was als Naechstes kommt
 
-- Phase 3.6 — Web-Dashboard (Flask, Login ueber principals,
-  Bereiche: Dashboard, Inventar, Alarme, Approvals, Changes,
-  Chat, Benutzer, Rollen, Audit, Einstellungen). Baut auf den
-  Services (core/services) auf.
+- Phase 3.6.8+ — Web-Dashboard: einzelne Seiten mit echten
+  Daten (Inventar, Alarme, Approvals, Changes, Chat, Users,
+  Roles, Audit, Settings). Baut auf den Services
+  (core/services) auf.
+- Phase 3.7 (optional) — Host-Scanner / Netzwerk-Discovery
+  (Proxmox-Watcher).
 - Phase 3.5.5+ (optional) — Principal-Objekte, assign_role.
 - Phase 5 — Admin AI (optional, Cloud, MCP). Setzt lokale KI
   voraus.
@@ -108,6 +126,9 @@ Tests: 429 gruen (Unit + Integration).
   die unfertige Datei nach.
 - Keine Umlaute in Code-Bloecken (oe, ue, ae, ss).
 - Kein sed auf Python-Code. Patches per Python-Skript.
+- Bei Auflagen mit Jinja-Syntax oder API:
+  vorher pruefen (Doku, inspect.signature),
+  nicht aus dem Gedaechtnis.
 - Nach jedem Schritt: wc -l, py_compile, pytest -q, git commit.
 - **Immer `/opt/security-ai/.venv/bin/python3` verwenden**,
   nicht `/usr/bin/python3`. Grund: System-Python hat nicht
@@ -140,12 +161,11 @@ Tests: 429 gruen (Unit + Integration).
 
 Phase 1-4 abgeschlossen. Phase 3.5 inkl. 3.5.5-3.5.9
 abgeschlossen. Phase 3.6 (Web-Dashboard) in Arbeit:
-3.6.1-3.6.4 fertig, 3.6.5 teilweise.
+3.6.1-3.6.7e fertig, Login + CSP + erste Seiten stehen.
 
-HEAD: lokal, nicht gepusht (Stand 4a4e2ab + Umstellungs-
-Commit). Naechster Schritt: 3.6.5 Dashboard-Tests.
+Naechster Schritt: 3.6.8+ (einzelne Seiten mit Daten).
 
-Tests: 429 gruen (venv, pytest 9.1.1).
+Tests: 477 gruen (venv, pytest 9.1.1).
 
 ### Aufgabe jetzt
 
