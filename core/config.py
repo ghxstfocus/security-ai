@@ -26,6 +26,17 @@ _loaded_paths: set[str] = set()
 
 
 # ---------------------------------------------------------------------- #
+# Fehler
+# ---------------------------------------------------------------------- #
+
+class ConfigError(RuntimeError):
+    """Fehlende oder ungueltige Konfiguration (fail closed)."""
+
+
+SECRET_KEY_MIN_BYTES = 32
+
+
+# ---------------------------------------------------------------------- #
 # .env-Loader
 # ---------------------------------------------------------------------- #
 
@@ -96,6 +107,39 @@ def get_model_large() -> str:
     return os.environ.get("SECURITY_AI_MODEL_LARGE", DEFAULT_MODEL_LARGE)
 
 
+def get_secret_key() -> str:
+    """
+    Liest SECRET_KEY aus der Umgebung.
+
+    Fail closed:
+    - Variable fehlt -> ConfigError.
+    - Wert kuerzer als SECRET_KEY_MIN_BYTES (in Byte,
+      UTF-8-kodiert) -> ConfigError.
+
+    Kein Default, kein Fallback auf os.urandom.
+    Byte-Laenge, nicht Zeichen-Laenge (kryptographische
+    Groesse).
+
+    Erzeugen:
+        python3 -c 'import secrets; print(secrets.token_urlsafe(48))'
+    """
+    value = os.environ.get("SECRET_KEY")
+    if not value:
+        raise ConfigError(
+            "SECRET_KEY fehlt in der Umgebung (.env). "
+            "Erzeugen mit: python3 -c 'import secrets; "
+            "print(secrets.token_urlsafe(48))'"
+        )
+    n_bytes = len(value.encode("utf-8"))
+    if n_bytes < SECRET_KEY_MIN_BYTES:
+        raise ConfigError(
+            f"SECRET_KEY zu kurz ({n_bytes} Byte, "
+            f"mindestens {SECRET_KEY_MIN_BYTES}). "
+            "Empfehlung: secrets.token_urlsafe(48)"
+        )
+    return value
+
+
 __all__ = [
     "load_env",
     "reset_cache",
@@ -106,4 +150,7 @@ __all__ = [
     "DEFAULT_OLLAMA_BASE_URL",
     "DEFAULT_MODEL",
     "DEFAULT_MODEL_LARGE",
+    "ConfigError",
+    "SECRET_KEY_MIN_BYTES",
+    "get_secret_key",
 ]
