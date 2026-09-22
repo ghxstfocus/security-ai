@@ -24,15 +24,11 @@ from core.access.repository import (
     RoleRepository,
 )
 from core.access.session_repo import SessionRepository
-from core.inventory.repository import (
-    DEFAULT_MIGRATIONS_DIR,
-    apply_migrations,
-    connect,
-)
 from core.services.access_service import (
     AccessService,
     AccessServiceError,
 )
+from tests.unit._helpers import migrated_conn
 from harness.audit.writer import AuditWriter
 
 
@@ -42,9 +38,7 @@ from harness.audit.writer import AuditWriter
 
 @pytest.fixture()
 def conn(tmp_path: Path) -> sqlite3.Connection:
-    db_path = tmp_path / "test.db"
-    c = connect(db_path)
-    apply_migrations(c, DEFAULT_MIGRATIONS_DIR)
+    c = migrated_conn(tmp_path)
     yield c
     c.close()
 

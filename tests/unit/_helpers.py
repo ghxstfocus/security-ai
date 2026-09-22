@@ -7,6 +7,7 @@ koennen.
 """
 from __future__ import annotations
 
+import sqlite3
 from pathlib import Path
 
 from flask import Flask
@@ -83,7 +84,21 @@ def build_dashboard_app(tmp_path: Path) -> Flask:
     return app
 
 
+def migrated_conn(tmp_path: Path) -> sqlite3.Connection:
+    """Frische migrierte SQLite-Verbindung.
+
+    Helper, keine Fixture. tmp_path wird
+    durchgereicht. Caller ist verantwortlich
+    fuer close().
+    """
+    db_path = tmp_path / "test.db"
+    c = connect(db_path)
+    apply_migrations(c, DEFAULT_MIGRATIONS_DIR)
+    return c
+
+
 __all__ = [
     "build_dashboard_app",
+    "migrated_conn",
     "set_session_cookie",
 ]

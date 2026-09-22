@@ -24,11 +24,7 @@ from core.access.session_repo import (
     SessionRepository,
     SessionRepositoryError,
 )
-from core.inventory.repository import (
-    DEFAULT_MIGRATIONS_DIR,
-    apply_migrations,
-    connect,
-)
+from tests.unit._helpers import migrated_conn
 
 
 # ---------------------------------------------------------------------- #
@@ -37,9 +33,7 @@ from core.inventory.repository import (
 
 @pytest.fixture()
 def conn(tmp_path: Path) -> sqlite3.Connection:
-    db_path = tmp_path / "test.db"
-    c = connect(db_path)
-    apply_migrations(c, DEFAULT_MIGRATIONS_DIR)
+    c = migrated_conn(tmp_path)
     roles = RoleRepository(c)
     viewer = roles.get_by_name("viewer")
     principals = PrincipalRepository(c)
