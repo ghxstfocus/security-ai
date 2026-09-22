@@ -18,6 +18,9 @@ from datetime import datetime, timezone
 from typing import Any
 
 from core.access.checker import AccessChecker
+from core.reporting.audit_reader import (
+    read_risk_assessments,
+)
 from core.services import ServiceError
 from harness.audit.writer import AuditWriter
 
@@ -47,8 +50,8 @@ class AuditReaderService:
         self._audit = audit_writer
         self._checker = checker
 
-    def _require(self, actor: str) -> None:
-        self._checker.require_permission(actor, "audit.read")
+    def _require(self, actor: str, code: str) -> None:
+        self._checker.require_permission(actor, code)
 
     def _validate_date(self, date_str: str) -> str:
         if not isinstance(date_str, str) or not DATE_RE.match(date_str):
@@ -72,12 +75,12 @@ class AuditReaderService:
     def read_day(
         self, actor: str, date_str: str,
     ) -> list[dict[str, Any]]:
-        self._require(actor)
+        self._require(actor, "audit.read")
         self._validate_date(date_str)
         return self._read_day_impl(date_str)
 
     def read_all(self, actor: str) -> list[dict[str, Any]]:
-        self._require(actor)
+        self._require(actor, "audit.read")
         result: list[dict[str, Any]] = []
         base = self._audit.base_dir
         if not base.exists():
@@ -101,7 +104,7 @@ class AuditReaderService:
     def find_by_audit_id(
         self, actor: str, audit_id: str,
     ) -> dict[str, Any] | None:
-        self._require(actor)
+        self._require(actor, "audit.read")
         if not isinstance(audit_id, str) or \
                 not AUDIT_ID_RE.match(audit_id):
             raise AuditReaderServiceError(
@@ -112,6 +115,31 @@ class AuditReaderService:
             if e.get("audit_id") == audit_id:
                 return e
         return None
+
+    def list_recent_assessments(
+        self, actor: str, limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        """
+        Liefert die letzten risk_assessment-Eintraege.
+
+        Format der Rueckgabe: siehe
+        core.reporting.audit_reader.read_risk_assessments.
+
+        RBAC: alert.view (neu seit Migration 0007).
+        Range: limit 1..1000, bool ausgeschlossen.
+        since_hours: fest 24 (kein Request-Parameter).
+        """
+        self._require(actor, "alert.view")
+        if (not isinstance(limit, int)
+                or isinstance(limit, bool)
+                or not (1 <= limit <= 1000)):
+            raise AuditReaderServiceError(
+                "limit out of range (1..1000)"
+            )
+        return read_risk_assessments(
+            since_hours=24,
+            max_entries=limit,
+        )
 
 
 __all__ = [

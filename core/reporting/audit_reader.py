@@ -109,7 +109,7 @@ def read_risk_assessments(
     Pro Eintrag kompaktes dict:
         {
           "audit_id": str | None,
-          "timestamp": str,
+          "timestamp": str | None,
           "event_id": str | None,
           "category": str | None,
           "score": float | None,

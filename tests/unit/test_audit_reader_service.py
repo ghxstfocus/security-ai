@@ -11,7 +11,11 @@ from pathlib import Path
 
 import pytest
 
-from core.access.checker import AccessChecker
+from core.access.checker import (
+    AccessChecker,
+    AccessDeniedError,
+)
+from core.access.models import PrincipalKind
 from core.access.repository import (
     PermissionRepository,
     PrincipalRepository,
@@ -149,3 +153,121 @@ def test_find_by_audit_id(
 def test_audit_reader_service_error_is_service_error():
     from core.services import ServiceError
     assert issubclass(AuditReaderServiceError, ServiceError)
+
+
+# ---------------------------------------------------------------------- #
+# Tests 3.6.8: list_recent_assessments
+# ---------------------------------------------------------------------- #
+
+def _create_principal(conn, name, role_name):
+    roles = RoleRepository(conn)
+    principals = PrincipalRepository(conn)
+    role = roles.get_by_name(role_name)
+    principals.create(
+        name=name, role_id=role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+
+
+def test_list_recent_assessments_requires_alert_view(
+    conn, tmp_path, monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+    _create_principal(conn, "viewer1", "viewer")
+    svc = AuditReaderService(
+        AuditWriter(base_dir=tmp_path / "audit"),
+        checker=AccessChecker.from_conn(conn),
+    )
+    with pytest.raises(AccessDeniedError):
+        svc.list_recent_assessments("viewer1")
+
+
+def test_list_recent_assessments_admin_ok(
+    conn, tmp_path, monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+    _create_principal(conn, "admin1", "admin")
+    svc = AuditReaderService(
+        AuditWriter(base_dir=tmp_path / "audit"),
+        checker=AccessChecker.from_conn(conn),
+    )
+    out = svc.list_recent_assessments("admin1")
+    assert out == []
+
+
+def test_list_recent_assessments_operator_ok(
+    conn, tmp_path, monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+    _create_principal(conn, "op1", "operator")
+    svc = AuditReaderService(
+        AuditWriter(base_dir=tmp_path / "audit"),
+        checker=AccessChecker.from_conn(conn),
+    )
+    out = svc.list_recent_assessments("op1")
+    assert out == []
+
+
+def test_list_recent_assessments_limit_low(
+    conn, tmp_path, monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+    _create_principal(conn, "admin1", "admin")
+    svc = AuditReaderService(
+        AuditWriter(base_dir=tmp_path / "audit"),
+        checker=AccessChecker.from_conn(conn),
+    )
+    with pytest.raises(AuditReaderServiceError):
+        svc.list_recent_assessments("admin1", limit=0)
+
+
+def test_list_recent_assessments_limit_high(
+    conn, tmp_path, monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+    _create_principal(conn, "admin1", "admin")
+    svc = AuditReaderService(
+        AuditWriter(base_dir=tmp_path / "audit"),
+        checker=AccessChecker.from_conn(conn),
+    )
+    with pytest.raises(AuditReaderServiceError):
+        svc.list_recent_assessments("admin1", limit=1001)
+
+
+def test_list_recent_assessments_limit_not_int(
+    conn, tmp_path, monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+    _create_principal(conn, "admin1", "admin")
+    svc = AuditReaderService(
+        AuditWriter(base_dir=tmp_path / "audit"),
+        checker=AccessChecker.from_conn(conn),
+    )
+    with pytest.raises(AuditReaderServiceError):
+        svc.list_recent_assessments("admin1", limit="100")
+
+
+def test_list_recent_assessments_limit_bool(
+    conn, tmp_path, monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+    _create_principal(conn, "admin1", "admin")
+    svc = AuditReaderService(
+        AuditWriter(base_dir=tmp_path / "audit"),
+        checker=AccessChecker.from_conn(conn),
+    )
+    with pytest.raises(AuditReaderServiceError):
+        svc.list_recent_assessments("admin1", limit=True)
+
+
+def test_list_recent_assessments_rbac_before_limit(
+    conn, tmp_path, monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+    _create_principal(conn, "viewer1", "viewer")
+    svc = AuditReaderService(
+        AuditWriter(base_dir=tmp_path / "audit"),
+        checker=AccessChecker.from_conn(conn),
+    )
+    with pytest.raises(AccessDeniedError):
+        svc.list_recent_assessments("viewer1", limit=0)
