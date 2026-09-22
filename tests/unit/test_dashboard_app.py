@@ -30,6 +30,7 @@ from apps.dashboard.decorators import (
 )
 from tests.unit._helpers import (
     build_dashboard_app,
+    create_role_client,
     set_session_cookie,
 )
 
@@ -318,3 +319,41 @@ def test_csp_all_directives_present(app):
         assert directive in csp, f"{directive} fehlt"
     assert "unsafe-inline" not in csp
     assert "unsafe-eval" not in csp
+
+
+# ---------------------------------------------------------------------- #
+# Tests 3.6.8: Bedingte Sidebar + Stat-Cards
+# ---------------------------------------------------------------------- #
+
+def test_index_admin_sees_alerts_card(app, client):
+    r = client.get("/")
+    assert b'data-card="alerts"' in r.data
+
+
+def test_index_viewer_does_not_see_alerts_card(
+    app, viewer_client,
+):
+    r = viewer_client.get("/")
+    assert b'data-card="alerts"' not in r.data
+
+
+@pytest.mark.parametrize(
+    "role,slug,visible",
+    [
+        ("admin", "alerts", True),
+        ("operator", "alerts", True),
+        ("viewer", "alerts", False),
+        ("admin", "users", True),
+        ("operator", "users", False),
+        ("viewer", "users", False),
+        ("admin", "audit", True),
+        ("viewer", "audit", True),
+    ],
+)
+def test_sidebar_visibility(app, role, slug, visible):
+    tmp_name = f"t-{role}-{slug}"
+    c = create_role_client(app, role, tmp_name=tmp_name)
+    r = c.get("/")
+    body = r.data
+    needle = ('data-nav="' + slug + '"').encode()
+    assert (needle in body) == visible

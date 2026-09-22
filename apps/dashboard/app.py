@@ -169,6 +169,35 @@ def create_app(
     from apps.dashboard.routes_index import register_index_routes
     register_index_routes(app)
 
+    @app.context_processor
+    def _inject_nav_permissions():
+        # 1. before_request setzt g.access_checker, g.principal
+        # 2. context_processor liest sie (hier)
+        # 3. after_request setzt Security-Header
+        checker = getattr(g, "access_checker", None)
+        principal = getattr(g, "principal", None)
+        flags = {
+            "can_view_dashboard": "device.read",
+            "can_view_inventory": "device.read",
+            "can_view_alerts": "alert.view",
+            "can_view_approvals": "approval.view",
+            "can_view_changes": "change.view",
+            "can_view_chat": "chat.ask",
+            "can_view_users": "principal.manage",
+            "can_view_roles": "role.manage",
+            "can_view_audit": "audit.read",
+            "can_view_settings": "role.manage",
+        }
+        if checker is None or principal is None:
+            return {k: False for k in flags}
+        try:
+            perms = checker.permissions_of(principal)
+        except Exception:
+            perms = frozenset()
+        return {
+            k: (code in perms) for k, code in flags.items()
+        }
+
     @app.after_request
     def _security_headers(response):
         response.headers["Content-Security-Policy"] = (

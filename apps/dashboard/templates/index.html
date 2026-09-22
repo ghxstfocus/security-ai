@@ -13,10 +13,16 @@
 {% block content %}
 <div class="dashboard-grid">
     <div class="stat-cards">
-        {{ stat_card("Geraete", "—") }}
-        {{ stat_card("Alarme", "—", "red") }}
-        {{ stat_card("Approvals", "—", "yellow") }}
-        {{ stat_card("Changes", "—", "green") }}
+        {{ stat_card("Geraete", "—", "cyan",
+                      data_card="devices") }}
+        {% if can_view_alerts %}
+        {{ stat_card("Alarme", "—", "red",
+                      data_card="alerts") }}
+        {% endif %}
+        {{ stat_card("Approvals", "—", "yellow",
+                      data_card="approvals") }}
+        {{ stat_card("Changes", "—", "green",
+                      data_card="changes") }}
     </div>
     {% include "partials/timeline.html" %}
     {% include "partials/chat_widget.html" %}

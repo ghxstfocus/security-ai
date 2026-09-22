@@ -97,8 +97,32 @@ def migrated_conn(tmp_path: Path) -> sqlite3.Connection:
     return c
 
 
+def create_role_client(app, role_name, tmp_name=None):
+    """
+    Erstellt Principal + Session + Test-Client
+    fuer eine gegebene Rolle.
+
+    tmp_name: optionaler Principal-Name. Default
+    test-<role_name>. sid = sid-<name>.
+    """
+    name = tmp_name or f"test-{role_name}"
+    sid = f"sid-{name}"
+    conn = connect(app.config["DB_PATH"])
+    role = RoleRepository(conn).get_by_name(role_name)
+    PrincipalRepository(conn).create(
+        name=name, role_id=role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    SessionRepository(conn).create(sid, name)
+    conn.close()
+    c = app.test_client()
+    set_session_cookie(c, sid)
+    return c
+
+
 __all__ = [
     "build_dashboard_app",
+    "create_role_client",
     "migrated_conn",
     "set_session_cookie",
 ]

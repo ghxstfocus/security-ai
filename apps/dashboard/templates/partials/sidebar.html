@@ -13,48 +13,78 @@
         <span class="sidebar-title">Security AI</span>
     </div>
     <nav class="sidebar-nav">
-        <a class="sidebar-link{% if request.path == '/' %} active{% endif %}"
+        {% if can_view_dashboard %}
+        <a data-nav="dashboard"
+           class="sidebar-link{% if request.path == '/' %} active{% endif %}"
            href="/">
             <span>Dashboard</span>
         </a>
-        <a class="sidebar-link{% if request.path == '/inventory' %} active{% endif %}"
+        {% endif %}
+        {% if can_view_inventory %}
+        <a data-nav="inventory"
+           class="sidebar-link{% if request.path == '/inventory' %} active{% endif %}"
            href="/inventory">
             <span>Inventar</span>
         </a>
-        <a class="sidebar-link{% if request.path == '/alerts' %} active{% endif %}"
+        {% endif %}
+        {% if can_view_alerts %}
+        <a data-nav="alerts"
+           class="sidebar-link{% if request.path == '/alerts' %} active{% endif %}"
            href="/alerts">
             <span>Alarme</span>
             <span class="badge badge-red" data-badge="alerts"></span>
         </a>
-        <a class="sidebar-link{% if request.path == '/approvals' %} active{% endif %}"
+        {% endif %}
+        {% if can_view_approvals %}
+        <a data-nav="approvals"
+           class="sidebar-link{% if request.path == '/approvals' %} active{% endif %}"
            href="/approvals">
             <span>Approvals</span>
             <span class="badge badge-yellow" data-badge="approvals"></span>
         </a>
-        <a class="sidebar-link{% if request.path == '/changes' %} active{% endif %}"
+        {% endif %}
+        {% if can_view_changes %}
+        <a data-nav="changes"
+           class="sidebar-link{% if request.path == '/changes' %} active{% endif %}"
            href="/changes">
             <span>Changes</span>
         </a>
-        <a class="sidebar-link{% if request.path == '/chat' %} active{% endif %}"
+        {% endif %}
+        {% if can_view_chat %}
+        <a data-nav="chat"
+           class="sidebar-link{% if request.path == '/chat' %} active{% endif %}"
            href="/chat">
             <span>Chat mit KI</span>
         </a>
+        {% endif %}
         <div class="sidebar-divider"></div>
-        <a class="sidebar-link{% if request.path == '/users' %} active{% endif %}"
+        {% if can_view_users %}
+        <a data-nav="users"
+           class="sidebar-link{% if request.path == '/users' %} active{% endif %}"
            href="/users">
             <span>Benutzer</span>
         </a>
-        <a class="sidebar-link{% if request.path == '/roles' %} active{% endif %}"
+        {% endif %}
+        {% if can_view_roles %}
+        <a data-nav="roles"
+           class="sidebar-link{% if request.path == '/roles' %} active{% endif %}"
            href="/roles">
             <span>Rollen</span>
         </a>
-        <a class="sidebar-link{% if request.path == '/audit' %} active{% endif %}"
+        {% endif %}
+        {% if can_view_audit %}
+        <a data-nav="audit"
+           class="sidebar-link{% if request.path == '/audit' %} active{% endif %}"
            href="/audit">
             <span>Audit</span>
         </a>
-        <a class="sidebar-link{% if request.path == '/settings' %} active{% endif %}"
+        {% endif %}
+        {% if can_view_settings %}
+        <a data-nav="settings"
+           class="sidebar-link{% if request.path == '/settings' %} active{% endif %}"
            href="/settings">
             <span>Einstellungen</span>
         </a>
+        {% endif %}
     </nav>
 </aside>
