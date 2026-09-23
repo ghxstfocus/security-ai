@@ -23,8 +23,15 @@ Index der Detail-Dokumentation.
 ## Sicherheit und Berechtigungen
 
 - [SECURITY.md](SECURITY.md) — Threat Model, Guardrails, Audit.
+- [SECURITY_REVIEW_LOG.md](SECURITY_REVIEW_LOG.md) —
+  Sicherheits-Entscheidungen nach Thema + offene
+  Punkte 1-11.
+- [INCONSISTENCIES_FOUND.md](INCONSISTENCIES_FOUND.md) —
+  Ausgelagerte Inkonsistenzen (heute leer).
 - [PERMISSIONS.md](PERMISSIONS.md) — Tool-Level 0-5 und RBAC.
 - [PROTOCOL.md](PROTOCOL.md) — Foederationsprotokoll.
+- [REVIEWER_HANDOFF.md](REVIEWER_HANDOFF.md) — Handoff-
+  Prompt fuer den externen Reviewer-Chat (Kategorie 3).
 
 ## Betrieb
 

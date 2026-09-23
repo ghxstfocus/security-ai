@@ -71,15 +71,23 @@ Details: `docs/SECURITY.md`
 
 ## Dokumentation
 
+Fuer neue Chat-Sessions zuerst
+[docs/CONTEXT_PROMPT.md](docs/CONTEXT_PROMPT.md) lesen —
+das ist der Einstiegspunkt mit Stand, Regeln und Verweisen.
+
 - [Projekt-Vision](PROJECT_VISION.md)
 - [Architektur](docs/ARCHITECTURE.md)
 - [Sicherheit](docs/SECURITY.md)
+- [Security-Review-Log](docs/SECURITY_REVIEW_LOG.md)
 - [Protokoll](docs/PROTOCOL.md)
 - [Berechtigungen](docs/PERMISSIONS.md)
 - [Deployment](docs/DEPLOYMENT.md)
 - [Design-Entscheidungen](docs/DESIGN_DECISIONS.md)
 - [Phasen](docs/PHASES.md)
 - [Werkzeuge](docs/WERKZEUGE.md)
+- [Web-Security-Checkliste](docs/WEB_SECURITY_CHECKLIST.md)
+- [Reviewer-Handoff](docs/REVIEWER_HANDOFF.md)
+- [Inkonsistenzen (ausgelagert)](docs/INCONSISTENCIES_FOUND.md)
 
 ## Status
 
@@ -87,4 +95,4 @@ Aktiv in Entwicklung. Homelab-Referenz mit dem Ziel, die
 Architektur für föderierte, KI-gestützte Security- und
 Admin-Systeme zu demonstrieren.
 
-Letzte Aktualisierung: 2026-09-22
+Letzte Aktualisierung: 2026-09-23

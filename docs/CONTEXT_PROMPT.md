@@ -93,18 +93,42 @@ Append-only Audit, Fail closed, Foederation statt Monolith.
 - Phase 3.6.7c — login.html als Template
 - Phase 3.6.7d — index.html + Route / (device.read)
 - Phase 3.6.7e — CSP-Header-Test (alle Direktiven)
-- Phase 3.6.8a — Inventar-Seite /inventory (device.read,
-  InventoryService, Templates, Tests; Commit 2d4b437)
+- Phase 3.6.8 — Web-Dashboard-Seiten mit echten Daten
+  (a-i, komplett):
+    a Inventar (/inventory, device.read)        2d4b437
+    b Alarme (/alerts, alert.view)              6ae8bd5
+      Fix: AuditReaderService.base_dir          8d43034
+    c Approvals (/approvals, approval.view +
+      approval.decide, CSRF, Variante A)        25d9614
+    d Changes (/changes, change.view +
+      change.create; errors.py mit
+      ServiceError/OperationError)              29535ce
+    e Chat (/chat + /api/chat, chat.ask,
+      RateLimitService, CSRF-Header,
+      _inject_csrf)                             148b434
+    f Benutzer (/users, principal.manage,
+      principal_to_view, MIN_PASSWORD_LEN=12,
+      list_roles mit principal.manage)          1f16127
+    g Rollen (/roles, role.manage, role_to_view,
+      permission_to_view, assign/revoke,
+      self-critical Warnung)                    9c3accb
+    h Audit (/audit, audit.read, Tag-Filter,
+      details formatiert, kein read_all)        fbfafc6
+    i Einstellungen (/settings, role.manage,
+      read-only)                                14cccd5
+  Doku-Abschluss 3.6.8                           3beab99
 
-Tests: 525 gruen (Unit + Integration, venv).
+Tests: 723 gruen (Unit + Integration, venv).
 
 ### Was als Naechstes kommt
 
-- Phase 3.6.8+ — Web-Dashboard: einzelne Seiten mit echten
-  Daten (Inventar, Alarme, Approvals, Changes, Chat, Users,
-  Roles, Audit, Settings). Baut auf den Services
-  (core/services) auf. 3.6.8a (Inventar) ist fertig
-  (Commit 2d4b437); naechster Unterschritt: 3.6.8b Alarme.
+- Phase 3.6.10 — Responsive-Feinschliff (Kategorie 1,
+  CSS-only: .table auf <700px, .topbar, .card,
+  .form-input). Keine Template-Aenderung.
+- Phase 3.6.11 — Hamburger-Navigation (Kategorie 3:
+  Button in topbar.html, Toggle in static/js/nav.js,
+  extern, addEventListener, kein onclick=, kein
+  Inline-<script>, keine style="...", CSP-konform).
 - Phase 3.7 (optional) — Host-Scanner / Netzwerk-Discovery
   (Proxmox-Watcher).
 - Phase 3.5.5+ (optional) — Principal-Objekte, assign_role.
@@ -166,19 +190,26 @@ Tests: 525 gruen (Unit + Integration, venv).
   approvals_cli, changes_cli)
 - docs/WEB_SECURITY_CHECKLIST.md — verbindliche
   Security-Checkliste fuer Phase 3.6 (Web-Dashboard)
+- docs/SECURITY_REVIEW_LOG.md — Sicherheits-
+  Entscheidungen nach Thema + offene Punkte 1-11
+  (Stand 3.6.8)
+- docs/INCONSISTENCIES_FOUND.md — Ausgelagerte
+  Inkonsistenzen (heute keine)
 - docs/REVIEWER_HANDOFF.md — Handoff-Prompt fuer
   den externen Reviewer-Chat (Kategorie 3)
 
 ### Aktuelle Phase
 
 Phase 1-4 abgeschlossen. Phase 3.5 inkl. 3.5.5-3.5.9
-abgeschlossen. Phase 3.6 (Web-Dashboard) in Arbeit:
-3.6.1-3.6.7e fertig, Login + CSP + erste Seiten stehen.
-3.6.8a (Inventar /inventory) fertig, Commit 2d4b437.
+abgeschlossen. Phase 3.6 (Web-Dashboard):
+3.6.1-3.6.7e fertig.
+Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
+a-i, HEAD 3beab99.
 
-Naechster Schritt: 3.6.8b Alarme (/alerts, alert.view).
+Naechster Schritt: 3.6.10 Responsive-Feinschliff,
+dann 3.6.11 Hamburger-Navigation.
 
-Tests: 525 gruen (venv, pytest 9.1.1).
+Tests: 723 gruen (venv, pytest 9.1.1).
 
 ### Aufgabe jetzt
 

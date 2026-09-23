@@ -115,7 +115,7 @@ ESKALATION (bei eigener Unsicherheit):
 - Python: immer /opt/security-ai/.venv/bin/python3,
   NICHT /usr/bin/python3.
 - Tests: immer aus /opt/security-ai (CWD).
-- Aktuelle Tests: 477 gruen.
+- Aktuelle Tests: 723 gruen.
 
 --- FORMAT-REGELN (verbindlich) ---
 

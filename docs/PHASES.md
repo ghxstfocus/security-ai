@@ -379,3 +379,89 @@ Siehe docs/SECURITY_REVIEW_LOG.md offener Punkt 10.
 
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI
 (Phase 3.5) voraus. Foederation ueber core/protocol/.
+
+
+## Empfehlungen aus Doku-Audit 2026-09-23
+
+### Fuer 3.6.10 / 3.6.11 (Optik)
+
+- 3.6.10 zuerst (Kategorie 1, CSS-only):
+  .table auf <700px, .topbar, .card, .form-input.
+  Keine Template-Aenderung.
+- 3.6.11 danach (Kategorie 3): Hamburger-Navigation.
+  Button in topbar.html, Toggle in static/js/nav.js,
+  extern, addEventListener, kein onclick=, kein
+  Inline-<script>, keine style="...".
+- Bei neuen Templates: CSP-Konformitaet pruefen.
+  Kein |safe, kein style, kein on*, kein inline JS.
+- Bei neuen Routes: Kategorie 2 (wichtig) mindestens.
+
+### Fuer 3.7 (Feinschliff)
+
+- Charts: Chart.js lokal einbinden (kein CDN).
+  CSP script-src 'self' verbietet CDN.
+- Live-Timeline: SSE oder Polling. Bei SSE:
+  eigener Endpoint, CSP connect-src 'self' deckt ab.
+- Suche: Backend-Endpoint + Frontend. Kein Client-
+  Side-Filter ueber alle Daten.
+
+### Fuer 3.8 (Security-Audit)
+
+- Werkzeuge: Bandit, Safety, pip-audit, Ruff -S.
+- Grep-Checks: eval, exec, shell=True, SQL-Concat.
+- Review-Chat: pro Ordner systematisch
+  (core/, harness/, apps/, tools/, scripts/).
+- Ergebnis in docs/SECURITY_AUDIT.md.
+
+### Offene Punkte vor 3.8
+
+Siehe docs/SECURITY_REVIEW_LOG.md, Punkte 1-11.
+Insbesondere:
+- Punkt 5: ChatServiceError -> OperationError.
+- Punkt 6: Fehlerklassen-Trennung in Alt-Services.
+- Punkt 7/8: DESIGN_DECISIONS § 2/§ 11 (in diesem
+  Doku-Audit nachgetragen).
+- Punkt 10/11: HTTPS und SSH-Zugang.
+
+
+## Empfehlungen aus Doku-Audit 2026-09-23
+
+### Fuer 3.6.10 / 3.6.11 (Optik)
+
+- 3.6.10 zuerst (Kategorie 1, CSS-only):
+  .table auf <700px, .topbar, .card, .form-input.
+  Keine Template-Aenderung.
+- 3.6.11 danach (Kategorie 3): Hamburger-Navigation.
+  Button in topbar.html, Toggle in static/js/nav.js,
+  extern, addEventListener, kein onclick=, kein
+  Inline-<script>, keine style="...".
+- Bei neuen Templates: CSP-Konformitaet pruefen.
+  Kein |safe, kein style, kein on*, kein inline JS.
+- Bei neuen Routes: Kategorie 2 (wichtig) mindestens.
+
+### Fuer 3.7 (Feinschliff)
+
+- Charts: Chart.js lokal einbinden (kein CDN).
+  CSP script-src 'self' verbietet CDN.
+- Live-Timeline: SSE oder Polling. Bei SSE:
+  eigener Endpoint, CSP connect-src 'self' deckt ab.
+- Suche: Backend-Endpoint + Frontend. Kein Client-
+  Side-Filter ueber alle Daten.
+
+### Fuer 3.8 (Security-Audit)
+
+- Werkzeuge: Bandit, Safety, pip-audit, Ruff -S.
+- Grep-Checks: eval, exec, shell=True, SQL-Concat.
+- Review-Chat: pro Ordner systematisch
+  (core/, harness/, apps/, tools/, scripts/).
+- Ergebnis in docs/SECURITY_AUDIT.md.
+
+### Offene Punkte vor 3.8
+
+Siehe docs/SECURITY_REVIEW_LOG.md, Punkte 1-11.
+Insbesondere:
+- Punkt 5: ChatServiceError -> OperationError.
+- Punkt 6: Fehlerklassen-Trennung in Alt-Services.
+- Punkt 7/8: DESIGN_DECISIONS § 2/§ 11 (in diesem
+  Doku-Audit nachgetragen).
+- Punkt 10/11: HTTPS und SSH-Zugang.

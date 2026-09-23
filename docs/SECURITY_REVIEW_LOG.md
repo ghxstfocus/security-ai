@@ -253,6 +253,9 @@ test_access_denied_errorhandler_403 abgedeckt.
 - Neuer Chat liest: docs/CONTEXT_PROMPT.md,
   docs/DESIGN_DECISIONS.md, diese Datei,
   docs/PHASES.md.
+- Ausgelagerte Inkonsistenzen:
+  docs/INCONSISTENCIES_FOUND.md (heute leer;
+  Struktur vorhanden fuer kuenftige Funde).
 - Offene Punkte siehe Abschnitt `## Offene Punkte` unten.
 - Aktuelle Sicherheits-Entscheidungen pro Thema
   in dieser Datei.
@@ -289,6 +292,27 @@ test_access_denied_errorhandler_403 abgedeckt.
   Review: NO-GO -> CSRF-Header statt Body, 502 bei
   LLM-Fehler, Rate-Limit jetzt, chat.js bedingt,
   Test-Kontext app_context -> test_request_context.
+- 3.6.8f: /users (principal.manage, principal_to_view,
+  MIN_PASSWORD_LEN=12, list_roles mit principal.manage).
+  Review: NO-GO -> create_principal ohne password_hash,
+  MIN_PASSWORD_LEN in der Service-Schicht, Test-Passwoerter
+  auf 12 Zeichen, self-deactivate verboten.
+- 3.6.8g: /roles (role.manage, role_to_view,
+  permission_to_view, assign/revoke, self-critical
+  Warnung bei Entzug aus eigener Rolle).
+  Review: GO mit Auflagen 179-189, Nachtrag 190-194
+  (praezise Warn-Bedingung, fester Wortlaut).
+- 3.6.8h: /audit (audit.read, Tag-Filter, UTC heute
+  default, Detail mit formatiertem details, kein
+  read_all im UI).
+  Review: GO mit Auflagen 195-206 (Query-Parameter
+  400, Pfad-Parameter 404, kein Reflexions-Dump).
+- 3.6.8i: /settings (role.manage, read-only Konfig-
+  Anzeige, kein SECRET_KEY, kein os.environ-Dump,
+  kein Existenz-Check).
+  Review: GO Variante A mit Auflagen 207-221
+  (Test-Umbenennung wegen tmp_path-Kollision).
+- 3.6.8 Doku-Abschluss: 3beab99 (a-i alle [x]).
 
 
 ## Offene Punkte (Stand 3.6.8)
