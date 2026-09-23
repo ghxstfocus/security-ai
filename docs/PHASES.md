@@ -344,6 +344,24 @@ Regeln (aus ARCHITECTURE § 5):
 Status: noch nicht implementiert. Aktuell nur nmap-Scan
 im Container gegen Test-Ziele (Phase 3.4).
 
+## Phase 3.6.12 — HTTPS fuer das Dashboard  [ ]
+
+Ziel: Login und alle Dashboard-Routen ueber HTTPS
+erreichbar. Heute blockiert SESSION_COOKIE_SECURE=True
+jeden Login ueber HTTP (Browser schickt die Session-
+Cookie nicht zurueck -> CSRF-Check schlaegt fehl ->
+400 "Ungueltige Anfrage").
+
+Optionen:
+- Self-signed Zertifikat + Flask ssl_context.
+- Reverse-Proxy (nginx/caddy) mit TLS vor Flask.
+
+Wenn TLS steht: HSTS-Header, Cookie-Flags pruefen
+bleiben unveraendert, Testmatrix fuer HTTPS ergaenzen.
+
+Kategorie 3 (TLS, Auth, Cookie-Flags).
+Siehe docs/SECURITY_REVIEW_LOG.md offener Punkt 10.
+
 ## Phase 5 — Admin AI  [ ]
 
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI

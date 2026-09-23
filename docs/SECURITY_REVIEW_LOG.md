@@ -340,3 +340,23 @@ test_access_denied_errorhandler_403 abgedeckt.
    ist In-Memory (Single-Process). Bei mehreren
    Workern gemeinsamer Store (Redis/DB)
    (Auflage 98, 3.6.8e).
+
+10. HTTPS fuer Dashboard-Test im Browser:
+    SESSION_COOKIE_SECURE=True (apps/dashboard/app.py:56)
+    verhindert Login ueber HTTP. Browser schickt die
+    Session-Cookie nicht zurueck, CSRF-Check schlaegt
+    fehl -> 400 "Ungueltige Anfrage".
+    Saubere Loesung: TLS (Self-signed oder Reverse-Proxy)
+    vor Flask. Alternativ fuer lokalen Test:
+    SSH-Tunnel + temporaer Secure=False, aber nur
+    mit Bind 127.0.0.1 und sofortigem Rueckbau.
+    Eigener Kategorie-3-Block (TLS/Auth).
+    Siehe docs/PHASES.md offener Punkt "3.6.12 HTTPS".
+
+11. SSH-Zugang Windows -> CT102:
+    permitrootlogin without-password in der effektiven
+    sshd-Konfig (sshd -T). root darf per Passwort nicht
+    rein, Public-Key-Auth-Versuch ist fehlgeschlagen.
+    Kein Blocker fuer 3.6.8f-i (Dashboard-Arbeit laeuft
+    ueber die bestehende SSH-Session).
+    Eigener Kategorie-3-Block (SSH-Zugang).
