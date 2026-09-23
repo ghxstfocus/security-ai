@@ -20,8 +20,9 @@ def app(tmp_path: Path):
 
 
 def test_jinja_escapes_script_tag(app):
-    # Auflage 253: render_template_string
-    with app.app_context():
+    # test_request_context, weil _inject_csrf
+    # session liest (base.html data-csrf-token).
+    with app.test_request_context():
         out = render_template_string(
             "{{ x }}", x="<script>alert(1)</script>",
         )
@@ -30,7 +31,9 @@ def test_jinja_escapes_script_tag(app):
 
 
 def test_jinja_escapes_quotes(app):
-    with app.app_context():
+    # test_request_context, weil _inject_csrf
+    # session liest (base.html data-csrf-token).
+    with app.test_request_context():
         out = render_template_string(
             "{{ x }}", x='"\'>evil',
         )
@@ -38,7 +41,9 @@ def test_jinja_escapes_quotes(app):
 
 
 def test_jinja_escapes_amp(app):
-    with app.app_context():
+    # test_request_context, weil _inject_csrf
+    # session liest (base.html data-csrf-token).
+    with app.test_request_context():
         out = render_template_string(
             "{{ x }}", x="a&b",
         )

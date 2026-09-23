@@ -19,7 +19,7 @@
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/main.css') }}">
 </head>
-<body>
+<body data-csrf-token="{{ csrf_token }}">
     <div class="app">
         {% include 'partials/sidebar.html' %}
         <div class="main">

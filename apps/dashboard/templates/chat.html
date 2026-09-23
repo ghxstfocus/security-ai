@@ -1,0 +1,18 @@
+{#
+  chat.html — Chat-Seite.
+
+  Kategorie 3 (Template, CSP).
+  Enthaelt das Chat-Widget, bindet chat.js bedingt ein
+  (Auflage 94).
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Chat mit der KI</h1>
+{% include "partials/chat_widget.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"
+        defer></script>
+{% endblock %}

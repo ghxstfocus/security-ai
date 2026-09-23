@@ -28,3 +28,8 @@
     {% include "partials/chat_widget.html" %}
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"
+        defer></script>
+{% endblock %}

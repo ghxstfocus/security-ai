@@ -181,6 +181,9 @@ def create_app(
     from apps.dashboard.routes_changes import register_changes_routes
     register_changes_routes(app)
 
+    from apps.dashboard.routes_chat import register_chat_routes
+    register_chat_routes(app)
+
     @app.context_processor
     def _inject_nav_permissions():
         # 1. before_request setzt g.access_checker, g.principal
@@ -209,6 +212,14 @@ def create_app(
         return {
             k: (code in perms) for k, code in flags.items()
         }
+
+    @app.context_processor
+    def _inject_csrf():
+        # Token nur lesen oder anlegen (get_or_create ist
+        # idempotent, kein Rotieren pro Request).
+        from apps.dashboard import csrf
+        from flask import session
+        return {"csrf_token": csrf.get_or_create(session)}
 
     @app.after_request
     def _security_headers(response):
