@@ -274,7 +274,7 @@ Tests). Pro Seite ein Unterschritt.
 Fertig:
 
 Commits: b82f253, 8692eb6, 97dbde9, 36f65a1,
-         c7791c9, 2d4b437
+         c7791c9, 2d4b437, a2c4dc1, 8d43034, 6ae8bd5
 
 - Migration 0007: alert.view.
 - ServiceError-Basis + AuditReaderServiceError.
@@ -289,8 +289,10 @@ Offen:
 - [x] 3.6.8a Inventar       (/inventory,
                              device.read)
       Commit: 2d4b437.
-- [ ] 3.6.8b Alarme         (/alerts,
+- [x] 3.6.8b Alarme         (/alerts,
                              alert.view)
+      Commit: 6ae8bd5.
+      Fix:    8d43034 (AuditReaderService base_dir).
 - [ ] 3.6.8c Approvals      (/approvals,
                              approval.view
                              + approval.decide)
