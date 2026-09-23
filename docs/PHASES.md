@@ -375,6 +375,21 @@ bleiben unveraendert, Testmatrix fuer HTTPS ergaenzen.
 Kategorie 3 (TLS, Auth, Cookie-Flags).
 Siehe docs/SECURITY_REVIEW_LOG.md offener Punkt 10.
 
+## Phase 3.6.13 — Systemvoraussetzungen dokumentieren  [ ]
+
+Ziel: eine vollstaendige Liste der Systempakete und
+Python-Abhaengigkeiten, die fuer den Betrieb von CT102
+noetig sind. Bestandsaufnahme: dpkg -l, Import-Abgleich
+ueber apps/core/harness/tools/scripts, Abgleich mit
+pyproject.toml und DEPLOYMENT.md §3a/§3b/§3c. Ergebnis als
+neue Sektion in docs/DEPLOYMENT.md oder eigene Datei
+docs/REQUIREMENTS.md. Kategorie 2 (Doku + Bestandsaufnahme).
+
+Anlass: 3.6.12 installiert nginx als Systempaket. Aktuell
+sind die Abhaengigkeiten ueber pyproject.toml, DEPLOYMENT.md
+§2.4/§3a/§3b/§3c verstreut. Ein Neuaufbau braucht die
+zentrale Liste.
+
 ## Phase 5 — Admin AI  [ ]
 
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI
