@@ -1,0 +1,75 @@
+{#
+  approval_detail.html — Detail + Entscheiden.
+
+  Kategorie 3 (Template, CSP).
+  Back-Link hartkodiert. CSRF in beiden Formularen.
+  Kein |safe, kein style, kein on*, kein inline script.
+#}
+{% extends "base.html" %}
+{% from "_helpers.html" import csrf_field %}
+
+{% block content %}
+<p><a href="/approvals">Zurueck zur Liste</a></p>
+<h1>{{ entry.request_id }}</h1>
+<dl>
+    <dt>Tool</dt>
+    <dd>{{ entry.tool_name }}</dd>
+    <dt>Angefragt von</dt>
+    <dd>{{ entry.requested_by }}</dd>
+    <dt>Kategorie</dt>
+    <dd>{{ entry.risk_category if entry.risk_category else "—" }}</dd>
+    <dt>Score</dt>
+    <dd>{{ entry.risk_score if entry.risk_score is not none else "—" }}</dd>
+    <dt>Event</dt>
+    <dd>{{ entry.event_id if entry.event_id else "—" }}</dd>
+    <dt>Grund (Anfrage)</dt>
+    <dd>{{ entry.reason if entry.reason else "—" }}</dd>
+    <dt>Entscheidungsgrund</dt>
+    <dd>{{ entry.decision_reason if entry.decision_reason else "—" }}</dd>
+    <dt>Status</dt>
+    <dd>
+        {% if entry.status == "pending" %}
+        <span class="badge badge-yellow">{{ entry.status }}</span>
+        {% elif entry.status == "granted" %}
+        <span class="badge badge-green">{{ entry.status }}</span>
+        {% elif entry.status == "rejected" %}
+        <span class="badge badge-red">{{ entry.status }}</span>
+        {% else %}
+        <span class="badge badge-cyan">{{ entry.status }}</span>
+        {% endif %}
+    </dd>
+    <dt>Erstellt</dt>
+    <dd>{{ entry.created_at }}</dd>
+</dl>
+
+<h2>Argumente</h2>
+<pre>{{ entry.args_preview }}</pre>
+
+{% if entry.status == "pending" %}
+<h2>Entscheiden</h2>
+
+<form method="post"
+      action="/approvals/{{ entry.request_id }}/decide">
+    {{ csrf_field(csrf_token) }}
+    <input type="hidden" name="decision" value="granted">
+    <label for="reason_grant">Begruendung (optional)</label>
+    <input id="reason_grant" name="reason" type="text"
+           maxlength="500" class="form-input">
+    <button type="submit" class="btn btn-primary">
+        Freigeben
+    </button>
+</form>
+
+<form method="post"
+      action="/approvals/{{ entry.request_id }}/decide">
+    {{ csrf_field(csrf_token) }}
+    <input type="hidden" name="decision" value="rejected">
+    <label for="reason_reject">Begruendung (optional)</label>
+    <input id="reason_reject" name="reason" type="text"
+           maxlength="500" class="form-input">
+    <button type="submit" class="btn btn-danger">
+        Ablehnen
+    </button>
+</form>
+{% endif %}
+{% endblock %}

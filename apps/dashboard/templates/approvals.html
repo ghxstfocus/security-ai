@@ -1,0 +1,53 @@
+{#
+  approvals.html — Liste offener Approvals.
+
+  Kategorie 3 (Template, CSP).
+  Kein |safe, kein style, kein on*, kein inline script,
+  kein tojson.
+  Badge-Text = Status (Auflage 37).
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Approvals</h1>
+{% if pending %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Request-ID</th>
+            <th>Tool</th>
+            <th>Kategorie</th>
+            <th>Score</th>
+            <th>Status</th>
+            <th>Erstellt</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in pending %}
+        <tr>
+            <td>
+                <a href="/approvals/{{ a.request_id }}">{{ a.request_id }}</a>
+            </td>
+            <td>{{ a.tool_name }}</td>
+            <td>{{ a.risk_category if a.risk_category else "—" }}</td>
+            <td>{{ a.risk_score if a.risk_score is not none else "—" }}</td>
+            <td>
+                {% if a.status == "pending" %}
+                <span class="badge badge-yellow">{{ a.status }}</span>
+                {% elif a.status == "granted" %}
+                <span class="badge badge-green">{{ a.status }}</span>
+                {% elif a.status == "rejected" %}
+                <span class="badge badge-red">{{ a.status }}</span>
+                {% else %}
+                <span class="badge badge-cyan">{{ a.status }}</span>
+                {% endif %}
+            </td>
+            <td>{{ a.created_at }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Keine offenen Approvals.</p>
+{% endif %}
+{% endblock %}
