@@ -382,7 +382,9 @@ danach im Zertifikat auf "Immer vertrauen" stellen.
 
 ### 3c.4 nginx-Konfiguration
 
-Datei `/etc/nginx/sites-available/security-ai.conf`, Symlink nach
+Die Konfiguration liegt im Repo unter
+`deploy/nginx/security-ai.conf`. Sie wird manuell nach
+`/etc/nginx/sites-available/security-ai.conf` kopiert, Symlink nach
 `/etc/nginx/sites-enabled/security-ai.conf`. Der Port-80-Block
 antwortet nur mit einem Redirect. Der Port-443-Block terminiert
 TLS und reicht an Flask weiter. Header aus Flask werden unveraendert
