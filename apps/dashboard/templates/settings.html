@@ -1,0 +1,63 @@
+{#
+  settings.html — Read-only Konfigurationsanzeige.
+
+  Kategorie 3 (Template, CSP).
+  Kein |safe, kein style, kein on*, kein inline script.
+  Kein Formular, kein POST.
+  Kein SECRET_KEY, kein os.environ-Dump, kein Existenz-Check
+  (Auflagen 208, 211, 213).
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Einstellungen</h1>
+<p>Read-only Momentaufnahme der laufenden Konfiguration.
+   Aendern ist ein Betriebsakt, kein Web-Klick.</p>
+
+<h2>Pfade</h2>
+<dl>
+    <dt>Datenbank</dt>
+    <dd>{{ cfg.db_path }}</dd>
+    <dt>Migrations-Verzeichnis</dt>
+    <dd>{{ cfg.migrations_dir }}</dd>
+    <dt>Audit-Verzeichnis</dt>
+    <dd>{{ cfg.audit_base_dir }}</dd>
+</dl>
+
+<h2>Anwendung</h2>
+<dl>
+    <dt>DEBUG</dt>
+    <dd>{{ cfg.debug }}</dd>
+    <dt>TESTING</dt>
+    <dd>{{ cfg.testing }}</dd>
+    <dt>Max. Request-Groesse (Byte)</dt>
+    <dd>{{ cfg.max_content_length }}</dd>
+</dl>
+
+<h2>Modelle und LLM</h2>
+<dl>
+    <dt>Ollama-URL</dt>
+    <dd>{{ cfg.ollama_base_url }}</dd>
+    <dt>Default-Modell</dt>
+    <dd>{{ cfg.model_default }}</dd>
+    <dt>Large-Modell</dt>
+    <dd>{{ cfg.model_large }}</dd>
+</dl>
+
+<h2>Sicherheit (Selbstauskunft)</h2>
+<dl>
+    <dt>Session-Cookie HttpOnly</dt>
+    <dd>{{ cfg.cookie_httponly }}</dd>
+    <dt>Session-Cookie Secure</dt>
+    <dd>{{ cfg.cookie_secure }}</dd>
+    <dt>Session-Cookie SameSite</dt>
+    <dd>{{ cfg.cookie_samesite }}</dd>
+    <dt>Idle-Timeout</dt>
+    <dd>{{ cfg.session_lifetime }}</dd>
+</dl>
+
+<h2>Nicht in dieser Runde</h2>
+<p>Modelle und Pfade aendern ist nicht Teil von 3.6.8i.
+   Aenderungen laufen ueber die Betriebsdatei (z. B. .env)
+   und einen Neustart.</p>
+{% endblock %}
