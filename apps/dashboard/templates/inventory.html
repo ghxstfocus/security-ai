@@ -1,0 +1,42 @@
+{#
+  inventory.html — Inventar-Liste.
+
+  Kategorie 3 (Template, CSP).
+  Kein |safe, kein style="...", kein inline <script>,
+  kein on*=.
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="page-title">Inventar</h1>
+{% if devices %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Identifier</th>
+            <th>Name</th>
+            <th>Netz</th>
+            <th>Whitelist</th>
+            <th>Zuletzt gesehen</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in devices %}
+        <tr>
+            <td>
+                <a href="/inventory/{{ d.identifier }}">{{ d.identifier }}</a>
+            </td>
+            <td>{{ d.entity_name if d.entity_name else "—" }}</td>
+            <td>{{ d.network_type if d.network_type else "—" }}</td>
+            <td>
+                {% if d.whitelisted %}ja{% else %}nein{% endif %}
+            </td>
+            <td>{{ d.last_seen }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty">Keine Geraete erfasst — noch keine Daten.</p>
+{% endif %}
+{% endblock %}

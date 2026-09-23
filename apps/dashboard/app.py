@@ -169,6 +169,9 @@ def create_app(
     from apps.dashboard.routes_index import register_index_routes
     register_index_routes(app)
 
+    from apps.dashboard.routes_inventory import register_inventory_routes
+    register_inventory_routes(app)
+
     @app.context_processor
     def _inject_nav_permissions():
         # 1. before_request setzt g.access_checker, g.principal

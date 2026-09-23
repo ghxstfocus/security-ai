@@ -1,0 +1,54 @@
+{#
+  inventory_detail.html — Geraet-Detail.
+
+  Kategorie 3 (Template, CSP).
+  history-Identifier als Text, kein Link auf ungepruefte URL.
+  Back-Link hartkodiert (Open-Redirect-Vermeidung).
+  history()-Rueckgabe ist list[dict] -> Subscript-Notation.
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<p><a href="/inventory">Zurueck zur Liste</a></p>
+<h1 class="page-title">{{ device.identifier }}</h1>
+<dl class="detail-list">
+    <dt>Name</dt>
+    <dd>{{ device.entity_name if device.entity_name else "—" }}</dd>
+    <dt>Netz</dt>
+    <dd>{{ device.network_type if device.network_type else "—" }}</dd>
+    <dt>Typ</dt>
+    <dd>{{ device.device_type }}</dd>
+    <dt>Whitelist</dt>
+    <dd>{% if device.whitelisted %}ja{% else %}nein{% endif %}</dd>
+    <dt>Erstmals gesehen</dt>
+    <dd>{{ device.first_seen }}</dd>
+    <dt>Zuletzt gesehen</dt>
+    <dd>{{ device.last_seen }}</dd>
+    <dt>Notizen</dt>
+    <dd>{{ device.notes if device.notes else "—" }}</dd>
+</dl>
+
+<h2 class="section-title">Verlauf</h2>
+{% if device.history %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Zeitpunkt</th>
+            <th>Event</th>
+            <th>Netz</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for h in device.history %}
+        <tr>
+            <td>{{ h["timestamp"] }}</td>
+            <td>{{ h["event_type"] }}</td>
+            <td>{{ h["network_type"] if h["network_type"] else "—" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty">Kein Verlauf vorhanden.</p>
+{% endif %}
+{% endblock %}
