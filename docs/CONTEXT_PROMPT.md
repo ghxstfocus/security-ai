@@ -137,6 +137,12 @@ Tests: 723 gruen (Unit + Integration, venv).
 
 ### Format-Regeln
 
+Der generische Prozess (Fakten-Check-Takt, Kategorien,
+Selbst-Review, Patch-Template, Verifikations-Reihenfolge,
+Anti-Patterns) steht in docs/WORKFLOW.md — projektunabhaengig,
+in jedes neue Projekt kopierbar. Die folgenden Format-Regeln
+sind projektspezifische Ergaenzungen dazu.
+
 - **Vor jedem Patch einer bestehenden Datei: erst `cat`en.**
   Anker-Strings muessen aus dem echten Inhalt stammen, nicht
   aus dem Gedaechtnis. Sonst gehen Inhalte verloren (Beispiel:
@@ -195,6 +201,10 @@ Tests: 723 gruen (Unit + Integration, venv).
   (Stand 3.6.8)
 - docs/INCONSISTENCIES_FOUND.md — Ausgelagerte
   Inkonsistenzen (heute keine)
+- docs/WORKFLOW.md — generischer Prozess (Rollen,
+  Fakten-Check-Takt, Kategorien, Selbst-Review,
+  Patch-Template, Verifikation, Anti-Patterns).
+  Projektunabhaengig, in andere Projekte kopierbar.
 - docs/REVIEWER_HANDOFF.md — Handoff-Prompt fuer
   den externen Reviewer-Chat (Kategorie 3)
 
