@@ -330,6 +330,34 @@ def principal_to_view(principal: Principal) -> dict:
     }
 
 
+def role_to_view(role: Role) -> dict:
+    """
+    Projektion fuer die UI: nur die nicht-sensitiven Felder.
+    permissions als sortierte Liste (nach code),
+    damit die Anzeige stabil ist (Auflage 181).
+    """
+    if role is None:
+        raise ValueError("role darf nicht None sein")
+    return {
+        "name": role.name,
+        "description": role.description,
+        "created_at": role.created_at,
+        "permissions": sorted(role.permissions),
+    }
+
+
+def permission_to_view(permission: Permission) -> dict:
+    """
+    Projektion fuer die UI. Kein row_id (Auflage 182).
+    """
+    if permission is None:
+        raise ValueError("permission darf nicht None sein")
+    return {
+        "code": permission.code,
+        "description": permission.description,
+    }
+
+
 __all__ = [
     "PrincipalKind",
     "Permission",
@@ -345,4 +373,6 @@ __all__ = [
     "utc_now_iso",
     "require_utc_iso",
     "principal_to_view",
+    "permission_to_view",
+    "role_to_view",
 ]

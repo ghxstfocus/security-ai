@@ -1,0 +1,81 @@
+{#
+  role_detail.html — Rollen-Detail mit Permissions.
+
+  Kategorie 3 (Template, CSP).
+  Kein |safe, kein style, kein on*, kein inline script.
+#}
+{% extends "base.html" %}
+{% from "_helpers.html" import csrf_field %}
+
+{% block content %}
+<p><a href="/roles">Zurueck zur Liste</a></p>
+<h1>{{ role.name }}</h1>
+<dl>
+    <dt>Beschreibung</dt>
+    <dd>{{ role.description if role.description else "—" }}</dd>
+    <dt>Erstellt</dt>
+    <dd>{{ role.created_at if role.created_at else "—" }}</dd>
+</dl>
+
+{% if warn_self %}
+<p>Achtung: Diese Rolle ist Ihre eigene. Ein
+   Entzug von role.manage oder principal.manage
+   entzieht Ihnen moeglicherweise Ihre
+   Verwaltungsrechte.</p>
+{% endif %}
+
+<h2>Zugewiesene Permissions</h2>
+{% if role.permissions %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for code in role.permissions %}
+        <tr>
+            <td>{{ code }}</td>
+            <td>
+                <form method="post"
+                      action="/roles/{{ role.name }}/revoke-permission">
+                    {{ csrf_field(csrf_token) }}
+                    <input type="hidden" name="permission_code"
+                           value="{{ code }}">
+                    <button type="submit" class="btn btn-danger">
+                        Entfernen
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Keine Permissions zugewiesen.</p>
+{% endif %}
+
+<h2>Permission zuweisen</h2>
+{% if all_permissions %}
+<form method="post"
+      action="/roles/{{ role.name }}/assign-permission">
+    {{ csrf_field(csrf_token) }}
+    <div class="form-field">
+        <label for="permission_code" class="form-label">Code</label>
+        <select id="permission_code" name="permission_code"
+                required class="form-input">
+            {% for p in all_permissions %}
+            <option value="{{ p.code }}">{{ p.code }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">
+        Zuweisen
+    </button>
+</form>
+{% else %}
+<p>Keine Permissions vorhanden (Migrationen pruefen).</p>
+{% endif %}
+
+{% endblock %}

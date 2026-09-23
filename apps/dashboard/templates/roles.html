@@ -1,0 +1,35 @@
+{#
+  roles.html — Rollen-Liste.
+
+  Kategorie 3 (Template, CSP).
+  Kein |safe, kein style, kein on*, kein inline script.
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Rollen</h1>
+<p>Anlegen und Loeschen von Rollen ist nicht Teil
+   dieses Schritts (Policy, eigene Runde).</p>
+{% if roles %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Beschreibung</th>
+            <th>Permissions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in roles %}
+        <tr>
+            <td><a href="/roles/{{ r.name }}">{{ r.name }}</a></td>
+            <td>{{ r.description if r.description else "—" }}</td>
+            <td>{{ r.permissions | length }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Keine Rollen vorhanden.</p>
+{% endif %}
+{% endblock %}
