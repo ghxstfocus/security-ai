@@ -275,7 +275,8 @@ Fertig:
 
 Commits: b82f253, 8692eb6, 97dbde9, 36f65a1,
          c7791c9, 2d4b437, a2c4dc1, 8d43034, 6ae8bd5,
-         25d9614, 29535ce, 148b434, 1f16127, 9c3accb
+         25d9614, 29535ce, 148b434, 1f16127, 9c3accb,
+         fbfafc6
 
 - Migration 0007: alert.view.
 - ServiceError-Basis + AuditReaderServiceError.
@@ -317,7 +318,10 @@ Offen:
       Commit: 9c3accb.
       Inkl.: role_to_view, permission_to_view,
              assign/revoke, self-critical Warnung (A184).
-- [ ] 3.6.8h Audit          (/audit, audit.read)
+- [x] 3.6.8h Audit          (/audit, audit.read)
+      Commit: fbfafc6.
+      Inkl.: Tag-Filter (UTC heute default), Detail
+             mit formatiertem details, kein read_all.
 - [ ] 3.6.8i Einstellungen  (/settings,
                              role.manage)
 
