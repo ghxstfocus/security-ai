@@ -57,8 +57,10 @@ was der Service freigibt.
       (<pre> mit white-space: pre-wrap), nicht als HTML.
 - [ ] Content-Security-Policy-Header:
       default-src 'self'; script-src 'self';
-      style-src 'self' 'unsafe-inline'; img-src 'self' data:;
+      style-src 'self'; img-src 'self' data:;
       connect-src 'self'.
+      (Quelle: DESIGN_DECISIONS §16 — streng, kein
+      unsafe-inline, kein unsafe-eval.)
 - [ ] Keine Inline-Skripte (nur externe JS-Dateien).
 
 ## F. SQL-Injection

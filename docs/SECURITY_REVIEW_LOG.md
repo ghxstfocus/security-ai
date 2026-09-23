@@ -234,7 +234,7 @@ test_access_denied_errorhandler_403 abgedeckt.
 - Neuer Chat liest: docs/CONTEXT_PROMPT.md,
   docs/DESIGN_DECISIONS.md, diese Datei,
   docs/PHASES.md.
-- Offene Punkte stehen in docs/PHASES.md.
+- Offene Punkte siehe Abschnitt `## Offene Punkte` unten.
 - Aktuelle Sicherheits-Entscheidungen pro Thema
   in dieser Datei.
 - Bei Syntax- oder API-Auflagen: pruefen,
@@ -252,3 +252,27 @@ test_access_denied_errorhandler_403 abgedeckt.
 - 3.6.7c: login.html als Template.
 - 3.6.7d: index.html + Route /.
 - 3.6.7e: CSP-Test + PHASES.
+
+
+## Offene Punkte (Stand 3.6.8)
+
+1. AuditReaderError-Namenskollision:
+   `core/reporting/audit_reader.py::AuditReaderError`
+   hat denselben Namen wie der fruehere Service-
+   Fehler. Service-Seite umbenannt zu
+   `AuditReaderServiceError`. Modul-Seite in
+   Phase 3.6.9+ umbenennen (Vorschlag:
+   `AuditJsonlError`).
+
+2. systemd `WorkingDirectory=/opt/security-ai`:
+   `audit-logs/` und `detection/rules.yaml` werden
+   relativ zum CWD gelesen. Deployment-Doku +
+   Unit-File in Phase 3.6.9.
+
+3. Rollen-Review: kein Principal ohne
+   `device.read` anlegen (sonst 403 nach Login,
+   weil `/` device.read erfordert).
+
+4. `WEB_SECURITY_CHECKLIST.md` § E auf strenge
+   CSP korrigiert (kein `'unsafe-inline'`) —
+   Quelle jetzt `DESIGN_DECISIONS §16`.

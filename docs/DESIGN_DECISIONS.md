@@ -181,6 +181,22 @@ Tool-Lookup -> Permission -> Level-4-Approval -> Policy
 Begruendung: Policy kann Tools verbieten, unabhaengig von
 Argumenten.
 
+### 21. Service-interne RBAC-Helfer parametrisiert
+
+Service-interne RBAC-Helfer nehmen den Permission-Code
+als Parameter, nicht fest verdrahtet. Beispiel:
+
+    def _require(self, actor, code):
+        self._checker.require_permission(actor, code)
+
+Aufrufstellen nennen den Code explizit:
+
+    self._require(actor, "audit.read")
+    self._require(actor, "alert.view")
+
+Grund: eine Methode fuer mehrere Permissions, Code an
+der Aufrufstelle sichtbar. Kein Helper pro Permission.
+
 ---
 
 ## 2. Audit-Nomenklatur

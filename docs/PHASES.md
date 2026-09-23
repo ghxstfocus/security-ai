@@ -265,6 +265,49 @@ Commit: 06f6f48, 3a3f926
 - test_csp_all_directives_present.
 - Diese Notizen.
 
+## Phase 3.6.8 — Seiten mit echten Daten  [~]
+
+Ziel: die in der Sidebar verlinkten Seiten mit
+Inhalten fuellen (Route + Service + Template +
+Tests). Pro Seite ein Unterschritt.
+
+Fertig:
+
+Commits: b82f253, 8692eb6, 97dbde9, 36f65a1,
+         c7791c9
+
+- Migration 0007: alert.view.
+- ServiceError-Basis + AuditReaderServiceError.
+- AuditReaderService.list_recent_assessments
+  (RBAC alert.view, limit 1..1000).
+- UI: Sidebar + Stat-Cards bedingt
+  (context_processor _inject_nav_permissions,
+  data-nav, data-card).
+
+Offen:
+
+- [ ] 3.6.8a Inventar       (/inventory,
+                             device.read)
+- [ ] 3.6.8b Alarme         (/alerts,
+                             alert.view)
+- [ ] 3.6.8c Approvals      (/approvals,
+                             approval.view
+                             + approval.decide)
+- [ ] 3.6.8d Changes        (/changes,
+                             change.view
+                             + change.create)
+- [ ] 3.6.8e Chat           (/chat + /api/chat,
+                             chat.ask)
+- [ ] 3.6.8f Benutzer       (/users,
+                             principal.manage)
+- [ ] 3.6.8g Rollen         (/roles,
+                             role.manage)
+- [ ] 3.6.8h Audit          (/audit, audit.read)
+- [ ] 3.6.8i Einstellungen  (/settings,
+                             role.manage)
+
+Kategorie 3 fuer alle (Routes + RBAC + Templates).
+
 ## Phase 5 — Admin AI  [ ]
 
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI
