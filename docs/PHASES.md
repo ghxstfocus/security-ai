@@ -274,7 +274,8 @@ Tests). Pro Seite ein Unterschritt.
 Fertig:
 
 Commits: b82f253, 8692eb6, 97dbde9, 36f65a1,
-         c7791c9, 2d4b437, a2c4dc1, 8d43034, 6ae8bd5
+         c7791c9, 2d4b437, a2c4dc1, 8d43034, 6ae8bd5,
+         25d9614
 
 - Migration 0007: alert.view.
 - ServiceError-Basis + AuditReaderServiceError.
@@ -293,9 +294,10 @@ Offen:
                              alert.view)
       Commit: 6ae8bd5.
       Fix:    8d43034 (AuditReaderService base_dir).
-- [ ] 3.6.8c Approvals      (/approvals,
+- [x] 3.6.8c Approvals      (/approvals,
                              approval.view
                              + approval.decide)
+      Commit: 25d9614.
 - [ ] 3.6.8d Changes        (/changes,
                              change.view
                              + change.create)
