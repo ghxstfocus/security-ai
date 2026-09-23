@@ -313,6 +313,16 @@ Offen:
 
 Kategorie 3 fuer alle (Routes + RBAC + Templates).
 
+Nach 3.6.8i (Optik, sobald Struktur + Daten stehen):
+
+- [ ] 3.6.10 Responsive-Feinschliff (Kategorie 1, CSS-only)
+      .table-Verhalten auf <700px, .topbar, .card,
+      .form-input. Keine Template-Aenderung.
+- [ ] 3.6.11 Hamburger-Navigation (Kategorie 3)
+      Button in topbar.html, Toggle in static/js/nav.js
+      (extern, addEventListener, kein onclick=, kein
+      Inline-<script>, keine style="..."), CSP-konform.
+
 ## Phase 5 — Admin AI  [ ]
 
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI
