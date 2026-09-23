@@ -93,15 +93,18 @@ Append-only Audit, Fail closed, Foederation statt Monolith.
 - Phase 3.6.7c — login.html als Template
 - Phase 3.6.7d — index.html + Route / (device.read)
 - Phase 3.6.7e — CSP-Header-Test (alle Direktiven)
+- Phase 3.6.8a — Inventar-Seite /inventory (device.read,
+  InventoryService, Templates, Tests; Commit 2d4b437)
 
-Tests: 477 gruen (Unit + Integration, venv).
+Tests: 525 gruen (Unit + Integration, venv).
 
 ### Was als Naechstes kommt
 
 - Phase 3.6.8+ — Web-Dashboard: einzelne Seiten mit echten
   Daten (Inventar, Alarme, Approvals, Changes, Chat, Users,
   Roles, Audit, Settings). Baut auf den Services
-  (core/services) auf.
+  (core/services) auf. 3.6.8a (Inventar) ist fertig
+  (Commit 2d4b437); naechster Unterschritt: 3.6.8b Alarme.
 - Phase 3.7 (optional) — Host-Scanner / Netzwerk-Discovery
   (Proxmox-Watcher).
 - Phase 3.5.5+ (optional) — Principal-Objekte, assign_role.
@@ -124,6 +127,13 @@ Tests: 477 gruen (Unit + Integration, venv).
 - Ein `&&`-Block pro logischer Einheit. Bei Fehlschlag bricht
   die Kette vor `git commit` ab; der naechste Block zieht nur
   die unfertige Datei nach.
+- **Fakten-Check-Takt (verbindlich fuer Bau-Chat und
+  Reviewer):** Pro Nachricht genau EIN Ausfuehrungsblock.
+  Der naechste Block kommt erst, nachdem der Nutzer die
+  Ausgabe des vorherigen gepastet hat. Kein Vorab-Stapeln
+  mehrerer Bloecke. Mehrere Fakten sequenziell klaeren.
+  Grund: Scroll-Chaos beim Nutzer, doppelte Befehle,
+  schwer nachvollziehbare Reihenfolge.
 - Keine Umlaute in Code-Bloecken (oe, ue, ae, ss).
 - Kein sed auf Python-Code. Patches per Python-Skript.
 - Bei Auflagen mit Jinja-Syntax oder API:
@@ -164,10 +174,11 @@ Tests: 477 gruen (Unit + Integration, venv).
 Phase 1-4 abgeschlossen. Phase 3.5 inkl. 3.5.5-3.5.9
 abgeschlossen. Phase 3.6 (Web-Dashboard) in Arbeit:
 3.6.1-3.6.7e fertig, Login + CSP + erste Seiten stehen.
+3.6.8a (Inventar /inventory) fertig, Commit 2d4b437.
 
-Naechster Schritt: 3.6.8+ (einzelne Seiten mit Daten).
+Naechster Schritt: 3.6.8b Alarme (/alerts, alert.view).
 
-Tests: 477 gruen (venv, pytest 9.1.1).
+Tests: 525 gruen (venv, pytest 9.1.1).
 
 ### Aufgabe jetzt
 
