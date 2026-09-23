@@ -72,6 +72,16 @@ test_access_denied_errorhandler_403 abgedeckt.
 - POST /logout prueft CSRF.
 - Ausnahme: nur mit Authorization-Header und
   SameSite=Strict.
+- 3.6.8e: JSON-Endpoints nutzen Header
+  X-CSRF-Token statt Form-Feld. Begruendung:
+  Querschnittsregel (kein Body-Parsing vor
+  CSRF-Check), keine Vermischung von Body-
+  Whitelist und CSRF-Feld. validate() bleibt
+  unveraendert (vergleicht Strings).
+- _inject_csrf als zweiter context_processor
+  liefert csrf_token in jedes Template.
+  get_or_create rotiert nicht (idempotent);
+  Test test_csrf_token_stable_across_requests.
 
 ### Rate-Limit
 
@@ -81,6 +91,15 @@ test_access_denied_errorhandler_403 abgedeckt.
 - LOGIN_HARD_LIMIT = 20 (429, DoS-Schutz).
 - LOGIN_WINDOW_SECONDS = 900 (15 min).
 - Kein time.sleep (600k pbkdf2 reicht).
+- 3.6.8e: RateLimitService (core/services/)
+  fuer /api/chat. Key = principal_name (nicht
+  Session-ID, nicht IP). In-Memory dict,
+  threading.Lock. WINDOW_SECONDS=60,
+  MAX_REQUESTS=10. 429 + Retry-After.
+  Kein Audit/Log bei Treffer (sonst fuellt
+  ein Angreifer die Audit-Logs).
+  Single-Process heute; bei Multi-Worker
+  spaeter gemeinsamer Store (Redis/DB).
 
 ### User-Enumeration
 
@@ -252,6 +271,24 @@ test_access_denied_errorhandler_403 abgedeckt.
 - 3.6.7c: login.html als Template.
 - 3.6.7d: index.html + Route /.
 - 3.6.7e: CSP-Test + PHASES.
+- 3.6.8a: /inventory (device.read, InventoryService).
+  Fix: CSS-Klassen an reale components.css angeglichen.
+- 3.6.8b: /alerts (alert.view, AuditReaderService).
+  Fix: AuditReaderService.list_recent_assessments nutzt
+  self._audit.base_dir (Audit-Quelle == App-Konfig).
+  Review: NO-GO-Korrektur war der base_dir-Bug.
+- 3.6.8c: /approvals (approval.view + approval.decide,
+  CSRF, Variante A um ApprovalQueue).
+  NO-GO-Korrekturen: unmatched-route-403-Test,
+  session_transaction-Helper, decision_reason-Anzeige.
+- 3.6.8d: /changes (change.view + change.create).
+  Review: NO-GO -> zwei Fehlerklassen eingefuehrt
+  (ServiceError Format, OperationError Betrieb).
+- 3.6.8e: /chat + /api/chat (chat.ask, Rate-Limit,
+  CSRF-Header, _inject_csrf).
+  Review: NO-GO -> CSRF-Header statt Body, 502 bei
+  LLM-Fehler, Rate-Limit jetzt, chat.js bedingt,
+  Test-Kontext app_context -> test_request_context.
 
 
 ## Offene Punkte (Stand 3.6.8)
@@ -276,3 +313,30 @@ test_access_denied_errorhandler_403 abgedeckt.
 4. `WEB_SECURITY_CHECKLIST.md` § E auf strenge
    CSP korrigiert (kein `'unsafe-inline'`) —
    Quelle jetzt `DESIGN_DECISIONS §16`.
+
+5. ChatServiceError nicht in ServiceError-Hierarchie.
+   Liegt in apps/security_ai/chat.py, erbt von
+   RuntimeError. Route faengt nicht, globaler
+   500. Eigener Aufraeum-Block: ChatServiceError
+   -> OperationError (Auflage 87, 3.6.8e).
+
+6. ApprovalService/InventoryService/
+   AuditReaderService mischen Format- und
+   Betriebsfehler in einer Klasse. Sollten auf
+   ServiceError/OperationError-Trennung umgestellt
+   werden (Vorbild: ChangeService, 3.6.8d).
+   Eigener Aufraeum-Block.
+
+7. DESIGN_DECISIONS § 2 (tool-Tabelle):
+   ChangeService -> change_service ergaenzen
+   (Auflage 52, 3.6.8d).
+
+8. DESIGN_DECISIONS § 11: Regel
+   "Format-Fehler -> ServiceError-Subklasse -> 4xx.
+   Betriebs-Fehler -> OperationError-Subklasse -> 5xx."
+   ergaenzen (Auflage 74, 3.6.8d).
+
+9. Rate-Limit Multi-Worker: RateLimitService
+   ist In-Memory (Single-Process). Bei mehreren
+   Workern gemeinsamer Store (Redis/DB)
+   (Auflage 98, 3.6.8e).
