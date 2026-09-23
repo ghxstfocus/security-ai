@@ -1,0 +1,55 @@
+{#
+  alerts.html — Liste der letzten risk_assessment-Eintraege.
+
+  Kategorie 3 (Template, CSP).
+  Kein |safe, kein style="...", kein inline <script>,
+  kein on*=, kein tojson.
+  Badge-Klassen hartkodiert (if/elif, kein dynamisches
+  class=). Badge-Text ist die Kategorie selbst (Farbe allein
+  reicht nicht, Auflage 26).
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Alarme</h1>
+{% if assessments %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Zeitpunkt</th>
+            <th>Kategorie</th>
+            <th>Score</th>
+            <th>Regel</th>
+            <th>Event-ID</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in assessments %}
+        <tr>
+            <td>{{ a.timestamp }}</td>
+            <td>
+                {% if a.category == "SECURITY_ALERT" %}
+                <span class="badge badge-red">{{ a.category }}</span>
+                {% elif a.category == "CONFIRMED" %}
+                <span class="badge badge-red">{{ a.category }}</span>
+                {% elif a.category == "SUSPICION" %}
+                <span class="badge badge-yellow">{{ a.category }}</span>
+                {% elif a.category == "ANOMALY" %}
+                <span class="badge badge-cyan">{{ a.category }}</span>
+                {% elif a.category == "EVENT" %}
+                <span class="badge badge-cyan">{{ a.category }}</span>
+                {% else %}
+                <span class="badge badge-cyan">{{ a.category }}</span>
+                {% endif %}
+            </td>
+            <td>{{ a.score }}</td>
+            <td>{{ a.rule_id }}</td>
+            <td>{{ a.event_id }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Keine Alarme in den letzten 24 Stunden.</p>
+{% endif %}
+{% endblock %}
