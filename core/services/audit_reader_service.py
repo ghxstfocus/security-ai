@@ -2,8 +2,8 @@
 AuditReaderService: Service-Schicht fuer Audit-Lesen.
 
 Kapselt harness.audit.writer.AuditWriter.read_day().
-Der Web-Layer (apps/dashboard/routes_audit.py) darf
-NICHT direkt auf harness zugreifen (Regel N).
+Der Web-Layer (Dashboard-Routen) darf NICHT direkt
+auf harness zugreifen (Regel N).
 
 Design:
 - Lesender Service. Kein Schreiben.
