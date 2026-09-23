@@ -275,7 +275,7 @@ Fertig:
 
 Commits: b82f253, 8692eb6, 97dbde9, 36f65a1,
          c7791c9, 2d4b437, a2c4dc1, 8d43034, 6ae8bd5,
-         25d9614, 29535ce, 148b434, 1f16127
+         25d9614, 29535ce, 148b434, 1f16127, 9c3accb
 
 - Migration 0007: alert.view.
 - ServiceError-Basis + AuditReaderServiceError.
@@ -312,8 +312,11 @@ Offen:
       Commit: 1f16127.
       Inkl.: principal_to_view, MIN_PASSWORD_LEN=12,
              list_roles mit principal.manage.
-- [ ] 3.6.8g Rollen         (/roles,
+- [x] 3.6.8g Rollen         (/roles,
                              role.manage)
+      Commit: 9c3accb.
+      Inkl.: role_to_view, permission_to_view,
+             assign/revoke, self-critical Warnung (A184).
 - [ ] 3.6.8h Audit          (/audit, audit.read)
 - [ ] 3.6.8i Einstellungen  (/settings,
                              role.manage)
