@@ -323,6 +323,23 @@ Nach 3.6.8i (Optik, sobald Struktur + Daten stehen):
       (extern, addEventListener, kein onclick=, kein
       Inline-<script>, keine style="..."), CSP-konform.
 
+## Phase 3.8 — Host-Scanner / Netzwerk-Discovery  [ ]
+
+Ziel: das gesamte Heimnetz beobachten, nicht nur den
+Container. Scapy-Sniffer laeuft auf dem Proxmox-Host
+(host_scanner.py auf vmbr0), nicht in einem LXC.
+
+Siehe docs/ARCHITECTURE.md § 5 (Deployment-Topologie),
+docs/DEPLOYMENT.md ("Host: host_scanner auf pve").
+
+Regeln (aus ARCHITECTURE § 5):
+- LXC 1 (security-ai) hat kein CAP_NET_RAW.
+- LXC 2 (security-tools) hat CAP_NET_RAW, aber kein Internet.
+- Host-Scanner laeuft ausserhalb der Container.
+
+Status: noch nicht implementiert. Aktuell nur nmap-Scan
+im Container gegen Test-Ziele (Phase 3.4).
+
 ## Phase 5 — Admin AI  [ ]
 
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI
