@@ -1,0 +1,56 @@
+{#
+  user_detail.html — Benutzer-Detail.
+
+  Kategorie 3 (Template, CSP).
+  Kein |safe, kein style, kein on*, kein inline script.
+  Zwei POST-Formulare: toggle-active, set-password.
+  Back-Link hartkodiert.
+#}
+{% extends "base.html" %}
+{% from "_helpers.html" import csrf_field %}
+
+{% block content %}
+<p><a href="/users">Zurueck zur Liste</a></p>
+<h1>{{ entry.name }}</h1>
+<dl>
+    <dt>Kind</dt>
+    <dd>{{ entry.kind }}</dd>
+    <dt>Rolle-ID</dt>
+    <dd>{{ entry.role_id }}</dd>
+    <dt>Status</dt>
+    <dd>
+        {% if entry.is_active %}
+        <span class="badge badge-green">aktiv</span>
+        {% else %}
+        <span class="badge badge-red">inaktiv</span>
+        {% endif %}
+    </dd>
+    <dt>Passwort gesetzt</dt>
+    <dd>{% if entry.has_password %}ja{% else %}nein{% endif %}</dd>
+    <dt>Erstellt</dt>
+    <dd>{{ entry.created_at }}</dd>
+</dl>
+
+<h2>Status aendern</h2>
+<form method="post" action="/users/{{ entry.name }}/toggle-active">
+    {{ csrf_field(csrf_token) }}
+    <button type="submit" class="btn btn-ghost">
+        {% if entry.is_active %}Deaktivieren{% else %}Aktivieren{% endif %}
+    </button>
+</form>
+
+<h2>Passwort setzen</h2>
+<form method="post" action="/users/{{ entry.name }}/set-password">
+    {{ csrf_field(csrf_token) }}
+    <div class="form-field">
+        <label for="password" class="form-label">
+            Neues Passwort (min 12 Zeichen)
+        </label>
+        <input id="password" name="password" type="password"
+               required minlength="12" class="form-input">
+    </div>
+    <button type="submit" class="btn btn-primary">
+        Passwort setzen
+    </button>
+</form>
+{% endblock %}

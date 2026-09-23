@@ -1,0 +1,71 @@
+{#
+  user_new.html — Formular fuer neuen Benutzer.
+
+  Kategorie 3 (Template, CSP, CSRF).
+  Kein |safe, kein style, kein on*.
+  Select role_name dynamisch aus list_roles (Auflage 147).
+  Kein Redisplay nach Fehler.
+#}
+{% extends "base.html" %}
+{% from "_helpers.html" import csrf_field %}
+
+{% block content %}
+<p><a href="/users">Zurueck zur Liste</a></p>
+<h1>Neuer Benutzer</h1>
+
+{% if not roles %}
+<p>Keine Rollen vorhanden. Migrationen pruefen
+   (data/migrations/0005_principals.sql).</p>
+{% else %}
+<form method="post" action="/users/new">
+    {{ csrf_field(csrf_token) }}
+
+    <div class="form-field">
+        <label for="name" class="form-label">Name</label>
+        <input id="name" name="name" type="text"
+               required class="form-input">
+    </div>
+
+    <div class="form-field">
+        <label for="role_name" class="form-label">Rolle</label>
+        <select id="role_name" name="role_name"
+                required class="form-input">
+            {% for r in roles %}
+            <option value="{{ r.name }}">{{ r.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-field">
+        <label for="kind" class="form-label">Kind</label>
+        <select id="kind" name="kind" required class="form-input">
+            {% for k in kinds %}
+            <option value="{{ k }}">{{ k }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-field">
+        <label for="is_active" class="form-label">
+            <input id="is_active" name="is_active"
+                   type="checkbox" checked>
+            Aktiv
+        </label>
+    </div>
+
+    <div class="form-field">
+        <label for="password" class="form-label">
+            Passwort (optional, min 12 Zeichen)
+        </label>
+        <input id="password" name="password" type="password"
+               minlength="12" class="form-input">
+        <small>Leer lassen, wenn kein Login moeglich sein soll
+               (z. B. Service-Account).</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Anlegen
+    </button>
+</form>
+{% endif %}
+{% endblock %}

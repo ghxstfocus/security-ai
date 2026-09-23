@@ -307,6 +307,29 @@ class Session:
         )
 
 
+# ---------------------------------------------------------------------- #
+# UI-Projektion fuer Principal
+# ---------------------------------------------------------------------- #
+
+def principal_to_view(principal: Principal) -> dict:
+    """
+    Projektion fuer die UI: nur die nicht-sensitiven Felder.
+
+    Kein password_hash, kein row_id. has_password ist bool,
+    nicht der Hash selbst (Auflage 143-146).
+    """
+    if principal is None:
+        raise ValueError("principal darf nicht None sein")
+    return {
+        "name": principal.name,
+        "kind": principal.kind.value,
+        "role_id": principal.role_id,
+        "is_active": principal.is_active,
+        "has_password": bool(principal.password_hash),
+        "created_at": principal.created_at,
+    }
+
+
 __all__ = [
     "PrincipalKind",
     "Permission",
@@ -321,4 +344,5 @@ __all__ = [
     "PBKDF2_ITERATIONS",
     "utc_now_iso",
     "require_utc_iso",
+    "principal_to_view",
 ]

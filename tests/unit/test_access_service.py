@@ -155,7 +155,7 @@ def test_set_password_requires_permission(
     )
     # alice hat Rolle viewer -> kein principal.manage
     with pytest.raises(Exception) as exc_info:
-        svc.set_password("alice", name="alice", password="geheim123")
+        svc.set_password("alice", name="alice", password="geheim123456")
     assert "principal.manage" in str(exc_info.value)
 
 
@@ -178,7 +178,7 @@ def test_set_password_updates_hash(
         role_id=admin_role.row_id,
         kind=PrincipalKind.HUMAN,
     )
-    svc.set_password("admin1", name="alice", password="geheim123")
+    svc.set_password("admin1", name="alice", password="geheim123456")
     updated = deps["principals"].get_by_name("alice")
     assert updated.password_hash is not None
     assert updated.password_hash.startswith("pbkdf2_sha256$600000$")
@@ -200,7 +200,7 @@ def test_set_password_revokes_sessions(
     )
     assert alice_sessions.get("sid-alice-1").revoked_at is None
     assert alice_sessions.get("sid-alice-2").revoked_at is None
-    svc.set_password("admin1", name="alice", password="geheim123")
+    svc.set_password("admin1", name="alice", password="geheim123456")
     assert alice_sessions.get("sid-alice-1").revoked_at is not None
     assert alice_sessions.get("sid-alice-2").revoked_at is not None
 
@@ -220,7 +220,7 @@ def test_set_password_audit_kind(
         deps["role_perms"], deps["checker"], audit,
         session_repo=sr,
     )
-    svc.set_password("admin1", name="alice", password="geheim123")
+    svc.set_password("admin1", name="alice", password="geheim123456")
     entries = audit.read_day()
     kinds = [
         e.details.get("kind") for e in entries if e.details
@@ -243,7 +243,7 @@ def test_set_password_no_password_in_audit(
         deps["role_perms"], deps["checker"], audit,
         session_repo=sr,
     )
-    svc.set_password("admin1", name="alice", password="geheim123")
+    svc.set_password("admin1", name="alice", password="geheim123456")
     updated = deps["principals"].get_by_name("alice")
     stored_hash = updated.password_hash
     # Audit-Tag lesen
@@ -253,7 +253,7 @@ def test_set_password_no_password_in_audit(
         ).strftime("%Y-%m-%d") + ".jsonl"
     )
     content = audit_path.read_text(encoding="utf-8")
-    assert "geheim123" not in content
+    assert "geheim123456" not in content
     assert stored_hash is not None
     assert stored_hash not in content
     assert "pbkdf2_sha256$" not in content
@@ -275,7 +275,10 @@ def test_set_password_unknown_principal(
         session_repo=sr,
     )
     with pytest.raises(AccessServiceError):
-        svc.set_password("admin1", name="nichtda", password="x")
+        svc.set_password(
+            "admin1", name="nichtda",
+            password="nichtzu kurz12",
+        )
 
 
 def test_set_password_revoke_failure_propagates(
@@ -304,7 +307,7 @@ def test_set_password_revoke_failure_propagates(
         session_repo=sr,
     )
     with pytest.raises(SessionRepositoryError):
-        svc.set_password("admin1", name="alice", password="geheim123")
+        svc.set_password("admin1", name="alice", password="geheim123456")
 
 
 # ---------------------------------------------------------------------- #
@@ -314,3 +317,89 @@ def test_set_password_revoke_failure_propagates(
 def test_access_service_error_is_service_error():
     from core.services import ServiceError
     assert issubclass(AccessServiceError, ServiceError)
+
+
+# ---------------------------------------------------------------------- #
+# 3.6.8f: MIN_PASSWORD_LEN (A151, A152, A171, A176, A177)
+# ---------------------------------------------------------------------- #
+
+def test_set_password_too_short(
+    deps: dict, audit: AuditWriter, conn: sqlite3.Connection,
+    alice: dict,
+) -> None:
+    admin_role = deps["roles"].get_by_name("admin")
+    deps["principals"].create(
+        name="admin1", role_id=admin_role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    sr = SessionRepository(conn)
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=sr,
+    )
+    with pytest.raises(AccessServiceError):
+        svc.set_password(
+            "admin1", name="alice", password="kurz1234",
+        )
+
+
+def test_set_password_short_password_before_notfound(
+    deps: dict, audit: AuditWriter, conn: sqlite3.Connection,
+) -> None:
+    """
+    A177: Laengenpruefung greift VOR der DB-Abfrage.
+    """
+    admin_role = deps["roles"].get_by_name("admin")
+    deps["principals"].create(
+        name="admin1", role_id=admin_role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    sr = SessionRepository(conn)
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=sr,
+    )
+    with pytest.raises(AccessServiceError):
+        svc.set_password(
+            "admin1", name="nichtda", password="x",
+        )
+
+
+# ---------------------------------------------------------------------- #
+# 3.6.8f: list_roles mit principal.manage (A147, A169)
+# ---------------------------------------------------------------------- #
+
+def test_list_roles_with_principal_manage_only(
+    deps: dict, audit: AuditWriter, conn: sqlite3.Connection,
+) -> None:
+    """Principal mit principal.manage (ohne role.manage)
+    darf list_roles aufrufen."""
+    from core.access.repository import RolePermissionRepository
+    conn.execute(
+        "INSERT INTO roles (name, description, created_at) "
+        "VALUES (?, ?, ?)",
+        (
+            "principal_only",
+            "Test-Rolle nur principal.manage",
+            "2026-01-01T00:00:00+00:00",
+        ),
+    )
+    conn.commit()
+    rp = RolePermissionRepository(conn)
+    rp.assign("principal_only", "principal.manage")
+    role = deps["roles"].get_by_name("principal_only")
+    deps["principals"].create(
+        name="p1", role_id=role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    sr = SessionRepository(conn)
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=sr,
+    )
+    roles = svc.list_roles("p1")
+    assert isinstance(roles, list)
+    assert any(r.name == "admin" for r in roles)

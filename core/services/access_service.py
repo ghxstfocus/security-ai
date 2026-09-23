@@ -45,6 +45,8 @@ from harness.audit.writer import AuditWriter
 AGENT = "security_ai"
 TOOL = "access_service"
 
+MIN_PASSWORD_LEN = 12
+
 
 class AccessServiceError(ServiceError):
     """Fachlicher Fehler im AccessService."""
@@ -126,7 +128,16 @@ class AccessService:
         self._checker.require_permission(principal_name, code)
 
     def list_roles(self, actor: str) -> list[Role]:
-        self.require(actor, "role.manage")
+        """
+        list_roles: role.manage ODER principal.manage.
+        Begruendung: Principals anlegen erfordert
+        Rollen-Kenntnis (Auflage 147, 168).
+        """
+        if not (
+            self._checker.check(actor, "role.manage")
+            or self._checker.check(actor, "principal.manage")
+        ):
+            self.require(actor, "role.manage")
         return self._roles.list_all()
 
     def list_permissions(self, actor: str) -> list[Permission]:
@@ -156,9 +167,13 @@ class AccessService:
         name: str,
         role_name: str,
         kind: PrincipalKind = PrincipalKind.HUMAN,
-        password_hash: str | None = None,
         is_active: bool = True,
     ) -> Principal:
+        """
+        Legt einen Principal ohne Passwort an.
+        Passwort setzen ist ein eigener Schritt (set_password),
+        damit die Laengenpruefung greift (Auflage 153).
+        """
         self.require(actor, "principal.manage")
         try:
             role = self._roles.get_by_name(role_name)
@@ -171,7 +186,7 @@ class AccessService:
                 name=name,
                 role_id=role.row_id,
                 kind=kind,
-                password_hash=password_hash,
+                password_hash=None,
                 is_active=is_active,
             )
         except AccessRepositoryError as exc:
@@ -235,6 +250,14 @@ class AccessService:
                 an den Nutzer melden.
         """
         self.require(actor, "principal.manage")
+        if not isinstance(password, str):
+            raise AccessServiceError(
+                "Passwort muss String sein"
+            )
+        if len(password) < MIN_PASSWORD_LEN:
+            raise AccessServiceError(
+                f"Passwort zu kurz (min {MIN_PASSWORD_LEN})"
+            )
         hashed = hash_password(password)
         try:
             p = self._principals.set_password_hash(name, hashed)
@@ -307,6 +330,7 @@ class AccessService:
 
 
 __all__ = [
+    "MIN_PASSWORD_LEN",
     "AccessService",
     "AccessServiceError",
     "AccessDeniedError",

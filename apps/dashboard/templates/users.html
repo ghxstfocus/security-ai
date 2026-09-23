@@ -1,0 +1,54 @@
+{#
+  users.html — Benutzer-Liste.
+
+  Kategorie 3 (Template, CSP).
+  Kein |safe, kein style, kein on*, kein inline script.
+  Badge-Farben: kind human/service=cyan, system=yellow,
+  active=green, inactive=red (Reviewer-Vorschlag 3.6.8f).
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Benutzer</h1>
+<p><a href="/users/new" class="btn btn-primary">Neuer Benutzer</a></p>
+{% if users %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Kind</th>
+            <th>Rolle-ID</th>
+            <th>Status</th>
+            <th>Passwort</th>
+            <th>Erstellt</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in users %}
+        <tr>
+            <td><a href="/users/{{ u.name }}">{{ u.name }}</a></td>
+            <td>
+                {% if u.kind == "system" %}
+                <span class="badge badge-yellow">{{ u.kind }}</span>
+                {% else %}
+                <span class="badge badge-cyan">{{ u.kind }}</span>
+                {% endif %}
+            </td>
+            <td>{{ u.role_id }}</td>
+            <td>
+                {% if u.is_active %}
+                <span class="badge badge-green">aktiv</span>
+                {% else %}
+                <span class="badge badge-red">inaktiv</span>
+                {% endif %}
+            </td>
+            <td>{% if u.has_password %}ja{% else %}nein{% endif %}</td>
+            <td>{{ u.created_at }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Keine Benutzer vorhanden.</p>
+{% endif %}
+{% endblock %}

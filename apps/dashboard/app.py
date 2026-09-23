@@ -184,6 +184,9 @@ def create_app(
     from apps.dashboard.routes_chat import register_chat_routes
     register_chat_routes(app)
 
+    from apps.dashboard.routes_users import register_users_routes
+    register_users_routes(app)
+
     @app.context_processor
     def _inject_nav_permissions():
         # 1. before_request setzt g.access_checker, g.principal
