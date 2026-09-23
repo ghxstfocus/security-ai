@@ -265,7 +265,7 @@ Commit: 06f6f48, 3a3f926
 - test_csp_all_directives_present.
 - Diese Notizen.
 
-## Phase 3.6.8 — Seiten mit echten Daten  [~]
+## Phase 3.6.8 — Seiten mit echten Daten  [x]
 
 Ziel: die in der Sidebar verlinkten Seiten mit
 Inhalten fuellen (Route + Service + Template +
@@ -276,7 +276,7 @@ Fertig:
 Commits: b82f253, 8692eb6, 97dbde9, 36f65a1,
          c7791c9, 2d4b437, a2c4dc1, 8d43034, 6ae8bd5,
          25d9614, 29535ce, 148b434, 1f16127, 9c3accb,
-         fbfafc6
+         fbfafc6, 14cccd5
 
 - Migration 0007: alert.view.
 - ServiceError-Basis + AuditReaderServiceError.
@@ -322,8 +322,11 @@ Offen:
       Commit: fbfafc6.
       Inkl.: Tag-Filter (UTC heute default), Detail
              mit formatiertem details, kein read_all.
-- [ ] 3.6.8i Einstellungen  (/settings,
+- [x] 3.6.8i Einstellungen  (/settings,
                              role.manage)
+      Commit: 14cccd5.
+      Inkl.: read-only Konfigurationsanzeige, kein
+             SECRET_KEY, kein os.environ-Dump.
 
 Kategorie 3 fuer alle (Routes + RBAC + Templates).
 
