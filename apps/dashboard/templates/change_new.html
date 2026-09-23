@@ -1,0 +1,79 @@
+{#
+  change_new.html — Formular fuer neuen Change.
+
+  Kategorie 3 (Template, CSP, CSRF).
+  Select-Werte aus VALID_TYPES (serverseitig aus ChangeType,
+  kein User-Input). Kein |safe, kein style, kein on*.
+  Kein Redisplay nach Fehler (Formular wird leer gerendert).
+#}
+{% extends "base.html" %}
+{% from "_helpers.html" import csrf_field %}
+
+{% block content %}
+<p><a href="/changes">Zurueck zur Liste</a></p>
+<h1>Neuer Change Request</h1>
+<form method="post" action="/changes/new">
+    {{ csrf_field(csrf_token) }}
+
+    <div class="form-field">
+        <label for="title" class="form-label">Titel (max 200)</label>
+        <input id="title" name="title" type="text"
+               maxlength="200" required class="form-input">
+    </div>
+
+    <div class="form-field">
+        <label for="description" class="form-label">
+            Beschreibung (max 2000)
+        </label>
+        <textarea id="description" name="description"
+                  maxlength="2000" required
+                  class="form-input"></textarea>
+    </div>
+
+    <div class="form-field">
+        <label for="type" class="form-label">Typ</label>
+        <select id="type" name="type" required class="form-input">
+            {% for t in types %}
+            <option value="{{ t }}">{{ t }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-field">
+        <label for="diff_or_patch" class="form-label">
+            Diff/Patch (optional, max 20000)
+        </label>
+        <textarea id="diff_or_patch" name="diff_or_patch"
+                  maxlength="20000" class="form-input"></textarea>
+    </div>
+
+    <div class="form-field">
+        <label for="files_affected" class="form-label">
+            Betroffene Dateien (optional, eine pro Zeile,
+            max 50)
+        </label>
+        <textarea id="files_affected" name="files_affected"
+                  class="form-input"></textarea>
+    </div>
+
+    <div class="form-field">
+        <label for="rollback_plan" class="form-label">
+            Rollback-Plan (optional, max 2000)
+        </label>
+        <textarea id="rollback_plan" name="rollback_plan"
+                  maxlength="2000" class="form-input"></textarea>
+    </div>
+
+    <div class="form-field">
+        <label for="test_plan" class="form-label">
+            Test-Plan (optional, max 2000)
+        </label>
+        <textarea id="test_plan" name="test_plan"
+                  maxlength="2000" class="form-input"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Anlegen
+    </button>
+</form>
+{% endblock %}

@@ -1,0 +1,61 @@
+{#
+  change_detail.html — Detail eines Change Requests.
+
+  Kategorie 3 (Template, CSP).
+  Back-Link hartkodiert. Kein |safe, kein style, kein on*.
+  diff_or_patch in <pre> ist erlaubt unter CSP (Auflage 65).
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<p><a href="/changes">Zurueck zur Liste</a></p>
+<h1>{{ entry.change_id }}</h1>
+<dl>
+    <dt>Titel</dt>
+    <dd>{{ entry.title }}</dd>
+    <dt>Typ</dt>
+    <dd>{{ entry.type }}</dd>
+    <dt>Status</dt>
+    <dd>
+        {% if entry.status == "pending_review" %}
+        <span class="badge badge-yellow">{{ entry.status }}</span>
+        {% elif entry.status == "approved" %}
+        <span class="badge badge-green">{{ entry.status }}</span>
+        {% elif entry.status == "deployed" %}
+        <span class="badge badge-green">{{ entry.status }}</span>
+        {% elif entry.status == "rejected" %}
+        <span class="badge badge-red">{{ entry.status }}</span>
+        {% else %}
+        <span class="badge badge-cyan">{{ entry.status }}</span>
+        {% endif %}
+    </dd>
+    <dt>Angefragt von</dt>
+    <dd>{{ entry.requested_by }}</dd>
+    <dt>Erstellt</dt>
+    <dd>{{ entry.created_at }}</dd>
+    <dt>Beschreibung</dt>
+    <dd>{{ entry.description }}</dd>
+    {% if entry.rollback_plan %}
+    <dt>Rollback-Plan</dt>
+    <dd>{{ entry.rollback_plan }}</dd>
+    {% endif %}
+    {% if entry.test_plan %}
+    <dt>Test-Plan</dt>
+    <dd>{{ entry.test_plan }}</dd>
+    {% endif %}
+    {% if entry.files_affected %}
+    <dt>Betroffene Dateien</dt>
+    <dd>
+        <ul>
+        {% for f in entry.files_affected %}
+            <li>{{ f }}</li>
+        {% endfor %}
+        </ul>
+    </dd>
+    {% endif %}
+    {% if entry.diff_or_patch %}
+    <dt>Diff/Patch</dt>
+    <dd><pre>{{ entry.diff_or_patch }}</pre></dd>
+    {% endif %}
+</dl>
+{% endblock %}

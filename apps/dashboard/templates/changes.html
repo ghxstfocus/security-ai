@@ -1,0 +1,54 @@
+{#
+  changes.html — Change-Request-Liste.
+
+  Kategorie 3 (Template, CSP).
+  Kein |safe, kein style, kein on*, kein inline script,
+  kein tojson.
+  Badge-Text = Status.
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Changes</h1>
+<p><a href="/changes/new" class="btn btn-primary">Neuer Change</a></p>
+{% if changes %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Change-ID</th>
+            <th>Titel</th>
+            <th>Typ</th>
+            <th>Status</th>
+            <th>Erstellt</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in changes %}
+        <tr>
+            <td>
+                <a href="/changes/{{ c.change_id }}">{{ c.change_id }}</a>
+            </td>
+            <td>{{ c.title }}</td>
+            <td>{{ c.type }}</td>
+            <td>
+                {% if c.status == "pending_review" %}
+                <span class="badge badge-yellow">{{ c.status }}</span>
+                {% elif c.status == "approved" %}
+                <span class="badge badge-green">{{ c.status }}</span>
+                {% elif c.status == "deployed" %}
+                <span class="badge badge-green">{{ c.status }}</span>
+                {% elif c.status == "rejected" %}
+                <span class="badge badge-red">{{ c.status }}</span>
+                {% else %}
+                <span class="badge badge-cyan">{{ c.status }}</span>
+                {% endif %}
+            </td>
+            <td>{{ c.created_at }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Keine Change Requests vorhanden.</p>
+{% endif %}
+{% endblock %}
