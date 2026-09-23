@@ -10,8 +10,8 @@
 
 {% block content %}
 <p><a href="/inventory">Zurueck zur Liste</a></p>
-<h1 class="page-title">{{ device.identifier }}</h1>
-<dl class="detail-list">
+<h1>{{ device.identifier }}</h1>
+<dl>
     <dt>Name</dt>
     <dd>{{ device.entity_name if device.entity_name else "—" }}</dd>
     <dt>Netz</dt>
@@ -28,9 +28,9 @@
     <dd>{{ device.notes if device.notes else "—" }}</dd>
 </dl>
 
-<h2 class="section-title">Verlauf</h2>
+<h2>Verlauf</h2>
 {% if device.history %}
-<table class="data-table">
+<table class="table">
     <thead>
         <tr>
             <th>Zeitpunkt</th>
@@ -49,6 +49,6 @@
     </tbody>
 </table>
 {% else %}
-<p class="empty">Kein Verlauf vorhanden.</p>
+<p>Kein Verlauf vorhanden.</p>
 {% endif %}
 {% endblock %}

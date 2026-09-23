@@ -8,9 +8,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="page-title">Inventar</h1>
+<h1>Inventar</h1>
 {% if devices %}
-<table class="data-table">
+<table class="table">
     <thead>
         <tr>
             <th>Identifier</th>
@@ -37,6 +37,6 @@
     </tbody>
 </table>
 {% else %}
-<p class="empty">Keine Geraete erfasst — noch keine Daten.</p>
+<p>Keine Geraete erfasst — noch keine Daten.</p>
 {% endif %}
 {% endblock %}
