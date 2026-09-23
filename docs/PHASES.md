@@ -275,7 +275,7 @@ Fertig:
 
 Commits: b82f253, 8692eb6, 97dbde9, 36f65a1,
          c7791c9, 2d4b437, a2c4dc1, 8d43034, 6ae8bd5,
-         25d9614
+         25d9614, 29535ce
 
 - Migration 0007: alert.view.
 - ServiceError-Basis + AuditReaderServiceError.
@@ -298,9 +298,10 @@ Offen:
                              approval.view
                              + approval.decide)
       Commit: 25d9614.
-- [ ] 3.6.8d Changes        (/changes,
+- [x] 3.6.8d Changes        (/changes,
                              change.view
                              + change.create)
+      Commit: 29535ce.
 - [ ] 3.6.8e Chat           (/chat + /api/chat,
                              chat.ask)
 - [ ] 3.6.8f Benutzer       (/users,
