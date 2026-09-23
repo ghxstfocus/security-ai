@@ -285,6 +285,151 @@ Wenn Ollama nicht erreichbar ist:
 - Kein Tool-Aufruf aus dem LLM. Es formuliert nur
   Erklaerungen.
 
+## 3c. Dashboard hinter nginx mit TLS
+
+Das Dashboard wird nicht mehr direkt auf 0.0.0.0:5000
+betrieben, sondern ausschliesslich ueber einen nginx-
+Reverse-Proxy mit TLS. Flask bindet lokal auf 127.0.0.1:5000,
+nginx terminiert TLS auf 0.0.0.0:443 und leitet alle Anfragen
+per proxy_pass an Flask weiter. Port 80 antwortet nur mit
+einem 301-Redirect auf HTTPS.
+
+### 3c.1 Voraussetzungen
+
+- Debian 12 (bookworm), nginx aus dem Standard-Repo
+  (Version 1.22.1 oder neuer).
+- System-User `security-ai` existiert (UID/GID aus
+  `id security-ai`).
+- `apps/dashboard/app.py` besitzt einen
+  `if __name__ == "__main__":`-Block, der mit
+  `host="127.0.0.1", port=5000, debug=False` startet.
+
+### 3c.2 Eigene CA und Server-Zertifikat
+
+Der Ablauf erzeugt eine eigene CA und ein Server-Zertifikat.
+Alle privaten Schluessel liegen in `/etc/ssl/private/`, nicht
+im Projektverzeichnis und nicht im Git.
+
+CA-Schluessel (600, root:root):
+
+    openssl genrsa -out /etc/ssl/private/security-ai-ca.key 4096
+    chmod 600 /etc/ssl/private/security-ai-ca.key
+    chown root:root /etc/ssl/private/security-ai-ca.key
+
+CA-Zertifikat (5 Jahre):
+
+    openssl req -x509 -new -nodes \
+        -key /etc/ssl/private/security-ai-ca.key \
+        -sha256 -days 1825 \
+        -subj "/CN=Homelab Security AI Internal CA" \
+        -out /etc/ssl/certs/security-ai-ca.crt
+
+Server-Schluessel (640, root:ssl-cert):
+
+    openssl genrsa -out /etc/ssl/private/security-ai.key 4096
+    chmod 640 /etc/ssl/private/security-ai.key
+    chown root:ssl-cert /etc/ssl/private/security-ai.key
+
+Server-CSR und Zertifikat (2 Jahre), SAN muss die Nutzungsnamen
+enthalten:
+
+    openssl req -new \
+        -key /etc/ssl/private/security-ai.key \
+        -subj "/CN=security-ai.local" \
+        -out /tmp/security-ai.csr
+
+    openssl x509 -req \
+        -in /tmp/security-ai.csr \
+        -CA /etc/ssl/certs/security-ai-ca.crt \
+        -CAkey /etc/ssl/private/security-ai-ca.key \
+        -CAcreateserial \
+        -days 730 -sha256 \
+        -extfile <(printf "subjectAltName=DNS:security-ai.local,DNS:security-ai,IP:192.168.178.117,IP:127.0.0.1") \
+        -out /etc/ssl/certs/security-ai.crt
+
+    rm -f /tmp/security-ai.csr
+
+Kontrolle der SAN-Eintraege:
+
+    openssl x509 -in /etc/ssl/certs/security-ai.crt -text -noout \
+        | grep -A1 "Subject Alternative Name"
+
+### 3c.3 CA im Browser/OS importieren
+
+Das CA-Zertifikat `security-ai-ca.crt` muss einmalig pro Client
+in den Browser- oder Betriebssystem-Truststore importiert werden.
+Danach zeigt der Browser keine Warnung mehr, weil die Verbindung
+ueber eine vertrauenswuerdige CA laeuft.
+
+Der Import erfolgt **nicht** durch Wegklicken der Warnung.
+Wer das CA-Zertifikat nicht importieren will, kann das Dashboard
+nicht per HTTPS erreichen; HTTP wird nicht angeboten.
+
+Linux (Debian/Ubuntu):
+
+    sudo cp security-ai-ca.crt /usr/local/share/ca-certificates/
+    sudo update-ca-certificates
+
+Firefox (eigener Truststore): Einstellungen -> Datenschutz & Sicherheit
+-> Zertifikate -> Zertifizierungsstellen -> Importieren.
+
+Windows: `security-ai-ca.crt` doppelklicken, Ablageort
+"Lokaler Computer", Zertifikatspeicher "Vertrauenswuerdige
+Stammzertifizierungsstellen".
+
+macOS: Keychain-Zugriff -> System -> Zertifikate -> Importieren,
+danach im Zertifikat auf "Immer vertrauen" stellen.
+
+### 3c.4 nginx-Konfiguration
+
+Datei `/etc/nginx/sites-available/security-ai.conf`, Symlink nach
+`/etc/nginx/sites-enabled/security-ai.conf`. Der Port-80-Block
+antwortet nur mit einem Redirect. Der Port-443-Block terminiert
+TLS und reicht an Flask weiter. Header aus Flask werden unveraendert
+durchgereicht; nginx fuegt **nur** den HSTS-Header hinzu.
+
+Test der Konfiguration vor dem Reload:
+
+    nginx -t
+
+Bei Fehlern bricht `nginx -t` ab; kein Reload ohne sauberen Test.
+
+### 3c.5 systemd-Units
+
+- `security-ai-dashboard.service` startet Flask als User
+  `security-ai`, gebunden auf 127.0.0.1:5000.
+- nginx laeuft als Standard-Unit `nginx.service` aus dem
+  Debian-Paket, ohne Anpassung.
+- Der Dashboard-Service benoetigt nginx nicht als harte
+  Abhaengigkeit. Faellt nginx aus, ist das Dashboard nicht
+  erreichbar; faellt das Dashboard aus, antwortet nginx mit
+  502 Bad Gateway. Kein HTTP-Fallback, kein direkter Zugriff.
+
+### 3c.6 Ports (aktualisiert gegenueber § 4.2)
+
+| Port | Dienst              | Bind-Adresse     |
+|------|---------------------|------------------|
+| 5000 | Flask Dashboard     | 127.0.0.1        |
+| 80   | nginx Redirect      | 0.0.0.0          |
+| 443  | nginx TLS           | 0.0.0.0          |
+
+Port 8080 wird nicht mehr verwendet.
+
+### 3c.7 Fail closed
+
+- Ist nginx gestoppt, ist das Dashboard nicht erreichbar.
+- Ist das Dashboard gestoppt, antwortet nginx mit 502.
+- Kein Notausgang, kein HTTP-Fallback, kein direkter
+  Flask-Zugriff von aussen.
+
+### 3c.8 Checkliste WEB_SECURITY_CHECKLIST § L
+
+- [x] Dashboard laeuft hinter Reverse-Proxy.
+- [x] NICHT direkt ins Internet.
+- [x] systemd-Service mit User=, ProtectSystem=strict,
+  NoNewPrivileges.
+- [x] Binding auf 127.0.0.1 fuer Flask.
+
 ## 4. Netzwerk und Firewall
 
 ### 4.1 Feste IP
@@ -293,10 +438,11 @@ Der Container hat 192.168.178.117 (statisch, per pct create).
 
 ### 4.2 Ports
 
-| Port | Dienst              | Exponiert     |
-|------|---------------------|---------------|
-| 5000 | Webhook             | nur LAN       |
-| 8080 | Dashboard           | nur LAN       |
+| Port | Dienst              | Bind-Adresse     | Exponiert |
+|------|---------------------|------------------|-----------|
+| 5000 | Flask Dashboard     | 127.0.0.1        | lokal     |
+| 80   | nginx Redirect      | 0.0.0.0          | nur LAN   |
+| 443  | nginx TLS           | 0.0.0.0          | nur LAN   |
 
 ### 4.3 Capabilities entziehen
 
@@ -315,11 +461,20 @@ Scans muessen im separaten security-tools-Container laufen.
 
 Falls noetig, eingehende Verbindungen beschraenken:
 
-    # Nur vom Hauptnetz auf Port 5000 + 8080
-    iptables -A INPUT -i vmbr0 -s 192.168.178.0/24 -p tcp --dport 5000 -j ACCEPT
-    iptables -A INPUT -i vmbr0 -s 192.168.178.0/24 -p tcp --dport 8080 -j ACCEPT
-    iptables -A INPUT -i vmbr0 -p tcp --dport 5000 -j DROP
-    iptables -A INPUT -i vmbr0 -p tcp --dport 8080 -j DROP
+> Beispiel. Keine automatische Anwendung.
+> Diese Regeln sind Vorlage, nicht Skript.
+> Reihenfolge beachten: DROP vor ACCEPT fuer
+> dasselbe Ziel hebt sich auf.
+
+    # HTTP/HTTPS aus dem Hauptnetz
+    iptables -A INPUT -i vmbr0 -s 192.168.178.0/24 -p tcp --dport 80  -j ACCEPT
+    iptables -A INPUT -i vmbr0 -s 192.168.178.0/24 -p tcp --dport 443 -j ACCEPT
+
+    # Dashboard-Port 5000 wird NICHT per Host-Firewall
+    # freigegeben. Flask bindet auf 127.0.0.1; LAN-Verkehr
+    # erreicht den Dienst nicht, unabhaengig von iptables.
+    # Wer den Dienst versehentlich auf 0.0.0.0 bindet,
+    # sieht das in `ss -tulpn | grep :5000` (siehe §7).
 
 ## 5. Backups
 
@@ -403,7 +558,9 @@ Zeile hinzufuegen:
 
 ### Port belegt
 
-    ss -tulpn | grep -E ":5000|:8080"
+    ss -tulpn | grep -E ':80|:443|:5000'
+
+`:5000` muss auf `127.0.0.1:5000` enden, nicht auf `0.0.0.0:5000`.
 
 ### Datenbank-Fehler
 
@@ -435,8 +592,8 @@ Nach dem Deployment:
 1. Test-Events senden (curl gegen Webhook).
 2. Ueberpruefen, dass Audit-Logs geschrieben werden.
 3. Sicherstellen, dass Telegram-Alarme ankommen.
-4. Dashboard im Browser testen (http://192.168.178.117:8080).
+4. Dashboard im Browser testen (https://security-ai.local/).
 5. Erste Change Requests generieren lassen.
 
 ---
-Letzte Aktualisierung: 2026-09-20
+Letzte Aktualisierung: 2026-09-23

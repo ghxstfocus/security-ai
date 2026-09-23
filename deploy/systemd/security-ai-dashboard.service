@@ -1,0 +1,28 @@
+[Unit]
+Description=Homelab Security AI Dashboard
+Documentation=file:/opt/security-ai/docs/DEPLOYMENT.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=security-ai
+Group=security-ai
+WorkingDirectory=/opt/security-ai
+EnvironmentFile=/opt/security-ai/.env
+ExecStart=/opt/security-ai/.venv/bin/python3 -m apps.dashboard.app
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+RestrictAddressFamilies=AF_UNIX AF_INET
+ReadWritePaths=/opt/security-ai/audit-logs
+ReadWritePaths=/opt/security-ai/data
+
+[Install]
+WantedBy=multi-user.target

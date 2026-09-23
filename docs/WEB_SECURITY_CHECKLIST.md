@@ -119,13 +119,16 @@ was der Service freigibt.
 
 ## L. Deployment
 
-- [ ] Dashboard laeuft hinter Reverse-Proxy (nginx/caddy)
+- [x] Dashboard laeuft hinter Reverse-Proxy (nginx/caddy)
       oder nur ueber Tailscale.
-- [ ] NICHT direkt ins Internet.
-- [ ] systemd-Service mit User=, ProtectSystem=strict,
+- [x] NICHT direkt ins Internet.
+- [x] systemd-Service mit User=, ProtectSystem=strict,
       NoNewPrivileges.
-- [ ] Binding auf 127.0.0.1 oder Tailscale-Interface,
+- [x] Binding auf 127.0.0.1 oder Tailscale-Interface,
       nicht 0.0.0.0 (falls ohne Proxy).
+
+Erfuellt durch Phase 3.6.12 (nginx Reverse-Proxy mit TLS).
+Siehe docs/DEPLOYMENT.md Abschnitt 3c.
 
 ## M. Test-Ebene
 

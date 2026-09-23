@@ -61,6 +61,10 @@ test_access_denied_errorhandler_403 abgedeckt.
 - purge_expired loescht nur ALTE widerrufene
   Sessions (nicht frische).
 - revoke_all_for_principal bei Passwort-Aenderung.
+- Ab 3.6.12 (HTTPS hinter nginx) kein temporaeres
+  Secure=False mehr noetig; SESSION_COOKIE_SECURE=True
+  wird nicht mehr abgeschwaecht. Offener Punkt 10
+  (HTTPS fuer Dashboard-Test) ist damit geschlossen.
 
 ### CSRF
 

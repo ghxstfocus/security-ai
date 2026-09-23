@@ -264,3 +264,10 @@ __all__ = [
     "DEFAULT_AUDIT_DIR",
     "IDLE_TIMEOUT_SECONDS",
 ]
+
+if __name__ == "__main__":
+    # Lokaler Start fuer Entwicklung und systemd-Vorbereitung.
+    # Kein threaded=True: der Dev-Server laeuft hinter nginx,
+    # fuer Produktion waere gunicorn die richtige Wahl (eigene Runde).
+    app = create_app()
+    app.run(host="127.0.0.1", port=5000, debug=False)
