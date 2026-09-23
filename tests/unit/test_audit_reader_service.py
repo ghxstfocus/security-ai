@@ -271,3 +271,58 @@ def test_list_recent_assessments_rbac_before_limit(
     )
     with pytest.raises(AccessDeniedError):
         svc.list_recent_assessments("viewer1", limit=0)
+
+
+# ---------------------------------------------------------------------- #
+# 3.6.8b Regression (Auflage 32)
+# ---------------------------------------------------------------------- #
+
+def test_list_recent_assessments_reads_from_configured_base_dir(
+    conn, tmp_path, monkeypatch,
+):
+    """
+    Regression: list_recent_assessments muss die base_dir des
+    AuditWriter nutzen, nicht den CWD-Default.
+
+    Test: CWD auf ein leeres tmp wechseln (kein audit-logs/),
+    base_dir = tmp/audit mit einer Zeile. Ohne den Fix waere
+    das Ergebnis leer (CWD hätte nichts), mit dem Fix sichtbar.
+    """
+    _create_principal(conn, "admin1", "admin")
+
+    # CWD auf ein leeres Verzeichnis umlenken: dort liegt kein
+    # audit-logs/, damit der Default-Pfad leer bliebe.
+    cwd = tmp_path / "cwd"
+    cwd.mkdir()
+    monkeypatch.chdir(cwd)
+
+    audit_dir = tmp_path / "audit"
+    writer = AuditWriter(base_dir=audit_dir)
+    writer.log(
+        agent="security_ai",
+        tool="risk.unknown_device",
+        policy_result="ALLOWED",
+        permission_level=0,
+        execution_status="OK",
+        details={
+            "kind": "risk_assessment",
+            "event_id": "EVT-2026-09-22-cafebabe",
+            "category": "CONFIRMED",
+            "score": 0.9,
+            "rule_id": "unknown_device",
+            "base": 0.5,
+            "modifiers": [],
+            "reasons": [],
+        },
+    )
+
+    svc = AuditReaderService(
+        audit_writer=writer,
+        checker=AccessChecker.from_conn(conn),
+    )
+    out = svc.list_recent_assessments("admin1")
+    assert len(out) == 1, (
+        "Service liest nicht aus der konfigurierten base_dir "
+        f"(bekam {len(out)} Eintraege)"
+    )
+    assert out[0]["event_id"] == "EVT-2026-09-22-cafebabe"

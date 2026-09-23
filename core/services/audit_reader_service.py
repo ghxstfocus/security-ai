@@ -137,6 +137,7 @@ class AuditReaderService:
                 "limit out of range (1..1000)"
             )
         return read_risk_assessments(
+            self._audit.base_dir,
             since_hours=24,
             max_entries=limit,
         )
