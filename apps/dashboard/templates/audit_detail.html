@@ -1,0 +1,51 @@
+{#
+  audit_detail.html — Ein Audit-Eintrag.
+
+  Kategorie 3 (Template, CSP).
+  Kein |safe, kein style, kein on*, kein inline script.
+  Explizite Felder (Auflage 202), kein dynamisches
+  Rendern aller Keys.
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<p><a href="/audit">Zurueck zur Liste</a></p>
+<h1>{{ entry.audit_id }}</h1>
+<dl>
+    <dt>Zeitpunkt</dt>
+    <dd>{{ entry.timestamp }}</dd>
+    <dt>Agent</dt>
+    <dd>{{ entry.agent }}</dd>
+    <dt>Tool</dt>
+    <dd>{{ entry.tool }}</dd>
+    <dt>Policy-Ergebnis</dt>
+    <dd>{{ entry.policy_result }}</dd>
+    <dt>Permission-Level</dt>
+    <dd>{{ entry.permission_level }}</dd>
+    <dt>Execution-Status</dt>
+    <dd>{{ entry.execution_status }}</dd>
+    <dt>Args-Hash</dt>
+    <dd>{{ entry.args_hash }}</dd>
+    <dt>Output-Hash</dt>
+    <dd>{{ entry.output_hash }}</dd>
+    <dt>Duration (ms)</dt>
+    <dd>{{ entry.duration_ms }}</dd>
+    <dt>Network-ID</dt>
+    <dd>{{ entry.network_id }}</dd>
+    <dt>Fehler</dt>
+    <dd>
+        {% if entry.error %}
+        {{ entry.error }}
+        {% else %}
+        —
+        {% endif %}
+    </dd>
+</dl>
+
+<h2>Details</h2>
+{% if details_formatted %}
+<pre>{{ details_formatted }}</pre>
+{% else %}
+<p>Keine Details.</p>
+{% endif %}
+{% endblock %}

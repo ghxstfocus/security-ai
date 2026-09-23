@@ -1,0 +1,51 @@
+{#
+  audit.html — Audit-Liste fuer einen Tag.
+
+  Kategorie 3 (Template, CSP).
+  Kein |safe, kein style, kein on*, kein inline script.
+  Datums-Filter als GET-Form (kein CSRF).
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Audit</h1>
+<p>Zeige Eintraege fuer {{ date }} (UTC).</p>
+
+<form method="get" action="/audit" class="form-field">
+    <label for="date" class="form-label">Datum (YYYY-MM-DD)</label>
+    <input id="date" name="date" type="date"
+           value="{{ date }}" class="form-input">
+    <button type="submit" class="btn btn-primary">Anzeigen</button>
+</form>
+
+{% if entries %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Zeitpunkt</th>
+            <th>Audit-ID</th>
+            <th>Agent</th>
+            <th>Tool</th>
+            <th>Ergebnis</th>
+            <th>Level</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in entries %}
+        <tr>
+            <td>{{ e.timestamp }}</td>
+            <td><a href="/audit/{{ e.audit_id }}">{{ e.audit_id }}</a></td>
+            <td>{{ e.agent }}</td>
+            <td>{{ e.tool }}</td>
+            <td>{{ e.policy_result }}</td>
+            <td>{{ e.permission_level }}</td>
+            <td>{{ e.execution_status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Keine Eintraege fuer {{ date }} (UTC).</p>
+{% endif %}
+{% endblock %}

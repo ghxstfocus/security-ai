@@ -190,6 +190,9 @@ def create_app(
     from apps.dashboard.routes_roles import register_roles_routes
     register_roles_routes(app)
 
+    from apps.dashboard.routes_audit import register_audit_routes
+    register_audit_routes(app)
+
     @app.context_processor
     def _inject_nav_permissions():
         # 1. before_request setzt g.access_checker, g.principal
