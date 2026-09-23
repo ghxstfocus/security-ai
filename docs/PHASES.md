@@ -275,7 +275,7 @@ Fertig:
 
 Commits: b82f253, 8692eb6, 97dbde9, 36f65a1,
          c7791c9, 2d4b437, a2c4dc1, 8d43034, 6ae8bd5,
-         25d9614, 29535ce
+         25d9614, 29535ce, 148b434
 
 - Migration 0007: alert.view.
 - ServiceError-Basis + AuditReaderServiceError.
@@ -302,8 +302,11 @@ Offen:
                              change.view
                              + change.create)
       Commit: 29535ce.
-- [ ] 3.6.8e Chat           (/chat + /api/chat,
+- [x] 3.6.8e Chat           (/chat + /api/chat,
                              chat.ask)
+      Commit: 148b434.
+      Inkl.: RateLimitService + CSRF-Header (X-CSRF-Token)
+             + _inject_csrf-Context-Processor.
 - [ ] 3.6.8f Benutzer       (/users,
                              principal.manage)
 - [ ] 3.6.8g Rollen         (/roles,
