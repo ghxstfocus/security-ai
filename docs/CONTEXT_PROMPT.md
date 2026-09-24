@@ -214,10 +214,19 @@ Phase 1-4 abgeschlossen. Phase 3.5 inkl. 3.5.5-3.5.9
 abgeschlossen. Phase 3.6 (Web-Dashboard):
 3.6.1-3.6.7e fertig.
 Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
-a-i, HEAD 3beab99.
+a-i.
+Phase 3.6.12 (HTTPS/nginx) technisch fertig, HEAD 37ae99d.
 
-Naechster Schritt: 3.6.10 Responsive-Feinschliff,
-dann 3.6.11 Hamburger-Navigation.
+Aktuell offen:
+- 3.6.10 Responsive-Feinschliff: CSS-Patch im Working Tree
+  (uncommitted). Sichtpruefung ergab: 400px unlesbar,
+  Loesung E + B (nowrap+ellipsis fuer Zeitstempel,
+  Spalten-Ausblendung <500px) vom Reviewer freigegeben.
+  Naechster Schritt: Sichtpruefung erneut, dann Commit.
+- 3.6.11 Hamburger-Navigation (Kategorie 3).
+- 3.6.13 Systemvoraussetzungen dokumentieren.
+- 3.6.14 UI-Politur Alerts-Tabelle (Ueberschriften,
+  Datumsformat, Score-Label).
 
 Tests: 723 gruen (venv, pytest 9.1.1).
 

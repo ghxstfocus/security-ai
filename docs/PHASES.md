@@ -357,7 +357,7 @@ Regeln (aus ARCHITECTURE § 5):
 Status: noch nicht implementiert. Aktuell nur nmap-Scan
 im Container gegen Test-Ziele (Phase 3.4).
 
-## Phase 3.6.12 — HTTPS fuer das Dashboard  [ ]
+## Phase 3.6.12 — HTTPS fuer das Dashboard  [x]
 
 Ziel: Login und alle Dashboard-Routen ueber HTTPS
 erreichbar. Heute blockiert SESSION_COOKIE_SECURE=True
@@ -375,6 +375,22 @@ bleiben unveraendert, Testmatrix fuer HTTPS ergaenzen.
 Kategorie 3 (TLS, Auth, Cookie-Flags).
 Siehe docs/SECURITY_REVIEW_LOG.md offener Punkt 10.
 
+Erledigt in dieser Session (Commits afb4eb2 und 37ae99d):
+- nginx 1.22.1 aus bookworm installiert, eigene CA +
+  Server-Zertifikat (SAN: security-ai.local, security-ai,
+  192.168.178.117, 127.0.0.1).
+- apps/dashboard/app.py: if __name__ == "__main__"-Block
+  mit host=127.0.0.1, port=5000, debug=False.
+- deploy/systemd/security-ai-dashboard.service mit Hardening
+  (User=security-ai, ProtectSystem=strict, NoNewPrivileges).
+- deploy/nginx/security-ai.conf mit TLS 1.2/1.3, HSTS,
+  default_server return 444, CSP aus Flask unveraendert.
+- docs/DEPLOYMENT.md §3c (CA, Zertifikat, nginx-Config,
+  systemd-Units, Fail closed, Checkliste §L), §4.2/§4.4/§7/§10
+  korrigiert, WEB_SECURITY_CHECKLIST §L auf [x].
+- Login-Test ueber HTTPS: 302 (Redirect), kein 500er.
+- Offene Punkte 12-15 in SECURITY_REVIEW_LOG ergaenzt.
+
 ## Phase 3.6.13 — Systemvoraussetzungen dokumentieren  [ ]
 
 Ziel: eine vollstaendige Liste der Systempakete und
@@ -389,6 +405,47 @@ Anlass: 3.6.12 installiert nginx als Systempaket. Aktuell
 sind die Abhaengigkeiten ueber pyproject.toml, DEPLOYMENT.md
 §2.4/§3a/§3b/§3c verstreut. Ein Neuaufbau braucht die
 zentrale Liste.
+
+## Phase 3.6.14 — UI-Politur Alerts-Tabelle  [ ]
+
+Ziel: die Alert-Tabelle lesbarer machen. Aus der
+Sichtpruefung 3.6.10 ergaben sich drei Befunde, die
+nicht CSS-only loesbar sind:
+
+1. Spaltenueberschriften sind technisch:
+   - Score -> was fuer ein Score?
+   - Regel -> was fuer eine Regel?
+   - Event-ID -> technisch.
+   Vorschlag: Erkennungsregel, Bewertung, Ereignis-ID.
+
+2. Datumsformat ist ISO 8601 mit Mikrosekunden
+   (2026-09-23T21:17:00.072011+00:00).
+   Vorschlag: 23.09.26 21:17 (kompakt).
+   Zu klaeren: UTC belassen oder lokale Zeit.
+
+3. Score-Darstellung ist Fliesskomma-Artefakt
+   (0.9500000000000001).
+   Vorschlag: Label gross + Zahl klein darunter:
+       KRITISCH
+       0.95
+   Labels abgeleitet aus existierenden Kategorien
+   (core/risk/models.py):
+       EVENT          -> Info
+       ANOMALY        -> Hinweis
+       SUSPICION      -> Warnung
+       SECURITY_ALERT -> Alarm
+       CONFIRMED      -> Kritisch
+   Schwellwerte sind bereits definiert
+   (DEFAULT_THRESHOLDS: 0.2 / 0.4 / 0.6 / 0.8).
+
+Zusaetzlich: pro Tabelle eine Klasse
+(table-alerts, table-inventory, ...) zur Definition
+der Hardfacts fuer <500px. Ersetzt die globale
+nth-child(n+4)-Regel aus 3.6.10.
+
+Kategorie 2 (Template-Aenderungen, Tests).
+Kein RBAC/CSP/CSRF betroffen.
+Reihenfolge: nach 3.6.11.
 
 ## Phase 5 — Admin AI  [ ]
 

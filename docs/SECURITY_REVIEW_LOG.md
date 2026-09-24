@@ -388,3 +388,40 @@ test_access_denied_errorhandler_403 abgedeckt.
     Kein Blocker fuer 3.6.8f-i (Dashboard-Arbeit laeuft
     ueber die bestehende SSH-Session).
     Eigener Kategorie-3-Block (SSH-Zugang).
+
+12. Test-Client / Orchestrator nie als root gegen die
+    Produktions-DB. Immer via `runuser -u security-ai`.
+    Anlass: ein root-Prozess hat am 2026-09-24 um 00:17
+    per orchestrator-snapshot die Datei
+    audit-logs/2026-09-24.jsonl als 644 root:root
+    angelegt. Nachfolgende Login-POSTs des Service-Users
+    security-ai scheiterten mit PermissionError, der
+    globale 500-Handler lieferte Interner Fehler statt
+    Redirect auf /login.
+
+13. AuditWriter setzt beim Anlegen einer neuen Datei
+    keinen expliziten Modus oder Owner. Bei versehentlichem
+    root-Lauf entsteht 644 root:root statt 640
+    security-ai:security-ai. Praevention: der AuditWriter
+    setzt beim Datei-Erstellen explizit os.umask oder
+    einen os.chmod auf 640 und prueft den Owner.
+    Kategorie 3, eigener Block.
+
+14. Service-Start prueft audit-logs/ nicht auf Konsistenz
+    (Owner, Modus, Fremddateien). Ein inkonsistenter
+    Zustand wurde erst durch einen 500er sichtbar, nicht
+    beim Start. Praevention: beim App-Start audit-logs/
+    pruefen und bei Inkonsistenz fail closed oder warnen.
+    Kategorie 2/3, eigener Block.
+
+15. Migrations-Tracking defekt ab 0003. Die Migrationen
+    0003-0007 tragen sich nicht in schema_migrations ein;
+    die DB steht deshalb auf Version 2, obwohl Tabellen
+    0003-0005 existieren. Anlass: der Login-500er am
+    2026-09-23/24 (fehlende Tabellen sessions und
+    login_attempts aus 0006). Fix in dieser Session:
+    init_db.py --no-principal erneut ausgefuehrt.
+    Praevention: (a) Migrations-Tracking reparieren,
+    (b) Deployment-Schritt fuer Migrationen in
+    docs/DEPLOYMENT.md aufnehmen, (c) Service-Start
+    prueft DB-Schema-Version. Kategorie 2/3, eigener Block.
