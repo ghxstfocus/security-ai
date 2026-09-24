@@ -153,3 +153,32 @@
     border-radius: var(--radius-md);
     margin-bottom: 16px;
 }
+
+/* Responsive: schmale Viewports. Tabellen bleiben Tabellen
+   (keine display-Aenderung), Inhalt bricht um. Kein Wrapper
+   im Markup, daher CSS-only. Reviewed: GO mit Auflagen 245/246/339/340. */
+@media (max-width: 700px) {
+    .table {
+        table-layout: fixed;
+        width: 100%;
+    }
+    .table th:first-child,
+    .table td:first-child {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 14ch;
+    }
+    .table th,
+    .table td {
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 500px) {
+    .table th:nth-child(n+4),
+    .table td:nth-child(n+4) {
+        display: none;
+    }
+}
