@@ -357,6 +357,40 @@ Regeln (aus ARCHITECTURE § 5):
 Status: noch nicht implementiert. Aktuell nur nmap-Scan
 im Container gegen Test-Ziele (Phase 3.4).
 
+## Phase 3.6.11 — Hamburger-Navigation  [ ]
+
+Ziel: Sidebar auf <=700px ausblenden und per Button
+in der Topbar ein-/ausblenden. Der Sidebar-Overflow
+("tare"-Fragment) wird damit behoben.
+
+Kategorie 3 (CSP-naehe, externes JS, addEventListener).
+Reviewer-Freigabe: Auflagen 346-364 (Reviewer-Chat,
+2026-09-24).
+
+Kurzfassung Auflagen:
+- 346: erlaubte Dateien (base.html, topbar.html,
+  sidebar.html, nav.js, layout.css, components.css,
+  test_dashboard_nav.py).
+- 347: verboten (app.py, CSP-Header, Cookie-Flags,
+  main.js, chat.js).
+- 348: Default >700px sichtbar, <=700px versteckt.
+- 349: Overlay-Toggle, kein Layout-Wechsel.
+- 350: kein localStorage.
+- 351: SVG extern (static/img/hamburger.svg).
+- 352: max. 150ms Transition auf transform.
+- 353: nav.js extern, IIFE, kein eval/innerHTML/onclick.
+- 354: Button-Markup mit id=nav-toggle, aria.
+- 355: Sidebar per visibility, kein aria-hidden.
+- 356: Fokus-Handling, Esc schliesst.
+- 357-360: Tests (Button, nav.js, CSP unveraendert).
+- 361: Sichtpruefung 1920/1100/700/400px + S25.
+- 362: Reihenfolge 3.6.11 vor 3.6.13/3.6.14.
+- 363: offene Punkte 12-15 parallel.
+- 364: (Nummersprung, siehe Reviewer-Chat).
+
+Offen: "tare"-Effekt-Diagnose vor Baubeginn
+(Browser DevTools auf /alerts 400px).
+
 ## Phase 3.6.12 — HTTPS fuer das Dashboard  [x]
 
 Ziel: Login und alle Dashboard-Routen ueber HTTPS
@@ -446,6 +480,50 @@ nth-child(n+4)-Regel aus 3.6.10.
 Kategorie 2 (Template-Aenderungen, Tests).
 Kein RBAC/CSP/CSRF betroffen.
 Reihenfolge: nach 3.6.11.
+
+## Phase 3.6.16 — Globale Suche  [ ]
+
+Ziel: zentrale Suche in der Topbar, die alle
+Informationen zu einem Schlagwort zusammenzieht.
+Beispiele: IP, Datum, User, Change-ID, Event-ID.
+
+Kategorie 3 (RBAC pro Quelle, Input-Validierung,
+Output-Escaping). Reviewer-Freigabe: Auflagen 365-379
+(Reviewer-Chat, 2026-09-24).
+
+Kurzfassung Auflagen:
+- 365: Detail-Route je Quelle ist die bestehende
+  Route (/changes/ID, /inventory/ID, /audit/ID, ...).
+- 366: Chat ohne Detail-Route: direkte Antwort.
+- 367: jeder Treffer ist <a href=...>.
+- 368: Limit 20 pro Quelle in der Vorschau.
+- 369-370: q escaped in URL und im Template.
+- 371: Limit 50 pro Quelle in der Such-Ergebnisliste.
+- 372: RBAC pro Quelle (Operator und Admin sehen alles
+  in der DB; Viewer 403).
+- 373: Route apps/dashboard/routes_search.py,
+  Service core/services/search_service.py.
+- 374: Input-Validierung (len 1..200, Zeichen-Whitelist,
+  keine SQL-Wildcards, parametrisierte Queries).
+- 375: keine Datei-Pfad-Suche.
+- 376: Response-Whitelist (kein args_json, kein
+  password_hash, kein session_id).
+- 377: Test-Matrix (RBAC, Input, Limit, XSS, CSP).
+- 378: Ergebnis-Darstellung via <details>/<summary>.
+- 379: Topbar-Suchfeld erst mit 3.6.16.
+
+MVP-Umfang:
+- Nur Operator/Admin.
+- Exakte Treffer, keine Wildcards, keine Grammatik.
+- Nur SQLite-Quellen (principals, inventory.devices,
+  whitelisted_devices, approvals, change_requests).
+- Kein audit-logs-Volltext.
+- Kein Datums-Parsing.
+- Nur nach Enter (keine Live-Suche).
+- Kein Audit der Suchanfragen.
+- q in URL (/search?q=...).
+
+Reihenfolge: nach 3.6.11, 3.6.13, 3.6.14.
 
 ## Phase 5 — Admin AI  [ ]
 

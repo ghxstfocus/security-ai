@@ -215,18 +215,22 @@ abgeschlossen. Phase 3.6 (Web-Dashboard):
 3.6.1-3.6.7e fertig.
 Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
 a-i.
-Phase 3.6.12 (HTTPS/nginx) technisch fertig, HEAD 37ae99d.
+Phase 3.6.12 (HTTPS/nginx) fertig, HEAD aca2461.
+Phase 3.6.10 (responsive Tabellen) fertig (Commit 064ea5b).
+Working Tree sauber.
 
 Aktuell offen:
-- 3.6.10 Responsive-Feinschliff: CSS-Patch im Working Tree
-  (uncommitted). Sichtpruefung ergab: 400px unlesbar,
-  Loesung E + B (nowrap+ellipsis fuer Zeitstempel,
-  Spalten-Ausblendung <500px) vom Reviewer freigegeben.
-  Naechster Schritt: Sichtpruefung erneut, dann Commit.
-- 3.6.11 Hamburger-Navigation (Kategorie 3).
+- 3.6.11 Hamburger-Navigation (Kategorie 3, Auflagen
+  346-364). Vor Baubeginn Diagnose des "tare"-Effekts
+  (Browser DevTools auf /alerts 400px).
 - 3.6.13 Systemvoraussetzungen dokumentieren.
 - 3.6.14 UI-Politur Alerts-Tabelle (Ueberschriften,
   Datumsformat, Score-Label).
+- 3.6.16 Globale Suche (Kategorie 3, Auflagen
+  365-379). MVP: Operator/Admin, exakte Treffer,
+  nur SQLite-Quellen, collapsible <details>, Limit 50.
+
+Reihenfolge: 3.6.11 -> 3.6.13 -> 3.6.14 -> 3.6.16.
 
 Tests: 723 gruen (venv, pytest 9.1.1).
 
