@@ -317,6 +317,13 @@ test_access_denied_errorhandler_403 abgedeckt.
   Review: GO Variante A mit Auflagen 207-221
   (Test-Umbenennung wegen tmp_path-Kollision).
 - 3.6.8 Doku-Abschluss: 3beab99 (a-i alle [x]).
+- 3.6.10: responsive Tabellen (CSS-only, E+B).
+- 3.6.11: Hamburger-Navigation (Sidebar-Overlay,
+  nav.js, CSP-konform).
+- 3.6.12: HTTPS via nginx + eigene CA.
+  Fix: Migrationen 0006/0007 auf Produktions-DB
+  nachgezogen, Audit-Log-Rechte korrigiert.
+- 3.6.13: Systemvoraussetzungen (DEPLOYMENT §3d).
 
 
 ## Offene Punkte (Stand 3.6.8)
@@ -425,3 +432,9 @@ test_access_denied_errorhandler_403 abgedeckt.
     (b) Deployment-Schritt fuer Migrationen in
     docs/DEPLOYMENT.md aufnehmen, (c) Service-Start
     prueft DB-Schema-Version. Kategorie 2/3, eigener Block.
+
+16. Flask dev-Server-Warnung.
+    Der Service laeuft heute als Flask-dev-Server hinter
+    nginx. Die Warnung "This is a development server"
+    im journal wird im Heimnetz akzeptiert. Fix:
+    gunicorn/uwsgi in eigener Runde. Kategorie 3.

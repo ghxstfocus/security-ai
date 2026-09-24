@@ -1156,6 +1156,33 @@ Sonst wird nicht das echte Verhalten getestet.
 - `action="/login"` (doppelte Quotes).
 
 
+### display: block auf .table (CSP-relevant, 3.6.10)
+
+Eine Aenderung der Tabellen-Semantik (display: block auf
+.table) wuerde die Spaltenberechnung aushebeln und ist
+CSP-relevant. Sie wird nicht verwendet.
+
+Responsive Loesung heute (3.6.10):
+- table-layout: fixed + word-break fuer die Zellen.
+- nowrap+ellipsis fuer die Zeitstempel-Spalte (14ch).
+- nth-child(n+4) display: none bei <500px.
+
+### server_name (3.6.12)
+
+server_name akzeptiert zusaetzlich 127.0.0.1 und localhost.
+Grund: lokale Diagnose ohne Host-Header-Trick.
+Externe Zugriffe bleiben auf 192.168.178.117 und
+security-ai.local beschraenkt. Kein Sicherheitsverlust,
+weil beide Namen nur lokal aufloesen.
+
+### default_server (3.6.12)
+
+Ein expliziter default_server auf Port 80 und 443 liefert
+return 444. Grund: unbekannter Host-Header soll kein
+Info-Leak (Login-Seite) zeigen. Der 443-default_server
+hat ein Zertifikat, weil TLS-Handshake vor HTTP-Routing
+stattfindet.
+
 ## 22. Phase-3.6.8-Erweiterungen
 
 Siehe auch:
