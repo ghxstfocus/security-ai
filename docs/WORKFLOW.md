@@ -349,3 +349,17 @@ Thema wechselt):
   vor Bequemlichkeit.
 - Ein Block pro Nachricht.
 - Fragen stellen statt raten.
+
+## Kontext-Hygiene
+
+- Antworten kurz halten. Kein Vorlauf, keine
+  Zusammenfassungen ohne Anlass.
+- Stichpunkte statt Prosa bei Status-Updates.
+- Ein Ausfuehrungsblock pro Nachricht, direkt,
+  ohne Einleitung.
+- Bei absehbarer Session-Laenge: Plaene und
+  Auflagen zuerst ins Repo sichern (PHASES.md,
+  CONTEXT_PROMPT.md), dann weiterbauen.
+- Bei abgeschnittenem oder zerhacktem Paste:
+  zuerst Bestandsaufnahme (ls, wc -l, git status),
+  erst dann naechster Schritt.
