@@ -215,24 +215,32 @@ abgeschlossen. Phase 3.6 (Web-Dashboard):
 3.6.1-3.6.7e fertig.
 Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
 a-i.
-Phase 3.6.12 (HTTPS/nginx) fertig, HEAD aca2461.
-Phase 3.6.10 (responsive Tabellen) fertig (Commit 064ea5b).
-Working Tree sauber.
+Phase 3.6.10, 3.6.11, 3.6.12, 3.6.13 fertig.
+HEAD 5ea2a4a, Working Tree sauber.
 
-Aktuell offen:
-- 3.6.11 Hamburger-Navigation (Kategorie 3, Auflagen
-  346-364). Vor Baubeginn Diagnose des "tare"-Effekts
-  (Browser DevTools auf /alerts 400px).
-- 3.6.13 Systemvoraussetzungen dokumentieren.
-- 3.6.14 UI-Politur Alerts-Tabelle (Ueberschriften,
-  Datumsformat, Score-Label).
-- 3.6.16 Globale Suche (Kategorie 3, Auflagen
-  365-379). MVP: Operator/Admin, exakte Treffer,
-  nur SQLite-Quellen, collapsible <details>, Limit 50.
+Aktuell offen (Reihenfolge vom Reviewer, 2026-09-24):
+1. 3.6.15a Migrations-Tracking reparieren +
+   Deployment-Schritt (Kategorie 3). Ursache des
+   Login-500ers vom 23./24.09.
+2. 3.6.14 UI-Politur Alerts-Tabelle (Kategorie 2).
+3. 3.6.15b Audit-Rechte (AuditWriter, Service-Start-
+   Check) aus offenen Punkten 13/14.
+4. 3.6.15c Fehlerklassen-Trennung Punkte 5/6.
+5. Chat-Klassifikations-Bug (Faktenfrage wird als
+   Interpretation behandelt, 3B halluziniert "nein").
+6. 3.6.16 Globale Suche (Kategorie 3, Auflagen
+   365-379, MVP: Operator/Admin, SQLite, Limit 50,
+   collapsible <details>). Topbar-Umbau inkl.
+   User-Menue (Logout) in 3.6.16.
+7. Spaeter: Punkte 9 (Rate-Limit Multi-Worker),
+   16 (gunicorn).
 
-Reihenfolge: 3.6.11 -> 3.6.13 -> 3.6.14 -> 3.6.16.
+Offene Punkte 1-16 in docs/SECURITY_REVIEW_LOG.md.
+Chronologie bis 3.6.13 dokumentiert.
+DESIGN_DECISIONS: §16 (Web-Dashboard) um server_name,
+default_server, display-Konsequenz erweitert.
 
-Tests: 723 gruen (venv, pytest 9.1.1).
+Tests: 728 gruen (venv, pytest 9.1.1).
 
 ### Aufgabe jetzt
 
