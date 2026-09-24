@@ -483,6 +483,19 @@ Reihenfolge: nach 3.6.11.
 
 ## Phase 3.6.16 — Globale Suche  [ ]
 
+Topbar-Umbau (Teil von 3.6.16, ersetzt den Titel):
+- Suchfeld zentral zwischen Hamburger und User.
+- Seitentitel (div.topbar-title) entfaellt — redundant
+  zum Seiten-<h1>.
+- User-Bereich:
+  * Personen-SVG + Name + Dropdown-Pfeil.
+  * Dropdown enthaelt NUR Logout (POST /logout).
+  * Keine Profileinstellungen, kein Passwort-Link,
+    kein Language-Switch (Enterprise-System,
+    administrativ).
+  * <=400px: Name verkuerzen oder ausblenden,
+    nur Icon + Pfeil.
+
 Ziel: zentrale Suche in der Topbar, die alle
 Informationen zu einem Schlagwort zusammenzieht.
 Beispiele: IP, Datum, User, Change-ID, Event-ID.

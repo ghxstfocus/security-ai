@@ -4,6 +4,9 @@
   Auflage 251: g.principal mit is defined-Pruefung.
 #}
 <header class="topbar">
+    <button id="nav-toggle" type="button" class="nav-toggle" aria-label="Navigation ein-/ausblenden" aria-expanded="false" aria-controls="sidebar">
+        <img src="{{ url_for('static', filename='img/hamburger.svg') }}" alt="">
+    </button>
     <div class="topbar-title">{{ page_title|default('Security AI') }}</div>
     <div class="topbar-user">
         {% if g.principal is defined and g.principal %}
