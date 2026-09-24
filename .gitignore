@@ -17,3 +17,5 @@ data/whitelist/*.json
 .DS_Store
 Thumbs.db
 *.log
+data/*.bak-*
+data/*.vacuum-*
