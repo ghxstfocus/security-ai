@@ -432,6 +432,76 @@ Port 8080 wird nicht mehr verwendet.
   NoNewPrivileges.
 - [x] Binding auf 127.0.0.1 fuer Flask.
 
+## 3d. Systemvoraussetzungen
+
+Zentrale Liste der Pakete und Versionen, die auf CT102
+fuer den Betrieb von Homelab Security AI notwendig sind.
+Getestet mit den unten genannten Versionen; keine
+Versions-Pins — ein apt-Upgrade soll die Doku nicht
+brechen.
+
+### 3d.1 Basis
+
+- Debian 12 (bookworm).
+- Python 3.11 (Systempaket `python3.11` + `python3.11-venv`).
+- venv unter `/opt/security-ai/.venv`.
+- `util-linux` (Standard): liefert `runuser` fuer
+  Deployment-Skripte, die als `security-ai` laufen.
+
+### 3d.2 apt-Pakete (Zweck)
+
+- `nginx` — Reverse-Proxy mit TLS (§3c).
+- `openssl` — CA und Server-Zertifikat (§3c.2).
+- `sqlite3`, `libsqlite3-0` — Datenhaltung.
+- `nmap` — Runtime fuer `tools/nmap_scan.py` (§3a).
+- `ca-certificates`, `ssl-cert` — TLS-Vertrauen,
+  Gruppe `ssl-cert` fuer Server-Key-Owner.
+
+### 3d.3 Python-Abhaengigkeiten
+
+Die Runtime-Abhaengigkeiten stehen in `pyproject.toml`
+unter `[project].dependencies`:
+`flask`, `requests`, `psutil`, `PyYAML`.
+
+Fussnote: `psutil` und `PyYAML` sind deklariert, werden
+aber heute im Code nicht importiert. Sie bleiben als
+Vorbereitung fuer spaetere Phasen.
+
+Optionale Abhaengigkeiten (`scapy`, `fritzconnection`,
+`docker`) sind in `pyproject.toml` unter
+`[project.optional-dependencies].extras` deklariert,
+aber **nicht installiert**. Sie gehoeren zu spaeteren
+Phasen (Host-Scanner, Fritz!Box-Anbindung, Docker-Status).
+
+Installation: siehe §2.4.
+
+### 3d.4 systemd-Unit
+
+- `security-ai-dashboard.service` (aus
+  `deploy/systemd/`), laeuft als `security-ai`,
+  bindet auf `127.0.0.1:5000` (§3c.5).
+- nginx als Debian-Standard-Unit `nginx.service`
+  ohne Anpassung.
+
+### 3d.5 Neuaufbau in Kurzform
+
+    apt install nginx openssl sqlite3 nmap ca-certificates ssl-cert python3.11 python3.11-venv
+    git clone git@github.com:ghxstfocus/security-ai.git /opt/security-ai
+    cd /opt/security-ai
+    python3.11 -m venv .venv
+    .venv/bin/pip install -e .
+    cp .env.example .env  # SECRET_KEY eintragen
+    useradd --system --no-create-home --home /opt/security-ai --shell /usr/sbin/nologin security-ai
+    chown security-ai:security-ai audit-logs data
+    cp deploy/systemd/security-ai-dashboard.service /etc/systemd/system/
+    systemctl daemon-reload && systemctl enable --now security-ai-dashboard
+    cp deploy/nginx/security-ai.conf /etc/nginx/sites-available/security-ai.conf
+    ln -s /etc/nginx/sites-available/security-ai.conf /etc/nginx/sites-enabled/
+    nginx -t && systemctl reload nginx
+
+Details zu CA, Zertifikaten und Cookie-Flags in §3c.
+Keine Secrets in dieser Datei.
+
 ## 4. Netzwerk und Firewall
 
 ### 4.1 Feste IP
