@@ -11,6 +11,7 @@ echtes DATETIME). Das Modell Device arbeitet mit datetime (UTC).
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -42,6 +43,42 @@ def connect(db_path: Path | str = DEFAULT_DB_PATH) -> sqlite3.Connection:
     return conn
 
 
+_MIGRATION_VERSION_RE = re.compile(r"^(\d{4})_")
+
+
+def ensure_schema_migrations(conn: sqlite3.Connection) -> None:
+    """
+    Legt die Tracking-Tabelle an, falls sie fehlt.
+
+    Eine Quelle der Wahrheit fuer das Schema dieser Tabelle.
+    0002_inventory.sql legt sie ebenfalls an (IF NOT EXISTS),
+    das ist idempotent und schadet nicht. Aenderungen am
+    Tracking-Schema gehoeren HIERHIN, nicht in 0002.
+    """
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS schema_migrations ("
+        "    version     INTEGER PRIMARY KEY,"
+        "    applied_at  TEXT NOT NULL"
+        ")"
+    )
+
+
+def _parse_migration_version(filename: str) -> int | None:
+    """
+    Liest die vierstellige Versionsnummer aus dem Dateinamen.
+
+    Strikt: genau vier Ziffern, dann Unterstrich.
+    "0003_approvals.sql" -> 3
+    "0000_init.sql"      -> 0
+    "10000_x.sql"        -> None (fuenfstellig, wird uebersprungen)
+    "init.sql"           -> None (kein Praefix, wird uebersprungen)
+    """
+    m = _MIGRATION_VERSION_RE.match(filename)
+    if m is None:
+        return None
+    return int(m.group(1))
+
+
 def apply_migrations(
     conn: sqlite3.Connection,
     migrations_dir: Path | str = DEFAULT_MIGRATIONS_DIR,
@@ -49,18 +86,51 @@ def apply_migrations(
     """
     Spielt alle *.sql-Dateien im Verzeichnis sortiert ein.
 
-    Idempotent: die SQL-Dateien nutzen IF NOT EXISTS und INSERT OR IGNORE.
-    Rueckgabe: Liste der angewendeten Dateinamen.
+    Idempotent auf zwei Ebenen:
+      1. Skip: Dateien, deren Version bereits in
+         schema_migrations steht, werden uebersprungen.
+      2. SQL: die Migrationen selbst nutzen IF NOT EXISTS
+         und INSERT OR IGNORE.
+
+    Dateinamen ohne strikt vierstellige Version (z.B. "init.sql"
+    oder "10000_x.sql") werden uebersprungen und gemeldet.
+    Nur *.sql wird verarbeitet.
+
+    Rueckgabe: Liste der in DIESEM Lauf angewendeten Dateinamen.
+    Uebersprungene Dateien werden per print() gemeldet (Auflage 394).
     """
     d = Path(migrations_dir)
     if not d.exists():
         raise FileNotFoundError(f"Migrationsverzeichnis fehlt: {d}")
 
+    ensure_schema_migrations(conn)
+
+    done_rows = conn.execute(
+        "SELECT version FROM schema_migrations"
+    ).fetchall()
+    done: set[int] = {int(r[0]) for r in done_rows}
+
     applied: list[str] = []
     for sql_file in sorted(d.glob("*.sql")):
+        version = _parse_migration_version(sql_file.name)
+        if version is None:
+            print(f"uebersprungen (kein vierstelliges Versionspraefix): "
+                  f"{sql_file.name}")
+            continue
+        if version in done:
+            print(f"uebersprungen (bereits angewandt): {sql_file.name}")
+            continue
+
         sql = sql_file.read_text(encoding="utf-8")
         conn.executescript(sql)
+        conn.execute(
+            "INSERT OR IGNORE INTO schema_migrations (version, applied_at) "
+            "VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))",
+            (version,),
+        )
+        done.add(version)
         applied.append(sql_file.name)
+
     conn.commit()
     return applied
 

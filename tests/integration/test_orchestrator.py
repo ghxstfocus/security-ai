@@ -321,7 +321,21 @@ class OrchestratorAuditTests(unittest.TestCase):
         self.ai.process(e)
         snap = [x for x in self._read_audit()
                 if x["details"]["kind"] == "snapshot"][-1]
-        self.assertEqual(snap["details"]["inventory_version"], "0002")
+        version = snap["details"]["inventory_version"]
+
+        # Format: strikt vierstellig numerisch.
+        self.assertRegex(version, r"^\d{4}$")
+
+        # Inhalt: entspricht MAX(version) aus schema_migrations.
+        # Vorher stand hier hart "0002" -- der alte Wert, der aus
+        # dem defekten Migrations-Tracking stammte (Punkt 15).
+        # Nach 3.6.15a traegt apply_migrations die Versionen
+        # korrekt ein; ein fester Wert wuerde bei jeder neuen
+        # Migration brechen.
+        expected = self.ai._conn.execute(
+            "SELECT MAX(version) FROM schema_migrations"
+        ).fetchone()[0]
+        self.assertEqual(version, f"{int(expected):04d}")
 
     def test_audit_write_fehler_processing_audit_error(self):
         from harness.audit.writer import AuditWriteError

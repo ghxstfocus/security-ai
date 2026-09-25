@@ -16,6 +16,8 @@ from core.inventory.repository import (
     DEFAULT_MIGRATIONS_DIR,
     apply_migrations,
     connect,
+    ensure_schema_migrations,
+    _parse_migration_version,
 )
 from tests.unit._helpers import migrated_conn
 
@@ -136,3 +138,191 @@ def test_no_wildcard_permissions(conn):
     assert all("*" not in c for c in codes)
     assert all("?" not in c for c in codes)
     assert all(PERMISSION_PATTERN.match(c) for c in codes)
+
+
+# ------------------------------------------------------------------ #
+# 3.6.15a: Migrations-Tracking + Dateinamen-Parsing
+# ------------------------------------------------------------------ #
+# Diese Tests pruefen das neue Verhalten von apply_migrations
+# (Versionen in schema_migrations eintragen, bereits angewandte
+# Dateien ueberspringen) sowie die strikte vierstellige
+# Dateinamen-Erkennung.
+#
+# Wichtig: NICHT die bestehende `conn`-Fixture verwenden --
+# die ist bereits migriert und wuerde den Skip-Zustand
+# verfaelschen. Alle Tests bauen ihre eigene tmp-DB.
+
+_WM_SQL_A = "CREATE TABLE IF NOT EXISTS wm_a (id INTEGER PRIMARY KEY);"
+_WM_SQL_B = "CREATE TABLE IF NOT EXISTS wm_b (id INTEGER PRIMARY KEY);"
+_WM_SQL_C = "CREATE TABLE IF NOT EXISTS wm_c (id INTEGER PRIMARY KEY);"
+
+
+def _write_migration(d: Path, name: str, sql: str) -> Path:
+    f = d / name
+    f.write_text(sql, encoding="utf-8")
+    return f
+
+
+def _versions_in_db(c: sqlite3.Connection) -> list[int]:
+    rows = c.execute(
+        "SELECT version FROM schema_migrations ORDER BY version"
+    ).fetchall()
+    return [int(r[0]) for r in rows]
+
+
+def test_parse_version_vierstellig_normal():
+    assert _parse_migration_version("0003_approvals.sql") == 3
+
+
+def test_parse_version_null_erlaubt():
+    # 0000 ist kein Sonderfall.
+    assert _parse_migration_version("0000_init.sql") == 0
+
+
+def test_parse_version_fuenfstellig_abgelehnt():
+    # "10000_x.sql" darf NICHT als 1000 gelesen werden.
+    assert _parse_migration_version("10000_x.sql") is None
+
+
+def test_parse_version_kein_praefix():
+    assert _parse_migration_version("init.sql") is None
+
+
+def test_parse_version_drei_ziffern():
+    assert _parse_migration_version("003_x.sql") is None
+
+
+def test_apply_traegt_alle_versionen_ein(tmp_path):
+    d = tmp_path / "migrations"
+    d.mkdir()
+    _write_migration(d, "0001_a.sql", _WM_SQL_A)
+    _write_migration(d, "0002_b.sql", _WM_SQL_B)
+    _write_migration(d, "0003_c.sql", _WM_SQL_C)
+
+    c = connect(tmp_path / "wm1.db")
+    applied = apply_migrations(c, d)
+
+    assert applied == ["0001_a.sql", "0002_b.sql", "0003_c.sql"]
+    assert _versions_in_db(c) == [1, 2, 3]
+    c.close()
+
+
+def test_apply_zweiter_lauf_skip(tmp_path, capsys):
+    # Auflage 393: Skip-Verhalten explizit.
+    d = tmp_path / "migrations"
+    d.mkdir()
+    _write_migration(d, "0001_a.sql", _WM_SQL_A)
+    _write_migration(d, "0002_b.sql", _WM_SQL_B)
+
+    c = connect(tmp_path / "wm2.db")
+    first = apply_migrations(c, d)
+    assert first == ["0001_a.sql", "0002_b.sql"]
+
+    capsys.readouterr()  # ersten Lauf verwerfen
+    second = apply_migrations(c, d)
+    out = capsys.readouterr().out
+
+    assert second == []
+    # Auflage 394: kein stiller Skip.
+    assert "uebersprungen (bereits angewandt): 0001_a.sql" in out
+    assert "uebersprungen (bereits angewandt): 0002_b.sql" in out
+    assert _versions_in_db(c) == [1, 2]
+    c.close()
+
+
+def test_apply_bestehende_zeile_2_bleibt(tmp_path):
+    # Bestehende Version 2 (aus 0002_inventory.sql) bleibt stehen,
+    # 0001 und 0003 werden nachgetragen. applied_at von Version 2
+    # wird NICHT ueberschrieben (INSERT OR IGNORE).
+    d = tmp_path / "migrations"
+    d.mkdir()
+    _write_migration(d, "0001_a.sql", _WM_SQL_A)
+    _write_migration(d, "0002_b.sql", _WM_SQL_B)
+    _write_migration(d, "0003_c.sql", _WM_SQL_C)
+
+    c = connect(tmp_path / "wm3.db")
+    ensure_schema_migrations(c)
+    c.execute(
+        "INSERT INTO schema_migrations (version, applied_at) "
+        "VALUES (2, '2026-01-01T00:00:00.000Z')"
+    )
+    c.commit()
+
+    applied = apply_migrations(c, d)
+
+    assert applied == ["0001_a.sql", "0003_c.sql"]
+    assert _versions_in_db(c) == [1, 2, 3]
+    row = c.execute(
+        "SELECT applied_at FROM schema_migrations WHERE version = 2"
+    ).fetchone()
+    assert row[0] == "2026-01-01T00:00:00.000Z"
+    c.close()
+
+
+def test_apply_datei_ohne_praefix_uebersprungen(tmp_path, capsys):
+    d = tmp_path / "migrations"
+    d.mkdir()
+    _write_migration(d, "init.sql", _WM_SQL_A)
+    _write_migration(d, "0001_a.sql", _WM_SQL_A)
+
+    c = connect(tmp_path / "wm4.db")
+    applied = apply_migrations(c, d)
+    out = capsys.readouterr().out
+
+    assert applied == ["0001_a.sql"]
+    assert _versions_in_db(c) == [1]
+    assert "kein vierstelliges Versionspraefix" in out
+    assert "init.sql" in out
+    c.close()
+
+
+def test_apply_fuenfstellige_datei_uebersprungen(tmp_path, capsys):
+    d = tmp_path / "migrations"
+    d.mkdir()
+    _write_migration(d, "10000_x.sql", _WM_SQL_A)
+    _write_migration(d, "0001_a.sql", _WM_SQL_A)
+
+    c = connect(tmp_path / "wm5.db")
+    applied = apply_migrations(c, d)
+    out = capsys.readouterr().out
+
+    assert applied == ["0001_a.sql"]
+    assert _versions_in_db(c) == [1]
+    assert "kein vierstelliges Versionspraefix" in out
+    assert "10000_x.sql" in out
+    c.close()
+
+
+def test_apply_nicht_sql_datei_ignoriert(tmp_path):
+    d = tmp_path / "migrations"
+    d.mkdir()
+    _write_migration(d, "0001_a.sql", _WM_SQL_A)
+    _write_migration(d, "0002_b.txt", _WM_SQL_B)
+    (d / "notes.md").write_text("# nichts", encoding="utf-8")
+
+    c = connect(tmp_path / "wm6.db")
+    applied = apply_migrations(c, d)
+
+    assert applied == ["0001_a.sql"]
+    assert _versions_in_db(c) == [1]
+    c.close()
+
+
+def test_apply_fehlendes_verzeichnis_wirft(tmp_path):
+    c = connect(tmp_path / "wm7.db")
+    with pytest.raises(FileNotFoundError):
+        apply_migrations(c, tmp_path / "gibt_es_nicht")
+    c.close()
+
+
+def test_apply_version_0_erlaubt(tmp_path):
+    d = tmp_path / "migrations"
+    d.mkdir()
+    _write_migration(d, "0000_init.sql", _WM_SQL_A)
+
+    c = connect(tmp_path / "wm8.db")
+    applied = apply_migrations(c, d)
+
+    assert applied == ["0000_init.sql"]
+    assert _versions_in_db(c) == [0]
+    c.close()
