@@ -432,9 +432,29 @@ test_access_denied_errorhandler_403 abgedeckt.
     (b) Deployment-Schritt fuer Migrationen in
     docs/DEPLOYMENT.md aufnehmen, (c) Service-Start
     prueft DB-Schema-Version. Kategorie 2/3, eigener Block.
+    Erledigt in 3.6.15a: (a) ce25660 (Fix A+B),
+    (c) 1cedb26 (Fix D), (b) Fix-C-Commit mit
+    DEPLOYMENT 3e + deploy/systemd/-Vorlage.
+    Der Punkt bleibt hier als Referenz stehen.
 
 16. Flask dev-Server-Warnung.
     Der Service laeuft heute als Flask-dev-Server hinter
     nginx. Die Warnung "This is a development server"
     im journal wird im Heimnetz akzeptiert. Fix:
     gunicorn/uwsgi in eigener Runde. Kategorie 3.
+
+17. check_schema_version auch beim security_ai-Start.
+    Fix D (1cedb26) prueft die DB-Schema-Version nur
+    beim Dashboard-Start (create_app). Der security_ai-
+    Start hat heute keinen eigenen systemd-Pfad (nur
+    manueller Aufruf). Wenn dieser Start gebaut wird,
+    check_schema_version dort ebenfalls aufrufen.
+    Kategorie 3, eigener Block (Reviewer-Auflage 398).
+
+18. DEPLOYMENT 1 Topologie-Drift.
+    docs/DEPLOYMENT.md Abschnitt 1 zeigt LXC 101
+    (192.168.178.116, ruht), LXC 103 (.118, geplant),
+    LXC 104 (.119, geplant). Aktuelle Umgebung ist
+    CT102 (192.168.178.117, security-ai).
+    Doku-Drift. Eigener Doku-Block nach 3.6.15.
+    Kategorie 1 (Doku), Reviewer-Auflage 413.

@@ -1,3 +1,13 @@
+# Quelle: /etc/systemd/system/security-ai-dashboard.service
+# Stand: 2026-09-25
+# Bei Aenderungen: systemctl daemon-reload
+#
+# Diese Datei ist die Repo-Vorlage der aktiven Unit.
+# Aenderung gegenueber der aktiven Unit:
+#   - ExecStartPre: Migrationen vor App-Start (Fix C).
+#   - Kopfkommentar (dieser Block).
+# Alle anderen Zeilen sind identisch zur aktiven Unit.
+
 [Unit]
 Description=Homelab Security AI Dashboard
 Documentation=file:/opt/security-ai/docs/DEPLOYMENT.md
@@ -10,6 +20,7 @@ User=security-ai
 Group=security-ai
 WorkingDirectory=/opt/security-ai
 EnvironmentFile=/opt/security-ai/.env
+ExecStartPre=/opt/security-ai/.venv/bin/python3 /opt/security-ai/scripts/init_db.py --no-principal
 ExecStart=/opt/security-ai/.venv/bin/python3 -m apps.dashboard.app
 Restart=always
 RestartSec=10

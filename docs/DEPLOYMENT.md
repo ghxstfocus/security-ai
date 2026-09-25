@@ -502,6 +502,48 @@ Installation: siehe §2.4.
 Details zu CA, Zertifikaten und Cookie-Flags in §3c.
 Keine Secrets in dieser Datei.
 
+
+## 3e. Migrationspflicht
+
+Seit 3.6.15a traegt apply_migrations jede angewandte
+Migration in schema_migrations ein. Beim App-Start prueft
+check_schema_version (Fix D), ob die DB-Version zur
+hoechsten Migrationsdatei passt. Bei Abweichung
+(DB < Datei) verweigert der App-Start (Fail closed).
+
+Reihenfolge (verbindlich, nicht optional):
+
+  1. ExecStartPre: init_db.py --no-principal migriert.
+  2. App-Start: create_app mit check_schema=True prueft.
+
+Das Unit-File deploy/systemd/security-ai-dashboard.service
+enthaelt die ExecStartPre-Zeile. Nach jedem git pull, der
+data/migrations/*.sql aendert, Unit neu kopieren:
+
+    cp /opt/security-ai/deploy/systemd/security-ai-dashboard.service \
+       /etc/systemd/system/security-ai-dashboard.service
+    systemctl daemon-reload
+    systemctl restart security-ai-dashboard
+
+Verifikation:
+
+    sqlite3 /opt/security-ai/data/inventory.db \
+      "SELECT MAX(version) FROM schema_migrations;"
+
+Der Wert muss der hoechsten Datei-Nummer in
+data/migrations/ entsprechen (heute 7).
+
+Hinweis Version 1: 0001 existiert nicht als Datei.
+Die Luecke ist historisch (Vor-Migrations-Aera).
+
+Hinweis Downgrade: Wenn die Code-Version aelter ist
+als die DB-Version (DB > Datei), warnt der App-Start
+(Schema-Version DB > Datei). Kein Fehler, aber ein
+Hinweis, dass das Deployment nicht konsistent ist.
+Downgrade der DB ist nicht automatisiert; im Zweifel
+Backup einspielen.
+
+
 ## 4. Netzwerk und Firewall
 
 ### 4.1 Feste IP
