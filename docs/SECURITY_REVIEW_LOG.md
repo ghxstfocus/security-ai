@@ -335,6 +335,13 @@ test_access_denied_errorhandler_403 abgedeckt.
   Schema-Check im Dashboard (1cedb26),
   ExecStartPre + DEPLOYMENT 3e (dd10214).
   Punkt 15 erledigt.
+- 3.6.15b: Audit-Rechte fail closed (a3589db).
+  Fix 13 Option B (Modus-Check in write, kein
+  Silent Repair), Fix 14 (check_audit_logs beim
+  App-Start), Fix A (Test-Isolation in
+  OrchestratorTests.setUp), Fix C
+  (test_setup_isolation). Punkte 13/14 erledigt.
+  Punkt 21 neu (gemischte audit-logs).
 
 
 ## Offene Punkte (Stand 3.6.8)
@@ -424,6 +431,11 @@ test_access_denied_errorhandler_403 abgedeckt.
     setzt beim Datei-Erstellen explizit os.umask oder
     einen os.chmod auf 640 und prueft den Owner.
     Kategorie 3, eigener Block.
+    Erledigt in 3.6.15b (a3589db): AuditWriter.write()
+    legt neue Dateien mit os.open(mode=0o640) + os.chmod
+    an und prueft bei existierenden Tagesdateien den
+    Modus vor dem Schreiben (Fail closed, kein Silent
+    Repair). Der Punkt bleibt hier als Referenz stehen.
 
 14. Service-Start prueft audit-logs/ nicht auf Konsistenz
     (Owner, Modus, Fremddateien). Ein inkonsistenter
@@ -431,6 +443,12 @@ test_access_denied_errorhandler_403 abgedeckt.
     beim Start. Praevention: beim App-Start audit-logs/
     pruefen und bei Inkonsistenz fail closed oder warnen.
     Kategorie 2/3, eigener Block.
+    Erledigt in 3.6.15b (a3589db): neue Modul-Funktion
+    check_audit_logs(base_dir, expected_owner) prueft
+    alle *.jsonl auf Modus 0o640 und Owner. create_app
+    ruft sie mit check_audit=True vor check_schema_version
+    auf. Fail closed via AuditDirInconsistentError.
+    Der Punkt bleibt hier als Referenz stehen.
 
 15. Migrations-Tracking defekt ab 0003. Die Migrationen
     0003-0007 tragen sich nicht in schema_migrations ein;
@@ -495,3 +513,12 @@ test_access_denied_errorhandler_403 abgedeckt.
     Aenderung in einem Commit. Kategorie 2 mit Reviewer,
     wenn das Produktverhalten selbst Kategorie 3 war.
     Kategorie 1 (Doku), Reviewer-Auflage 435.
+
+21. audit-logs/ 21.-24. Sep enthalten wahrscheinlich
+    Test-Artefakte aus OrchestratorTests (Bug in setUp,
+    gefixt in 3.6.15b, Commit a3589db). Pruefung, welche
+    Eintraege Test-Artefakte sind, und ob sie das
+    Dashboard verfaelschen, ist ein eigener Block
+    (Kategorie 3). Kein automatisches Loeschen, keine
+    Migration. audit-logs ist append-only.
+    Kategorie 3, Reviewer-Auflage 477.

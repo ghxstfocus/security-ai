@@ -555,6 +555,66 @@ Fix C (Commit dd10214):
 
 Reihenfolge: nach 3.6.13, vor 3.6.15b.
 
+## Phase 3.6.15b — Audit-Rechte fail closed + Test-Isolation  [x]
+
+Ziel: AuditWriter fail closed bei inkonsistenten
+Tagesdateien (Modus, Owner). Service-Start prueft
+audit-logs/. Ausloeser: Punkte 12/13/14 in
+SECURITY_REVIEW_LOG (Vorfall 23./24.09. und erneut
+25.09. 17:06: Datei 644 root:root).
+
+Fix 13 Option B (harness/audit/writer.py):
+- write() prueft Modus existierender Tagesdateien
+  vor dem Schreiben. Modus != 0o640 -> AuditWriteError,
+  kein Silent Repair (Auflagen 471, 472).
+- Neue Dateien: os.open(mode=0o640) + os.chmod.
+- Kein Owner-Check in write() (Auflage 467).
+- Race-Schutz FileNotFoundError zwischen exists()
+  und stat() (Auflage 471).
+
+Fix 14 (harness/audit/writer.py):
+- Modul-Funktion check_audit_logs(base_dir,
+  expected_owner). Prueft alle *.jsonl auf Modus
+  0o640 und Owner per pwd.getpwuid (kein UID-
+  Vergleich, Auflage 464).
+- Neue Exception AuditDirInconsistentError
+  (Subklasse von AuditError, Auflage 463).
+
+create_app (apps/dashboard/app.py):
+- Neuer Keyword-Parameter check_audit: bool = True
+  (Auflage F4).
+- Aufruf check_audit_logs vor check_schema_version
+  (Auflage F5). expected_owner per
+  pwd.getpwuid(os.getuid()).pw_name.
+- build_dashboard_app (Testhelfer) setzt
+  check_audit=False.
+
+Fix A (Test-Isolation):
+- tests/integration/test_orchestrator.py
+  OrchestratorTests.setUp schrieb bisher in die
+  echte audit-logs/. Fix 13 Option B hat das
+  aufgedeckt (12 Tests rot). setUp nutzt jetzt
+  audit_base_dir=self.audit_dir im tmp-Verzeichnis,
+  konsistent zu den anderen drei setUp-Bloecken
+  (Auflage 478).
+
+Fix C (Rueckfall-Schutz):
+- Neuer Test test_setup_isolation in
+  OrchestratorTests. Snapshot der echten
+  audit-logs/ vor/nach einem process()-Aufruf,
+  erwartet identisch (Auflage 480). Skippt, wenn
+  audit-logs/ fehlen.
+
+Tests: 9 neue in tests/unit/test_audit_writer_rechte.py,
+1 neuer Integrationstest. Commit a3589db.
+
+Betriebsakt (offen, Mensch entscheidet):
+- audit-logs/2026-09-25.jsonl (644 root:root) bleibt
+  unangetastet. Rechte-Korrektur (chown + chmod) oder
+  Umbenennung als Vorfall-Nachweis (Auflagen 469/482).
+
+Reihenfolge: nach 3.6.15a, vor 3.6.15c.
+
 ## Phase 3.6.16 — Globale Suche  [ ]
 
 Topbar-Umbau (Teil von 3.6.16, ersetzt den Titel):
