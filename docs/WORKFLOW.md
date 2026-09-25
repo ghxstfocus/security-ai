@@ -7,6 +7,91 @@ neue Projekt kopiert werden. Pro Projekt bleibt die Frage,
 welche Datei- und Commit-Konventionen gelten — die
 Prozess-Regeln hier sind ueberall dieselben.
 
+## Verbindlichkeits-Hierarchie
+
+Drei Stufen:
+
+1. **VERBINDLICH (Hard-Rules).** Nicht abdingbar.
+   Verstoss = STOP, keine Ausfuehrung. Der Bau-Chat
+   prueft diese Regeln VOR jedem Ausfuehrungsblock.
+2. **Pflicht (Routine).** Nach jedem Schritt. Verstoss =
+   Korrektur im naechsten Block. Selbst-Review,
+   Doku-Pflege, Commit-Konventionen.
+3. **Empfehlung (Praxis).** Nuetzlich, aber
+   situationsabhaengig. Anti-Patterns, Kontext-Hygiene.
+
+Die Hard-Rules sind kurz und konkret. Wenn eine Regel
+im Zweifel ausgelegt werden muss, gilt die restriktivere
+Auslegung.
+
+### Hard-Rules (VERBINDLICH)
+
+HR1. Faktenlage vor Meinung. Keine API aus dem
+     Gedaechtnis. Keine Datei-Inhalte annehmen. Keine
+     Zahlen schaetzen. Gemessen wird konkret:
+     Testzahl mit `pytest --collect-only -q | tail -1`,
+     Zeilenzahl mit `wc -l`, API-Signatur mit
+     `inspect.signature`, Datei-Inhalt mit `cat` oder
+     `sed -n`. Immer messen, nicht erinnern.
+     Beispiel: 728-Testzahl aus Handoff uebernommen,
+     korrekt war 720.
+
+HR2. Ein Ausfuehrungsblock pro logischer Einheit,
+     nicht pro Nachricht. Mehrere `&&`-verkettete
+     Einheiten in einem Block sind ok, solange sie
+     zusammen ein Ergebnis liefern (z. B. Backup +
+     init_db + Verify). Nicht ok: fuenf unabhaengige
+     Ausfuehrungen, deren Ergebnis der Mensch
+     einzeln pasten muesste.
+
+HR3. Vor `cat >` auf eine angeblich neue Datei:
+     `git ls-files <pfad>` UND `git status --porcelain`
+     pruefen. Kein Treffer in beiden = neu.
+     Treffer in einem = bestehende Datei,
+     Patch-Skript mit `assert`, kein `cat >`.
+
+HR4. Nach jedem Patch einer bestehenden Datei:
+     `assert text.count(anker) == 1`.
+     Bei count != 1: STOP, `cat`, Anker korrigieren.
+     Bei count == 2 mit inhaltlich gleichen Ankern:
+     Blockanker bauen (umgebenden `def`-Rahmen
+     mitnehmen).
+
+HR5. Nach jedem Patch, der Tests betrifft:
+     `pytest --collect-only -q <datei>` VOR
+     `pytest -q <datei>`. Die Sammelzahl muss der
+     Erwartung entsprechen. Sonst: STOP, Ursache
+     sehen, bevor Tests interpretiert werden.
+
+HR6. `git status --porcelain` zeigt `M` bei einer
+     Datei, die als "neu" angekuendigt war: STOP.
+     `git ls-files` und `git log -- <pfad>` klaeren,
+     bevor committet wird.
+
+HR7. Kategorie 3 (typische Themen, nicht
+     abschliessend: Auth, RBAC, CSP, Secrets, SQL,
+     Input-Validierung, Output-Escaping, DB-Schema,
+     Audit, Kern-Services). Kern-Services konkret:
+     core/services/*, apps/security_ai/chat.py,
+     harness/approval/*, harness/audit/*,
+     harness/policy_engine/*. Code VOR Ausfuehrung
+     an den Reviewer. Kein Improvisieren nach NO-GO.
+     Bei Zweifeln an der Kategorie: Reviewer.
+
+HR8. Doku-Pflege ist Pflicht (siehe §Doku-Pflege).
+     Ein Unterschritt gilt erst als abgeschlossen,
+     wenn die zugehoerige Doku nachgezogen ist.
+     Ein Commit ohne Doku-Nachzug ist ein
+     unvollstaendiger Commit.
+
+HR9. Reviewer-Blocks immer in einen Codeblock.
+     Freitext, direkt in die Shell gepastet, erzeugt
+     Phantom-Dateien. Beim Weiterleiten: Backtick-
+     Rahmen mitkopieren. Bei Blocks > ~3 KB:
+     Patch-Skript in `/tmp` schreiben, dort
+     verifizieren, dann ausfuehren. Kein Heredoc in
+     die interaktive Shell.
+
 ## Rollen
 
 - **Mensch** ist die Hand. Er fuehrt Befehle aus, pastet
@@ -26,6 +111,12 @@ Prozess-Regeln hier sind ueberall dieselben.
 - **Bei Unklarheit: STOPP + Frage.** Eine ungestellte
   Frage kostet eine Runde; falsch gebauter Code kostet
   Rollback, Vertrauen und Stunden.
+- **Ausfuehrungsblocks > ~3 KB nicht in die interaktive
+  Shell pasten.** Der Kernel puffert TTY-Eingaben in
+  `N_TTY_BUF_SIZE` (4096 Byte); was darueber hinausgeht,
+  wird abgeschnitten oder zerhackt. Patch-Skripte in
+  `/tmp` schreiben, dort `py_compile` verifizieren,
+  dann ausfuehren.
 
 ## Oberste Regel: Faktenlage, nicht raten
 
@@ -45,6 +136,10 @@ Prozess-Regeln hier sind ueberall dieselben.
 - **API-Signaturen pruefen:** `inspect.signature` bei
   jedem Bibliotheks-Aufruf, dessen Signatur nicht aus
   einem vorherigen `cat`/`grep` stammt.
+- **Zahlen aus Handoff, Selbst-Review oder einem
+  vorherigen Chat sind Schaetzungen, bis sie gemessen
+  sind.** Quelle der Wahrheit fuer die Testzahl ist
+  `pytest --collect-only -q`.
 
 ## Kategorien
 
@@ -54,6 +149,18 @@ Prozess-Regeln hier sind ueberall dieselben.
 - **Kategorie 2 (wichtig):** Tests, Refactorings ohne
   Verhaltensaenderung, neue Helper ohne
   Sicherheitsbezug. Selbst-Review, dann committen.
+  Test-Anpassungen an gewolltes neues
+  Produktverhalten (Tests werden rot, weil sich das
+  Produkt geaendert hat, nicht die Tests) sind
+  Kategorie 2 **mit** Reviewer-Block, wenn das
+  Produktverhalten selbst Kategorie 3 war. Der Test
+  ist die Quelle der Wahrheit fuer das Verhalten,
+  nicht fuer den Wortlaut.
+  Beispiel: 3.6.14 Badge-Text wechselt von
+  Rohkategorie auf Anzeige-Label (Kategorie 3 wegen
+  Score-Anzeige und Kategorie-Bezug). Test-
+  Anpassungen in `test_dashboard_alerts.py` gingen
+  ueber den Reviewer.
 - **Kategorie 3 (kritisch):** Auth, RBAC, CSP, Secrets,
   SQL, Input-Validierung, Output-Escaping, DB-Schema,
   Kern-Services, Audit. **Code VOR Ausfuehrung an
@@ -92,25 +199,75 @@ schriftliches Selbst-Review mit sechs Punkten:
    Nicht "die meisten" — alle.
 6. **KATEGORIE:** 1/2/3 mit Grund.
 
+7. **DOKU:** welche Doku-Dateien wurden nachgezogen
+   (Phasen-Doku, Einstiegs-Prompt, Review-Log,
+   Design-Entscheidungen, WORKFLOW)? Wenn keine:
+   warum nicht?
+
 Verboten im Selbst-Review: "sieht gut aus" ohne
 konkrete Punkte, "alle Tests gruen" ohne Zahlen,
 "keine Aenderung am Verhalten" ohne Begruendung,
-Punkt 4 weglassen.
+Punkt 4 weglassen, Punkt 7 weglassen.
+Ein Selbst-Review ohne Punkt 7 ist unvollstaendig.
 
-## Doku-Pflege
+## Test-Konventionen (verbindlich)
 
-- Jeder abgeschlossene Unterschritt bekommt einen
-  Eintrag in der Phasen-Doku (Status, Commit-Hash,
-  Kurzbeschreibung).
-- Sicherheitsentscheidungen kommen in ein
-  Review-Log (thematisch, nicht chronologisch).
-- Offene Punkte bleiben sichtbar (eigener Abschnitt
-  im Review-Log oder separate Datei).
+- Klassen mit `*Tests`-Suffix **erben von
+  `unittest.TestCase`**. Ohne Vererbung sammelt pytest
+  sie nicht (Default `python_classes = Test*`).
+- Alternativ: modulweite `def test_`-Funktionen
+  (pytest-Standard).
+- **Kein Wechsel der Konvention ohne Doku-Block.**
+  Sonst kommen spaeter pytest-idiomatische Klassen
+  ohne `TestCase` dazu und die Sammlung bricht.
+- Nach jeder neuen Testdatei:
+  `pytest --collect-only -q <datei>` muss die
+  erwartete Zahl liefern, sonst STOP.
+- Beispiel: 3.6.14 `test_filters.py` -- Klassen mit
+  `*Tests`-Suffix ohne `unittest.TestCase`-Vererbung.
+  `py_compile=OK`, `collect-only=0`. Fix: von
+  `unittest.TestCase` erben lassen.
+
+## Doku-Pflege (verbindlich)
+
+Nach jedem abgeschlossenen Unterschritt ist der
+Doku-Nachzug Pflicht. Ein Unterschritt gilt erst als
+abgeschlossen, wenn die zugehoerige Doku nachgezogen
+ist. Ein Commit ohne Doku-Nachzug ist ein
+unvollstaendiger Commit.
+
+Was zum Doku-Nachzug gehoert, generisch:
+
+- **Phasen-Doku** — Status `[x]` fuer den
+  Unterschritt, Commit-Hash, Kurzbeschreibung. Neue
+  Unterschritte bekommen einen eigenen Block.
+- **Einstiegs-Prompt** — HEAD-Commit, Testzahl
+  (gemessen, nicht erinnert), naechster Schritt,
+  offene Reihenfolge.
+- **Review-Log** — Chronologie-Zeile, offene Punkte
+  aktualisieren (neue anhaengen, erledigte mit
+  Erledigt-Vermerk behalten, nicht loeschen).
+  Sicherheitsentscheidungen thematisch, nicht
+  chronologisch.
+- **Design-Entscheidungen** — nur wenn eine
+  Design-Entscheidung getroffen wurde.
+- **WORKFLOW.md** — nur wenn der Prozess selbst
+  betroffen ist.
+
+Die konkreten Dateinamen legt das Projekt in seinem
+Einstiegs-Prompt fest. In diesem Projekt: siehe
+`CONTEXT_PROMPT.md` §Projekt-Konventionen.
+
+Weitere Regeln:
+
+- Sicherheitsentscheidungen kommen in das Review-Log,
+  nicht in die Chronologie-Liste.
+- Offene Punkte bleiben sichtbar.
 - Inkonsistenzen werden nicht geloescht, sondern
   ausgelagert (Verweis statt Inhalt).
-- Der Einstiegs-Prompt (`CONTEXT_PROMPT.md` in
-  diesem Projekt) wird aktuell gehalten: Test-Zahl,
-  naechster Schritt, Verweise.
+- Der Doku-Nachzug ist eigener Commit ODER Teil des
+  Abschluss-Commits — nie "spaeter" ohne konkreten
+  Termin.
 
 ## Patch-Template (verbindlich)
 
@@ -267,16 +424,54 @@ System gestoert ist.
   Betriebsfehler -> 5xx (OperationError). Nicht
   vermischen. Kein `except Exception: return 400`.
 
-### Heredoc-Ende zerhackt
+### Heredoc ueber ~3 KB zerhackt
 
-`cat > datei <<'EOF'` -> das `EOF` kommt im Paste
-nicht mit an, die Shell interpretiert den Rest des
-Textes als Befehle.
+`cat > datei <<'EOF'` mit mehr als ~3 KB Inhalt
+bricht beim Paste in die interaktive Shell ab. Ursache
+ist der Kernel-TTY-Puffer `N_TTY_BUF_SIZE` (4096 Byte);
+was darueber hinausgeht, wird abgeschnitten oder
+zerhackt. Das ist kein Shell-Bug, sondern ein
+hardcoded Kernel-Limit.
 
-- **Regel:** Nach `cat >`-Bloecken immer verifizieren
+- **Regel:** Patch-Skripte > ~3 KB in `/tmp` schreiben,
+  dort mit `py_compile` verifizieren, dann ausfuehren.
+  Kein Heredoc in die interaktive Shell.
+- **Regel:** Nach jedem `cat >`-Block immer verifizieren
   (`ls -la`, `wc -l`, `tail -3`, `py_compile`).
   Wenn Datei fehlt oder zu kurz: Schritt wiederholen,
   nicht weitermachen.
+
+### `cat >` auf eine bestehende Datei
+
+`cat > datei <<'EOF'` auf eine Datei, die schon im Git
+ist, ueberschreibt sie vollstaendig. Symptom: Datei
+ploetzlich kuerzer, `git status --porcelain` zeigt `M`
+statt `??`, oft mit Datenverlust (Session 2026-09-25:
+`tests/unit/test_migrations.py`, 119 Zeilen verloren,
+per `git checkout` zurueckgeholt).
+
+- **Regel:** Vor `cat >` zwei Checks: `git ls-files
+  <pfad>` (Treffer = bestehende Datei) und
+  `git status --porcelain` (zeigt sie `M` statt `??`).
+  Treffer in einem der beiden: Patch-Skript statt
+  `cat >`.
+
+### Tests geschrieben, aber nicht gesammelt
+
+Symptom: `py_compile=OK`, `grep -c "^def test_"`
+zaehlt N, aber `pytest --collect-only -q` liefert 0
+oder weniger. Ursache meist Klassen mit `*Tests`-Suffix
+ohne `unittest.TestCase`-Vererbung -- pytest-Default
+ist `python_classes = Test*`.
+
+- Beispiel: 3.6.14 `test_filters.py` -- Klassen
+  `FormatTsTests`, `FormatScoreLabelTests`,
+  `FormatScoreTests` ohne `unittest.TestCase`.
+  `py_compile=OK`, `collect-only=0`. Fix: von
+  `unittest.TestCase` erben lassen.
+- **Regel:** Nach jeder neuen Testdatei
+  `pytest --collect-only -q <datei>` pruefen. Zahl
+  muss der Erwartung entsprechen.
 
 ### Fehlender `assert` im Patch
 

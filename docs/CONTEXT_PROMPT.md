@@ -208,6 +208,30 @@ sind projektspezifische Ergaenzungen dazu.
 - docs/REVIEWER_HANDOFF.md — Handoff-Prompt fuer
   den externen Reviewer-Chat (Kategorie 3)
 
+### Projekt-Konventionen (projektspezifische Hard-Rules)
+
+Diese Konventionen sind zusaetzlich verbindlich. Die
+generischen Hard-Rules stehen in
+WORKFLOW.md Abschnitt "Hard-Rules (VERBINDLICH)".
+
+1. Python-Interpreter: `/opt/security-ai/.venv/bin/python3`
+   (nicht `/usr/bin/python3`; System-Python hat die
+   pyproject-Dependencies nicht).
+2. CWD fuer Tests: `/opt/security-ai`
+   (`detection/rules.yaml`, `policies/tools.yaml`,
+   `core/risk/rules.yaml` werden relativ zum CWD
+   geladen).
+3. Git-Remote/Branch: `origin/main`.
+4. Testzahl-Quelle:
+   `/opt/security-ai/.venv/bin/python3 -m pytest
+   --collect-only -q | tail -1`.
+5. Doku-Dateien in diesem Projekt:
+   `docs/PHASES.md`, `docs/CONTEXT_PROMPT.md`,
+   `docs/SECURITY_REVIEW_LOG.md`,
+   `docs/DESIGN_DECISIONS.md`.
+6. Reviewer-Pflicht: Kategorie 3 laut
+   WORKFLOW.md Abschnitt "Kategorien".
+
 ### Aktuelle Phase
 
 Phase 1-4 abgeschlossen. Phase 3.5 inkl. 3.5.5-3.5.9
@@ -236,11 +260,14 @@ Aktuell offen (Reihenfolge vom Reviewer, 2026-09-24):
    16 (gunicorn).
 
 Offene Punkte 1-16 in docs/SECURITY_REVIEW_LOG.md.
-Chronologie bis 3.6.13 dokumentiert.
+Chronologie bis 3.6.14 dokumentiert.
 DESIGN_DECISIONS: §16 (Web-Dashboard) um server_name,
 default_server, display-Konsequenz erweitert.
 
 Tests: 728 gruen (venv, pytest 9.1.1).
+Hinweis: Der vorher genannte Wert 728 war ungenau;
+korrekt war 720 vor 3.6.15a. Quelle der Wahrheit ist
+`pytest --collect-only -q`.
 
 ### Aufgabe jetzt
 
