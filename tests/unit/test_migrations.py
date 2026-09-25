@@ -14,7 +14,9 @@ import pytest
 from core.access.repository import RoleRepository
 from core.inventory.repository import (
     DEFAULT_MIGRATIONS_DIR,
+    SchemaVersionError,
     apply_migrations,
+    check_schema_version,
     connect,
     ensure_schema_migrations,
     _parse_migration_version,
@@ -325,4 +327,95 @@ def test_apply_version_0_erlaubt(tmp_path):
 
     assert applied == ["0000_init.sql"]
     assert _versions_in_db(c) == [0]
+    c.close()
+
+
+# ------------------------------------------------------------------ #
+# 3.6.15a Fix D: check_schema_version
+# ------------------------------------------------------------------ #
+# Auflagen 403 (diagnostische Meldung), 404 (0==0 still),
+# 405 (logger.warning statt print bei Downgrade).
+
+def _prepare_db_with_version(c, version: int) -> None:
+    ensure_schema_migrations(c)
+    c.execute(
+        "INSERT INTO schema_migrations (version, applied_at) "
+        "VALUES (?, '2026-01-01T00:00:00.000Z')",
+        (version,),
+    )
+    c.commit()
+
+
+def test_check_schema_equal_still(tmp_path):
+    # DB == Datei: kein raise, keine Warnung.
+    d = tmp_path / "migrations"
+    d.mkdir()
+    _write_migration(d, "0001_a.sql", _WM_SQL_A)
+    _write_migration(d, "0002_b.sql", _WM_SQL_B)
+
+    c = connect(tmp_path / "cs1.db")
+    _prepare_db_with_version(c, 2)
+    check_schema_version(c, d)  # kein raise
+    c.close()
+
+
+def test_check_schema_db_kleiner_datei_wirft(tmp_path):
+    # DB < Datei: SchemaVersionError.
+    d = tmp_path / "migrations"
+    d.mkdir()
+    _write_migration(d, "0001_a.sql", _WM_SQL_A)
+    _write_migration(d, "0002_b.sql", _WM_SQL_B)
+
+    c = connect(tmp_path / "cs2.db")
+    _prepare_db_with_version(c, 1)
+    with pytest.raises(SchemaVersionError):
+        check_schema_version(c, d)
+    c.close()
+
+
+def test_check_schema_db_groesser_datei_warnung(
+    tmp_path, caplog,
+):
+    # DB > Datei: Warnung via logger.warning, kein raise.
+    import logging as _logging
+    d = tmp_path / "migrations"
+    d.mkdir()
+    _write_migration(d, "0001_a.sql", _WM_SQL_A)
+
+    c = connect(tmp_path / "cs3.db")
+    _prepare_db_with_version(c, 5)
+    with caplog.at_level(
+        _logging.WARNING,
+        logger="core.inventory.repository",
+    ):
+        check_schema_version(c, d)  # kein raise
+    assert any(
+        "Downgrade" in rec.message for rec in caplog.records
+    ), caplog.records
+    c.close()
+
+
+def test_check_schema_tabelle_fehlt(tmp_path):
+    # Auflage 403: diagnostische Meldung.
+    d = tmp_path / "migrations"
+    d.mkdir()
+    _write_migration(d, "0001_a.sql", _WM_SQL_A)
+
+    c = connect(tmp_path / "cs4.db")
+    # schema_migrations NICHT anlegen.
+    with pytest.raises(
+        SchemaVersionError, match="schema_migrations fehlt",
+    ):
+        check_schema_version(c, d)
+    c.close()
+
+
+def test_check_schema_leeres_verzeichnis_und_db_0(tmp_path):
+    # Auflage 404: 0 == 0 -> still, kein raise.
+    d = tmp_path / "migrations"
+    d.mkdir()  # keine *.sql-Datei
+
+    c = connect(tmp_path / "cs5.db")
+    _prepare_db_with_version(c, 0)
+    check_schema_version(c, d)  # kein raise
     c.close()

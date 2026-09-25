@@ -11,6 +11,7 @@ echtes DATETIME). Das Modell Device arbeitet mit datetime (UTC).
 from __future__ import annotations
 
 import json
+import logging
 import re
 import sqlite3
 from datetime import datetime, timezone
@@ -26,6 +27,8 @@ from core.inventory.device import Device
 # Netzwerk-Scope, Scan-Schwellen).
 DEFAULT_DB_PATH = Path("data/inventory.db")
 DEFAULT_MIGRATIONS_DIR = Path("data/migrations")
+
+logger = logging.getLogger(__name__)
 
 
 def _utc_now_iso() -> str:
@@ -77,6 +80,76 @@ def _parse_migration_version(filename: str) -> int | None:
     if m is None:
         return None
     return int(m.group(1))
+
+
+class SchemaVersionError(RuntimeError):
+    """Die DB-Schema-Version passt nicht zu den vorhandenen Migrationen."""
+
+
+def _highest_file_version(
+    migrations_dir: Path | str,
+) -> int | None:
+    """
+    Hoechste vierstellige Version in migrations_dir/*.sql.
+    None, wenn keine passende Datei existiert.
+    """
+    d = Path(migrations_dir)
+    if not d.exists():
+        return None
+    versions: list[int] = []
+    for f in d.glob("*.sql"):
+        v = _parse_migration_version(f.name)
+        if v is not None:
+            versions.append(v)
+    return max(versions) if versions else None
+
+
+def check_schema_version(
+    conn: sqlite3.Connection,
+    migrations_dir: Path | str = DEFAULT_MIGRATIONS_DIR,
+) -> None:
+    """
+    Prueft, ob die DB-Schema-Version zur hoechsten
+    Migrationsdatei passt.
+
+    - DB < Datei : SchemaVersionError (fail closed).
+    - DB > Datei : logger.warning, kein raise (Downgrade).
+    - DB == Datei: still.
+    - Tabelle schema_migrations fehlt : SchemaVersionError
+      mit diagnostischer Meldung (Auflage 403).
+    - Kein Datei-Praefix und DB 0 : still (Auflage 404).
+    """
+    try:
+        row = conn.execute(
+            "SELECT MAX(version) FROM schema_migrations"
+        ).fetchone()
+    except sqlite3.OperationalError as exc:
+        if "no such table" in str(exc):
+            raise SchemaVersionError(
+                "schema_migrations fehlt. Migrationen wurden "
+                "nicht angewandt. Deploy-Schritt "
+                "(DEPLOYMENT 3e) pruefen."
+            ) from exc
+        raise
+
+    db_v = int(row[0]) if row and row[0] is not None else 0
+    file_v = _highest_file_version(migrations_dir)
+    if file_v is None:
+        file_v = 0
+
+    if db_v < file_v:
+        raise SchemaVersionError(
+            f"DB-Schema-Version {db_v:04d} ist kleiner als "
+            f"hoechste Migration {file_v:04d}. "
+            "Migrationen fehlen. Deploy-Schritt "
+            "(DEPLOYMENT 3e) pruefen."
+        )
+    if db_v > file_v:
+        logger.warning(
+            "DB-Schema-Version %04d ist groesser als hoechste "
+            "Migration %04d. Downgrade erkannt.",
+            db_v, file_v,
+        )
 
 
 def apply_migrations(
@@ -315,5 +388,7 @@ __all__ = [
     "DEFAULT_MIGRATIONS_DIR",
     "DeviceRepository",
     "apply_migrations",
+    "check_schema_version",
+    "SchemaVersionError",
     "connect",
 ]

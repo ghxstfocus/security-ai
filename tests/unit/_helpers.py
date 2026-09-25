@@ -55,9 +55,15 @@ def build_dashboard_app(tmp_path: Path) -> Flask:
     Dashboard-spezifisch. Nicht in conftest.py,
     damit andere Tests sie nicht versehentlich
     anfordern.
+
+    check_schema=False: Tests bauen eine
+    frisch-migrierte DB selbst auf. Der
+    Schema-Check wird separat in
+    test_dashboard_app.py geprueft.
     """
     db = tmp_path / "t.db"
     app = create_app(
+        check_schema=False,
         db_path=db,
         migrations_dir=DEFAULT_MIGRATIONS_DIR,
         audit_base_dir=str(tmp_path / "audit"),

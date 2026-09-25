@@ -28,6 +28,11 @@ from apps.dashboard.decorators import (
     PUBLIC_PATHS,
     require_permission,
 )
+from apps.dashboard.app import create_app
+from core.inventory.repository import (
+    DEFAULT_MIGRATIONS_DIR,
+    SchemaVersionError,
+)
 from tests.unit._helpers import (
     build_dashboard_app,
     create_role_client,
@@ -357,3 +362,39 @@ def test_sidebar_visibility(app, role, slug, visible):
     body = r.data
     needle = ('data-nav="' + slug + '"').encode()
     assert (needle in body) == visible
+
+
+# ---------------------------------------------------------------------- #
+# Tests 3.6.15a Fix D: Schema-Versions-Check in create_app
+# ---------------------------------------------------------------------- #
+
+def test_create_app_check_schema_true_fails(tmp_path):
+    # Auflage 408: frische DB, keine Migrationen,
+    # check_schema=True -> SchemaVersionError mit
+    # diagnostischer Message (Auflage 403).
+    db = tmp_path / "fresh.db"
+    with pytest.raises(
+        SchemaVersionError, match="schema_migrations fehlt",
+    ):
+        create_app(
+            check_schema=True,
+            db_path=db,
+            migrations_dir=DEFAULT_MIGRATIONS_DIR,
+            audit_base_dir=str(tmp_path / "audit"),
+            secret_key="x" * 48,
+        )
+
+
+def test_create_app_check_schema_false_ok(tmp_path):
+    # check_schema=False: App wird auch ohne
+    # Migrationen gebaut (Testhelfer-Pfad).
+    db = tmp_path / "fresh2.db"
+    app = create_app(
+        check_schema=False,
+        db_path=db,
+        migrations_dir=DEFAULT_MIGRATIONS_DIR,
+        audit_base_dir=str(tmp_path / "audit"),
+        secret_key="x" * 48,
+    )
+    assert app is not None
+    assert app.config["DB_PATH"] == str(db)

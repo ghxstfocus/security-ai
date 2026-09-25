@@ -25,6 +25,8 @@ from core.config import get_secret_key
 from core.inventory.repository import (
     DEFAULT_DB_PATH,
     DEFAULT_MIGRATIONS_DIR,
+    SchemaVersionError,
+    check_schema_version,
     connect,
 )
 from core.services.access_service import AccessService
@@ -42,6 +44,7 @@ IDLE_TIMEOUT_SECONDS = 30 * 60
 
 def create_app(
     *,
+    check_schema: bool = True,
     db_path=DEFAULT_DB_PATH,
     migrations_dir=DEFAULT_MIGRATIONS_DIR,
     audit_base_dir: str = DEFAULT_AUDIT_DIR,
@@ -68,6 +71,15 @@ def create_app(
     app.extensions["audit_writer"] = AuditWriter(
         base_dir=audit_base_dir,
     )
+
+    if check_schema:
+        _conn = connect(app.config["DB_PATH"])
+        try:
+            check_schema_version(
+                _conn, app.config["MIGRATIONS_DIR"],
+            )
+        finally:
+            _conn.close()
 
     @app.before_request
     def _before():
