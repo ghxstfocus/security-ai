@@ -44,12 +44,15 @@ def _event(
 class OrchestratorTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        self.db_path = Path(self.tmp.name) / "inventory.db"
+        self.tmp_path = Path(self.tmp.name)
+        self.db_path = self.tmp_path / "inventory.db"
+        self.audit_dir = self.tmp_path / "audit-logs"
         self.ai = SecurityAI(
             db_path=self.db_path,
             migrations_dir="data/migrations",
             detection_config_path=RULES_YAML,
             risk_rules_path=RISK_RULES,
+            audit_base_dir=self.audit_dir,
         )
 
     def tearDown(self):
@@ -254,6 +257,45 @@ class OrchestratorTests(unittest.TestCase):
         })
         r = self.ai.process(e)
         self.assertTrue(r.has_alerts)
+
+    def test_setup_isolation(self):
+        """
+        Auflage 480: prueft, dass die echten audit-logs/
+        durch OrchestratorTests NICHT angefasst werden.
+
+        Snapshot der echten audit-logs/ vor/nach einem
+        Orchestrator-Aufruf. Wenn identisch: kein
+        versehentliches Schreiben in den Produktionspfad.
+
+        Skippt, wenn die echten audit-logs/ fehlen
+        (Testumgebung ohne Produktionsdaten).
+        """
+        import json as _json  # noqa: F401
+        real_dir = Path("audit-logs")
+        if not real_dir.exists():
+            self.skipTest(
+                "Echte audit-logs/ fehlen in dieser Umgebung."
+            )
+
+        def snapshot(d: Path) -> dict:
+            out = {}
+            for f in sorted(d.glob("*.jsonl")):
+                st = f.stat()
+                out[f.name] = (st.st_size, st.st_mtime_ns)
+            return out
+
+        before = snapshot(real_dir)
+        e = _event(EventType.DEVICE_PRESENCE.value, data={
+            "identifier": "192.168.178.99",
+            "network_type": "Hauptnetz",
+        })
+        self.ai.process(e)
+        after = snapshot(real_dir)
+
+        # Die echten audit-logs/ duerfen sich nicht geaendert
+        # haben. Der Test schreibt in sein tmp-Verzeichnis.
+        self.assertEqual(before, after)
+
 
 class OrchestratorAuditTests(unittest.TestCase):
     def setUp(self):

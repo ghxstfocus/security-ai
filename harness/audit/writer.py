@@ -29,6 +29,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import pwd
 import threading
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -53,6 +54,10 @@ class AuditError(Exception):
 
 class AuditWriteError(AuditError):
     """Wird geworfen, wenn ein Audit-Eintrag nicht geschrieben werden kann."""
+
+
+class AuditDirInconsistentError(AuditError):
+    """Wird geworfen, wenn audit-logs/ inkonsistent ist (Owner, Modus)."""
 
 
 def _hash_args(args: dict[str, Any] | None) -> str:
@@ -118,6 +123,43 @@ class AuditEntry:
         return json.dumps(self.to_dict(), ensure_ascii=False, sort_keys=True)
 
 
+def check_audit_logs(
+    base_dir: Path | str,
+    expected_owner: str,
+) -> None:
+    """
+    Prueft audit-logs/ auf Konsistenz (Owner, Modus).
+
+    Wirft AuditDirInconsistentError bei jeder Abweichung.
+    Ignoriert Nicht-*.jsonl-Dateien (z.B. README.md).
+    """
+    d = Path(base_dir)
+    if not d.exists():
+        raise AuditDirInconsistentError(
+            f"Audit-Verzeichnis fehlt: {d}"
+        )
+    for f in sorted(d.glob("*.jsonl")):
+        st = f.stat()
+        try:
+            owner = pwd.getpwuid(st.st_uid).pw_name
+        except KeyError:
+            raise AuditDirInconsistentError(
+                f"Unbekannter UID {st.st_uid} fuer Datei "
+                f"{f.name}. Erwartet: {expected_owner}."
+            )
+        if owner != expected_owner:
+            raise AuditDirInconsistentError(
+                f"Owner {owner} (UID {st.st_uid}) fuer Datei "
+                f"{f.name}. Erwartet: {expected_owner}."
+            )
+        mode = st.st_mode & 0o777
+        if mode != 0o640:
+            raise AuditDirInconsistentError(
+                f"Modus {oct(mode)} fuer Datei {f.name}. "
+                f"Erwartet: 0o640."
+            )
+
+
 class AuditWriter:
     """
     Schreibt Audit-Einträge als JSONL in Tagesdateien.
@@ -135,6 +177,7 @@ class AuditWriter:
         name = when.strftime("%Y-%m-%d") + ".jsonl"
         return self.base_dir / name
 
+
     def write(self, entry: AuditEntry) -> None:
         """
         Schreibt einen Audit-Eintrag.
@@ -149,10 +192,40 @@ class AuditWriter:
 
         with self._lock:
             try:
-                with open(path, "a", encoding="utf-8") as fh:
-                    fh.write(line)
-                    fh.flush()
-                    os.fsync(fh.fileno())
+                # Auflage 471: fail closed bei falschem Modus
+                # einer bereits existierenden Datei. Kein
+                # Silent Repair. Neue Dateien werden mit
+                # mode=0o640 angelegt (kein Check vorher).
+                try:
+                    if path.exists():
+                        mode = os.stat(path).st_mode & 0o777
+                        if mode != 0o640:
+                            raise AuditWriteError(
+                                f"Modus {oct(mode)} fuer "
+                                f"{path.name}. Erwartet: 0o640."
+                            )
+                except FileNotFoundError as exc:
+                    # Race zwischen exists() und stat():
+                    # Datei wurde geloescht. Fail closed.
+                    raise AuditWriteError(
+                        f"Datei {path.name} verschwand zwischen "
+                        f"Pruefung und Schreiben: {exc}"
+                    ) from exc
+
+                fd = os.open(
+                    path,
+                    os.O_CREAT | os.O_APPEND | os.O_WRONLY,
+                    mode=0o640,
+                )
+                try:
+                    os.chmod(path, 0o640)
+                    with os.fdopen(fd, "a", encoding="utf-8") as fh:
+                        fh.write(line)
+                        fh.flush()
+                        os.fsync(fh.fileno())
+                except Exception:
+                    os.close(fd)
+                    raise
             except OSError as exc:
                 raise AuditWriteError(
                     f"Audit-Eintrag konnte nicht geschrieben werden: {exc}"
@@ -214,8 +287,10 @@ class AuditWriter:
 
 __all__ = [
     "AuditEntry",
+    "AuditDirInconsistentError",
     "AuditError",
     "AuditWriteError",
     "AuditWriter",
+    "check_audit_logs",
     "new_audit_id",
 ]

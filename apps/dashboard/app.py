@@ -12,6 +12,9 @@ Sicherheitsregeln (WEB_SECURITY_CHECKLIST.md):
 """
 from __future__ import annotations
 
+import os
+import pwd
+
 from datetime import datetime, timedelta, timezone
 
 from flask import Flask, g, redirect, request
@@ -30,7 +33,10 @@ from core.inventory.repository import (
     connect,
 )
 from core.services.access_service import AccessService
-from harness.audit.writer import AuditWriter
+from harness.audit.writer import (
+    AuditWriter,
+    check_audit_logs,
+)
 
 from apps.dashboard.decorators import (
     SESSION_COOKIE_NAME,
@@ -44,6 +50,7 @@ IDLE_TIMEOUT_SECONDS = 30 * 60
 
 def create_app(
     *,
+    check_audit: bool = True,
     check_schema: bool = True,
     db_path=DEFAULT_DB_PATH,
     migrations_dir=DEFAULT_MIGRATIONS_DIR,
@@ -71,6 +78,10 @@ def create_app(
     app.extensions["audit_writer"] = AuditWriter(
         base_dir=audit_base_dir,
     )
+
+    if check_audit:
+        expected_owner = pwd.getpwuid(os.getuid()).pw_name
+        check_audit_logs(audit_base_dir, expected_owner)
 
     if check_schema:
         _conn = connect(app.config["DB_PATH"])

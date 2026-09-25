@@ -60,9 +60,15 @@ def build_dashboard_app(tmp_path: Path) -> Flask:
     frisch-migrierte DB selbst auf. Der
     Schema-Check wird separat in
     test_dashboard_app.py geprueft.
+
+    check_audit=False: Tests laufen oft als root
+    (kein Service-User security-ai). Der
+    audit-logs-Check wird separat in
+    test_audit_writer_rechte.py geprueft.
     """
     db = tmp_path / "t.db"
     app = create_app(
+        check_audit=False,
         check_schema=False,
         db_path=db,
         migrations_dir=DEFAULT_MIGRATIONS_DIR,
