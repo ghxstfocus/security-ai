@@ -5,8 +5,11 @@
   Kein |safe, kein style="...", kein inline <script>,
   kein on*=, kein tojson.
   Badge-Klassen hartkodiert (if/elif, kein dynamisches
-  class=). Badge-Text ist die Kategorie selbst (Farbe allein
-  reicht nicht, Auflage 26).
+  class=). Badge-Text ist das Anzeige-Label zum
+  RiskCategory-Wert (Info/Hinweis/Warnung/Alarm/Kritisch),
+  kein Rohwert. Farbe allein reicht nicht (Auflage 26).
+  Score-Zahl wird separat unter dem Badge gezeigt
+  (3.6.14, Variante B).
 #}
 {% extends "base.html" %}
 
@@ -17,32 +20,32 @@
     <thead>
         <tr>
             <th>Zeitpunkt</th>
-            <th>Kategorie</th>
-            <th>Score</th>
-            <th>Regel</th>
-            <th>Event-ID</th>
+            <th>Bewertung</th>
+            <th>Erkennungsregel</th>
+            <th>Ereignis-ID</th>
         </tr>
     </thead>
     <tbody>
         {% for a in assessments %}
         <tr>
-            <td>{{ a.timestamp }}</td>
+            <td>{{ a.timestamp|format_ts }}</td>
             <td>
                 {% if a.category == "SECURITY_ALERT" %}
-                <span class="badge badge-red">{{ a.category }}</span>
+                <span class="badge badge-red">{{ a.category|format_score_label }}</span>
                 {% elif a.category == "CONFIRMED" %}
-                <span class="badge badge-red">{{ a.category }}</span>
+                <span class="badge badge-red">{{ a.category|format_score_label }}</span>
                 {% elif a.category == "SUSPICION" %}
-                <span class="badge badge-yellow">{{ a.category }}</span>
+                <span class="badge badge-yellow">{{ a.category|format_score_label }}</span>
                 {% elif a.category == "ANOMALY" %}
-                <span class="badge badge-cyan">{{ a.category }}</span>
+                <span class="badge badge-cyan">{{ a.category|format_score_label }}</span>
                 {% elif a.category == "EVENT" %}
-                <span class="badge badge-cyan">{{ a.category }}</span>
+                <span class="badge badge-cyan">{{ a.category|format_score_label }}</span>
                 {% else %}
-                <span class="badge badge-cyan">{{ a.category }}</span>
+                <span class="badge badge-cyan">{{ a.category|format_score_label }}</span>
                 {% endif %}
+                <br>
+                {{ a.score|format_score }}
             </td>
-            <td>{{ a.score }}</td>
             <td>{{ a.rule_id }}</td>
             <td>{{ a.event_id }}</td>
         </tr>

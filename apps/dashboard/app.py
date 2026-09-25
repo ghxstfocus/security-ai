@@ -208,6 +208,15 @@ def create_app(
     from apps.dashboard.routes_settings import register_settings_routes
     register_settings_routes(app)
 
+    from apps.dashboard.filters import (
+        format_score, format_score_label, format_ts,
+    )
+    app.add_template_filter(format_ts, "format_ts")
+    app.add_template_filter(
+        format_score_label, "format_score_label",
+    )
+    app.add_template_filter(format_score, "format_score")
+
     @app.context_processor
     def _inject_nav_permissions():
         # 1. before_request setzt g.access_checker, g.principal

@@ -458,3 +458,15 @@ test_access_denied_errorhandler_403 abgedeckt.
     CT102 (192.168.178.117, security-ai).
     Doku-Drift. Eigener Doku-Block nach 3.6.15.
     Kategorie 1 (Doku), Reviewer-Auflage 413.
+
+19. Pro-Tabelle-Klassen fuer gezieltes Spalten-
+    Ausblenden bei <500px. Heute global
+    nth-child(n+4) in components.css (3.6.10).
+    Kuenftig pro Tabelle eine Klasse (table-alerts,
+    table-inventory, ...), damit pro Seite definiert
+    wird, welche Spalten auf schmalen Displays
+    wichtig sind. Ersetzt die globale Regel.
+    Betrifft sechs Tabellen (inventory, audit,
+    users, changes, approvals, alerts).
+    Eigener Folgeschritt nach 3.6.14.
+    Kategorie 2, Reviewer-Auflage 419.

@@ -85,6 +85,7 @@
     font-size: var(--font-xs);
     font-weight: 600;
     font-family: var(--font-mono);
+    white-space: nowrap;
 }
 
 .badge-cyan { background: rgba(0, 217, 255, 0.15); color: var(--accent-cyan); }

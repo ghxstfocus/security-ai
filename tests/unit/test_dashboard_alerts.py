@@ -4,10 +4,16 @@ Tests fuer apps/dashboard/routes_alerts.py.
 Kategorie 3 (Route, RBAC, Template).
 
 Auflagen 26-29 aus Review-Runde 3.6.8b:
-- A26: Badge zeigt Kategorie-Text, nicht nur Farbe.
+- A26 (historisch): Badge-Text war die
+  RiskCategory-Rohkategorie (CONFIRMED, SECURITY_ALERT, ...).
 - A27: viewer -> 403 (Absicherung gegen spaetere Migration).
 - A28: unbekannte Kategorie sichtbar + badge-cyan.
 - A29: kein JS, kein |safe, kein tojson.
+
+3.6.14 / Auflage 424: Badge-Text ist das Anzeige-Label
+(Info, Hinweis, Warnung, Alarm, Kritisch). Die
+Rohkategorie steht nicht mehr im Badge. Die Tests
+hier pruefen das Label.
 """
 from __future__ import annotations
 
@@ -100,29 +106,35 @@ def test_alerts_shows_assessment(app):
     c = create_role_client(app, "admin")
     r = c.get("/alerts")
     assert r.status_code == 200
-    assert b"CONFIRMED" in r.data
+    # 3.6.14 / Auflage 424: Badge zeigt das Anzeige-Label.
+    assert b"Kritisch" in r.data
+    # Auflage 437: Rohkategorie steht nicht mehr im Body
+    # (Bestandsaufnahme: count=0 vor dem Patch).
+    assert b"CONFIRMED" not in r.data
     assert b"unknown_device" in r.data
     assert b"EVT-2026-09-22-deadbeef" in r.data
 
 
 # --- Auflage 26: Badge mit Text, Farbe korrekt ------------------------ #
 
-@pytest.mark.parametrize("category,badge_class", [
-    ("SECURITY_ALERT", "badge-red"),
-    ("CONFIRMED", "badge-red"),
-    ("SUSPICION", "badge-yellow"),
-    ("ANOMALY", "badge-cyan"),
-    ("EVENT", "badge-cyan"),
+@pytest.mark.parametrize("category,badge_class,label", [
+    ("SECURITY_ALERT", "badge-red",    "Alarm"),
+    ("CONFIRMED",      "badge-red",    "Kritisch"),
+    ("SUSPICION",      "badge-yellow", "Warnung"),
+    ("ANOMALY",        "badge-cyan",   "Hinweis"),
+    ("EVENT",          "badge-cyan",   "Info"),
 ])
-def test_alerts_badge_mapping(app, category, badge_class):
+def test_alerts_badge_mapping(app, category, badge_class, label):
     _write_assessment(app, category=category)
     c = create_role_client(app, "admin")
     r = c.get("/alerts")
     assert r.status_code == 200
     # Badge-Klasse korrekt
     assert badge_class.encode() in r.data
-    # Kategorie-Text sichtbar (Auflage 26)
-    assert category.encode() in r.data
+    # Badge-Text ist das Anzeige-Label (3.6.14 / Auflage 424).
+    assert label.encode() in r.data
+    # Rohkategorie wird NICHT geprueft (Auflage 436): sie
+    # steht nicht mehr im Body, ist aber auch kein Erfordernis.
 
 
 # --- Auflage 28: unbekannte Kategorie -------------------------------- #
