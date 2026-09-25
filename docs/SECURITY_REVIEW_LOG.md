@@ -324,6 +324,17 @@ test_access_denied_errorhandler_403 abgedeckt.
   Fix: Migrationen 0006/0007 auf Produktions-DB
   nachgezogen, Audit-Log-Rechte korrigiert.
 - 3.6.13: Systemvoraussetzungen (DEPLOYMENT §3d).
+- 3.6.14: UI-Politur Alerts-Tabelle (bba4ac7).
+  Badge-Label statt Rohkategorie (Auflage 424),
+  format_ts/format_score_label/format_score in
+  apps/dashboard/filters.py, .badge nowrap.
+  alert_row.html entfernt (verwaist).
+  test_dashboard_alerts.py an neue Semantik angepasst.
+  Pro-Tabelle-Klassen als Punkt 19 verschoben.
+- 3.6.15a: Migrations-Tracking (ce25660),
+  Schema-Check im Dashboard (1cedb26),
+  ExecStartPre + DEPLOYMENT 3e (dd10214).
+  Punkt 15 erledigt.
 
 
 ## Offene Punkte (Stand 3.6.8)
@@ -433,8 +444,8 @@ test_access_denied_errorhandler_403 abgedeckt.
     docs/DEPLOYMENT.md aufnehmen, (c) Service-Start
     prueft DB-Schema-Version. Kategorie 2/3, eigener Block.
     Erledigt in 3.6.15a: (a) ce25660 (Fix A+B),
-    (c) 1cedb26 (Fix D), (b) Fix-C-Commit mit
-    DEPLOYMENT 3e + deploy/systemd/-Vorlage.
+    (c) 1cedb26 (Fix D), (b) dd10214 (Fix C,
+    DEPLOYMENT 3e + deploy/systemd/-Vorlage).
     Der Punkt bleibt hier als Referenz stehen.
 
 16. Flask dev-Server-Warnung.
@@ -470,3 +481,17 @@ test_access_denied_errorhandler_403 abgedeckt.
     users, changes, approvals, alerts).
     Eigener Folgeschritt nach 3.6.14.
     Kategorie 2, Reviewer-Auflage 419.
+
+20. Muster: Test-Erwartungen werden durch gewollte
+    Produktaenderung rot. Zwei Faelle in 3.6.14/3.6.15a:
+    - test_inventory_version_gesetzt (Erwartung "0002"
+      durch Fix A obsolet).
+    - test_dashboard_alerts.py Badge-Mapping (Erwartung
+      Rohkategorie durch Auflage 424 obsolet).
+    Regel fuer die Zukunft: Wenn Tests rot werden, weil
+    sich Produktverhalten gewollt aendert, ist der Test
+    die Quelle der Wahrheit fuer das Verhalten, nicht
+    fuer den Wortlaut. Test-Anpassung + Doku der
+    Aenderung in einem Commit. Kategorie 2 mit Reviewer,
+    wenn das Produktverhalten selbst Kategorie 3 war.
+    Kategorie 1 (Doku), Reviewer-Auflage 435.

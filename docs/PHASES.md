@@ -425,7 +425,7 @@ Erledigt in dieser Session (Commits afb4eb2 und 37ae99d):
 - Login-Test ueber HTTPS: 302 (Redirect), kein 500er.
 - Offene Punkte 12-15 in SECURITY_REVIEW_LOG ergaenzt.
 
-## Phase 3.6.13 — Systemvoraussetzungen dokumentieren  [ ]
+## Phase 3.6.13 — Systemvoraussetzungen dokumentieren  [x]
 
 Ziel: eine vollstaendige Liste der Systempakete und
 Python-Abhaengigkeiten, die fuer den Betrieb von CT102
@@ -440,7 +440,7 @@ sind die Abhaengigkeiten ueber pyproject.toml, DEPLOYMENT.md
 §2.4/§3a/§3b/§3c verstreut. Ein Neuaufbau braucht die
 zentrale Liste.
 
-## Phase 3.6.14 — UI-Politur Alerts-Tabelle  [ ]
+## Phase 3.6.14 — UI-Politur Alerts-Tabelle  [x]
 
 Ziel: die Alert-Tabelle lesbarer machen. Aus der
 Sichtpruefung 3.6.10 ergaben sich drei Befunde, die
@@ -480,6 +480,80 @@ nth-child(n+4)-Regel aus 3.6.10.
 Kategorie 2 (Template-Aenderungen, Tests).
 Kein RBAC/CSP/CSRF betroffen.
 Reihenfolge: nach 3.6.11.
+
+Abschluss (2026-09-25, Commit bba4ac7):
+- Spaltenueberschriften umbenannt (Auflage 422).
+- Datumsformat via format_ts, UTC (Auflage 423).
+- Badge-Text via format_score_label (Auflage 424).
+- Score via format_score, zwei Stellen (Auflage 425).
+- Kategorie und Score in einer Bewertung-Spalte
+  (Variante B, Reviewer-Entscheidung).
+- .badge bekommt white-space: nowrap (F2).
+- filters.py neu (format_ts, format_score_label,
+  format_score), in create_app registriert
+  (Auflage 426, 427).
+- tests/unit/test_filters.py neu (21 Tests,
+  unittest.TestCase, Auflage 426).
+- tests/unit/test_dashboard_alerts.py an die neue
+  Badge-Semantik angepasst (Auflagen 434-440).
+- partials/alert_row.html entfernt (verwaist,
+  Auflagen 420/421).
+- Pro-Tabelle-Klassen als offener Punkt 19 notiert
+  (Auflage 419), eigener Folgeschritt.
+
+## Phase 3.6.15a — Migrations-Tracking + Deployment-Schritt  [x]
+
+Ziel: das Migrations-Tracking reparieren (offener
+Punkt 15 in SECURITY_REVIEW_LOG), einen
+Deployment-Schritt einfuehren, und den App-Start
+fail-closed gegen eine veraltete DB absichern.
+Ausloeser: Login-500er am 2026-09-23/24 (fehlende
+Tabellen sessions und login_attempts aus Migration
+0006, weil 0003-0007 sich nicht in schema_migrations
+eintrugen).
+
+Fix A+B (Commit ce25660):
+- apply_migrations traegt pro Datei Version in
+  schema_migrations ein (INSERT OR IGNORE) und
+  ueberspringt bereits angewandte Versionen.
+- Dateiname-Parser strikt vierstellig
+  (^\d{4}_), 0000 erlaubt, 10000 abgelehnt,
+  init.sql uebersprungen (Auflage 402).
+- ensure_schema_migrations ist die einzige Quelle
+  fuer das Tracking-Schema (Auflage 401).
+- Tests: 13 neue in tests/unit/test_migrations.py
+  (Auflagen 393, 402, 394).
+
+Fix D (Commit 1cedb26):
+- check_schema_version prueft MAX(version) gegen
+  hoechste Datei-Version in data/migrations/
+  (DB < Datei -> SchemaVersionError, DB > Datei ->
+  logger.warning, DB == Datei -> still,
+  fehlende Tabelle -> SchemaVersionError mit
+  diagnostischer Meldung, Auflage 403).
+- create_app bekommt Keyword-only Parameter
+  check_schema: bool = True (Auflage 406).
+- build_dashboard_app setzt check_schema=False
+  (Auflage 407).
+- Tests: 5 neue in test_migrations.py, 2 neue in
+  test_dashboard_app.py (Auflage 408).
+
+Fix C (Commit dd10214):
+- Repo-Vorlage deploy/systemd/security-ai-dashboard.service
+  mit ExecStartPre: init_db.py --no-principal
+  vor App-Start (Auflagen 395, 396, 414, 416).
+- docs/DEPLOYMENT.md neuer Abschnitt 3e
+  (Migrationspflicht): Reihenfolge ExecStartPre ->
+  App-Start, copy-paste-faehiger cp-Befehl,
+  Verifikations-SQL, Hinweis Version 1, Hinweis
+  Downgrade (Auflagen 400, 410, 411, 417, 409).
+- docs/SECURITY_REVIEW_LOG.md Punkt 15 um
+  Erledigt-Vermerk ergaenzt (Referenz bleibt).
+  Neuer Punkt 17 (check_schema_version auch beim
+  security_ai-Start, Auflage 398). Neuer Punkt 18
+  (DEPLOYMENT 1 Topologie-Drift, Auflage 413).
+
+Reihenfolge: nach 3.6.13, vor 3.6.15b.
 
 ## Phase 3.6.16 — Globale Suche  [ ]
 

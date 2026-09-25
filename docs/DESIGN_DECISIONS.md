@@ -360,6 +360,27 @@ Die Integrationstests bleiben stabil.
 - Integrationstest (spaeter): CLI + Applier + Audit in einer
   Kette, sobald der Applier echt ist.
 
+### Namenskonvention fuer Tests
+
+Verbindlich (siehe auch WORKFLOW.md Abschnitt
+"Test-Konventionen (verbindlich)"):
+
+- Klassen mit `*Tests`-Suffix erben von
+  `unittest.TestCase`. Ohne Vererbung sammelt pytest
+  sie nicht (Default `python_classes = Test*`).
+- Alternativ: modulweite `def test_`-Funktionen
+  (pytest-Standard).
+- Klassen mit `Test*`-Praefix und ohne
+  `unittest.TestCase` sind zulaessig, aber kein
+  Mischstil in derselben Datei.
+- Kein Wechsel ohne Doku-Block.
+
+Beispiel: 3.6.14 `tests/unit/test_filters.py`. Erste
+Version hatte Klassen mit `*Tests`-Suffix ohne
+`unittest.TestCase`. `py_compile=OK`, aber
+`pytest --collect-only -q` lieferte 0. Fix:
+Vererbung ergaenzt.
+
 ## 4. Format und Prozess
 
 - Keine Umlaute in Code-Bloecken (oe, ue, ae, ss).
