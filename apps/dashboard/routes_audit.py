@@ -4,9 +4,11 @@ Dashboard-Routen fuer Audit.
 Kategorie 3: audit.read, read-only, kein Audit fuer das
 Lesen von Audit (DESIGN_DECISIONS §11).
 
-Fehler-Mapping (A195, A201):
+Fehler-Mapping (A195, A201, 3.6.15c):
 - Query-Parameter date falsch -> 400 (Nutzer sieht ihn).
 - Pfad-Parameter audit_id falsch -> 404 (URL-Standard).
+- AuditReaderOperationError (Konstruktor-None, IO)
+  -> NICHT fangen, globaler 500.
 
 - GET /audit                  audit.read
 - GET /audit/<audit_id>       audit.read

@@ -9,8 +9,10 @@ Liste der letzten risk_assessment-Eintraege (24h, max 100).
 Rein lesend, kein Audit (DESIGN_DECISIONS §11).
 
 Kein Request-Parameter (limit, since_hours) — Service hardcoded.
-Kein Route-Level try/except: RBAC via before_request -> 403,
-AuditReaderServiceError -> globaler 500-Handler (generisch).
+Kein Route-Level try/except: RBAC via before_request -> 403.
+AuditReaderOperationError und IO-Fehler -> globaler 500
+(generisch, 3.6.15c). AuditReaderServiceError (Format)
+tritt hier nicht auf, weil kein Nutzer-Input direkt geparst wird.
 """
 from __future__ import annotations
 

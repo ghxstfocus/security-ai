@@ -10,6 +10,9 @@ Design:
 - RBAC: audit.read vor jedem Zugriff.
 - Input-Validierung (Regex), sonst AuditReaderServiceError.
 - Kein DB-Zugriff, nur Datei-Lesen.
+- Konstruktor-None -> AuditReaderOperationError (5xx).
+- IO-Fehler aus read_day/read_risk_assessments werden
+  NICHT gefangen. Variante D, Auflage 502-506 analog.
 """
 from __future__ import annotations
 
@@ -21,7 +24,7 @@ from core.access.checker import AccessChecker
 from core.reporting.audit_reader import (
     read_risk_assessments,
 )
-from core.services import ServiceError
+from core.services import OperationError, ServiceError
 from harness.audit.writer import AuditWriter
 
 
@@ -30,7 +33,11 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 class AuditReaderServiceError(ServiceError):
-    """Fachlicher Fehler im AuditReaderService."""
+    """Fachlicher Fehler im AuditReaderService (4xx)."""
+
+
+class AuditReaderOperationError(OperationError):
+    """Betriebsfehler im AuditReaderService (5xx)."""
 
 
 class AuditReaderService:
@@ -40,11 +47,11 @@ class AuditReaderService:
         checker: AccessChecker,
     ) -> None:
         if audit_writer is None:
-            raise AuditReaderServiceError(
+            raise AuditReaderOperationError(
                 "audit_writer ist Pflicht (fail closed)"
             )
         if checker is None:
-            raise AuditReaderServiceError(
+            raise AuditReaderOperationError(
                 "checker ist Pflicht (fail closed)"
             )
         self._audit = audit_writer
@@ -144,6 +151,7 @@ class AuditReaderService:
 
 
 __all__ = [
+    "AuditReaderOperationError",
     "AuditReaderService",
     "AuditReaderServiceError",
 ]
