@@ -35,6 +35,7 @@ from typing import Any, Protocol
 
 from core.access.checker import AccessChecker, AccessDeniedError
 from core.config import get_model_default, get_model_large
+from core.services import OperationError, ServiceError
 from harness.audit.writer import AuditWriter
 from harness.context.builder import ContextBuilder
 from harness.context.models import ContextBundle
@@ -314,8 +315,12 @@ def _is_critical_state_question(
 # Ergebnis-Typen
 # ---------------------------------------------------------------------- #
 
-class ChatServiceError(RuntimeError):
-    """Fachlicher Fehler im ChatService."""
+class ChatServiceError(ServiceError):
+    """Fachlicher Fehler im ChatService (4xx)."""
+
+
+class ChatOperationError(OperationError):
+    """Betriebsfehler im ChatService (5xx)."""
 
 
 @dataclass(frozen=True)
@@ -356,15 +361,15 @@ class ChatService:
         auto_large: bool = True,
     ) -> None:
         if audit_writer is None:
-            raise ChatServiceError(
+            raise ChatOperationError(
                 "audit_writer ist Pflicht (fail closed)"
             )
         if llm_client is None:
-            raise ChatServiceError(
+            raise ChatOperationError(
                 "llm_client ist Pflicht (fail closed)"
             )
         if checker is None:
-            raise ChatServiceError(
+            raise ChatOperationError(
                 "checker ist Pflicht (fail closed)"
             )
         self._audit = audit_writer
@@ -988,6 +993,7 @@ def _build_prompt(
 
 
 __all__ = [
+    "ChatOperationError",
     "ChatService",
     "ChatServiceError",
     "ChatResponse",

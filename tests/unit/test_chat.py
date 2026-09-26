@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from apps.security_ai.chat import (
+    ChatOperationError,
     ChatService,
     ChatServiceError,
     ChatResponse,
@@ -142,9 +143,10 @@ class ChatServiceHappyPathTests(_ChatBase):
                 self.svc.ask("admin", bad)
 
     def test_konstruktor_fail_closed(self):
-        with self.assertRaises(ChatServiceError):
+        # Auflage 487: Konstruktor-None ist Betriebsfehler (5xx).
+        with self.assertRaises(ChatOperationError):
             ChatService(self.conn, None, self.llm)
-        with self.assertRaises(ChatServiceError):
+        with self.assertRaises(ChatOperationError):
             ChatService(self.conn, self.audit, None)
 
     def test_system_prompt_unterscheidet_konzept_und_zustand(self):

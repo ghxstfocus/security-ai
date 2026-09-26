@@ -25,8 +25,9 @@ Fehler:
 - question fehlt/leer/zu lang -> 400 JSON.
 - Rate-Limit erreicht   -> 429 JSON + Retry-After.
 - AccessDeniedError     -> 403 JSON.
-- LLMError/Timeout/Unavailable -> 502 JSON.
-- ChatServiceError      -> NICHT fangen (globaler 500).
+- LLMError/Timeout/Unavailable -> 502 JSON (Auflage 487).
+- ChatServiceError      -> 400 JSON.
+- ChatOperationError    -> NICHT fangen (globaler 500).
 
 Response 200: genau 6 Schluessel (Auflage 91):
   answer, model, model_reason, source, denied, answer_id.
@@ -38,7 +39,11 @@ from flask import Flask, g, jsonify, render_template, request
 from apps.dashboard.decorators import require_permission
 from core.services.rate_limit_service import RateLimitService
 from harness.llm.errors import LLMError, LLMTimeout, LLMUnavailable
-from apps.security_ai.chat import ChatService
+from apps.security_ai.chat import (
+    ChatOperationError,
+    ChatService,
+    ChatServiceError,
+)
 
 
 QUESTION_MAX_LEN = 2000
@@ -127,6 +132,10 @@ def register_chat_routes(app: Flask) -> None:
             return _json_error("LLM nicht erreichbar", 502)
         except LLMError:
             return _json_error("LLM nicht erreichbar", 502)
+        except ChatOperationError:
+            raise
+        except ChatServiceError:
+            return _json_error("Ungueltige Anfrage", 400)
         except Exception as exc:
             from core.access.checker import AccessDeniedError
             if isinstance(exc, AccessDeniedError):
