@@ -1,0 +1,133 @@
+"""
+SearchService-Tests (3.6.16, Auflage 559).
+
+Mock-Repo + Mock-Checker, Validierung, Permission-Filter,
+risk_assessments-Python-Filter.
+"""
+from __future__ import annotations
+
+import pytest
+
+from core.services import ServiceError
+from core.services.search_service import (
+    QUERY_MAX, QUERY_MIN, SearchService, SearchServiceError,
+)
+
+
+class _FakeRepo:
+    def __init__(self):
+        self.calls = []
+
+    def _hit(self, name, q, limit):
+        self.calls.append((name, q, limit))
+        return [{"identifier": q}] if q != "nix" else []
+
+    def search_devices(self, q, limit):
+        return self._hit("devices", q, limit)
+
+    def search_whitelisted_devices(self, q, limit):
+        return self._hit("whitelisted_devices", q, limit)
+
+    def search_changes(self, q, limit):
+        return self._hit("changes", q, limit)
+
+    def search_approvals(self, q, limit):
+        return self._hit("approvals", q, limit)
+
+    def search_principals(self, q, limit):
+        return self._hit("principals", q, limit)
+
+    def search_roles(self, q, limit):
+        return self._hit("roles", q, limit)
+
+    def search_permissions(self, q, limit):
+        return self._hit("permissions", q, limit)
+
+
+class _FakeChecker:
+    def __init__(self, perms):
+        self.perms = frozenset(perms)
+
+    def permissions_of(self, actor):
+        return self.perms
+
+
+def _svc(perms, ra=None):
+    return SearchService(
+        repo=_FakeRepo(),
+        audit_reader=lambda **kw: ra or [],
+        checker=_FakeChecker(perms),
+    )
+
+
+class TestValidation:
+    def test_too_short(self):
+        svc = _svc({"device.read"})
+        with pytest.raises(SearchServiceError):
+            svc.search("admin1", "a")
+
+    def test_too_long(self):
+        svc = _svc({"device.read"})
+        with pytest.raises(SearchServiceError):
+            svc.search("admin1", "x" * (QUERY_MAX + 1))
+
+    def test_invalid_chars(self):
+        svc = _svc({"device.read"})
+        with pytest.raises(SearchServiceError):
+            svc.search("admin1", "ab<script>")
+
+    def test_non_string(self):
+        svc = _svc({"device.read"})
+        with pytest.raises(SearchServiceError):
+            svc.search("admin1", None)
+
+    def test_search_service_error_is_service_error(self):
+        assert issubclass(SearchServiceError, ServiceError)
+
+
+class TestPermissionFilter:
+    def test_only_allowed_sources(self):
+        svc = _svc({"device.read"})
+        result = svc.search("admin1", "host")
+        assert set(result.keys()) == {"devices", "whitelisted_devices"}
+
+    def test_admin_sees_all(self):
+        svc = _svc({
+            "device.read", "change.view", "approval.view",
+            "principal.manage", "role.manage", "audit.read",
+        })
+        result = svc.search("admin1", "host")
+        assert "devices" in result
+        assert "changes" in result
+        assert "principals" in result
+
+    def test_no_permission_no_sources(self):
+        svc = _svc(set())
+        assert svc.search("admin1", "host") == {}
+
+    def test_empty_sources_removed(self):
+        svc = _svc({"device.read"})
+        # "nix" liefert leere Listen -> Quelle wird weggelassen.
+        result = svc.search("admin1", "nix")
+        assert result == {}
+
+
+class TestRiskAssessments:
+    def test_ra_filter_by_audit_id(self):
+        ra = [
+            {"audit_id": "AUD-2026-09-26-abcdef01", "event_id": "EVT-1",
+             "rule_id": "port_scan", "tool": "risk_engine"},
+            {"audit_id": "AUD-2026-09-26-ffffffff", "event_id": "EVT-2",
+             "rule_id": "unknown_device", "tool": "risk_engine"},
+        ]
+        svc = _svc({"audit.read"}, ra=ra)
+        result = svc.search("admin1", "abcdef")
+        assert "risk_assessments" in result
+        assert len(result["risk_assessments"]) == 1
+        assert result["risk_assessments"][0]["audit_id"] == "AUD-2026-09-26-abcdef01"
+
+    def test_ra_no_hit(self):
+        ra = [{"audit_id": "AUD-2026-09-26-00000001",
+               "event_id": None, "rule_id": None, "tool": None}]
+        svc = _svc({"audit.read"}, ra=ra)
+        assert "risk_assessments" not in svc.search("admin1", "xyz")

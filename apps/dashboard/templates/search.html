@@ -1,0 +1,69 @@
+{#
+  search.html — Globale Suche.
+
+  Kategorie 3 (3.6.16, Auflagen 523-552).
+  Kein |safe, kein style="...", kein on*=, kein inline <script>.
+  Link-Builder pro Quelle als Jinja-if-Baum (Auflage 545),
+  kein generischer Pfad.
+  Leere Quellen werden im Service entfernt (Auflage 534).
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Suche</h1>
+
+<form action="/search" method="get" class="search-form">
+    <input type="search" name="q" maxlength="200" minlength="2"
+           value="{{ q }}" placeholder="Suchen...">
+    <button type="submit">Suchen</button>
+</form>
+
+{% if q and results %}
+<p>Ergebnisse fuer: {{ q }}</p>
+
+{% for source, hits in results.items() %}
+<details class="search-source">
+    <summary>{{ source }} ({{ hits|length }})</summary>
+    <ul class="search-hits">
+    {% for hit in hits %}
+        <li>
+        {% if source == "devices" %}
+            <a href="/inventory/{{ hit.identifier }}">{{ hit.identifier }}</a>
+            {% if hit.entity_name %} — {{ hit.entity_name }}{% endif %}
+        {% elif source == "whitelisted_devices" %}
+            <a href="/inventory/{{ hit.identifier }}">{{ hit.identifier }}</a>
+            {% if hit.entity_name %} — {{ hit.entity_name }}{% endif %}
+        {% elif source == "changes" %}
+            <a href="/changes/{{ hit.change_id }}">{{ hit.change_id }}</a>
+            — {{ hit.title }}
+        {% elif source == "approvals" %}
+            <a href="/approvals/{{ hit.request_id }}">{{ hit.request_id }}</a>
+            — {{ hit.tool_name }}
+        {% elif source == "principals" %}
+            <a href="/users/{{ hit.name }}">{{ hit.name }}</a>
+            — {{ hit.kind }}
+        {% elif source == "roles" %}
+            <a href="/roles/{{ hit.name }}">{{ hit.name }}</a>
+            {% if hit.description %} — {{ hit.description }}{% endif %}
+        {% elif source == "permissions" %}
+            {{ hit.code }}
+            {% if hit.description %} — {{ hit.description }}{% endif %}
+        {% elif source == "risk_assessments" %}
+            {% if hit.audit_id %}
+                <a href="/audit/{{ hit.audit_id }}">{{ hit.audit_id }}</a>
+            {% else %}
+                {{ hit.event_id or hit.rule_id or "Treffer" }}
+            {% endif %}
+            {% if hit.event_id %} — {{ hit.event_id }}{% endif %}
+        {% else %}
+            {{ hit }}
+        {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+</details>
+{% endfor %}
+{% elif q %}
+<p>Keine Treffer.</p>
+{% endif %}
+{% endblock %}

@@ -7,7 +7,10 @@
     <button id="nav-toggle" type="button" class="nav-toggle" aria-label="Navigation ein-/ausblenden" aria-expanded="false" aria-controls="sidebar">
         <img src="{{ url_for('static', filename='img/hamburger.svg') }}" alt="">
     </button>
-    <div class="topbar-title">{{ page_title|default('Security AI') }}</div>
+    <form class="topbar-search" action="/search" method="get">
+        <input type="search" name="q" maxlength="200" minlength="2"
+               placeholder="Suchen..." aria-label="Suche">
+    </form>
     <div class="topbar-user">
         {% if g.principal is defined and g.principal %}
         <span>{{ g.principal }}</span>
