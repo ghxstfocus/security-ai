@@ -59,3 +59,47 @@ def test_csp_header_unchanged_on_dashboard(tmp_path):
         assert "script-src 'self'" in csp
         assert "unsafe-inline" not in csp
         assert "unsafe-eval" not in csp
+
+
+# --- 3.6.16-topbar-usermenu (Auflagen 561-570) ---------------------- #
+
+def test_user_menu_markup(tmp_path):
+    c = _admin(tmp_path)
+    r = c.get("/")
+    assert r.status_code == 200
+    assert b'<details class="user-menu">' in r.data
+    assert b'<summary class="user-menu-summary">' in r.data
+
+
+def test_user_menu_shows_person_icon(tmp_path):
+    c = _admin(tmp_path)
+    r = c.get("/")
+    assert b"img/person.svg" in r.data
+
+
+def test_logout_form_is_post(tmp_path):
+    c = _admin(tmp_path)
+    r = c.get("/")
+    assert b'action="/logout"' in r.data
+    assert b'method="post"' in r.data
+
+
+def test_logout_form_has_csrf(tmp_path):
+    c = _admin(tmp_path)
+    r = c.get("/")
+    assert b'name="_csrf_token"' in r.data
+
+
+def test_user_menu_name_hidden_at_400px(tmp_path):
+    c = _admin(tmp_path)
+    r = c.get("/static/css/components.css")
+    assert r.status_code == 200
+    assert b"@media (max-width: 400px)" in r.data
+    assert b".user-menu-name" in r.data
+
+
+def test_user_menu_not_in_login(tmp_path):
+    c = _anon(tmp_path)
+    r = c.get("/login")
+    assert r.status_code == 200
+    assert b'<details class="user-menu">' not in r.data

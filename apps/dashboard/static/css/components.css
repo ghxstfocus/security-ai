@@ -183,3 +183,60 @@
         display: none;
     }
 }
+
+/* User-Menue (Topbar), 3.6.16-topbar-usermenu (A561-A570) */
+.user-menu {
+    position: relative;
+}
+
+.user-menu-summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.user-menu-summary::-webkit-details-marker {
+    display: none;
+}
+
+.user-menu-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.user-menu-name {
+    white-space: nowrap;
+}
+
+.user-menu[open] .user-menu-summary {
+    color: var(--text-primary);
+}
+
+.user-menu-logout {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 4px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--bg-border);
+    border-radius: 6px;
+    padding: 6px;
+    z-index: 20;
+}
+
+.user-menu-logout button {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 6px 12px;
+    font-size: var(--font-sm);
+}
+
+@media (max-width: 400px) {
+    .user-menu-name {
+        display: none;
+    }
+}

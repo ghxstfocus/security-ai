@@ -2,7 +2,10 @@
   topbar.html — Obere Leiste.
 
   Auflage 251: g.principal mit is defined-Pruefung.
+  Auflage 561/565: person.svg lokal, csrf_field-Makro
+  aus _helpers.html.
 #}
+{% from "_helpers.html" import csrf_field %}
 <header class="topbar">
     <button id="nav-toggle" type="button" class="nav-toggle" aria-label="Navigation ein-/ausblenden" aria-expanded="false" aria-controls="sidebar">
         <img src="{{ url_for('static', filename='img/hamburger.svg') }}" alt="">
@@ -13,7 +16,17 @@
     </form>
     <div class="topbar-user">
         {% if g.principal is defined and g.principal %}
-        <span>{{ g.principal }}</span>
+        <details class="user-menu">
+            <summary class="user-menu-summary">
+                <img class="user-menu-icon" alt=""
+                     src="{{ url_for('static', filename='img/person.svg') }}">
+                <span class="user-menu-name">{{ g.principal }}</span>
+            </summary>
+            <form class="user-menu-logout" action="/logout" method="post">
+                {{ csrf_field(csrf_token) }}
+                <button type="submit">Abmelden</button>
+            </form>
+        </details>
         {% else %}
         <span>Nicht eingeloggt</span>
         {% endif %}
