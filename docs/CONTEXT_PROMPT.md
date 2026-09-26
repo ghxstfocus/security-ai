@@ -241,7 +241,7 @@ Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
 a-i.
 Phase 3.6.10, 3.6.11, 3.6.12, 3.6.13, 3.6.14,
 3.6.15a, 3.6.15b, 3.6.15c, 3.6.15d, 3.6.16 fertig.
-HEAD 6dd50fa, Working Tree sauber.
+HEAD 554d9ef, Working Tree sauber.
 
 Aktuell offen (Reihenfolge vom Reviewer):
 1. Punkt 23 (Audit model_reason=null bei
