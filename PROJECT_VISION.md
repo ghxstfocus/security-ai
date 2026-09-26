@@ -1,508 +1,665 @@
+cat > PROJECT_VISION.md << 'VISIONEOF'
 # Homelab Security AI — Projekt-Vision
 
-> Ein modulares, defensives Security- und Admin-System für
-> autorisierte IT- und Gebäudeumgebungen. Referenz-Implementierung
-> einer föderierten, KI-gestützten Sicherheitsarchitektur mit
+> Ein modulares, defensives Security- und Admin-System fuer
+> autorisierte IT- und Gebaeudeumgebungen. Referenz-Implementierung
+> einer foederierten, KI-gestuetzten Sicherheitsarchitektur mit
 > strikter Human-in-the-Loop-Kontrolle.
 
-## 1. Kurzbeschreibung
+## 1. Das grosse Bild
 
-Das System erkennt unbekannte Geräte, Gast-WLAN-Aktivität,
-Port-Scans und Web-Reconnaissance in einem Netzwerk. Es erfasst
-physische Zutrittsereignisse (RFID, Magnetkarte, PIN, optional
-Biometrie), bewertet sie deterministisch, alarmiert per Telegram
-und legt die Daten als Grundlage für eine spätere KI-gestützte
-Analyse aus.
+Drei KI-Ebenen. Klar getrennt. Jede mit eigener Rolle.
+Die Security AI ist der zentrale Kontrollpunkt. Alles
+laeuft durch sie. Nichts an ihr vorbei.
 
-Besonders wichtig: Das System korreliert **digitale und physische
-Sicherheit**. Es erkennt Zusammenhänge, die einzelne Systeme
-niemals sehen würden — zum Beispiel, wenn jemand mit niedriger
-Zutrittsberechtigung versucht, in einen höher gesicherten Raum
-zu gelangen, oder wenn ein digitaler Login auf einem System
-erfolgt, zu dessen physischem Raum die Person keinen Zutritt hat.
+    +=================================================================+
+    |  EBENE 1 — IT FABRIK (intern)                                   |
+    |                                                                 |
+    |  SECURITY MASTER AI (Cloud)                                     |
+    |  - Verwaltet die Kunden-Installationen der IT Fabrik            |
+    |  - Korreliert Events ueber mehrere Kunden                       |
+    |  - Schlaegt Changes fuer Kunden vor                             |
+    |  - Spricht mit externen LLMs (MCP)                              |
+    |  - Hat NICHTS mit Endkunden-Mitarbeitern zu tun                 |
+    +================================+================================+
+                                     |
+                                     |  Verwaltung, Monitoring
+                                     v
+    +=================================================================+
+    |  EBENE 2 — KUNDE (lokal beim Kunden)                            |
+    |                                                                 |
+    |  SECURITY AI (Core, lokal) = KONTROLLSCHICHT                    |
+    |                                                                 |
+    |  Aufgaben:                                                      |
+    |  - Detection Engine (regelbasiert, kein LLM)                    |
+    |  - Risk Engine (deterministisch, kein LLM)                      |
+    |  - Inventory (Geraete, Personen, Whitelist)                     |
+    |  - RBAC (3 Skalen: Raum, Tool, Daten)                           |
+    |  - Policy Engine (was darf was)                                 |
+    |  - Guardrails (was darf NIEMALS)                                |
+    |  - Sandbox (isolierte Ausfuehrung)                              |
+    |  - Audit (append-only, unveraenderlich)                         |
+    |  - Approval Queue (Human-in-the-Loop)                           |
+    |  - Change Request Workflow                                      |
+    |  - Lokales LLM (Ollama) fuer Erklaerungen                       |
+    |                                                                 |
+    |  = SCHNITTSTELLE zu ALLEN Bridges                               |
+    |                                                                 |
+    |  Was sie kontrolliert:                                          |
+    |  - Jede Bridge                                                  |
+    |  - Jede Anfrage                                                 |
+    |  - Jede Schreibaktion                                           |
+    |                                                                 |
+    |  WICHTIG: Sie entscheidet nichts ueber Menschen.                |
+    |           Sie fuehrt aus, was der Mensch freigegeben hat.       |
+    +================================+================================+
+                                     |
+          +--------------------------+--------------------------+
+          |                          |                          |
+          v                          v                          v
+    +--------------+    +-------------------+    +-------------------+
+    |  KUNDEN-     |    |  BRIDGES (Cloud)  |    |  DATA CONNECTORS  |
+    |  MITARBEITER-|    |                   |    |  (falls lokal)    |
+    |  KI          |    |  HR-Bridge        |    |                   |
+    |              |    |  (Personio,       |    |  Optional fuer    |
+    |  - Endnutzer |    |   SAP HR,         |    |  On-Prem-Systeme  |
+    |    fragen    |    |   Workday)        |    |                   |
+    |  - Nur was   |    |                   |    |                   |
+    |    Security  |    |  Buchhaltung-     |    |                   |
+    |    AI frei-  |    |  Bridge           |    |                   |
+    |    gibt      |    |  (DATEV, SAP)     |    |                   |
+    |              |    |                   |    |                   |
+    |  - Schlaegt  |    |  CRM-Bridge       |    |                   |
+    |    Schreib-  |    |  (Hubspot,        |    |                   |
+    |    aktionen  |    |   Salesforce)     |    |                   |
+    |    vor       |    |                   |    |                   |
+    |              |    |  Ticket-Bridge    |    |                   |
+    |              |    |  (Jira, Zendesk)  |    |                   |
+    |              |    |                   |    |                   |
+    |              |    |  M365-Bridge      |    |                   |
+    |              |    |  (Microsoft Graph)|    |                   |
+    |              |    |                   |    |                   |
+    |              |    |  LLM-Bridges      |    |                   |
+    |              |    |  (Anthropic,      |    |                   |
+    |              |    |   OpenAI,         |    |                   |
+    |              |    |   Azure OpenAI,   |    |                   |
+    |              |    |   DeepSeek)       |    |                   |
+    +--------------+    +-------------------+    +-------------------+
+                                     |
+                                     |  Cloud-API-Aufrufe
+                                     v
+    +=================================================================+
+    |  EXTERNE CLOUD-SYSTEME                                          |
+    |                                                                 |
+    |  HR, Buchhaltung, CRM, Ticketsystem, M365, LLM-Provider         |
+    +=================================================================+
 
-Das Projekt ist bewusst als kleine, lauffähige Referenz angelegt —
-mit der Architektur, die später auf mehrere Netzwerke, Gebäude
-und Unternehmensumgebungen skaliert werden kann.
+## 2. Die drei KI-Ebenen — im Detail
 
-## 2. Übergeordnetes Ziel
+### 2.1 Security Master AI (Ebene 1 — IT Fabrik, Cloud)
 
-Eine **Admin AI** als "Head of Operations" für mehrere voneinander
-isolierte Netzwerke und Gebäude. Lokale **Security AIs** liefern
-Events (digital und physisch), die Admin AI korreliert, bewertet
-und Change Requests vorschlägt. Der Mensch entscheidet. Jede
-Aktion ist auditierbar und umkehrbar.
+Die Security Master AI ist die **Admin-KI der IT Fabrik**.
+Sie laeuft in der Cloud. Sie verwaltet die **Kunden-
+Installationen** der IT Fabrik.
 
-Ziel ist **nicht** autonome KI, sondern **kontrollierte
-Augmentation** menschlicher Administratoren und Sicherheits-
-Verantwortlicher — mit klaren Grenzen, Guardrails und
-nachvollziehbaren Entscheidungen.
+**Was sie macht:**
 
-### Zwei Betriebsmodi
+1. **Kunden verwalten.** Sie kennt alle Kunden-
+   Installationen der IT Fabrik. Welche Version laeuft?
+   Welche Bridges sind aktiv? Welche Events gibt es?
 
-**Modus A — Autark (heute bis Stufe 2).**
-Eine Security AI pro Netzwerk/Gebäude. Lokales LLM für
-Erklärungen. Läuft vollständig ohne Cloud. Der Mensch
-entscheidet alles. Die Admin AI ist nicht vorhanden.
+2. **Ueber Kunden korrelieren.** Sie sieht Events aus
+   mehreren Kunden-Installationen. Sie erkennt Muster
+   ueber Kunden hinweg ("drei Kunden haben heute
+   denselben Port-Scan-Typ gesehen").
 
-**Modus B — Föderiert (Stufe 3+).**
-Mehrere Security AIs sind über MCP mit einer zentralen
-Admin AI verbunden. Die Admin AI koordiniert, korreliert und
-schlägt Change Requests vor. Der Mensch entscheidet weiterhin
-alles.
+3. **Changes vorschlagen.** Sie schlaegt Changes fuer
+   Kunden vor ("Kunde A sollte seine Firewall-Regel
+   anpassen"). Der Mensch gibt frei.
 
-Wichtig: **Modus A bleibt immer funktionsfähig.** Die Admin AI
-ist optional. Wenn die Cloud ausfällt oder nicht erreichbar ist,
-läuft das lokale System weiter.
+4. **Mit externen LLMs sprechen.** Ueber MCP. Sie kann
+   Anthropic, OpenAI, Azure OpenAI, DeepSeek anbinden.
+   Je nach Aufgabe und Datenschutz-Anforderung.
 
-## 3. Grundprinzipien
+**Was sie NICHT macht:**
 
-1. **Mensch behält Kontrolle.** Kritische Entscheidungen
-   (Whitelist, Firewall, Deployments, Zutrittsänderungen) sind
-   immer Human-Approval-pflichtig.
-2. **Defense in Depth.** Mehrere Schichten. Wenn eine versagt,
-   greift die nächste.
-3. **Determinismus wo möglich, KI nur wo nötig.** Detection ist
-   regelbasiert. Das LLM erklärt, plant und schlägt vor — es
-   bewertet nicht.
-4. **Autarkie.** Jede lokale Security AI funktioniert ohne die
-   Admin AI. Die Admin AI verstärkt, aber sie ist keine
-   Voraussetzung.
-5. **Eine Quelle der Wahrheit.** Policies, Whitelist, Events —
-   je genau ein Ort.
-6. **Append-only Audit.** Jede Aktion unveränderlich
+- **Kein Kontakt zu Endkunden-Mitarbeitern.**
+- Kein Zugriff auf Endkunden-Daten (nur Aggregate).
+- Keine Aktionen ohne Human Approval.
+- Keine personenbezogenen Entscheidungen.
+
+**Kurz:** Die Security Master AI ist der **Kopf der
+IT Fabrik**. Sie koordiniert, korreliert, schlaegt vor.
+Sie hat nichts mit den Mitarbeitern der Kunden zu tun.
+
+### 2.2 Security AI (Ebene 2 — Kunde, lokal) — Der zentrale Hub
+
+Die Security AI ist die **Kontrollschicht**. Sie laeuft
+**lokal beim Kunden** im Container. Sie ist der
+**zentrale Hub** — alles laeuft durch sie. Nichts an
+ihr vorbei.
+
+**Was sie macht:**
+
+1. **Detection.** Sie liest Events von Sensoren
+   (Netzwerk, Fritz!Box, Docker, Proxmox, Logs, RFID,
+   Tueren). Sie wendet **deterministische Regeln** an.
+   Kein LLM. Klare Regeln.
+
+2. **Risk Engine.** Sie bewertet Events
+   **deterministisch**. Score aus Basis + Modifikatoren.
+   Kein LLM. Nachvollziehbar.
+
+3. **Inventory.** Sie kennt Geraete, Personen,
+   Whitelist.
+
+4. **RBAC.** Drei unabhaengige Skalen:
+   - Raum-Level (physischer Zutritt)
+   - Tool-Level (digitaler Zugriff)
+   - Daten-Level (Sichtbarkeit)
+   Kein Level ist automatisch von einem anderen
+   abhaengig.
+
+5. **Policy Engine.** Sie weiss, welches Tool unter
+   welchen Bedingungen erlaubt ist. Globale Pruefer
+   (Shell-Injection, Path-Traversal) laufen immer.
+
+6. **Guardrails.** Sie weiss, was **NIEMALS** erlaubt
+   ist. Das ist Code, nicht Prompt.
+
+7. **Sandbox.** Sie fuehrt Tools **isoliert** aus.
+   Timeouts, rlimits, kein Shell.
+
+8. **Audit.** Sie schreibt **jede** Aktion in ein
+   append-only JSONL-Log. Unveraenderlich.
+
+9. **Approval Queue.** Sie legt Aktionen mit Risiko
+   >= 2 in eine Queue. Der Mensch entscheidet.
+
+10. **Change Request Workflow.** Sie erstellt Antraege
+    fuer Aenderungen. Mit Diff, Rollback, Tests.
+
+11. **Lokales LLM (Ollama).** llama3.2:3b fuer schnelle
+    Erklaerungen, qwen2.5:7b fuer tiefe Fragen
+    (Auto-Switch).
+
+12. **Schnittstelle zu allen Bridges.** Sie ist die
+    **einzige** Instanz, die Bridges aufruft. Keine
+    andere Komponente spricht direkt mit einer Bridge.
+
+13. **Kontrolliert die Kunden-Mitarbeiter-KI.** Sie
+    prueft jede Anfrage, bevor sie an die Mitarbeiter-
+    KI weitergegeben wird.
+
+**Was sie NICHT macht:**
+
+- Keine direkten Systemaenderungen ohne Approval.
+- Keine Whitelist-Aenderungen.
+- Keine Policies aendern.
+- Kein Zugriff ausserhalb autorisierter Bereiche.
+- Keine Scans ohne Harness.
+- Keine personenbezogenen Entscheidungen.
+- Keine Cloud-Abhaengigkeit.
+
+**Kurz:** Die Security AI ist die **kontrollierte
+Ausfuehrungsumgebung** und der **zentrale Hub**. Sie
+entscheidet nichts ueber Menschen. Sie fuehrt aus, was
+der Mensch freigegeben hat.
+
+### 2.3 Kunden-Mitarbeiter-KI (Ebene 3 — Kunde)
+
+Die Kunden-Mitarbeiter-KI ist die **KI fuer die
+Mitarbeiter des Kunden**. Sie ist die Schnittstelle
+zwischen Mensch und Daten.
+
+**Was sie macht:**
+
+1. **Fragen entgegennehmen.** Jeder Mitarbeiter fragt
+   in natuerlicher Sprache ("Wie viele Urlaubstage
+   habe ich?", "Zeig mir Urlaub von Mueller.",
+   "Trage Urlaub 01.10.-05.10. ein.").
+
+2. **Kontext verstehen.** Sie kennt den Principal
+   (wer fragt), die Rolle, die Berechtigungen.
+
+3. **An Security AI weiterleiten.** Jede Anfrage geht
+   an die Security AI. Die entscheidet, was erlaubt ist.
+
+4. **Antworten formulieren.** Sie formuliert die
+   Antwort in natuerlicher Sprache.
+
+5. **Schreibaktionen vorschlagen.** Sie schlaegt
+   Change Requests vor ("Trage Urlaub ein"). Der Mensch
+   gibt frei.
+
+**Was sie NICHT macht:**
+
+- Kein direkter Datenzugriff. Alles ueber Security AI.
+- Keine Aktionen ohne Approval.
+- Keine Entscheidungen ueber Personen.
+- Keine Umgehung der Security AI.
+
+**Kurz:** Die Kunden-Mitarbeiter-KI ist der **Assistent
+des Endkunden**. Sie ist die einzige KI, mit der
+Endkunden-Mitarbeiter direkt sprechen.
+
+## 3. Die Bridges — die Cloud-Anbindungen
+
+Die Bridges sind **Adapter zu Cloud-Systemen**. Sie
+laufen **unter** der Security AI. Sie werden von ihr
+**kontrolliert** und **auditiert**.
+
+**Was eine Bridge ist:**
+
+- Ein **Adapter** zu einem externen System.
+- Sie kennt die **API** des Systems (z. B. Personio).
+- Sie kennt das **Schema** (z. B. Personio Employee).
+- Sie **mappt** auf das interne Schema.
+- Sie laeuft in der **Sandbox**.
+- Sie wird von der **Policy Engine** kontrolliert.
+- Sie wird **auditiert**.
+
+**Welche Bridges gibt es:**
+
+- **HR-Bridge:** Personio, SAP HR, Workday.
+- **Buchhaltung-Bridge:** DATEV, SAP FI.
+- **CRM-Bridge:** Hubspot, Salesforce.
+- **Ticket-Bridge:** Jira, Zendesk.
+- **M365-Bridge:** Microsoft Graph (E-Mail, Kalender,
+  Teams, SharePoint).
+- **LLM-Bridges:** Anthropic, OpenAI, Azure OpenAI,
+  DeepSeek (alle ueber MCP).
+
+**Was eine Bridge darf:**
+
+- **Lesen** im Default.
+- **Schreiben** nur ueber Change Request + Human
+  Approval.
+
+**Was eine Bridge NICHT darf:**
+
+- Direkt auf Daten zugreifen (nur ueber Security AI).
+- Ohne Audit arbeiten.
+- Ohne Policy-Check laufen.
+- Ohne Sandbox laufen.
+
+**Der Datenfluss:**
+
+    Security AI (prueft)
+      -> Bridge (verbindet)
+        -> Externes System (liefert Daten)
+      <- Bridge (mappt)
+    <- Security AI (auditiert, antwortet)
+
+## 4. Wie die drei Ebenen zusammenspielen
+
+### Beispiel 1 — Kunden-Mitarbeiter fragt
+
+    Mitarbeiter (Buchhaltung):
+      "Zeig mir Urlaub von Mueller."
+
+    Kunden-Mitarbeiter-KI:
+      - Versteht die Frage
+      - Leitet an Security AI weiter
+
+    Security AI:
+      - Prueft RBAC: Rolle "buchhaltung" -> darf HR lesen?
+      - Prueft Daten-Level: Urlaub = Level 2
+      - Ergebnis: JA
+      - Waehlt Bridge: HR-Bridge (Personio)
+      - Ruft Bridge auf
+      - Bridge holt Daten: "Mueller, 12 Tage uebrig"
+      - Audit-Eintrag
+      - Antwort an Mitarbeiter-KI
+
+    Kunden-Mitarbeiter-KI:
+      "Mueller hat 12 Tage uebrig."
+
+### Beispiel 2 — Kunden-Mitarbeiter weist an
+
+    Mitarbeiter (Buchhaltung):
+      "Trage ihm Urlaub vom 01.10. bis 05.10. ein."
+
+    Kunden-Mitarbeiter-KI:
+      - Versteht: Schreibaktion
+      - Leitet an Security AI weiter
+
+    Security AI:
+      - Prueft RBAC: Rolle "buchhaltung" -> darf schreiben?
+      - Ergebnis: JA (mit Approval)
+      - Erstellt Change Request
+      - Legt in Approval Queue
+      - Wartet
+
+    Human Admin (Mensch):
+      - Sieht Change Request
+      - Prueft Datum, Person
+      - Gibt frei
+
+    Security AI:
+      - Ruft HR-Bridge auf
+      - Bridge schreibt: "Urlaub 01.10.-05.10. fuer Mueller"
+      - Audit-Eintrag
+      - Antwort an Mitarbeiter-KI
+
+### Beispiel 3 — Mitarbeiter fragt eigene Daten
+
+    Mitarbeiter:
+      "Wie viele Urlaubstage habe ich?"
+
+    Kunden-Mitarbeiter-KI:
+      - Versteht: eigene Daten
+      - Leitet an Security AI weiter
+
+    Security AI:
+      - Prueft Principal: max.mustermann
+      - Sonderfall "self": nur eigene Daten
+      - Ergebnis: JA
+      - Ruft HR-Bridge auf
+      - Antwort: "Du hast 8 Tage uebrig."
+
+### Beispiel 4 — IT Fabrik fragt Kunden-Status
+
+    IT Fabrik (Admin):
+      "Zeig mir alle Kunden mit kritischen Events."
+
+    Security Master AI:
+      - Versteht: Aggregat ueber alle Kunden
+      - Fragt jede Security AI: "Kritische Events?"
+      - Security AI: prueft, antwortet aggregiert
+      - Antwort: "3 Kunden mit kritischen Events."
+      - KEIN Zugriff auf einzelne Personen.
+
+## 5. Die Reise in einem Satz
+
+Wir bauen ein System, das heute ein Homelab-Netzwerk
+ueberwacht, morgen mehrere Firmenstandorte foederiert
+und uebermorgen eine KI-Schicht ueber allen relevanten
+Firmendaten bildet — mit digitalen UND physischen
+Zugriffen, mit Human-in-the-Loop, mit lueckenlosem
+Audit und DSGVO-konform.
+
+Der Mensch entscheidet. Die Security Master AI
+verwaltet und koordiniert. Die Security AI kontrolliert
+und fuehrt aus. Die Kunden-Mitarbeiter-KI assistiert
+dem Endnutzer. Jede Aktion ist auditierbar und
+umkehrbar.
+
+## 6. Kurzbeschreibung
+
+Das System erkennt unbekannte Geraete, Gast-WLAN-
+Aktivitaet, Port-Scans und Web-Reconnaissance in einem
+Netzwerk. Es erfasst physische Zutrittsereignisse
+(RFID, Magnetkarte, PIN, optional Biometrie), bewertet
+sie deterministisch, alarmiert per Telegram und legt
+die Daten als Grundlage fuer eine spaetere
+KI-gestuetzte Analyse aus.
+
+Besonders wichtig: Das System korreliert **digitale
+und physische Sicherheit**. Es erkennt Zusammenhaenge,
+die einzelne Systeme niemals sehen wuerden.
+
+Das Projekt ist bewusst als kleine, lauffaehige
+Referenz angelegt — mit der Architektur, die spaeter
+auf mehrere Netzwerke, Gebaeude und Unternehmens-
+umgebungen skaliert werden kann.
+
+## 7. Grundprinzipien
+
+1. **Mensch behaelt Kontrolle.** Kritische Entscheidungen
+   sind immer Human-Approval-pflichtig.
+2. **Defense in Depth.** Mehrere Schichten.
+3. **Determinismus wo moeglich, KI nur wo noetig.**
+   Detection ist regelbasiert. Das LLM erklaert, plant
+   und schlaegt vor — es bewertet nicht.
+4. **Autarkie.** Jede lokale Security AI funktioniert
+   ohne die Security Master AI.
+5. **Eine Quelle der Wahrheit.** Policies, Whitelist,
+   Events — je genau ein Ort.
+6. **Append-only Audit.** Jede Aktion unveraenderlich
    protokolliert.
-7. **Fail closed.** Wenn ein Guardrail nicht prüfen kann,
-   blockiert er.
-8. **Keine Cloud-Abhängigkeit im Kern.** Lokale Modelle, lokale
-   Daten. Cloud nur als optionale Verstärkung.
-9. **Föderation statt Monolith.** Jedes Netzwerk/Gebäude
-   eigenständig, die Admin AI optional.
-10. **Physisch-digital vereint.** Zutritt und Netzwerkzugriff
-    werden gemeinsam betrachtet, nicht getrennt.
+7. **Fail closed.** Wenn ein Guardrail nicht pruefen
+   kann, blockiert er.
+8. **Keine Cloud-Abhaengigkeit im Kern.** Lokale
+   Modelle, lokale Daten.
+9. **Foederation statt Monolith.** Jedes Netzwerk/
+   Gebaeude eigenstaendig.
+10. **Physisch-digital vereint.**
+11. **DSGVO-Konformitaet ist Pflicht.**
+12. **Ein zentraler Hub.** Die Security AI ist die
+    einzige Schnittstelle zu allen Bridges. Nichts
+    laeuft an ihr vorbei.
 
-## 4. Die drei KI-Rollen
-
-Das System kennt drei Rollen. Jede hat klar definierte Rechte
-und Grenzen.
-
-### 4.1 Human Admin (der Mensch)
-
-**Wer:** Du, oder später Sicherheitsverantwortliche in Firmen.
-
-**Was er tut:**
-- Whitelist pflegen
-- Change Requests freigeben oder ablehnen
-- Policies anpassen
-- Zutrittsberechtigungen anpassen
-- Notfall-Stop
-- Letzte Instanz bei kritischen Entscheidungen
-
-**Was er NICHT tut:**
-- Er muss nicht jeden Alarm selbst prüfen — das System
-  priorisiert und erklärt.
-- Er muss nicht alles selbst administrieren — die Admin AI
-  schlägt vor.
-
-**Letzte Instanz:** Immer. Keine KI darf eine kritische
-Entscheidung ohne ihn treffen.
-
-### 4.2 Security AI (lokal, pro Netzwerk und Gebäude)
-
-**Wer:** Eine eigene Instanz pro Netzwerk und Gebäude. Läuft im
-Container. Kann autark betrieben werden (Modus A).
-
-**Was sie tut:**
-- Empfängt Events von Sensoren (Netzwerk, RFID, Türen, Logs)
-- Wendet deterministische Detection-Regeln an
-- Berechnet Risk-Scores
-- Sendet Alarme (Telegram) bei Sicherheitsvorfällen
-- Loggt alles in die Datenbank
-- Bietet ein Dashboard mit Chat-Funktion für Erklärungen
-- Kann Change Requests vorbereiten
-- Nutzt lokales LLM (z. B. Qwen, Llama) für Erklärungen
-
-**Was sie NICHT tut:**
-- Keine direkten Systemänderungen
-- Keine Whitelist-Änderungen
-- Keine Policies ändern
-- Kein Zugriff ausserhalb autorisierter Bereiche
-- Keine Scans ohne Harness
-
-**Modell:** Lokal (Ollama). Reicht für Erklärungen und Kontext.
-
-### 4.3 Admin AI (Cloud, Head of Operations)
-
-**Wer:** Eine eigene Instanz, an die Security AIs angekoppelt.
-Nicht Teil des lokalen Systems, sondern ein separater Dienst.
-
-**Was sie tut:**
-- Events aus mehreren Netzwerken und Gebäuden korrelieren
-- Muster über Standorte hinweg erkennen
-- Change Requests generieren (Code, Exploits, Policies)
-- Code schreiben, Tests vorschlagen, Rollbacks vorbereiten
-- Über MCP mit externen LLMs sprechen (Anthropic, OpenAI,
-  DeepSeek)
-- Reports erstellen
-
-**Was sie NICHT tut:**
-- Keinen direkten Produktionszugriff
-- Keine Whitelist-Änderungen
-- Keine autonomen Deployments
-- Keine Aktion ohne Human Approval (ab Level 4)
-- Kein Zugriff auf Rohdaten der Netzwerke — nur Events
-
-**Modell:** DeepSeek (in diesem Projekt), alternativ andere
-Cloud-LLMs. Später: Kopplung an externe KIs von Firmen
-(Anthropic, OpenAI) über MCP.
-
-**Wichtig:** Die Admin AI ist optional. Modus A (autark) bleibt
-immer funktionsfähig. Die Admin AI verstärkt, sie ist keine
-Voraussetzung.
-
-## 5. Architektur (4-Ebenen-Modell)
-
-Der Datenfluss geht **aufwärts** (Events, Beobachtungen) und
-**abwärts** (Change Requests, Entscheidungen). Keine Ebene
-überspringt eine andere.
-
-## 6. Skalierungspfad (9 Stufen)
+## 8. Skalierungspfad
 
 ### Stufe 1 — Netzwerk Homelab (heute)
-Ein Netzwerk. Eine Security AI. Keine Admin AI.
-Deterministische Detection. Lokales LLM für Erklärungen.
-Telegram-Alarme. SQLite-Datenbank.
-
+Ein Netzwerk. Eine Security AI. Keine Security
+Master AI. Keine Kunden-Mitarbeiter-KI.
 Status (2026-09-26): [x] implementiert (Commit f986ba2).
 
 ### Stufe 2 — Erweiterung (Monate)
-Change-Request-Generator. Human-in-the-Loop mit Approval-Queue.
-Lokales LLM wird für Kontext und Erklärungen genutzt.
-Der Mensch arbeitet mit dem System, nicht nur daneben.
-
+Change-Request-Generator. Approval-Queue. Lokales LLM.
 Status (2026-09-26): [x] implementiert (Commit f986ba2).
 
 ### Stufe 2.5 — Lokale KI (Monate)
-
-Lokales LLM (Ollama) für Erklärungen.
-Chat-Interface im Dashboard.
-Kontext-Bau aus Events, DB, Logs.
-LLM erklärt, entscheidet nicht.
-
+Ollama, Chat, RBAC, Auto-Switch.
 Status (2026-09-26): [x] implementiert (Commit f986ba2).
-- Ollama (llama3.2:3b Default, qwen2.5:7b Large)
-- Chat-CLI mit RBAC (Phase 3.5)
-- Frage-Klassifikation: fact (deterministisch),
-  concept (3B), interpretation (7B via Auto-Switch)
-- Sanity-Check gegen Denial und Underreporting
-- Web-Dashboard folgt in Phase 3.6
 
-### Stufe 3 — Föderation (später)
-Mehrere isolierte Netzwerke. Zentrale Admin AI (Cloud).
-Standardisiertes Protokoll (MCP-basiert).
+### Stufe 3 — Foederation (spaeter)
+Mehrere isolierte Netzwerke. Zentrale Security
+Master AI (Cloud). MCP-Protokoll.
 Pro Netzwerk eigene Credentials, eigene Policies.
-Die Admin AI korreliert Events über Netzwerke hinweg.
 
 ### Stufe 4 — Enterprise (Zukunft)
-Drei Themen, die zusammengehören:
+Drei Themen, die zusammengehoeren:
 
-**DSGVO-Konformität.** Voraussetzung, um in einer Firma
-Personenbezug zu verarbeiten. Löschkonzept für audit-logs,
-Pseudonymisierung nach Frist, Betroffenenrechte-Query,
-Verzeichnis von Verarbeitungstätigkeiten, TOM-Übersicht,
-AVV-Vorlage. Siehe Phase 6 in docs/PHASES.md.
+**Enterprise-Bridges.**
+Die Security AI wird zur zentralen Schnittstelle
+fuer alle Cloud-Systeme des Kunden (HR, Buchhaltung,
+CRM, Tickets, M365, LLMs). Jede Bridge ist ein
+Adapter. Nichts laeuft an der Security AI vorbei.
 
-**Data Connectors.** Anbindung an Firmensysteme (HR, CRM,
-Ticketsysteme). Lesend, mit RBAC-Prüfung im Service.
-Schema-Mapping vom Firmen-Datenmodell auf Principal/Role/
-Permission. Siehe Phase 7 in docs/PHASES.md.
+**Kunden-Mitarbeiter-KI.**
+Die KI fuer die Mitarbeiter des Kunden. Jeder
+Mitarbeiter fragt in natuerlicher Sprache. Die KI
+liest Daten ueber die Security AI, schlaegt
+Schreibaktionen vor, der Mensch gibt frei. Jeder
+sieht nur seine Rolle-relevanten Daten.
 
-**Enterprise-Bridges.** Anbindung an externe LLMs
-(Anthropic, OpenAI, Azure OpenAI, DeepSeek) über offizielle
-Protokolle. AVV mit den Anbietern, Datenfluss-Kontrolle,
-Opt-in pro Installation. Siehe Phase 8 in docs/PHASES.md.
+**DSGVO-Konformitaet.**
+Privacy by Design, Zweckbindung, Datenminimierung,
+Loeschfristen, Betroffenenrechte, Verzeichnis von
+Verarbeitungstaetigkeiten, TOMs, AVV-Vorlagen.
+Lueckenlos. Kein Kompromiss.
 
-Zertifizierungen (ISO 27001, SOC 2) als langfristiges Ziel.
+Status (2026-09-26): [ ] geplant.
 
-### Stufe 5 — Physische Sicherheit (RFID, Zutritt)
-Gebäudesicherheit als eigene Schicht:
-- Raum-Sicherheitslevel (0-5, unabhängig von Tool-Level)
-- Zutrittstechnologien: RFID, Magnetkarte, PIN, optional Biometrie
-- Türen, Leser, Sensoren als Event-Quellen
-- Personen als eigene Entitäten mit Raum- und Tool-Level
+### Stufe 5 — Physische Sicherheit (Zukunft)
+RFID, Magnetkarte, PIN, optional Biometrie.
+Raum-Level, Tool-Level, Daten-Level unabhaengig.
+Personen als Entitaeten.
 
-Die Security AI erfasst Zutrittsereignisse, die Detection Engine
-wendet physische Regeln an, die Admin AI korreliert mit digitalen
-Events.
+### Stufe 6 — Ganzheitliche Korrelation (Zukunft)
+Digitale und physische Sicherheit verheiratet.
+Korrelationsregeln (access_level_mismatch,
+digital_without_physical, access_after_departure, ...).
 
-### Stufe 6 — Ganzheitliche Korrelation (digital + physisch)
-Die eigentliche Königsklasse: digitale und physische Sicherheit
-sind **verheiratet**. Die Admin AI erkennt Zusammenhänge, die
-einzelne Systeme niemals sehen würden.
+## 9. Physische Sicherheit (Stufe 5)
 
-Beispiele:
-- Person mit Raum-Level 2 versucht, einen Raum mit Level 4 zu
-  betreten -> Alarm
-- Person betritt einen Raum nicht, obwohl sie digital auf ein
-  System in diesem Raum zugreift -> verdächtig
-- Person verlässt einen Raum, digitaler Zugriff bleibt aktiv ->
-  Alarm
-- Person loggt sich in einen Server ein, der in einem Raum steht,
-  zu dem sie keinen Zutritt hat -> kritischer Alarm
-- Person versucht nachts um 3 Uhr Zutritt, obwohl sie tagsüber
-  nie im Gebäude ist -> Anomalie
-- Zugang außerhalb der Arbeitszeit -> Alarm je nach Raum-Level
+### 9.1 Raum-Sicherheitslevel (0-5)
 
-Diese Korrelation ist der eigentliche Mehrwert gegenüber
-Einzelsystemen. Sie ist der Grund, warum die Architektur so
-gebaut ist, wie sie ist.
+| Level | Bedeutung         | Beispiel                       |
+|-------|-------------------|--------------------------------|
+| 0     | Oeffentlich       | Empfang, Flure                 |
+| 1     | Niedrig           | Besucherbereiche               |
+| 2     | Normal            | Bueros, Mitarbeiterbereiche    |
+| 3     | Erhoeht           | IT, Management                 |
+| 4     | Hoch              | Serverraum, Tresor             |
+| 5     | Kritisch          | Sicherheitszentrale, Vorstand  |
 
-## 7. Physische Sicherheit (Stufe 5)
+### 9.2 Zutrittstechnologien
+RFID, Magnetkarte, PIN, optional Biometrie.
+Plugin-System fuer Erweiterungen. Einheitliches
+Event-Schema.
 
-### 7.1 Raum-Sicherheitslevel (0-5)
+### 9.3 Personen als Entitaeten
+ID, Name, Typ, Raum-Level, Tool-Level, Zeit-
+einschraenkungen, Zutrittshistorie.
 
-Analog zur Tool-Level-Skala, aber **unabhängig**. Eine Person
-mit Tool-Level 4 hat nicht automatisch Raum-Level 4.
+### 9.4 Korrelationsregeln
+access_level_mismatch, access_outside_hours,
+digital_without_physical, physical_without_digital,
+access_after_departure, unusual_pattern, tailgating.
 
-| Level | Bedeutung         | Beispiel                    |
-|-------|-------------------|-----------------------------|
-| 0     | Öffentlich        | Empfang, Flure              |
-| 1     | Niedrig           | Besucherbereiche            |
-| 2     | Normal            | Büros, Mitarbeiterbereiche  |
-| 3     | Erhöht            | IT, Management              |
-| 4     | Hoch              | Serverraum, Tresor          |
-| 5     | Kritisch          | Sicherheitszentrale, Vorstand |
+### 9.5 Ethische Leitplanken (verbindlich)
+Keine Gesichtserkennung ohne Freigabe.
+Keine biometrischen Daten ohne Zustimmung.
+Keine Bewegungsprofile.
+Keine dauerhafte Speicherung ohne Zweck.
+Transparenz, Zweckbindung, Loeschfristen,
+Zugriffskontrolle.
 
-### 7.2 Zutrittstechnologien
+## 10. MCP-Kopplung an externe LLMs
 
-Das Gebäudemodul ist **flexibel**. Es unterstützt:
+Die Security Master AI und die Security AI sprechen
+ueber **MCP** mit externen LLMs. Erlaubt:
 
-- **RFID** (Mifare, HID, Legic, ...)
-- **Magnetkarte**
-- **PIN**
-- **Biometrie** (optional, nur mit ausdrücklicher Zustimmung)
-
-Weitere Technologien sind über ein Plugin-System ergänzbar.
-Jede Technologie liefert Events im **gleichen Schema** — die
-Detection Engine und die Admin AI müssen nichts über die
-Technologie wissen.
-
-### 7.3 Personen als Entitäten
-
-Personen sind eigene Entitäten in der Datenbank. Sie haben:
-
-- Eine eindeutige ID
-- Einen Namen
-- Einen Typ (Mitarbeiter, Dienstleister, Besucher, ...)
-- **Raum-Level** (welche Räume darf die Person betreten?)
-- **Tool-Level** (auf welche Systeme darf sie zugreifen?)
-- Zeitliche Einschränkungen (Arbeitszeiten)
-- Optional: Zutrittshistorie (mit Aufbewahrungsfrist)
-
-### 7.4 Korrelationsregeln
-
-Die Detection Engine kennt Regeln, die **digital und physisch**
-verknüpfen:
-
-- **access_level_mismatch:** Person mit Raum-Level < Raum-Level
-  versucht Zutritt
-- **access_outside_hours:** Zutritt außerhalb der erlaubten Zeiten
-- **digital_without_physical:** Digitaler Login auf System in
-  Raum, zu dem die Person keinen Zutritt hat
-- **physical_without_digital:** Person betritt Raum, in dem ein
-  aktiver digitaler Zugriff mit ihrer ID läuft, den sie nicht
-  gestartet hat
-- **access_after_departure:** Digitaler Zugriff bleibt aktiv,
-  nachdem die Person den Raum verlassen hat
-- **unusual_pattern:** Zutrittsmuster weicht von der Historie ab
-- **tailgating:** Zwei Personen betreten einen Raum mit einer
-  Karte (falls Sensorik verfügbar)
-
-### 7.5 Ethische Leitplanken (verbindlich)
-
-Physische Sicherheit ist sensibel. Die folgenden Regeln sind
-**verbindlich** — sie sind Teil der Architektur, nicht optional:
-
-- **Keine Gesichtserkennung** ohne ausdrückliche schriftliche
-  Freigabe der betroffenen Personen.
-- **Keine biometrischen Daten** ohne ausdrückliche Zustimmung.
-  Biometrie ist optional und nie Standard.
-- **Keine Bewegungsprofile** einzelner Personen. Nur
-  Zutritts-Events, keine Positionen im Raum.
-- **Keine dauerhafte Speicherung** von Zutrittsdaten ohne
-  definierten Zweck und Aufbewahrungsfrist.
-- **Transparenz:** Betroffene Personen haben ein Recht zu
-  wissen, welche Daten erfasst werden.
-- **Zweckbindung:** Daten werden nur für Sicherheitszwecke
-  verwendet, nie für Leistungsbewertung oder andere Zwecke.
-- **Löschfristen:** Zutrittsdaten werden nach definierter Frist
-  gelöscht, außer bei dokumentierten Vorfällen.
-- **Zugriffskontrolle:** Nur autorisierte Personen können
-  Zutrittsdaten einsehen. Jeder Zugriff wird auditiert.
-
-Diese Leitplanken sind **nicht nur ethisch**, sondern auch
-**rechtlich** erforderlich (DSGVO und vergleichbare Regelungen).
-Ein System ohne diese Leitplanken ist in vielen Ländern nicht
-einsatzfähig.
-
-## 8. MCP-Kopplung an externe LLMs
-
-Die Admin AI spricht über **MCP** (Model Context Protocol) mit
-externen LLMs. Das erlaubt:
-
-- Wahl des Modells pro Aufgabe (DeepSeek, Anthropic, OpenAI)
+- Wahl des Modells pro Aufgabe
 - Anbindung durch Firmen an ihre eigene KI
-- Wechsel ohne Neuentwicklung des Systems
+- Wechsel ohne Neuentwicklung
 - Kostenoptimierung
 
-Die Admin AI selbst kann mit mehreren externen LLMs
-kommunizieren. Sie fungiert als **Vermittler** zwischen dem
-lokalen Sicherheitssystem und der KI-Landschaft.
+Beide fungieren als **Vermittler** zwischen lokalem
+Sicherheitssystem und KI-Landschaft.
 
-Beispiel: Eine Firma nutzt bereits Anthropic Claude. Sie will
-ihre Admin AI mit Claude statt mit DeepSeek betreiben. Das ist
-möglich, weil die Schnittstelle MCP-basiert und standardisiert
-ist.
+## 11. Datenmodell
 
-Die lokalen Security AIs müssen **nichts** davon wissen. Sie
-liefern Events an die Admin AI. Wie die Admin AI diese
-verarbeitet, ist ihre Sache.
+### 11.1 Heute (Stufe 1)
+SQLite (`data/inventory.db`): whitelisted_devices,
+device_logins, security_alerts, system_history,
+error_logs, approvals, change_requests, roles,
+permissions, role_permissions, principals,
+schema_migrations.
 
-## 9. Datenmodell (heute und Ziel)
+### 11.2 Ziel (Stufe 4+)
+persons, rooms, access_events, access_permissions,
+tool_permissions, data_permissions, correlations,
+external_mappings.
 
-### 9.1 Heute (Stufe 1)
+### 11.3 Events sind einheitlich
+Alle Events — digital und physisch — nutzen das
+gleiche Schema.
 
-SQLite-Datenbank (`homelab.db`):
+## 12. Alarm-Regeln
 
-- `whitelisted_devices` — manuell gepflegte Whitelist
-- `device_logins` — lückenloses Log aller gesehenen Geräte
-- `security_alerts` — Vorfälle (unknown_device, guest_device,
-  port_scan, http_recon)
-- `system_history` — Infrastruktur-Snapshots
-- `error_logs` — Fehler
+### 12.1 Digital
+Gastgeraet: kein Alarm. Bekanntes Geraet: kein Alarm.
+Unbekanntes Geraet im Hauptnetz: Telegram (W).
+Port-Scan von Whitelist oder extern: Telegram (C).
+HTTP-Recon: Telegram (W).
 
-### 9.2 Ziel (Stufe 5+)
+### 12.2 Physisch
+Zutritt erfolgreich: kein Alarm. Zutritt verweigert:
+Telegram (W). Raum-Level-Mismatch: Telegram (C).
+Zutritt ausserhalb Arbeitszeit: Telegram (W).
+Tailgating: Telegram (W). Tuer offen: Telegram (W).
 
-Erweitert um:
+### 12.3 Korreliert
+Login ohne Zutritt: Telegram (C). Zugriff bleibt
+aktiv: Telegram (W). Ungewoehnliches Muster: Telegram
+(W). System bleibt offen: Telegram (W). Mehrere
+Versuche: Telegram (C).
 
-- `persons` — Personen als Entitäten
-- `rooms` — Räume mit Sicherheitslevel
-- `access_events` — Zutrittsereignisse
-- `access_permissions` — Wer darf wohin
-- `tool_permissions` — Wer darf auf welches System
-- `correlations` — Verknüpfungen digital/physisch
+## 13. Security-Prinzipien
 
-### 9.3 Events sind einheitlich
+- Whitelist ist manuell und Mensch-only.
+- Capabilities werden im Security-Container entzogen.
+- Guardrails sind Code, nicht Prompt.
+- Audit-Logs sind append-only JSONL.
+- Keine Shell-Ausfuehrung durch das Modell.
+- Prompt-Injection wird im Policy-Layer geblockt.
+- Human-in-the-Loop ist Pflicht bei Risiko >= 2.
+- DSGVO-Konformitaet ist Pflicht.
+- Ein zentraler Hub: Die Security AI ist die einzige
+  Schnittstelle zu allen Bridges.
 
-Alle Events — egal ob digital oder physisch — nutzen das
-gleiche Schema:
+## 14. Nicht-Ziele
 
-    Event(
-        event_id="EVT-2026-09-20-abc12345",
-        timestamp=...,
-        source="fritzbox" | "rfid_reader_01" | "docker",
-        event_type="unknown_device" | "access_attempt",
-        severity=Severity.WARNING,
-        data={...},
-        network_id="homelab-ct101",
-    )
-
-Das erlaubt der Detection Engine und der Admin AI, **ohne
-Unterschied** mit digitalen und physischen Events zu arbeiten.
-
-## 10. Alarm-Regeln
-
-### 10.1 Digital
-
-| Ereignis                              | Telegram | DB  |
-|---------------------------------------|----------|-----|
-| Gastgerät im Gastnetz                 | nein     | ja  |
-| Bekanntes Gerät im Hauptnetz          | nein     | ja  |
-| Unbekanntes Gerät im Hauptnetz        | ja (W)   | ja  |
-| Whitelist-Gerät macht Port-Scan       | ja (C)   | ja  |
-| Externe IP macht Port-Scan            | ja (C)   | ja  |
-| HTTP-Recon (nmap-UA, verd. Pfad, 404) | ja (W)   | ja  |
-
-### 10.2 Physisch
-
-| Ereignis                              | Telegram | DB  |
-|---------------------------------------|----------|-----|
-| Zutritt erfolgreich (erlaubt)         | nein     | ja  |
-| Zutritt verweigert (Karte falsch)     | ja (W)   | ja  |
-| Raum-Level-Mismatch                   | ja (C)   | ja  |
-| Zutritt außerhalb der Arbeitszeit     | ja (W)   | ja  |
-| Tailgating erkannt                    | ja (W)   | ja  |
-| Tür länger offen als erlaubt          | ja (W)   | ja  |
-
-### 10.3 Korreliert (digital + physisch)
-
-| Ereignis                                       | Telegram | DB  |
-|------------------------------------------------|----------|-----|
-| Digitaler Login ohne physischen Zutritt        | ja (C)   | ja  |
-| Zugriff bleibt aktiv nach Verlassen des Raums  | ja (W)   | ja  |
-| Ungewöhnliches Zutrittsmuster                  | ja (W)   | ja  |
-| Person verlässt Gebäude, System bleibt offen   | ja (W)   | ja  |
-| Mehrere Zutrittsversuche mit niedrigerem Level | ja (C)   | ja  |
-
-W = WARNING, C = CRITICAL
-
-## 11. Security-Prinzipien
-
-- **Whitelist** ist manuell und Mensch-only. Kein Auto-Add, kein
-  LLM-Schreibzugriff.
-- **Capabilities** werden im Security-Container entzogen. Tools
-  laufen in separaten, isolierten Containern.
-- **Guardrails** sind Code, nicht Prompt. Sie sind nicht durch
-  das Modell überschreibbar.
-- **Audit-Logs** sind append-only JSONL, unveränderlich.
-- **Keine Shell-Ausführung** durch das Modell. Nur über die Tool
-  Registry und die Sandbox.
-- **Prompt-Injection** wird im Policy-Layer geblockt.
-- **Human-in-the-Loop** ist Pflicht bei Risiko-Level >= 2.
-- **Physische Sicherheit** unterliegt denselben Prinzipien wie
-  digitale. Kein LLM-Zugriff auf Zutrittsberechtigungen ohne
-  Human Approval.
-
-## 12. Nicht-Ziele
-
-- Kein automatisches Blocken von IPs oder Personen ohne Freigabe.
-- Kein LLM-Schreibzugriff auf Policies, Whitelist, Guardrails
-  oder Zutrittsberechtigungen.
-- Keine Cloud-Abhängigkeit im Kern.
+- Kein automatisches Blocken ohne Freigabe.
+- Kein LLM-Schreibzugriff auf Policies, Whitelist,
+  Guardrails, Zutrittsberechtigungen oder
+  Personaldaten.
+- Keine Cloud-Abhaengigkeit im Kern.
 - Kein autonomer Deploy in Produktion.
-- Keine Fremdsystem-Scans außerhalb autorisierter Bereiche.
-- **Keine Gesichtserkennung** ohne ausdrückliche Freigabe.
-- **Keine Bewegungsprofile** von Personen.
-- **Keine biometrischen Daten** ohne Zustimmung.
-- **Keine Zweckentfremdung** von Zutrittsdaten (z. B. für
-  Leistungsbewertung).
+- Keine Fremdsystem-Scans ausserhalb autorisierter
+  Bereiche.
+- Keine Gesichtserkennung ohne ausdrueckliche Freigabe.
+- Keine Bewegungsprofile von Personen.
+- Keine biometrischen Daten ohne Zustimmung.
+- Keine Zweckentfremdung von Zutrittsdaten oder
+  Personaldaten.
+- Keine KI-Entscheidung ueber Personen ohne Mensch.
 
-## 13. Warum dieses Projekt
+## 15. Warum dieses Projekt
 
-Ich habe jahrelang nichts mit IT oder Coden zu tun gehabt. Nach
-einer Pause habe ich einen Proxmox-Server aufgesetzt, einen
-Container erstellt — und gemerkt, dass ich ein System bauen
-möchte, das ich selbst im Alltag brauchen kann.
+Ich habe jahrelang nichts mit IT oder Coden zu tun
+gehabt. Nach einer Pause habe ich einen Proxmox-Server
+aufgesetzt, einen Container erstellt — und gemerkt,
+dass ich ein System bauen moechte, das ich selbst im
+Alltag brauchen kann.
 
-Der Anlass war praktisch: Ich wollte wissen, wer sich in meinem
-Netzwerk befindet, und ich wollte Alarme, wenn etwas
-Verdächtiges passiert. Aus dieser praktischen Notwendigkeit ist
-eine Architektur entstanden, die weit über ein Homelab-Tool
+Der Anlass war praktisch: Ich wollte wissen, wer sich
+in meinem Netzwerk befindet, und ich wollte Alarme,
+wenn etwas Verdaechtiges passiert. Aus dieser
+praktischen Notwendigkeit ist eine Architektur
+entstanden, die weit ueber ein Homelab-Tool
 hinausgeht.
 
-Ich glaube, dass KI-gestützte Sicherheit mit Human-in-the-Loop
-die Zukunft ist — nicht autonome KI, sondern **verstärkte
-menschliche Entscheidungen**. Dieses Projekt ist mein Versuch,
-die Referenz für so ein System zu bauen: klein genug, um es zu
-verstehen, sauber genug, um es zu erweitern.
+Ich glaube, dass KI-gestuetzte Sicherheit mit
+Human-in-the-Loop die Zukunft ist — nicht autonome
+KI, sondern **verstaerkte menschliche Entscheidungen**.
 
-## 14. Referenzen
+## 16. Wo die Reise endet
 
-- Architektur: `docs/ARCHITECTURE.md`
-- Sicherheit: `docs/SECURITY.md`
-- Protokoll: `docs/PROTOCOL.md`
-- Berechtigungen: `docs/PERMISSIONS.md`
-- Deployment: `docs/DEPLOYMENT.md`
+Am Ende steht eine foederierte, KI-gestuetzte
+Sicherheits- und Verwaltungsplattform, die:
+
+- Mehrere Netzwerke und Gebaeude verbindet.
+- Digitale und physische Sicherheit korreliert.
+- Mitarbeitern aus allen Bereichen den Zugriff auf
+  die fuer sie relevanten Daten gibt — in
+  natuerlicher Sprache, ueber die Kunden-
+  Mitarbeiter-KI.
+- Personalverwaltung, HR-Daten, Buchhaltung und
+  Sicherheit zusammenfuehrt — mit strikter
+  RBAC-Kontrolle und DSGVO-Konformitaet.
+- An externe Cloud-KIs ueber offizielle Protokolle
+  angebunden werden kann (MCP) — oder autark lokal
+  laeuft, wenn Cloud nicht gewuenscht ist.
+- Jede Aktion auditiert, jede Entscheidung
+  menschlich freigegeben, jede Aenderung umkehrbar.
+
+Drei KI-Ebenen. Klar getrennt. Jede mit eigener
+Rolle. Die Security Master AI verwaltet die Kunden
+der IT Fabrik. Die Security AI ist der zentrale
+Kontrollpunkt beim Kunden — die einzige Schnittstelle
+zu allen Bridges. Die Kunden-Mitarbeiter-KI
+assistiert den Endnutzer.
+
+Der Mensch bleibt immer die letzte Instanz.
+
+## 17. Referenzen
+
+- Architektur: docs/ARCHITECTURE.md
+- Sicherheit: docs/SECURITY.md
+- Protokoll: docs/PROTOCOL.md
+- Berechtigungen: docs/PERMISSIONS.md
+- Deployment: docs/DEPLOYMENT.md
+- Phasen: docs/PHASES.md
+- Design-Entscheidungen: docs/DESIGN_DECISIONS.md
+- Security-Review-Log: docs/SECURITY_REVIEW_LOG.md
+- Workflow: docs/WORKFLOW.md
 
 ---
 Letzte Aktualisierung: 2026-09-26
+
