@@ -343,6 +343,11 @@ test_access_denied_errorhandler_403 abgedeckt.
   (test_setup_isolation). Punkte 13/14 erledigt.
   Punkt 21 neu (gemischte audit-logs).
 - 3.6.15d: Chat-Klassifikations-Bug behoben (f7b0fba).
+- 3.6.16-topbar-usermenu (45853f3): <details>-
+  Dropdown mit Logout. person.svg lokal, kein JS,
+  kein Escape-Handler. CSRF-Feld im Logout-Formular.
+  A535/A536: eigener Zwischenblock. Der seit 3.6.7b
+  offene Logout-Button ist damit erledigt.
 - 3.6.16: Globale Suche (c3b962b). Migration 0008
   (search.run, admin+operator). Neues Modul core/search/
   (SearchRepository). SearchService mit Query-Validierung,

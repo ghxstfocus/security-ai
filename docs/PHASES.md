@@ -710,9 +710,24 @@ Umgesetzt:
 Limits (A531): 20 pro Quelle. Kein globales Limit.
 Kein "Erste 20 von N"-Hinweis (A371).
 
-Topbar-Umbau (Rest, nicht in 3.6.16):
-- User-Bereich mit Dropdown + Logout:
-  eigener Zwischenblock nach 3.6.16.
+## Zwischenblock 3.6.16-topbar-usermenu  [x]
+
+Ziel: User-Bereich in der Topbar mit Dropdown und
+Logout. Der Logout-Button war seit 3.6.7b offen.
+A535/A536: eigener Zwischenblock nach 3.6.16.
+
+Reviewer: GO mit Auflagen 561-570. Commit 45853f3.
+
+Umgesetzt:
+- topbar.html: <details>/<summary>, person.svg,
+  Name, Logout-Formular POST /logout mit CSRF.
+- person.svg (lokal, currentColor, stroke-width 2).
+- components.css: .user-menu*-Klassen,
+  @media (max-width:400px) blendet Name aus.
+- Kein JS (A562), nav.js unveraendert (A569).
+- Tests: 6 neu in test_dashboard_nav.py.
+
+Tests: 861 passed (Vollsuite, venv).
 
 ## Phase 5 — Admin AI  [ ]
 
