@@ -283,6 +283,17 @@ laufen **unter** der Security AI. Sie werden von ihr
 - Ohne Policy-Check laufen.
 - Ohne Sandbox laufen.
 
+**Vorbereitbarkeit:** Bridges sind codeseitig
+vorbereitbar. Die Zielsysteme (Personio, SAP HR,
+Workday, DATEV, Hubspot, Jira, Microsoft Graph)
+haben stabile, dokumentierte APIs. Ein Adapter
+kann gegen die oeffentliche API-Doku gebaut und
+gegen einen Sandbox-Account getestet werden.
+Der Vertrauensakt ist der **Betrieb** beim Kunden
+(Vertrag, Haftung, Versicherung, Support) — nicht
+die Entwicklung des Adapters. Deshalb koennen
+Bridges parallel zum Core entstehen.
+
 **Der Datenfluss:**
 
     Security AI (prueft)
