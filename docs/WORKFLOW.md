@@ -92,6 +92,61 @@ HR9. Reviewer-Blocks immer in einen Codeblock.
      verifizieren, dann ausfuehren. Kein Heredoc in
      die interaktive Shell.
 
+HR10. Reviewer-Update nach jedem Block/Phase.
+      Nach jedem abgeschlossenen Block (Phase,
+      Zwischenblock, Kategorie-3-Runde) bekommt
+      der Reviewer ein Update: HEAD-Hash, Testzahl
+      (gemessen), was erledigt wurde, welche
+      Auflagen umgesetzt wurden, offene Punkte.
+      Form: kopierbarer Block (siehe HR9).
+      Grund: Der Reviewer bleibt im Bild, statt
+      bei jedem neuen Block den Kontext neu
+      aufzubauen. Kein Block gilt als
+      abgeschlossen, bevor das Update raus ist.
+
+## Reviewer-Update nach jedem Block (verbindlich)
+
+Der Reviewer ist ein eigener Chat. Er hat keinen
+Zugriff auf den Bau-Chat-Verlauf. Deshalb bekommt er
+nach jedem abgeschlossenen Block ein Update. Ohne
+dieses Update gilt der Block nicht als abgeschlossen.
+
+Wann:
+
+- Nach jeder abgeschlossenen Phase (PHASES.md-Block).
+- Nach jedem Zwischenblock.
+- Nach jeder Kategorie-3-Runde (auch wenn sie
+  teilweise abgeschlossen ist).
+- Nach einem groesseren Doku-Nachzug, wenn er
+  mehrere Bereiche betrifft.
+
+Was drinsteht (kurz, aber konkret):
+
+- HEAD-Commit-Hash + Branch (origin/main synchron?).
+- Testzahl (gemessen, nicht erinnert).
+- Was in diesem Block passiert ist (Commits).
+- Welche Auflagen umgesetzt wurden.
+- Welche offenen Punkte noch stehen.
+- Ob ein neuer Handlungsbedarf entstanden ist
+  (z. B. neuer offener Punkt).
+
+Form:
+
+- Kopierbarer Codeblock (HR9).
+- Kein Volltext der Doku. Verweise reichen.
+- Keine Spekulation. Gemessene Fakten.
+
+Nicht Pflicht:
+
+- Bei reinen Test-Ergaenzungen ohne neuen Stand
+  (z. B. Nachziehen eines vergessenen Tests im
+  selben Block): kein eigenes Update.
+- Bei Tippfehler-Korrekturen (Kategorie 1): kein
+  eigenes Update.
+
+Pflicht bleibt Pflicht: Ein Update ohne HEAD und
+Testzahl ist kein Update.
+
 ## Rollen
 
 - **Mensch** ist die Hand. Er fuehrt Befehle aus, pastet
