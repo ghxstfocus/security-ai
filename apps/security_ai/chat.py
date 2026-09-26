@@ -88,6 +88,9 @@ _STATE_QUESTION_RE = re.compile(
     r"auff(?:a|ae|\u00e4)llig\w*|"
     r"verd(?:ae|a|\u00e4)chtig\w*|"
     r"anomal\w*|"
+    r"kritisch\w*|alarm\w*|vorfall\w*|vorf(?:ae|a|\u00e4)ll\w*|"
+    r"hat\s+es|gab\s+es|gibt\s+es|"
+    r"sind\s+.{0,30}\s+da|"
     r"online|offline|aktiv|inaktiv|"
     r"neu|unbekannt|"
     r"welche\s+(ip|geraet|host|person)|"
@@ -148,7 +151,10 @@ def _classify_question(question: str) -> str:
     q = question.lower()
     if _FACT_RE.search(q):
         return "fact"
-    if _CONCEPT_RE.search(q):
+    # Auflage 513/515/516: concept nur, wenn nicht Zustandsfrage.
+    # "Was ist heute Nacht passiert?" ist Zustandsfrage und
+    # muss als interpretation laufen (Kontext + Auto-Switch).
+    if _CONCEPT_RE.search(q) and not _is_state_question(q):
         return "concept"
     return "interpretation"
 
@@ -418,10 +424,14 @@ class ChatService:
                 "concept",
                 _timeout_for_model(self._default_model),
             )
-        # Interpretationsfragen mit kritischen Assessments: 7B
-        if self._auto_large and _is_critical_state_question(
-            question, context
-        ):
+        # Auflage 507: Auto-Switch bei jeder Interpretation
+        # mit kritischen Assessments, nicht nur bei Zustandsfrage.
+        # F1 (Auflage 513) sorgt dafuer, dass "Was ist heute
+        # Nacht passiert?" hier als interpretation ankommt.
+        # Concept-Fragen laufen oben ab (kein Kontext).
+        if (self._auto_large
+                and _classify_question(question) == "interpretation"
+                and _has_critical_assessments(context)):
             return (
                 self._large_model,
                 "auto_critical_state",
@@ -613,6 +623,7 @@ class ChatService:
                 used_llm=False,
                 source="detail_append",
                 model=None,
+                model_reason="detail_append",
             )
 
         # 4a) Fact-Pfad: deterministisch, kein LLM
@@ -663,6 +674,7 @@ class ChatService:
                 used_llm=False,
                 source="no_context",
                 model=None,
+                model_reason="no_context",
             )
 
         # 5) Normaler LLM-Pfad
