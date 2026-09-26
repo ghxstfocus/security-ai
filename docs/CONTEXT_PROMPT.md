@@ -241,7 +241,7 @@ Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
 a-i.
 Phase 3.6.10, 3.6.11, 3.6.12, 3.6.13, 3.6.14,
 3.6.15a, 3.6.15b, 3.6.15c, 3.6.15d, 3.6.16 fertig.
-HEAD <nach Doku-Commit>, Working Tree sauber.
+HEAD 6dd50fa, Working Tree sauber.
 
 Aktuell offen (Reihenfolge vom Reviewer):
 1. Topbar-User-Menue mit Logout (A535/A536,
