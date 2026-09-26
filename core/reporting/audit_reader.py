@@ -20,7 +20,7 @@ from typing import Any, Iterable
 DEFAULT_AUDIT_DIR = "audit-logs"
 
 
-class AuditReaderError(RuntimeError):
+class AuditJsonlError(RuntimeError):
     """Schwerer Fehler beim Lesen (z. B. Verzeichnis fehlt)."""
 
 
@@ -170,6 +170,6 @@ def count_by_category(
 __all__ = [
     "read_risk_assessments",
     "count_by_category",
-    "AuditReaderError",
+    "AuditJsonlError",
     "DEFAULT_AUDIT_DIR",
 ]
