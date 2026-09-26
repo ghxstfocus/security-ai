@@ -241,7 +241,7 @@ Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
 a-i.
 Phase 3.6.10, 3.6.11, 3.6.12, 3.6.13, 3.6.14,
 3.6.15a, 3.6.15b, 3.6.15c, 3.6.15d fertig.
-HEAD <nach Doku-Commit>, Working Tree sauber.
+HEAD eb3d268, Working Tree sauber.
 
 Aktuell offen (Reihenfolge vom Reviewer, 2026-09-25):
 1. 3.6.16 Globale Suche (Kategorie 3, Auflagen
