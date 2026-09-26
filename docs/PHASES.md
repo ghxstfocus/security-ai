@@ -749,6 +749,63 @@ Tests: 864 passed (Vollsuite, venv).
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI
 (Phase 3.5) voraus. Foederation ueber core/protocol/.
 
+## Phase 6 — DSGVO-Konformitaet  [ ]
+
+Ziel: Das System wird in einer Firma betreibbar, ohne
+gegen DSGVO zu verstossen.
+
+Voraussetzungen: Core fertig (Stufen 1-2.5 heute).
+Siehe PROJECT_VISION.md, Stufe 4 (Enterprise),
+Abschnitt DSGVO-Konformitaet.
+
+Skizze:
+- Loeschkonzept fuer audit-logs (systemd-Timer oder
+  Cronjob, Frist konfigurierbar).
+- Pseudonymisierung nach Frist (IP-Hashing oder
+  Kuerzung).
+- Betroffenenrechte-Query ("zeige alle Eintraege
+  fuer actor X").
+- Verzeichnis von Verarbeitungstaetigkeiten
+  (Doku-Template).
+- TOM-Uebersicht (technische und organisatorische
+  Massnahmen).
+- AVV-Vorlage (falls SaaS-Modell).
+
+## Phase 7 — Data Connectors / Bridges  [ ]
+
+Ziel: Anbindung an Firmensysteme (HR, CRM,
+Ticketsysteme).
+
+Voraussetzungen: Phase 6 (DSGVO-Basis).
+Siehe PROJECT_VISION.md, Stufe 4 (Enterprise),
+Abschnitt Data Connectors.
+
+Skizze:
+- Connector-Interface (lesend, mit RBAC-Pruefung
+  im Service).
+- Erster Connector (Auswahl spaeter).
+- Schema-Mapping (Firmen-Datenmodell auf
+  Principal/Role/Permission).
+- Loeschkonzept greift auf Connector-Daten
+  (Phase-6-Mechanik wird genutzt).
+- Self-Service-Seite fuer Mitarbeiter.
+
+## Phase 8 — Enterprise-Bridges  [ ]
+
+Ziel: Cloud-KI-Anbindung (Anthropic, OpenAI,
+Azure OpenAI, DeepSeek) ueber offizielle Protokolle.
+
+Voraussetzungen: Phase 6 (DSGVO-Basis), AVV mit
+den Anbietern.
+Siehe PROJECT_VISION.md, Stufe 4 (Enterprise),
+Abschnitt Enterprise-Bridges.
+
+Skizze:
+- Cloud-KI-Client.
+- AVV-Vorlage.
+- Datenfluss-Kontrolle (was darf raus, was nicht).
+- Opt-in pro Installation.
+
 
 ## Empfehlungen aus Doku-Audit 2026-09-23
 

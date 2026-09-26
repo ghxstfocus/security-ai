@@ -166,17 +166,21 @@ Der Datenfluss geht **aufwärts** (Events, Beobachtungen) und
 **abwärts** (Change Requests, Entscheidungen). Keine Ebene
 überspringt eine andere.
 
-## 6. Skalierungspfad (7 Stufen)
+## 6. Skalierungspfad (9 Stufen)
 
 ### Stufe 1 — Netzwerk Homelab (heute)
 Ein Netzwerk. Eine Security AI. Keine Admin AI.
 Deterministische Detection. Lokales LLM für Erklärungen.
 Telegram-Alarme. SQLite-Datenbank.
 
+Status (2026-09-26): [x] implementiert (Commit f986ba2).
+
 ### Stufe 2 — Erweiterung (Monate)
 Change-Request-Generator. Human-in-the-Loop mit Approval-Queue.
 Lokales LLM wird für Kontext und Erklärungen genutzt.
 Der Mensch arbeitet mit dem System, nicht nur daneben.
+
+Status (2026-09-26): [x] implementiert (Commit f986ba2).
 
 ### Stufe 2.5 — Lokale KI (Monate)
 
@@ -185,7 +189,7 @@ Chat-Interface im Dashboard.
 Kontext-Bau aus Events, DB, Logs.
 LLM erklärt, entscheidet nicht.
 
-Status (2026-09-22): Kern implementiert.
+Status (2026-09-26): [x] implementiert (Commit f986ba2).
 - Ollama (llama3.2:3b Default, qwen2.5:7b Large)
 - Chat-CLI mit RBAC (Phase 3.5)
 - Frage-Klassifikation: fact (deterministisch),
@@ -199,13 +203,28 @@ Standardisiertes Protokoll (MCP-basiert).
 Pro Netzwerk eigene Credentials, eigene Policies.
 Die Admin AI korreliert Events über Netzwerke hinweg.
 
-### Stufe 4 — Enterprise-Bridges (Zukunft)
-Anbindung an externe LLMs (Anthropic, OpenAI, DeepSeek).
-Standardisierte Schnittstellen für Unternehmen.
-Firmen können ihre eigene KI anbinden.
-Zertifizierungen (ISO 27001, SOC 2) als Ziel.
+### Stufe 4 — Enterprise (Zukunft)
+Drei Themen, die zusammengehören:
 
-### Stufe 5 — Physische Sicherheit
+**DSGVO-Konformität.** Voraussetzung, um in einer Firma
+Personenbezug zu verarbeiten. Löschkonzept für audit-logs,
+Pseudonymisierung nach Frist, Betroffenenrechte-Query,
+Verzeichnis von Verarbeitungstätigkeiten, TOM-Übersicht,
+AVV-Vorlage. Siehe Phase 6 in docs/PHASES.md.
+
+**Data Connectors.** Anbindung an Firmensysteme (HR, CRM,
+Ticketsysteme). Lesend, mit RBAC-Prüfung im Service.
+Schema-Mapping vom Firmen-Datenmodell auf Principal/Role/
+Permission. Siehe Phase 7 in docs/PHASES.md.
+
+**Enterprise-Bridges.** Anbindung an externe LLMs
+(Anthropic, OpenAI, Azure OpenAI, DeepSeek) über offizielle
+Protokolle. AVV mit den Anbietern, Datenfluss-Kontrolle,
+Opt-in pro Installation. Siehe Phase 8 in docs/PHASES.md.
+
+Zertifizierungen (ISO 27001, SOC 2) als langfristiges Ziel.
+
+### Stufe 5 — Physische Sicherheit (RFID, Zutritt)
 Gebäudesicherheit als eigene Schicht:
 - Raum-Sicherheitslevel (0-5, unabhängig von Tool-Level)
 - Zutrittstechnologien: RFID, Magnetkarte, PIN, optional Biometrie
@@ -216,7 +235,7 @@ Die Security AI erfasst Zutrittsereignisse, die Detection Engine
 wendet physische Regeln an, die Admin AI korreliert mit digitalen
 Events.
 
-### Stufe 6 — Ganzheitliche Korrelation
+### Stufe 6 — Ganzheitliche Korrelation (digital + physisch)
 Die eigentliche Königsklasse: digitale und physische Sicherheit
 sind **verheiratet**. Die Admin AI erkennt Zusammenhänge, die
 einzelne Systeme niemals sehen würden.
@@ -486,4 +505,4 @@ verstehen, sauber genug, um es zu erweitern.
 - Deployment: `docs/DEPLOYMENT.md`
 
 ---
-Letzte Aktualisierung: 2026-09-21
+Letzte Aktualisierung: 2026-09-26
