@@ -640,6 +640,33 @@ Umgesetzt in fuenf Commits:
 
 Tests: 805 passed (Vollsuite, venv).
 
+## Phase 3.6.15d — Chat-Klassifikations-Bug  [x]
+
+Ziel: Der 3B-Chat darf Zustandsfragen nicht mehr als
+Konzeptfragen klassifizieren und muss bei kritischen
+Assessments auf 7B umschalten.
+
+Bug (in Reviewer-Runde belegt):
+- B1: _classify_question -- concept matched "was ist"
+  auch bei Zustandsfragen.
+- B2: _STATE_QUESTION_RE zu eng, kein Auto-Switch
+  bei "Sind kritische Alarme da?".
+
+Reviewer: GO mit Auflagen 507-522.
+Commit f7b0fba.
+
+Ergebnis (Live, A512):
+- "Was ist heute Nacht passiert?" -> 7B auto_critical_state.
+- "Sind kritische Alarme da?"     -> 7B auto_critical_state.
+- "Was ist ein Portscan?"         -> 3B concept
+  (unveraendert, korrekt).
+
+Tests: 827 passed (Vollsuite, venv).
+Neu: tests/unit/test_chat_classify.py (22 Tests).
+
+Offen: Punkt 22 (Sanity-Check-Neumessung) im
+SECURITY_REVIEW_LOG.
+
 ## Phase 3.6.16 — Globale Suche  [ ]
 
 Topbar-Umbau (Teil von 3.6.16, ersetzt den Titel):

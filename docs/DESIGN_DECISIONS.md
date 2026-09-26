@@ -952,7 +952,15 @@ eingreifen. Bei kritischen Assessments greift die Pflicht.
         was ist | was bedeutet | wie funktioniert |
         erklaere | was sind
 
-    sonst: interpretation
+    Reihenfolge (3.6.15d, Auflage 513):
+      if _FACT_RE: fact
+      elif _CONCEPT_RE and not _is_state_question: concept
+      sonst: interpretation
+
+    Wichtig (3.6.15d): concept nur, wenn NICHT
+    Zustandsfrage. "Was ist heute Nacht passiert?"
+    matcht _CONCEPT_RE, ist aber Zustandsfrage und
+    muss als interpretation laufen (Kontext + 7B).
 
 Hinweis: "welche IP" ist Detail, NICHT Fact.
 Der Detail-Pfad greift VOR dem Fact-Pfad.
@@ -984,6 +992,23 @@ Konsequenz: Alles, was deterministisch aus dem Kontext
 ableitbar ist, wird deterministisch beantwortet. Das LLM
 macht nur, was es wirklich kann: formulieren und
 interpretieren.
+
+### Auto-Switch-Bedingung (3.6.15d, Auflage 507)
+
+Auto-Switch zu 7B greift bei JEDER Interpretation mit
+kritischen Assessments (CONFIRMED, SECURITY_ALERT),
+nicht nur bei Zustandsfragen.
+
+Begruendung: Bei 91 kritischen Assessments ist der
+Zustand der Welt selbst der kritische Fakt. Wer in
+dieser Lage eine Interpretationsfrage stellt, braucht
+eine Antwort, die den Zustand beruecksichtigt.
+Zustandsfrage-Erkennung per Regex ist nicht mehr
+Voraussetzung fuer den Auto-Switch.
+
+Concept-Fragen bleiben 3B ohne Kontext (Auflage 517):
+Wer nach der Definition eines Portscans fragt, will
+keine Zustandsanalyse.
 
 ### --no-auto-large bleibt
 

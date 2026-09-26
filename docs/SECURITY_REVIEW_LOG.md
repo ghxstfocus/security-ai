@@ -342,6 +342,13 @@ test_access_denied_errorhandler_403 abgedeckt.
   OrchestratorTests.setUp), Fix C
   (test_setup_isolation). Punkte 13/14 erledigt.
   Punkt 21 neu (gemischte audit-logs).
+- 3.6.15d: Chat-Klassifikations-Bug behoben (f7b0fba).
+  B1: _classify_question -- concept nur, wenn nicht
+  _is_state_question. B2: _STATE_QUESTION_RE erweitert.
+  Auto-Switch bei jeder Interpretation mit kritischen
+  Assessments (nicht nur Zustandsfrage).
+  Live verifiziert: 3B concept -> 7B auto_critical_state.
+  Punkt 22 neu (Sanity-Check-Neumessung noetig).
 - 3.6.15c: Fehlerklassen-Trennung (Punkte 5/6).
   Variante D (Reviewer, Auflagen 502-506):
   Repo-Fehler propagieren, Route behandelt direkt.
@@ -547,3 +554,11 @@ test_access_denied_errorhandler_403 abgedeckt.
     (Kategorie 3). Kein automatisches Loeschen, keine
     Migration. audit-logs ist append-only.
     Kategorie 3, Reviewer-Auflage 477.
+
+22. Sanity-Check hat in 0 von 14 kritischen Faellen
+    gefeuert (gemessen am 2026-09-26 vor 3.6.15d).
+    Ursache pruefen: Erkennungslogik, Kontext-Handling
+    oder Pattern-Matching. Nach 3.6.15d sind die
+    Auto-Switch-Faelle seltener geworden (F1-F3), daher
+    ist eine Neumessung noetig. Eigener Block,
+    Kategorie 3, Reviewer-Auflage 510/511/518.

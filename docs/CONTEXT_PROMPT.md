@@ -240,28 +240,25 @@ abgeschlossen. Phase 3.6 (Web-Dashboard):
 Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
 a-i.
 Phase 3.6.10, 3.6.11, 3.6.12, 3.6.13, 3.6.14,
-3.6.15a, 3.6.15b, 3.6.15c fertig.
-HEAD 34e44c7, Working Tree sauber.
+3.6.15a, 3.6.15b, 3.6.15c, 3.6.15d fertig.
+HEAD <nach Doku-Commit>, Working Tree sauber.
 
 Aktuell offen (Reihenfolge vom Reviewer, 2026-09-25):
-1. Chat-Klassifikations-Bug (Faktenfrage wird als
-   Interpretation behandelt, 3B halluziniert "nein").
-   Kategorie 3.
-2. 3.6.16 Globale Suche (Kategorie 3, Auflagen
+1. 3.6.16 Globale Suche (Kategorie 3, Auflagen
    365-379, MVP: Operator/Admin, SQLite, Limit 50,
    collapsible <details>). Topbar-Umbau inkl.
    User-Menue (Logout) in 3.6.16.
-3. Spaeter: Punkte 9 (Rate-Limit Multi-Worker),
+2. Spaeter: Punkte 9 (Rate-Limit Multi-Worker),
    16 (gunicorn), 20 (Test-Erwartungen bei gewollter
    Produktaenderung -- Muster dokumentiert),
    21 (gemischte audit-logs 21.-24. Sep).
 
-Offene Punkte 1-21 in docs/SECURITY_REVIEW_LOG.md.
-Chronologie bis 3.6.15c dokumentiert.
+Offene Punkte 1-22 in docs/SECURITY_REVIEW_LOG.md.
+Chronologie bis 3.6.15d dokumentiert.
 DESIGN_DECISIONS: §16 (Web-Dashboard) um server_name,
 default_server, display-Konsequenz erweitert.
 
-Tests: 805 gruen (venv, pytest 9.1.1).
+Tests: 827 gruen (venv, pytest 9.1.1).
 Hinweis: Der vorher genannte Wert 728 war ungenau;
 korrekt war 720 vor 3.6.15a. Quelle der Wahrheit ist
 `pytest --collect-only -q`.
