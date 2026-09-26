@@ -764,10 +764,30 @@ Regel: Format-Fehler -> ServiceError-Subklasse -> 4xx.
 
 Vorbild: ChangeService (3.6.8d) mit ChangeServiceError
 (ServiceError) und ChangeOperationError (OperationError).
-Andere Services (ApprovalService, InventoryService,
-AuditReaderService) mischen heute noch Format und Betrieb
-in einer Klasse; Umstellung ist als offener Punkt in
-docs/SECURITY_REVIEW_LOG.md vermerkt.
+
+Stand 3.6.15c: Alle vier Kern-Services haben jetzt die
+Trennung:
+- ChatService:        ChatServiceError (ServiceError) /
+                      ChatOperationError (OperationError).
+                      LLMError/LLMTimeout/LLMUnavailable
+                      bleiben roh (502 Upstream).
+- ApprovalService:    ApprovalServiceError (ServiceError) /
+                      Repo-Fehler propagieren (Variante D,
+                      siehe Regel unten).
+- InventoryService:   InventoryServiceError (ServiceError) /
+                      InventoryOperationError (OperationError).
+- AuditReaderService: AuditReaderServiceError (ServiceError) /
+                      AuditReaderOperationError (OperationError).
+
+Regel (3.6.15c, Auflage 506): Repo-Fehler mit semantischer
+Bedeutung (NotFound, State) werden nicht in ServiceError
+gewickelt. Die Route behandelt sie direkt:
+  ApprovalNotFoundError -> 404.
+  ApprovalStateError    -> 409.
+Die Basisklasse ApprovalRepositoryError wird NICHT
+gefangen -> globaler 500.
+LLM-Fehler werden nicht in OperationError gewickelt.
+Sie haben eigene Semantik (502 Upstream).
 
 ### ChatService
 

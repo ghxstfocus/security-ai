@@ -615,6 +615,31 @@ Betriebsakt (offen, Mensch entscheidet):
 
 Reihenfolge: nach 3.6.15a, vor 3.6.15c.
 
+## Phase 3.6.15c — Fehlerklassen-Trennung (Punkte 5/6)  [x]
+
+Ziel: Format- und Betriebsfehler in den Kern-Services
+trennen (Punkte 5 und 6 in SECURITY_REVIEW_LOG).
+Vorbild: ChangeService (3.6.8d).
+
+Reviewer: GO mit Auflagen 487-501, Variante D fuer
+Approval (502-506).
+
+Umgesetzt in fuenf Commits:
+- f2fc220 (1/5) chat: ChatServiceError -> ServiceError,
+  ChatOperationError(OperationError) fuer Konstruktor-None.
+  LLMError/LLMTimeout/LLMUnavailable bleiben roh (502).
+- c3450c5 (2/5) approval: Repo-Fehler propagieren.
+  decide: ApprovalNotFoundError -> 404,
+  ApprovalStateError -> 409, ApprovalServiceError -> 400.
+  Basisklasse ApprovalRepositoryError -> 500.
+- c7f2649 (3/5) inventory: InventoryOperationError neu.
+  InventoryServiceError (Format) -> 404 (Pfad-Parameter).
+- b0834d0 (4/5) audit_reader: AuditReaderOperationError neu.
+- (5/5) Doku-Nachzug: DESIGN_DECISIONS §11,
+  SECURITY_REVIEW_LOG, PHASES, CONTEXT_PROMPT.
+
+Tests: 805 passed (Vollsuite, venv).
+
 ## Phase 3.6.16 — Globale Suche  [ ]
 
 Topbar-Umbau (Teil von 3.6.16, ersetzt den Titel):

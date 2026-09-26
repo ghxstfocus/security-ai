@@ -342,6 +342,18 @@ test_access_denied_errorhandler_403 abgedeckt.
   OrchestratorTests.setUp), Fix C
   (test_setup_isolation). Punkte 13/14 erledigt.
   Punkt 21 neu (gemischte audit-logs).
+- 3.6.15c: Fehlerklassen-Trennung (Punkte 5/6).
+  Variante D (Reviewer, Auflagen 502-506):
+  Repo-Fehler propagieren, Route behandelt direkt.
+  Fuenf Commits:
+    f2fc220 chat: ChatServiceError(ServiceError)
+            + ChatOperationError(OperationError).
+    c3450c5 approval: Repo-Fehler propagieren,
+            decide 404/409/400.
+    c7f2649 inventory: InventoryOperationError.
+    b0834d0 audit_reader: AuditReaderOperationError.
+    (Doku-Nachzug: dieser Commit.)
+  Punkte 5 und 6 erledigt.
 
 
 ## Offene Punkte (Stand 3.6.8)
@@ -372,6 +384,12 @@ test_access_denied_errorhandler_403 abgedeckt.
    RuntimeError. Route faengt nicht, globaler
    500. Eigener Aufraeum-Block: ChatServiceError
    -> OperationError (Auflage 87, 3.6.8e).
+   Erledigt in 3.6.15c (f2fc220): ChatServiceError
+   erbt jetzt von ServiceError. Neue Klasse
+   ChatOperationError(OperationError) fuer
+   Konstruktor-None und Audit-Ausfaelle. LLMError/
+   LLMTimeout/LLMUnavailable bleiben roh (502,
+   Auflage 487).
 
 6. ApprovalService/InventoryService/
    AuditReaderService mischen Format- und
@@ -379,6 +397,13 @@ test_access_denied_errorhandler_403 abgedeckt.
    ServiceError/OperationError-Trennung umgestellt
    werden (Vorbild: ChangeService, 3.6.8d).
    Eigener Aufraeum-Block.
+   Erledigt in 3.6.15c (c3450c5, c7f2649, b0834d0):
+   - InventoryService: InventoryOperationError neu.
+   - AuditReaderService: AuditReaderOperationError neu.
+   - ApprovalService: Repo-Fehler propagieren
+     (Variante D, Auflagen 502-506). ApprovalNotFoundError
+     -> 404, ApprovalStateError -> 409, Basisklasse
+     ApprovalRepositoryError -> 500.
 
 7. DESIGN_DECISIONS § 2 (tool-Tabelle):
    ChangeService -> change_service ergaenzen
