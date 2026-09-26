@@ -6,7 +6,16 @@ Kategorie 3 (Route, RBAC, Template).
 - GET /inventory                  device.read
 - GET /inventory/<identifier>     device.read
 
-InventoryServiceError und unbekannter Identifier -> 404.
+Fehler (Auflage 491, Variante D):
+- InventoryServiceError (Format, identifier ungueltig)
+  -> 404. Pfad-Parameter mit falschem Format sind 404,
+  nicht 400 (kein Existenz-Oracle).
+- unbekannter Identifier -> 404.
+- InventoryOperationError (Konstruktor-None, Betrieb)
+  -> NICHT fangen, globaler 500.
+- Repo-Fehler: heute keine ServiceError-Klasse in
+  core/inventory/*, nur SchemaVersionError(RuntimeError)
+  beim Migrieren (nicht im Lese-Pfad).
 Kein str(e) im Response. Kein Logging des Identifiers.
 """
 from __future__ import annotations

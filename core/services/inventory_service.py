@@ -22,7 +22,7 @@ import re
 from core.access.checker import AccessChecker
 from core.inventory.repository import DeviceRepository
 from core.inventory.whitelist import WhitelistRepository
-from core.services import ServiceError
+from core.services import OperationError, ServiceError
 
 
 IDENTIFIER_RE = re.compile(
@@ -32,7 +32,11 @@ HISTORY_LIMIT = 100
 
 
 class InventoryServiceError(ServiceError):
-    """Fachlicher Fehler im InventoryService."""
+    """Fachlicher Fehler im InventoryService (4xx)."""
+
+
+class InventoryOperationError(OperationError):
+    """Betriebsfehler im InventoryService (5xx)."""
 
 
 class InventoryService:
@@ -43,15 +47,15 @@ class InventoryService:
         checker: AccessChecker,
     ) -> None:
         if device_repo is None:
-            raise InventoryServiceError(
+            raise InventoryOperationError(
                 "device_repo ist Pflicht (fail closed)"
             )
         if whitelist_repo is None:
-            raise InventoryServiceError(
+            raise InventoryOperationError(
                 "whitelist_repo ist Pflicht (fail closed)"
             )
         if checker is None:
-            raise InventoryServiceError(
+            raise InventoryOperationError(
                 "checker ist Pflicht (fail closed)"
             )
         self._devices = device_repo
@@ -106,6 +110,7 @@ class InventoryService:
 __all__ = [
     "HISTORY_LIMIT",
     "IDENTIFIER_RE",
+    "InventoryOperationError",
     "InventoryService",
     "InventoryServiceError",
 ]
