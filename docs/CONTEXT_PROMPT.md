@@ -241,7 +241,7 @@ Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
 a-i.
 Phase 3.6.10, 3.6.11, 3.6.12, 3.6.13, 3.6.14,
 3.6.15a, 3.6.15b, 3.6.15c fertig.
-HEAD <nach Doku-Commit>, Working Tree sauber.
+HEAD 34e44c7, Working Tree sauber.
 
 Aktuell offen (Reihenfolge vom Reviewer, 2026-09-25):
 1. Chat-Klassifikations-Bug (Faktenfrage wird als
