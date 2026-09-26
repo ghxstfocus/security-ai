@@ -688,62 +688,31 @@ Sanity-Check funktioniert. Kein Fix noetig.
 Punkt 23 neu (Audit model_reason=null bei fact/detail).
 Keine Code-Aenderung in diesem Block.
 
-## Phase 3.6.16 — Globale Suche  [ ]
-
-Topbar-Umbau (Teil von 3.6.16, ersetzt den Titel):
-- Suchfeld zentral zwischen Hamburger und User.
-- Seitentitel (div.topbar-title) entfaellt — redundant
-  zum Seiten-<h1>.
-- User-Bereich:
-  * Personen-SVG + Name + Dropdown-Pfeil.
-  * Dropdown enthaelt NUR Logout (POST /logout).
-  * Keine Profileinstellungen, kein Passwort-Link,
-    kein Language-Switch (Enterprise-System,
-    administrativ).
-  * <=400px: Name verkuerzen oder ausblenden,
-    nur Icon + Pfeil.
+## Phase 3.6.16 — Globale Suche  [x]
 
 Ziel: zentrale Suche in der Topbar, die alle
 Informationen zu einem Schlagwort zusammenzieht.
-Beispiele: IP, Datum, User, Change-ID, Event-ID.
 
 Kategorie 3 (RBAC pro Quelle, Input-Validierung,
-Output-Escaping). Reviewer-Freigabe: Auflagen 365-379
-(Reviewer-Chat, 2026-09-24).
+Output-Escaping). Reviewer: Auflagen 365-379
++ 523-552. Commit c3b962b.
 
-Kurzfassung Auflagen:
-- 365: Detail-Route je Quelle ist die bestehende
-  Route (/changes/ID, /inventory/ID, /audit/ID, ...).
-- 366: Chat ohne Detail-Route: direkte Antwort.
-- 367: jeder Treffer ist <a href=...>.
-- 368: Limit 20 pro Quelle in der Vorschau.
-- 369-370: q escaped in URL und im Template.
-- 371: Limit 50 pro Quelle in der Such-Ergebnisliste.
-- 372: RBAC pro Quelle (Operator und Admin sehen alles
-  in der DB; Viewer 403).
-- 373: Route apps/dashboard/routes_search.py,
-  Service core/services/search_service.py.
-- 374: Input-Validierung (len 1..200, Zeichen-Whitelist,
-  keine SQL-Wildcards, parametrisierte Queries).
-- 375: keine Datei-Pfad-Suche.
-- 376: Response-Whitelist (kein args_json, kein
-  password_hash, kein session_id).
-- 377: Test-Matrix (RBAC, Input, Limit, XSS, CSP).
-- 378: Ergebnis-Darstellung via <details>/<summary>.
-- 379: Topbar-Suchfeld erst mit 3.6.16.
+Umgesetzt:
+- Migration 0008: search.run (admin + operator).
+- core/search/repository.py (SearchRepository).
+- core/services/search_service.py.
+- apps/dashboard/routes_search.py (GET /search).
+- apps/dashboard/templates/search.html.
+- Topbar: Suchfeld mittig, topbar-title entfaellt.
+- Kein Logout-Dropdown in 3.6.16 (A535/A536,
+  eigener Zwischenblock).
 
-MVP-Umfang:
-- Nur Operator/Admin.
-- Exakte Treffer, keine Wildcards, keine Grammatik.
-- Nur SQLite-Quellen (principals, inventory.devices,
-  whitelisted_devices, approvals, change_requests).
-- Kein audit-logs-Volltext.
-- Kein Datums-Parsing.
-- Nur nach Enter (keine Live-Suche).
-- Kein Audit der Suchanfragen.
-- q in URL (/search?q=...).
+Limits (A531): 20 pro Quelle. Kein globales Limit.
+Kein "Erste 20 von N"-Hinweis (A371).
 
-Reihenfolge: nach 3.6.11, 3.6.13, 3.6.14.
+Topbar-Umbau (Rest, nicht in 3.6.16):
+- User-Bereich mit Dropdown + Logout:
+  eigener Zwischenblock nach 3.6.16.
 
 ## Phase 5 — Admin AI  [ ]
 

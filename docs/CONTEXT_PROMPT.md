@@ -240,15 +240,15 @@ abgeschlossen. Phase 3.6 (Web-Dashboard):
 Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
 a-i.
 Phase 3.6.10, 3.6.11, 3.6.12, 3.6.13, 3.6.14,
-3.6.15a, 3.6.15b, 3.6.15c, 3.6.15d fertig.
-HEAD cca22ef, Working Tree sauber.
+3.6.15a, 3.6.15b, 3.6.15c, 3.6.15d, 3.6.16 fertig.
+HEAD <nach Doku-Commit>, Working Tree sauber.
 
-Aktuell offen (Reihenfolge vom Reviewer, 2026-09-25):
-1. 3.6.16 Globale Suche (Kategorie 3, Auflagen
-   365-379, MVP: Operator/Admin, SQLite, Limit 50,
-   collapsible <details>). Topbar-Umbau inkl.
-   User-Menue (Logout) in 3.6.16.
-2. Spaeter: Punkte 9 (Rate-Limit Multi-Worker),
+Aktuell offen (Reihenfolge vom Reviewer):
+1. Topbar-User-Menue mit Logout (A535/A536,
+   eigener Zwischenblock).
+2. Punkt 23 (Audit model_reason=null bei
+   fact/detail_append/no_context).
+3. Spaeter: Punkte 9 (Rate-Limit Multi-Worker),
    16 (gunicorn), 20 (Test-Erwartungen bei gewollter
    Produktaenderung -- Muster dokumentiert),
    21 (gemischte audit-logs 21.-24. Sep).
@@ -258,7 +258,7 @@ Chronologie bis 3.6.15d dokumentiert.
 DESIGN_DECISIONS: §16 (Web-Dashboard) um server_name,
 default_server, display-Konsequenz erweitert.
 
-Tests: 827 gruen (venv, pytest 9.1.1).
+Tests: 855 gruen (venv, pytest 9.1.1).
 Hinweis: Der vorher genannte Wert 728 war ungenau;
 korrekt war 720 vor 3.6.15a. Quelle der Wahrheit ist
 `pytest --collect-only -q`.

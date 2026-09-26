@@ -1233,6 +1233,32 @@ Responsive Loesung heute (3.6.10):
 - nowrap+ellipsis fuer die Zeitstempel-Spalte (14ch).
 - nth-child(n+4) display: none bei <500px.
 
+### Globale Suche (3.6.16)
+
+- Neue Permission search.run (Migration 0008).
+  admin + operator. viewer + system NICHT.
+- GET /search?q=..., rein lesend, kein CSRF.
+- Query-Validierung im Service (A538):
+  Laenge 2-200, Zeichen-Whitelist [A-Za-z0-9 ._:/@-].
+- LIKE '%q%' mit LOWER() und ESCAPE (A527/A528):
+  %, _, \\ werden escaped. Keine Wildcard-Injektion.
+- Nur identifizierende Felder durchsuchen (A530).
+  Keine Freitextfelder (description, diff_or_patch,
+  rollback_plan, test_plan, args_json, decision_reason,
+  notes).
+- Permission pro Quelle (A525/A526). Quellen ohne
+  Permission werden aus dem Ergebnis entfernt, ohne
+  Hinweis auf ihre Existenz.
+- 20 Treffer pro Quelle, kein "Erste 20 von N"
+  (A531/A371).
+- Link-Builder als Jinja-if-Baum pro Quelle (A545),
+  kein generischer Pfad.
+- Schichtung: SearchService -> SearchRepository -> DB.
+  Kein Service baut SQL. Keine bestehenden Repos
+  angefasst (A553-A557).
+- risk_assessments kommen aus JSONL (read_risk_assessments),
+  Python-Filter im SearchService (A557).
+
 ### server_name (3.6.12)
 
 server_name akzeptiert zusaetzlich 127.0.0.1 und localhost.

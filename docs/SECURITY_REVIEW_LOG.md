@@ -343,6 +343,13 @@ test_access_denied_errorhandler_403 abgedeckt.
   (test_setup_isolation). Punkte 13/14 erledigt.
   Punkt 21 neu (gemischte audit-logs).
 - 3.6.15d: Chat-Klassifikations-Bug behoben (f7b0fba).
+- 3.6.16: Globale Suche (c3b962b). Migration 0008
+  (search.run, admin+operator). Neues Modul core/search/
+  (SearchRepository). SearchService mit Query-Validierung,
+  Permission-Filter pro Quelle, RA-Python-Filter.
+  Route GET /search, Template search.html,
+  Topbar-Suchfeld (topbar-title entfaellt).
+  28 neue Tests. Limite 20 pro Quelle (A531).
 - Punkt-22-Neumessung 2026-09-26 (25 Fragen, LLM live):
   Sanity-Check feuert jetzt (2 Faelle), Auto-Switch
   greift (10/15 LLM auf 7B), Concept bleibt 3B (5/5),
