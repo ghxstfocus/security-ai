@@ -667,6 +667,27 @@ Neu: tests/unit/test_chat_classify.py (22 Tests).
 Offen: Punkt 22 (Sanity-Check-Neumessung) im
 SECURITY_REVIEW_LOG.
 
+## Zwischenblock Punkt 22 — Sanity-Check-Neumessung  [x]
+
+Ziel: pruefen, ob der Sanity-Check nach 3.6.15d
+feuert (vorher 0 von 14 kritischen Faellen).
+
+Vorgehen: 25 Fragen live gegen chat_cli.py
+(8 kritisch-interpretation, 2 kritisch-fact,
+5 fact, 5 concept, 2 detail, 1 fact-list,
+2 sonstige). Auswertung aus audit-logs.
+
+Ergebnis:
+- chat_answer_contradicts_context: 2 (vorher 0).
+- llm_retry: 0 (korrekt: beide bereits 7B).
+- Auto-Switch: 10 von 15 LLM-Faellen auf 7B.
+- Concept: 5 von 5 auf 3B (Auflage 517 bestaetigt).
+- Fact: 9 Fragen deterministisch, kein LLM.
+
+Sanity-Check funktioniert. Kein Fix noetig.
+Punkt 23 neu (Audit model_reason=null bei fact/detail).
+Keine Code-Aenderung in diesem Block.
+
 ## Phase 3.6.16 — Globale Suche  [ ]
 
 Topbar-Umbau (Teil von 3.6.16, ersetzt den Titel):

@@ -343,6 +343,12 @@ test_access_denied_errorhandler_403 abgedeckt.
   (test_setup_isolation). Punkte 13/14 erledigt.
   Punkt 21 neu (gemischte audit-logs).
 - 3.6.15d: Chat-Klassifikations-Bug behoben (f7b0fba).
+- Punkt-22-Neumessung 2026-09-26 (25 Fragen, LLM live):
+  Sanity-Check feuert jetzt (2 Faelle), Auto-Switch
+  greift (10/15 LLM auf 7B), Concept bleibt 3B (5/5),
+  Fact-Pfad deterministisch (9). Retry 0, weil die
+  2 Contradictions bereits 7B waren. Punkt 22 erledigt.
+  Punkt 23 neu (Audit model_reason=null bei fact/detail).
   B1: _classify_question -- concept nur, wenn nicht
   _is_state_question. B2: _STATE_QUESTION_RE erweitert.
   Auto-Switch bei jeder Interpretation mit kritischen
@@ -562,3 +568,24 @@ test_access_denied_errorhandler_403 abgedeckt.
     Auto-Switch-Faelle seltener geworden (F1-F3), daher
     ist eine Neumessung noetig. Eigener Block,
     Kategorie 3, Reviewer-Auflage 510/511/518.
+    Erledigt in der Neumessung 2026-09-26 (25 Fragen):
+    - chat_answer_contradicts_context: 2 (vorher 0/14).
+    - llm_retry: 0 (korrekt: die 2 Faelle waren bereits
+      auf qwen2.5:7b, Retry greift nur bei 3B).
+    - Auto-Switch: 10 von 15 LLM-Faellen auf 7B.
+    - Concept: 5 von 5 auf 3B (unveraendert).
+    - Fact-Pfad: 9 Fragen deterministisch, kein LLM.
+    Der Sanity-Check funktioniert nach 3.6.15d wie
+    beabsichtigt. Kein weiterer Fix noetig.
+
+23. Audit-Konsistenz: chat_answered-Eintraege im
+    Audit-Log haben model_reason=null, obwohl die
+    ChatResponse den Wert korrekt traegt
+    (fact / detail_append / no_context).
+    Ursache: _log("chat_answered", ...) uebergibt
+    model_reason nur im LLM-Pfad, nicht im fact-,
+    detail- oder no_context-Pfad.
+    Auswirkung: Audit-Verteilung ist unvollstaendig;
+    die 9 fact- und 1 detail_append-Faelle aus der
+    Punkt-22-Messung erscheinen als model_reason=None.
+    Kategorie 2, eigener Block.

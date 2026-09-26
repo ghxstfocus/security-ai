@@ -253,7 +253,7 @@ Aktuell offen (Reihenfolge vom Reviewer, 2026-09-25):
    Produktaenderung -- Muster dokumentiert),
    21 (gemischte audit-logs 21.-24. Sep).
 
-Offene Punkte 1-22 in docs/SECURITY_REVIEW_LOG.md.
+Offene Punkte 1-23 in docs/SECURITY_REVIEW_LOG.md.
 Chronologie bis 3.6.15d dokumentiert.
 DESIGN_DECISIONS: §16 (Web-Dashboard) um server_name,
 default_server, display-Konsequenz erweitert.
