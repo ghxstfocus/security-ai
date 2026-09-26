@@ -749,14 +749,19 @@ Tests: 864 passed (Vollsuite, venv).
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI
 (Phase 3.5) voraus. Foederation ueber core/protocol/.
 
+Voraussetzungen: Phase 3.5 (lokale KI).
+Siehe PROJECT_VISION.md, Abschnitt 2.1 (Security
+Master AI).
+
 ## Phase 6 — DSGVO-Konformitaet  [ ]
 
-Ziel: Das System wird in einer Firma betreibbar, ohne
-gegen DSGVO zu verstossen.
+Ziel: Das System wird in einer Firma betreibbar,
+ohne gegen DSGVO zu verstossen.
 
 Voraussetzungen: Core fertig (Stufen 1-2.5 heute).
-Siehe PROJECT_VISION.md, Stufe 4 (Enterprise),
-Abschnitt DSGVO-Konformitaet.
+Siehe PROJECT_VISION.md, Abschnitt 7 (Grundprinzipien,
+Punkt 11) und Abschnitt 8 (Stufe 4, Enterprise,
+DSGVO-Konformitaet).
 
 Skizze:
 - Loeschkonzept fuer audit-logs (systemd-Timer oder
@@ -771,40 +776,113 @@ Skizze:
   Massnahmen).
 - AVV-Vorlage (falls SaaS-Modell).
 
-## Phase 7 — Data Connectors / Bridges  [ ]
+## Phase 7 — Data Connectors  [ ]
 
-Ziel: Anbindung an Firmensysteme (HR, CRM,
-Ticketsysteme).
+Ziel: Anbindung an Firmensysteme (HR, Buchhaltung,
+CRM, Tickets, M365) als Adapter unter der Security AI.
 
 Voraussetzungen: Phase 6 (DSGVO-Basis).
-Siehe PROJECT_VISION.md, Stufe 4 (Enterprise),
-Abschnitt Data Connectors.
+Siehe PROJECT_VISION.md, Abschnitt 3 (Die Bridges)
+und Abschnitt 8 (Stufe 4, Enterprise-Bridges).
 
 Skizze:
-- Connector-Interface (lesend, mit RBAC-Pruefung
-  im Service).
-- Erster Connector (Auswahl spaeter).
+- Connector-Interface (Adapter-Muster): API-Kenntnis,
+  Schema-Mapping, Sandbox-Ausfuehrung, Audit-Pflicht.
+- Erster Connector (Auswahl spaeter): HR (Personio,
+  SAP HR, Workday), Buchhaltung (DATEV, SAP FI),
+  CRM (Hubspot, Salesforce), Tickets (Jira, Zendesk),
+  M365 (Microsoft Graph).
 - Schema-Mapping (Firmen-Datenmodell auf
   Principal/Role/Permission).
 - Loeschkonzept greift auf Connector-Daten
   (Phase-6-Mechanik wird genutzt).
-- Self-Service-Seite fuer Mitarbeiter.
+- Bridges sind codeseitig vorbereitbar (PROJECT_VISION,
+  Abschnitt 3, Vorbereitbarkeit): Public-API-Doku +
+  Sandbox-Account reicht fuer die erste Version.
 
-## Phase 8 — Enterprise-Bridges  [ ]
+## Phase 8 — LLM-Bridges  [ ]
 
 Ziel: Cloud-KI-Anbindung (Anthropic, OpenAI,
-Azure OpenAI, DeepSeek) ueber offizielle Protokolle.
+Azure OpenAI, DeepSeek) ueber offizielle Protokolle
+(MCP).
 
 Voraussetzungen: Phase 6 (DSGVO-Basis), AVV mit
-den Anbietern.
-Siehe PROJECT_VISION.md, Stufe 4 (Enterprise),
-Abschnitt Enterprise-Bridges.
+den Anbietern. Phase 7 (Daten zuerst, dann
+Intelligenz).
+Siehe PROJECT_VISION.md, Abschnitt 10 (MCP-Kopplung)
+und Abschnitt 8 (Stufe 4, Enterprise-Bridges).
 
 Skizze:
-- Cloud-KI-Client.
+- MCP-Client fuer die Security AI und die Security
+  Master AI.
 - AVV-Vorlage.
 - Datenfluss-Kontrolle (was darf raus, was nicht).
-- Opt-in pro Installation.
+- Opt-in pro Installation. Kein Cloud-Zwang.
+
+## Phase 9 — Kunden-Mitarbeiter-KI  [ ]
+
+Ziel: Die KI fuer die Mitarbeiter des Kunden.
+Schnittstelle zwischen Mensch und Daten, mit
+strikter RBAC-Kontrolle ueber die Security AI.
+
+Voraussetzungen: Phase 8 (LLM-Bridges), Phase 7
+(Data Connectors, erste Quelle).
+Siehe PROJECT_VISION.md, Abschnitt 2.3
+(Kunden-Mitarbeiter-KI) und Abschnitt 4 (Beispiele).
+
+Skizze:
+- Natuerlichsprachige Schnittstelle (Web-Chat).
+- Jede Anfrage laeuft durch die Security AI
+  (RBAC-Pruefung, Daten-Level).
+- Schreibaktionen als Change Request mit Human
+  Approval.
+- Sonderfall "self" (eigene Daten).
+- Kein direkter Datenzugriff, keine Umgehung der
+  Security AI.
+
+## Phase 10 — Physische Sicherheit  [ ]
+
+Ziel: Zutritt, Tueren, Sensoren als eigene Schicht.
+Personen als Entitaeten mit Raum-Level, Tool-Level,
+Daten-Level.
+
+Voraussetzungen: Core (Inventory, RBAC, Detection,
+Events) steht.
+Siehe PROJECT_VISION.md, Abschnitt 9 (Physische
+Sicherheit) und Abschnitt 8 (Stufe 5).
+
+Skizze:
+- Raum-Sicherheitslevel (0-5).
+- Zutrittstechnologien: RFID, Magnetkarte, PIN,
+  optional Biometrie (Plugin-System).
+- Personen als Entitaeten (ID, Name, Level,
+  Zeiteinschraenkungen, Historie).
+- Einheitliches Event-Schema (digital + physisch).
+- Ethische Leitplanken (PROJECT_VISION, Abschnitt 9.5)
+  sind verbindlich: keine Gesichtserkennung ohne
+  Freigabe, keine Bewegungsprofile.
+
+## Phase 11 — Ganzheitliche Korrelation  [ ]
+
+Ziel: Digitale und physische Sicherheit korrelieren.
+Zusammenhaenge erkennen, die einzelne Systeme nicht
+sehen.
+
+Voraussetzungen: Phase 10 (physische Sicherheit),
+Phase 3.5 (lokale KI fuer Erklaerungen), ggf.
+Phase 5 (Admin AI fuer Korrelation ueber Standorte).
+Siehe PROJECT_VISION.md, Abschnitt 9.4
+(Korrelationsregeln) und Abschnitt 8 (Stufe 6).
+
+Skizze:
+- Korrelationsregeln: access_level_mismatch,
+  access_outside_hours, digital_without_physical,
+  physical_without_digital, access_after_departure,
+  unusual_pattern, tailgating.
+- Deterministische Regel-Engine (kein LLM).
+- LLM erklaert nur.
+- Alarmierung ueber bestehende Kanaele (Telegram,
+  Dashboard).
 
 
 ## Empfehlungen aus Doku-Audit 2026-09-23
