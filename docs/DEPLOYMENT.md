@@ -7,10 +7,8 @@
 
     Proxmox-Host (pve)
     |
-    |-- LXC 101: homelab-security     (192.168.178.116)  [Bestand]
+    |-- LXC 101: homelab-security     (192.168.178.116)  [ruht, unberuehrt]
     |-- LXC 102: security-ai          (192.168.178.117)  [dieses Projekt]
-    |-- LXC 103: security-tools       (192.168.178.118)  [geplant]
-    |-- LXC 104: security-db          (192.168.178.119)  [geplant]
     |
     |-- Host: host_scanner            (auf pve selbst)
 
@@ -531,7 +529,21 @@ Verifikation:
       "SELECT MAX(version) FROM schema_migrations;"
 
 Der Wert muss der hoechsten Datei-Nummer in
-data/migrations/ entsprechen (heute 7).
+data/migrations/ entsprechen (heute 8).
+
+### WorkingDirectory (Punkt 2, 2026-09-26)
+
+Das systemd-Unit setzt `WorkingDirectory=/opt/security-ai`.
+Grund: audit-logs/ und detection/rules.yaml werden
+relativ zum CWD gelesen. Ohne WorkingDirectory wuerde
+der Service audit-logs/ im systemd-Default-CWD suchen
+und fail closed verweigern.
+
+Pruefen mit:
+
+    systemctl show security-ai-dashboard -p WorkingDirectory
+
+Erwartet: WorkingDirectory=/opt/security-ai.
 
 Hinweis Version 1: 0001 existiert nicht als Datei.
 Die Luecke ist historisch (Vor-Migrations-Aera).
