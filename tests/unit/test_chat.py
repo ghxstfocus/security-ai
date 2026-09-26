@@ -385,6 +385,54 @@ class ChatServiceAuditTests(_ChatBase):
         ][0]
         self.assertEqual(answered["details"]["source"], "detail_append")
 
+    def test_chat_answered_detail_has_model_reason(self):
+        # Punkt 23: model_reason muss auch im Audit stehen.
+        self.svc.ask("admin", "welche IP?", detail=True)
+        answered = [
+            e for e in self._audit_entries()
+            if e["details"]["kind"] == "chat_answered"
+        ][0]
+        self.assertEqual(
+            answered["details"].get("model_reason"),
+            "detail_append",
+        )
+
+    def test_chat_answered_fact_has_model_reason(self):
+        # Punkt 23: fact-Pfad muss model_reason="fact" setzen.
+        from harness.context.models import utc_now
+        self.svc.ask(
+            "admin", "Wie viele Events gab es?",
+            risk_assessments=(),
+            inventory_snapshot={"devices_total": 3},
+        )
+        answered = [
+            e for e in self._audit_entries()
+            if e["details"]["kind"] == "chat_answered"
+        ][0]
+        self.assertEqual(
+            answered["details"].get("model_reason"),
+            "fact",
+        )
+
+    def test_chat_answered_no_context_has_model_reason(self):
+        # Punkt 23: no_context-Pfad muss model_reason setzen.
+        # Zustandsfrage ohne Kontext -> no_context.
+        self.svc.ask("admin", "Welche IPs sind online?")
+        answered = [
+            e for e in self._audit_entries()
+            if e["details"]["kind"] == "chat_answered"
+        ][0]
+        self.assertIn(
+            answered["details"].get("source"),
+            ("no_context", "llm"),
+        )
+        # Wenn no_context: model_reason gesetzt.
+        if answered["details"].get("source") == "no_context":
+            self.assertEqual(
+                answered["details"].get("model_reason"),
+                "no_context",
+            )
+
     def test_include_details_wird_nicht_geloggt_wenn_nicht_gesetzt(self):
         self.svc.ask("admin", "Frage?")
         entry = [

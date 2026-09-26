@@ -612,6 +612,7 @@ class ChatService:
                 "chat_answered",
                 principal=principal_name,
                 source="detail_append",
+                model_reason="detail_append",
                 context_counts=context.counts(),
                 context_redacted=context.redacted,
             )
@@ -636,6 +637,7 @@ class ChatService:
                 "chat_answered",
                 principal=principal_name,
                 source="fact",
+                model_reason="fact",
                 context_counts=context.counts(),
                 context_redacted=context.redacted,
             )
@@ -660,6 +662,7 @@ class ChatService:
                 "chat_answered",
                 principal=principal_name,
                 source="no_context",
+                model_reason="no_context",
                 context_counts=context.counts(),
                 context_redacted=context.redacted,
             )
