@@ -13,6 +13,8 @@ Design:
   (Auflage 34, Doppel-Audit vermeiden).
 - Input-Validierung: request_id-Regex, decision-Whitelist,
   reason-Laenge. Fail closed.
+- Repo-Fehler (ApprovalNotFoundError, ApprovalStateError)
+  werden NICHT gefangen. Variante D, Auflage 502-506.
 - Kein direkter Import von ApprovalRepository. Nur Queue.
 - args_preview: json.dumps(sort_keys=True, ensure_ascii=True),
   default=str, gekuerzt auf 4000 Zeichen (Auflage 45).
@@ -125,19 +127,18 @@ class ApprovalService:
                 raise ApprovalServiceError(
                     f"reason zu lang (max {REASON_MAX_LEN})"
                 )
-        try:
-            if decision == DECISION_GRANTED:
-                req = self._queue.grant(
-                    rid, decided_by=actor, reason=reason,
-                )
-            else:
-                req = self._queue.reject(
-                    rid, decided_by=actor, reason=reason,
-                )
-        except ApprovalNotFoundError as exc:
-            raise ApprovalServiceError(str(exc)) from exc
-        except ApprovalStateError as exc:
-            raise ApprovalServiceError(str(exc)) from exc
+        # Auflage 503: Repo-Fehler (ApprovalNotFoundError,
+        # ApprovalStateError) propagieren ungefiltert.
+        # Sie sind Persistenz-Fehler, keine Format-Fehler.
+        # Deshalb kein try/except hier.
+        if decision == DECISION_GRANTED:
+            req = self._queue.grant(
+                rid, decided_by=actor, reason=reason,
+            )
+        else:
+            req = self._queue.reject(
+                rid, decided_by=actor, reason=reason,
+            )
         return self._entry_to_dict(req)
 
 

@@ -216,24 +216,26 @@ def test_decide_rejected_302_and_db_status(app):
 
 # --- Auflage 44: zweimal entscheiden ---------------------------------- #
 
-def test_decide_twice_granted_then_granted_404(app):
+def test_decide_twice_granted_then_granted_409(app):
     rid = _seed_approval(app)
     c, tok = _client_with_csrf(app, "operator")
     c.post(f"/approvals/{rid}/decide",
            data={"_csrf_token": tok, "decision": "granted"})
     r = c.post(f"/approvals/{rid}/decide",
                data={"_csrf_token": tok, "decision": "granted"})
-    assert r.status_code == 404
+    # Auflage 489/505: doppelte Entscheidung = Zustandskonflikt.
+    assert r.status_code == 409
 
 
-def test_decide_twice_granted_then_rejected_404(app):
+def test_decide_twice_granted_then_rejected_409(app):
     rid = _seed_approval(app)
     c, tok = _client_with_csrf(app, "operator")
     c.post(f"/approvals/{rid}/decide",
            data={"_csrf_token": tok, "decision": "granted"})
     r = c.post(f"/approvals/{rid}/decide",
                data={"_csrf_token": tok, "decision": "rejected"})
-    assert r.status_code == 404
+    # Auflage 489/505: bereits entschieden -> Zustandskonflikt.
+    assert r.status_code == 409
 
 
 # --- RBAC auf POST ---------------------------------------------------- #
@@ -303,3 +305,42 @@ def test_no_internal_leak_on_404(app):
     assert b"approval_service" not in body
     assert b"Traceback" not in body
     assert b'File "' not in body
+
+# --- 3.6.15c Auflage 505: neue Faelle ------------------------------ #
+
+def test_decide_unknown_returns_404(app):
+    c, tok = _client_with_csrf(app, "operator")
+    r = c.post(
+        "/approvals/APR-2026-99999/decide",
+        data={"_csrf_token": tok, "decision": "granted"},
+    )
+    assert r.status_code == 404
+
+
+def test_decide_invalid_id_returns_400(app):
+    # Auflage 504: Format -> ApprovalServiceError -> 400.
+    c, tok = _client_with_csrf(app, "operator")
+    r = c.post(
+        "/approvals/UNGUELTIG/decide",
+        data={"_csrf_token": tok, "decision": "granted"},
+    )
+    assert r.status_code == 400
+
+
+def test_repository_error_returns_500(app, monkeypatch):
+    from core.approval.repository import ApprovalRepositoryError
+    from harness.approval.queue import ApprovalQueue
+
+    rid = _seed_approval(app)
+
+    def _boom(self, *a, **kw):
+        raise ApprovalRepositoryError("db kaputt")
+
+    monkeypatch.setattr(ApprovalQueue, "grant", _boom)
+    c, tok = _client_with_csrf(app, "operator")
+    r = c.post(
+        f"/approvals/{rid}/decide",
+        data={"_csrf_token": tok, "decision": "granted"},
+    )
+    # Auflage 504: Basisklasse NICHT fangen -> globaler 500.
+    assert r.status_code == 500

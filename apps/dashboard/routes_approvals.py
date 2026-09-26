@@ -17,8 +17,15 @@ Reihenfolge im POST (Auflage 47):
 Fehler:
 - CSRF fehlt/falsch -> 400 (konsistent mit /login).
 - decision ungueltig oder fehlt -> 400.
-- request_id ungueltig oder unbekannt -> 404.
+- GET request_id ungueltig oder unbekannt -> 404.
+- POST request_id unbekannt -> 404 (ApprovalNotFoundError).
+- POST falscher Zustand -> 409 (ApprovalStateError).
+- POST request_id ungueltig -> 400 (ApprovalServiceError).
+- ApprovalRepositoryError (Basis) -> globaler 500.
 - AccessDeniedError -> globaler 403-Handler.
+Repo-Fehler werden direkt aus core.approval.repository
+importiert und NICHT in ServiceError gewickelt
+(Auflage 502-506, Variante D).
 Kein str(e) im Response. Kein Logging des request_id (A39).
 """
 from __future__ import annotations
@@ -29,6 +36,10 @@ from flask import (
 
 from apps.dashboard import csrf
 from apps.dashboard.decorators import require_permission
+from core.approval.repository import (
+    ApprovalNotFoundError,
+    ApprovalStateError,
+)
 from core.services.approval_service import (
     ApprovalService,
     ApprovalServiceError,
@@ -97,8 +108,12 @@ def register_approvals_routes(app: Flask) -> None:
                 g.principal, request_id,
                 decision=decision, reason=reason,
             )
-        except ApprovalServiceError:
+        except ApprovalNotFoundError:
             abort(404)
+        except ApprovalStateError:
+            abort(409)
+        except ApprovalServiceError:
+            return ("Ungueltige Anfrage", 400)
         return redirect("/approvals", 302)
 
 
