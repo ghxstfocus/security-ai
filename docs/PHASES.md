@@ -729,6 +729,21 @@ Umgesetzt:
 
 Tests: 861 passed (Vollsuite, venv).
 
+## Zwischenblock Punkt 23 — Audit model_reason  [x]
+
+Aus der Punkt-22-Messung: chat_answered-Audit-
+Eintraege in den Pfaden fact, detail_append,
+no_context trugen model_reason=null.
+
+Kategorie 2. Commit dccebf1.
+
+Fix:
+- apps/security_ai/chat.py: _log("chat_answered", ...)
+  uebergibt model_reason in den drei Pfaden.
+- Tests: 3 neu in tests/unit/test_chat.py.
+
+Tests: 864 passed (Vollsuite, venv).
+
 ## Phase 5 — Admin AI  [ ]
 
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI

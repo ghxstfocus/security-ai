@@ -343,6 +343,9 @@ test_access_denied_errorhandler_403 abgedeckt.
   (test_setup_isolation). Punkte 13/14 erledigt.
   Punkt 21 neu (gemischte audit-logs).
 - 3.6.15d: Chat-Klassifikations-Bug behoben (f7b0fba).
+- Punkt 23 (dccebf1): chat_answered-Audit traegt
+  model_reason auch in fact/detail_append/no_context.
+  Drei neue Tests.
 - 3.6.16-topbar-usermenu (45853f3): <details>-
   Dropdown mit Logout. person.svg lokal, kein JS,
   kein Escape-Handler. CSRF-Feld im Logout-Formular.
@@ -601,3 +604,7 @@ test_access_denied_errorhandler_403 abgedeckt.
     die 9 fact- und 1 detail_append-Faelle aus der
     Punkt-22-Messung erscheinen als model_reason=None.
     Kategorie 2, eigener Block.
+    Erledigt in dccebf1: _log("chat_answered", ...)
+    uebergibt model_reason jetzt in allen drei
+    Pfaden (fact, detail_append, no_context).
+    Drei neue Tests in tests/unit/test_chat.py.

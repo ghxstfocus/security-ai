@@ -244,9 +244,7 @@ Phase 3.6.10, 3.6.11, 3.6.12, 3.6.13, 3.6.14,
 HEAD 554d9ef, Working Tree sauber.
 
 Aktuell offen (Reihenfolge vom Reviewer):
-1. Punkt 23 (Audit model_reason=null bei
-   fact/detail_append/no_context). Kategorie 2.
-2. Spaeter: Punkte 9 (Rate-Limit Multi-Worker),
+1. Spaeter: Punkte 9 (Rate-Limit Multi-Worker),
    16 (gunicorn), 20 (Test-Erwartungen bei gewollter
    Produktaenderung -- Muster dokumentiert),
    21 (gemischte audit-logs 21.-24. Sep).
@@ -256,7 +254,7 @@ Chronologie bis 3.6.15d dokumentiert.
 DESIGN_DECISIONS: §16 (Web-Dashboard) um server_name,
 default_server, display-Konsequenz erweitert.
 
-Tests: 861 gruen (venv, pytest 9.1.1).
+Tests: 864 gruen (venv, pytest 9.1.1).
 Hinweis: Der vorher genannte Wert 728 war ungenau;
 korrekt war 720 vor 3.6.15a. Quelle der Wahrheit ist
 `pytest --collect-only -q`.
