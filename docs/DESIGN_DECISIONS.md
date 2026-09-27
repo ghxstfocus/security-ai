@@ -808,6 +808,16 @@ gefangen -> globaler 500.
 LLM-Fehler werden nicht in OperationError gewickelt.
 Sie haben eigene Semantik (502 Upstream).
 
+### Kontext-Aufbau fuer den Chat (Punkt 28)
+
+Der Kontext fuer ChatService.ask liegt in
+core/context/builder.build_chat_context.
+Kein RBAC, kein Audit. Wird von CLI
+(scripts/chat_cli.py) und Dashboard
+(apps/dashboard/routes_chat.py) genutzt.
+Log-Excerpts und recent_events sind leer
+(Auflagen 720/721).
+
 ### ChatService
 
 - Nutzt AccessChecker (RBAC).

@@ -453,6 +453,19 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   SQLite-basiert (chat_rate_hits, Migration 0009),
   BEGIN IMMEDIATE, Fail closed.
 - Punkt 16b (b4a21e4): gunicorn control_socket_disable.
+- Doku-Nachzug A589 (4d1c4cc): Chronologie neu
+  sortiert, HEAD b4a21e4.
+- Diagnose 2026-09-27 (96675da): Gesundheits-Check,
+  dev-Dependencies nachinstalliert (ruff, mypy,
+  pytest-cov), ruff 435 Fehler / mypy 87 Fehler
+  als Bestandsaufnahme.
+- UI-Feinschliff Teil 1 (61b739c, 37af0e1, 4ead797):
+  SVG-Farben (#9ca3af), Spaltennamen anwenderfreundlich
+  (alle 7 Listen), Sidebar-Namen (Freigaben, Aenderungen,
+  Protokoll), Suchquellen-Namen (format_source_label).
+- Punkt 28 (a2b58c1): Dashboard-Chat bekommt Kontext
+  (core/context/builder.build_chat_context). CLI und
+  Dashboard nutzen denselben Builder.
   Verifikation: gunicorn --check-config OK,
   systemd-Start OK, HTTPS /login 200, POST mit
   falschem CSRF 400.
@@ -748,9 +761,16 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     check_schema_version und Reviewer-Block.
     Kategorie 3, eigener Block.
 
-27. Login-Rate-Limit nutzte request.remote_addr
-    (= 127.0.0.1 hinter nginx). 5 Fehlversuche
-    sperrten global, nicht pro Client. Fix:
-    ProxyFix (Punkt 16a, Commit <hash>).
-    Verifikation wartet auf Betriebsakt (16b).
+27 (erledigt, bd7d187): Login-Rate-Limit nutzte
+    request.remote_addr (= 127.0.0.1 hinter nginx).
+    5 Fehlversuche sperrten global, nicht pro Client.
+    Fix: ProxyFix (Punkt 16a). Verifikation in 16b.
     Kategorie 3, Auflagen 650.
+
+28 (erledigt, a2b58c1): Dashboard-Chat hatte keinen
+    Kontext (seit 3.6.8e). routes_chat.py rief
+    ChatService.ask nur mit principal/question/detail.
+    Folge: Chat sagte immer "keine Daten". Fix:
+    neues Modul core/context/ mit build_chat_context.
+    CLI und Dashboard nutzen denselben Builder.
+    Kategorie 3, Auflagen 719-728, Variante C.
