@@ -177,11 +177,106 @@
     }
 }
 
+/* Punkt 19 (Auflagen 614-622): Pro-Tabelle-Klassen
+   fuer gezieltes Spalten-Ausblenden bei <500px.
+   Ersetzt die globale nth-child(n+4)-Regel.
+   Pro Tabelle: erst auszublendende Spalten auf
+   display:none, dann sichtbare auf display:table-cell
+   (identische Spezifitaet 0,2,1, File-Reihenfolge
+   entscheidet). Kein !important. */
 @media (max-width: 500px) {
-    .table th:nth-child(n+4),
-    .table td:nth-child(n+4) {
-        display: none;
-    }
+    /* alerts: Zeitpunkt + Bewertung sichtbar.
+       Regel + Event-ID sind Detail. */
+    table.table-alerts th:nth-child(3),
+    table.table-alerts td:nth-child(3),
+    table.table-alerts th:nth-child(4),
+    table.table-alerts td:nth-child(4) { display: none; }
+    table.table-alerts th:nth-child(1),
+    table.table-alerts td:nth-child(1),
+    table.table-alerts th:nth-child(2),
+    table.table-alerts td:nth-child(2) { display: table-cell; }
+
+    /* approvals: Request-ID + Status sichtbar.
+       Status ist die Entscheidung. */
+    table.table-approvals th:nth-child(2),
+    table.table-approvals td:nth-child(2),
+    table.table-approvals th:nth-child(3),
+    table.table-approvals td:nth-child(3),
+    table.table-approvals th:nth-child(4),
+    table.table-approvals td:nth-child(4),
+    table.table-approvals th:nth-child(6),
+    table.table-approvals td:nth-child(6) { display: none; }
+    table.table-approvals th:nth-child(1),
+    table.table-approvals td:nth-child(1),
+    table.table-approvals th:nth-child(5),
+    table.table-approvals td:nth-child(5) { display: table-cell; }
+
+    /* audit: Zeitpunkt + Audit-ID + Ergebnis sichtbar.
+       Was wann passiert ist und ob erlaubt. */
+    table.table-audit th:nth-child(3),
+    table.table-audit td:nth-child(3),
+    table.table-audit th:nth-child(4),
+    table.table-audit td:nth-child(4),
+    table.table-audit th:nth-child(6),
+    table.table-audit td:nth-child(6),
+    table.table-audit th:nth-child(7),
+    table.table-audit td:nth-child(7) { display: none; }
+    table.table-audit th:nth-child(1),
+    table.table-audit td:nth-child(1),
+    table.table-audit th:nth-child(2),
+    table.table-audit td:nth-child(2),
+    table.table-audit th:nth-child(5),
+    table.table-audit td:nth-child(5) { display: table-cell; }
+
+    /* changes: Change-ID + Titel + Status sichtbar.
+       Typ + Erstellt sind Detail. */
+    table.table-changes th:nth-child(3),
+    table.table-changes td:nth-child(3),
+    table.table-changes th:nth-child(5),
+    table.table-changes td:nth-child(5) { display: none; }
+    table.table-changes th:nth-child(1),
+    table.table-changes td:nth-child(1),
+    table.table-changes th:nth-child(2),
+    table.table-changes td:nth-child(2),
+    table.table-changes th:nth-child(4),
+    table.table-changes td:nth-child(4) { display: table-cell; }
+
+    /* inventory: Identifier + Name + Zuletzt gesehen
+       sichtbar. Netz + Whitelist sind Kontext. */
+    table.table-inventory th:nth-child(3),
+    table.table-inventory td:nth-child(3),
+    table.table-inventory th:nth-child(4),
+    table.table-inventory td:nth-child(4) { display: none; }
+    table.table-inventory th:nth-child(1),
+    table.table-inventory td:nth-child(1),
+    table.table-inventory th:nth-child(2),
+    table.table-inventory td:nth-child(2),
+    table.table-inventory th:nth-child(5),
+    table.table-inventory td:nth-child(5) { display: table-cell; }
+
+    /* users: Name + Status sichtbar.
+       Kind/Rolle-ID/Passwort/Erstellt sind Detail. */
+    table.table-users th:nth-child(2),
+    table.table-users td:nth-child(2),
+    table.table-users th:nth-child(3),
+    table.table-users td:nth-child(3),
+    table.table-users th:nth-child(5),
+    table.table-users td:nth-child(5),
+    table.table-users th:nth-child(6),
+    table.table-users td:nth-child(6) { display: none; }
+    table.table-users th:nth-child(1),
+    table.table-users td:nth-child(1),
+    table.table-users th:nth-child(4),
+    table.table-users td:nth-child(4) { display: table-cell; }
+
+    /* roles: alle drei Spalten sichtbar.
+       Name + Beschreibung + Permissions bleiben. */
+    table.table-roles th:nth-child(1),
+    table.table-roles td:nth-child(1),
+    table.table-roles th:nth-child(2),
+    table.table-roles td:nth-child(2),
+    table.table-roles th:nth-child(3),
+    table.table-roles td:nth-child(3) { display: table-cell; }
 }
 
 /* User-Menue (Topbar), 3.6.16-topbar-usermenu (A561-A570) */
