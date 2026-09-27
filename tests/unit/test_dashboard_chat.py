@@ -381,3 +381,74 @@ def test_no_csrf_token_in_response(app):
     )
     # Der Body darf den Token nicht spiegeln.
     assert tok.encode() not in r2.data
+
+
+# --- A726: Route uebergibt Kontext an ChatService ------------------- #
+
+def _seed_risk_assessment(app):
+    """Legt einen risk_assessment-Eintrag im audit-log an."""
+    import json
+    from datetime import datetime, timezone
+    from pathlib import Path as _P
+
+    now = datetime.now(timezone.utc)
+    audit_dir = _P(app.config["AUDIT_BASE_DIR"])
+    audit_dir.mkdir(parents=True, exist_ok=True)
+    day = now.strftime("%Y-%m-%d")
+    f = audit_dir / f"{day}.jsonl"
+    zeile = {
+        "audit_id": f"AUD-{day}-00000001",
+        "timestamp": now.isoformat(),
+        "agent": "security_ai",
+        "tool": "risk_engine",
+        "network_id": "homelab-default",
+        "details": {
+            "kind": "risk_assessment",
+            "event_id": "EVT-2099-00000001",
+            "category": "SECURITY_ALERT",
+            "score": 0.81,
+            "rule_id": "test_rule",
+        },
+    }
+    f.write_text(
+        json.dumps(zeile) + "\n", encoding="utf-8",
+    )
+
+
+def test_chat_api_route_uebergibt_kontext(app, monkeypatch):
+    """
+    A726: Die Route baut den Kontext und uebergibt ihn
+    an ChatService.ask. Wir pruefen das ueber einen
+    Fakes, der die kwargs einfaengt.
+    """
+    from apps.security_ai.chat import ChatService, ChatResponse
+
+    _seed_risk_assessment(app)
+    eingefangen = {}
+
+    def _ask(self, principal_name, question, *, detail=False, **kw):
+        eingefangen.update(kw)
+        return ChatResponse(
+            answer="ok",
+            principal=principal_name,
+            question=question,
+            context_used=None,
+            used_llm=False,
+            source="fact",
+            answer_id="AUD-2099-01-01-00000001",
+        )
+
+    monkeypatch.setattr(ChatService, "ask", _ask)
+    c, tok = _client_with_csrf(app, "viewer")
+    r = _post(app, c, tok, body=b'{"question": "Gibt es Alarme?"}')
+    assert r.status_code == 200
+
+    # Kontext wurde uebergeben.
+    assert "risk_assessments" in eingefangen
+    assert "inventory_snapshot" in eingefangen
+    assert "open_approvals" in eingefangen
+    assert "open_changes" in eingefangen
+    # risk_assessments enthaelt unseren Test-Eintrag.
+    ra = eingefangen["risk_assessments"]
+    assert len(ra) == 1
+    assert ra[0]["category"] == "SECURITY_ALERT"

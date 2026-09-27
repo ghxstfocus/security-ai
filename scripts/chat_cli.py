@@ -60,12 +60,7 @@ from core.access.repository import (
     RoleRepository,
 )
 from core.access.session_repo import SessionRepository
-from core.approval.repository import ApprovalRepository
-from core.changes.repository import ChangeRepository
-from core.inventory.repository import DeviceRepository
-from core.inventory.whitelist import WhitelistRepository
-from core.reporting.audit_reader import read_risk_assessments
-from core.reporting.inventory_snapshot import build_inventory_snapshot
+from core.context.builder import build_chat_context
 from harness.audit.writer import AuditWriter
 from harness.llm.client import OllamaClient
 from harness.llm.errors import LLMError
@@ -178,29 +173,14 @@ def _load_context(conn, audit_base_dir: str,
     """
     Laedt DB + Audit-Log und baut den Kontext fuer ChatService.ask.
 
-    Kein DB-Zugriff im Service — hier im CLI ist er erlaubt.
-    Fail-soft: fehlende Teile werden leer uebergeben.
+    Punkt 28: nutzt den gemeinsamen Builder
+    (core/context/builder.py), den auch das Dashboard nutzt.
     """
-    devices = DeviceRepository(conn).list_all()
-    whitelist_ids = WhitelistRepository(conn).identifiers()
-    inventory_snapshot = build_inventory_snapshot(
-        devices, whitelist_ids,
-    )
-    open_approvals = tuple(ApprovalRepository(conn).list_pending())
-    open_changes = tuple(ChangeRepository(conn).list_pending())
-    risk_assessments = tuple(read_risk_assessments(
-        audit_base_dir,
+    return build_chat_context(
+        conn, audit_base_dir,
         since_hours=since_hours,
-        max_entries=max_assessments,
-    ))
-    return {
-        "recent_events": (),
-        "inventory_snapshot": inventory_snapshot,
-        "risk_assessments": risk_assessments,
-        "open_approvals": open_approvals,
-        "open_changes": open_changes,
-        "log_excerpts": (),
-    }
+        max_assessments=max_assessments,
+    )
 
 
 # ---------------------------------------------------------------------- #

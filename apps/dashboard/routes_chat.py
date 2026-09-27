@@ -38,6 +38,7 @@ from flask import Flask, g, jsonify, render_template, request
 
 from apps.dashboard.decorators import require_permission
 from core.services.rate_limit_service import RateLimitService
+from core.context.builder import build_chat_context
 from harness.llm.errors import LLMError, LLMTimeout, LLMUnavailable
 from apps.security_ai.chat import (
     ChatOperationError,
@@ -126,10 +127,22 @@ def register_chat_routes(app: Flask) -> None:
             )
 
         # 6. + 7. RBAC + LLM via ChatService
+        # Punkt 28 (A725): Kontext aus DB + audit-logs
+        # bauen. Gemeinsamer Builder (core/context/builder).
+        ctx = build_chat_context(
+            g.conn, current_app.config["AUDIT_BASE_DIR"],
+        )
         service = _build_chat_service()
         try:
             resp = service.ask(
-                g.principal, q, detail=detail,
+                g.principal, q,
+                risk_assessments=ctx["risk_assessments"],
+                inventory_snapshot=ctx["inventory_snapshot"],
+                open_approvals=ctx["open_approvals"],
+                open_changes=ctx["open_changes"],
+                log_excerpts=ctx["log_excerpts"],
+                recent_events=ctx["recent_events"],
+                detail=detail,
             )
         except LLMTimeout:
             return _json_error("LLM nicht erreichbar", 502)
