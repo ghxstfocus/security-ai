@@ -786,3 +786,8 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     Teil-Fix in 3.6.18a: category ist jetzt durchsuchbar
     (CONFIRMED, SECURITY_ALERT, ...). Deutsche Synonyme
     bleiben offen.
+    Konkret: die Suche findet nur technische Feldwerte
+    (IDs, Codes, rule_id, category), nicht die in der
+    UI angezeigten Begriffe (Alarme, Freigaben,
+    Aenderungen). Siehe docs/WERKZEUGE.md,
+    Abschnitt "Suche".

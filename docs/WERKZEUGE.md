@@ -96,6 +96,42 @@ Change Requests verwalten. DB muss existieren (fail closed).
     .venv/bin/python3 scripts/changes_cli.py export <change_id> [--out DIR]
     .venv/bin/python3 scripts/changes_cli.py count
 
+## Suche (Dashboard, GET /search?q=...)
+
+Durchsucht werden pro Quelle (LIKE '%q%',
+case-insensitiv):
+
+- devices:              identifier, entity_name
+- whitelisted_devices:  identifier, entity_name
+- changes:              change_id, title
+- approvals:            request_id, tool_name, requested_by
+- principals:           name
+- roles:                name
+- permissions:          code
+- risk_assessments:     audit_id, event_id, rule_id,
+                        tool, category (seit 3.6.18a)
+
+Limit: 20 Treffer pro Quelle (Auflage 368).
+Die Suche liefert nur die Quellen, fuer die der
+Principal die Berechtigung hat (A525/A526).
+
+### Was die Suche NICHT findet
+
+- Anzeigenamen aus der UI (z. B. "Alarme",
+  "Freigaben", "Aenderungen").
+- Deutsche Begriffe ("alarm", "alert", "freigabe").
+  Punkt 29 in docs/SECURITY_REVIEW_LOG.md:
+  Synonym-Mapping ist geplant, aber nicht gebaut.
+- Freitext-Felder: description, diff_or_patch,
+  rollback_plan, test_plan, args_json,
+  decision_reason, notes (Auflage 529).
+
+### Beispiel
+
+- q=CONFIRMED     -> Treffer in Alarme.
+- q=confirmed     -> Treffer (case-insensitiv).
+- q=alarme        -> leer (Punkt 29).
+
 ## Tests
 
     .venv/bin/python3 -m pytest tests/ -q
