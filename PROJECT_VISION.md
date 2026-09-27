@@ -13,10 +13,10 @@ Die Security AI ist der zentrale Kontrollpunkt. Alles
 laeuft durch sie. Nichts an ihr vorbei.
 
     +=================================================================+
-    |  EBENE 1 — IT FABRIK (intern)                                   |
+    |  EBENE 1 — IT Firma (intern)                                   |
     |                                                                 |
     |  SECURITY MASTER AI (Cloud)                                     |
-    |  - Verwaltet die Kunden-Installationen der IT Fabrik            |
+    |  - Verwaltet die Kunden-Installationen der IT Firma            |
     |  - Korreliert Events ueber mehrere Kunden                       |
     |  - Schlaegt Changes fuer Kunden vor                             |
     |  - Spricht mit externen LLMs (MCP)                              |
@@ -96,16 +96,16 @@ laeuft durch sie. Nichts an ihr vorbei.
 
 ## 2. Die drei KI-Ebenen — im Detail
 
-### 2.1 Security Master AI (Ebene 1 — IT Fabrik, Cloud)
+### 2.1 Security Master AI (Ebene 1 — IT Firma, Cloud)
 
-Die Security Master AI ist die **Admin-KI der IT Fabrik**.
+Die Security Master AI ist die **Admin-KI der IT Firma**.
 Sie laeuft in der Cloud. Sie verwaltet die **Kunden-
-Installationen** der IT Fabrik.
+Installationen** der IT Firma.
 
 **Was sie macht:**
 
 1. **Kunden verwalten.** Sie kennt alle Kunden-
-   Installationen der IT Fabrik. Welche Version laeuft?
+   Installationen der IT Firma. Welche Version laeuft?
    Welche Bridges sind aktiv? Welche Events gibt es?
 
 2. **Ueber Kunden korrelieren.** Sie sieht Events aus
@@ -129,7 +129,7 @@ Installationen** der IT Fabrik.
 - Keine personenbezogenen Entscheidungen.
 
 **Kurz:** Die Security Master AI ist der **Kopf der
-IT Fabrik**. Sie koordiniert, korreliert, schlaegt vor.
+IT Firma**. Sie koordiniert, korreliert, schlaegt vor.
 Sie hat nichts mit den Mitarbeitern der Kunden zu tun.
 
 ### 2.2 Security AI (Ebene 2 — Kunde, lokal) — Der zentrale Hub
@@ -369,9 +369,9 @@ Bridges parallel zum Core entstehen.
       - Ruft HR-Bridge auf
       - Antwort: "Du hast 8 Tage uebrig."
 
-### Beispiel 4 — IT Fabrik fragt Kunden-Status
+### Beispiel 4 — IT Firma fragt Kunden-Status
 
-    IT Fabrik (Admin):
+    IT Firma (Admin):
       "Zeig mir alle Kunden mit kritischen Events."
 
     Security Master AI:
