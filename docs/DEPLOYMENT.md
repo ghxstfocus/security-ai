@@ -486,6 +486,12 @@ Installation: siehe §2.4.
 - nginx als Debian-Standard-Unit `nginx.service`
   ohne Anpassung.
 
+Nach Aenderungen an Python-Code oder
+Jinja-Templates: `systemctl restart
+security-ai-dashboard`. Ein reload reicht
+nicht, weil gunicorn Templates nicht neu
+laedt (kein `--preload`, kein `--reload`).
+
 Entwicklungs-Werkzeuge (Tests, Lint, Typen):
 
     .venv/bin/pip install -e .[dev]
