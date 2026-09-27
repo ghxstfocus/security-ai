@@ -17,6 +17,11 @@ waehrend Phase 3.5 und 3.6.
 Strukturiert nach Themen, nicht nach Nummern.
 Nummern nur da, wo eindeutig.
 
+Nummern 633-637 wurden in einem Handoff
+referenziert, aber nie belegt. Verworfen.
+Nummerierung laeuft ab 633 neu (Runde
+2026-09-27, Punkt 17 / 16).
+
 ## Verworfene Ansaetze
 
 ### conftest.py fuer Dashboard-Fixture
