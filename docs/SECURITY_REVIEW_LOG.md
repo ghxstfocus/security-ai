@@ -539,13 +539,10 @@ test_access_denied_errorhandler_403 abgedeckt.
     im journal wird im Heimnetz akzeptiert. Fix:
     gunicorn/uwsgi in eigener Runde. Kategorie 3.
 
-17. check_schema_version auch beim security_ai-Start.
-    Fix D (1cedb26) prueft die DB-Schema-Version nur
-    beim Dashboard-Start (create_app). Der security_ai-
-    Start hat heute keinen eigenen systemd-Pfad (nur
-    manueller Aufruf). Wenn dieser Start gebaut wird,
-    check_schema_version dort ebenfalls aufrufen.
-    Kategorie 3, eigener Block (Reviewer-Auflage 398).
+17 (erledigt, Commit <hash>): Kein security_ai-Startpfad
+    heute. check_schema_version dort nicht anwendbar.
+    Siehe Punkt 26 (Startpfad fehlt).
+    Kategorie 1 (Doku), Reviewer-Auflagen 398, 633.
 
 18. DEPLOYMENT 1 Topologie-Drift.
     docs/DEPLOYMENT.md Abschnitt 1 zeigt LXC 101
@@ -656,3 +653,12 @@ test_access_denied_errorhandler_403 abgedeckt.
     Markierung im Dashboard ist nicht geplant.
     Kategorie 3 (Audit/Nachweis-Integritaet).
     Kein Bau heute.
+
+26: security_ai-Startpfad fehlt komplett. Kein
+    __main__.py, keine systemd-Unit, kein
+    Start-Skript. Der Orchestrator wird heute
+    manuell gestartet. Wenn der Startpfad gebaut
+    wird: systemd-Unit (analog
+    security-ai-dashboard.service), __main__.py,
+    check_schema_version und Reviewer-Block.
+    Kategorie 3, eigener Block.

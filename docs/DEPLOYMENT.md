@@ -114,6 +114,11 @@ Konsequenz fuer CLI-Aufrufe:
 
 ## 3. Systemd-Service
 
+> Status: geplant, nicht implementiert.
+> Es gibt heute keine systemd-Unit security-ai.service.
+> Der Orchestrator wird manuell gestartet (siehe
+> SECURITY_REVIEW_LOG Punkt 26).
+
 ### 3.1 Unit-Datei anlegen
 
     nano /etc/systemd/system/security-ai.service
