@@ -795,10 +795,18 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     (Zeitraum, Begriff "Alarme" statt "Assessments",
     optional Link auf /alerts). Eigener Block.
 
-32. (offen) Klassifikations-Luecke: "Gibt es X?"
+32. (erledigt, 213ab7b) Klassifikations-Luecke: "Gibt es X?"
     matcht nicht _FACT_RE (nur "gab es"). Solche
     Fragen landen im Interpretations-Pfad statt
     im Fact-Pfad. Kategorie 3, eigener Block.
+    Erledigt in 213ab7b (Auflagen 804-811): _FACT_RE
+    um "gibt es" / "gibts" / "gibt's" erweitert.
+    Veto gegen Bewertungsworte (A792-Liste) in
+    _classify_question (A809). Neue Konstante
+    _CRITICAL_STATE_WORDS (A805) und Funktion
+    _has_critical_state_word (A806/A810).
+    _is_state_question, _answer_fact, Auto-Switch
+    und model_reason unveraendert.
 
 29 (erledigt, 0ede98f): Synonym-Mapping.
     Variante 2 (Werte-Synonyme). Neue Datei

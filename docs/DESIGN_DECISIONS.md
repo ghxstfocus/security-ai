@@ -991,16 +991,32 @@ eingreifen. Bei kritischen Assessments greift die Pflicht.
     _FACT_RE:
         wie viele | wieviele | welche kategorien |
         wie hoch | wie oft | wie lange |
-        gab es | liste | zeig mir
+        gab es | gibt es | gibts | gibt's |
+        liste | zeig mir
 
     _CONCEPT_RE:
         was ist | was bedeutet | wie funktioniert |
         erklaere | was sind
 
-    Reihenfolge (3.6.15d, Auflage 513):
-      if _FACT_RE: fact
+    Reihenfolge (3.6.15d, Auflage 513; erweitert um
+    Veto, Punkt 32, Auflagen 805-811):
+      if _FACT_RE and not _has_critical_state_word(q): fact
       elif _CONCEPT_RE and not _is_state_question: concept
       sonst: interpretation
+
+    Veto (Punkt 32, A805/A806): _has_critical_state_word
+    prueft die Frage gegen _CRITICAL_STATE_WORDS. Nur
+    Woerter, die eine Bewertung implizieren:
+      kritisch, alarm, vorfall, vorfaelle, vorfaellen,
+      bestaetigt, confirmed, security_alert,
+      security-alert, suspicion, verdacht, warnung,
+      warnungen.
+    "Auffaellig" ist bewusst NICHT dabei (Sachverhalts-
+    frage, kein Bewertungswort). "Status", "Info",
+    "Event" sind bewusst NICHT dabei (zu breit).
+    _is_state_question bleibt unveraendert (breitere
+    Semantik fuer den Auto-Switch); das Veto fuer den
+    fact-Pfad ist eine eigene, engere Regel.
 
     Wichtig (3.6.15d): concept nur, wenn NICHT
     Zustandsfrage. "Was ist heute Nacht passiert?"
