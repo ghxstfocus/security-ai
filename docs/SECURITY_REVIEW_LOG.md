@@ -22,6 +22,54 @@ referenziert, aber nie belegt. Verworfen.
 Nummerierung laeuft ab 633 neu (Runde
 2026-09-27, Punkt 17 / 16).
 
+## Diagnose 2026-09-27
+
+Gesundheits-Check vor der naechsten Runde
+(Auflagen 686-699). Kein Fix, nur Bestandsaufnahme.
+
+Erledigt (alle bestanden):
+- pytest --collect-only: 879.
+- pip check: No broken requirements found.
+- py_compile (alle .py): OK.
+- git fsck --full: keine Fehler, keine dangling objects.
+- sqlite3 PRAGMA integrity_check: ok.
+- systemctl status: active (running), gunicorn
+  Main + 2 Worker.
+- journalctl -p err (24h): keine Eintraege.
+- ss -ltnp: 5000 (127.0.0.1 gunicorn), 80+443
+  (nginx), 22 (sshd). Erwartet, nichts Fremdes.
+- nginx -t: OK.
+- curl HTTPS /login (127.0.0.1 + security-ai.local):
+  200.
+- curl direkt Flask 127.0.0.1:5000/login: 200.
+- gunicorn --check-config: OK (nach Betriebsakt).
+
+Finding:
+- pyproject.toml deklarierte dev-Dependencies
+  (pytest, pytest-cov, ruff, mypy), aber im venv
+  war nur pytest installiert. Behoben mit
+  `pip install -e .[dev]`. Jetzt: ruff 0.16.9,
+  mypy 2.3.1, pytest-cov 7.1.0.
+
+Bestandsaufnahme (nicht behoben, eigene Runde):
+- ruff check .: 435 Fehler, davon 334 automatisch
+  fixbar. Top-Kategorien:
+    I001 unsorted-imports: 102
+    UP017 datetime-timezone-utc: 94
+    F401 unused-import: 40
+    RUF022 unsorted-dunder-all: 33
+    UP037 quoted-annotation: 22
+    C408 unnecessary-collection-call: 22
+    BLE001 blind-except: 18
+    Rest kleinere Kategorien.
+- mypy apps core harness tools scripts:
+  87 Fehler in 29 von 111 Dateien. Ueberwiegend
+  fehlende Typannotationen (no-untyped-def),
+  Beispiel: apps/dashboard/app.py.
+
+Kein Fix in dieser Runde. Wenn der Nutzer will:
+eigene Runde "Lint/Typen-Aufraeumen" (Kategorie 1/2).
+
 ## Verworfene Ansaetze
 
 ### conftest.py fuer Dashboard-Fixture

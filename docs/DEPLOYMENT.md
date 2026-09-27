@@ -486,6 +486,12 @@ Installation: siehe §2.4.
 - nginx als Debian-Standard-Unit `nginx.service`
   ohne Anpassung.
 
+Entwicklungs-Werkzeuge (Tests, Lint, Typen):
+
+    .venv/bin/pip install -e .[dev]
+
+Enthaelt pytest, pytest-cov, ruff, mypy.
+
 ### 3d.5 Neuaufbau in Kurzform
 
     apt install nginx openssl sqlite3 nmap ca-certificates ssl-cert python3.11 python3.11-venv
