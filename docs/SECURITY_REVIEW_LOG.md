@@ -343,6 +343,10 @@ test_access_denied_errorhandler_403 abgedeckt.
   (test_setup_isolation). Punkte 13/14 erledigt.
   Punkt 21 neu (gemischte audit-logs).
 - 3.6.15d: Chat-Klassifikations-Bug behoben (f7b0fba).
+- Punkt 3 (e45bc87): create_principal erzwingt
+  device.read. Doku in PERMISSIONS.md und
+  DESIGN_DECISIONS §10. Fail closed beim Anlegen
+  statt beim Login.
 - Punkt 23 (dccebf1): chat_answered-Audit traegt
   model_reason auch in fact/detail_append/no_context.
   Drei neue Tests.
@@ -402,6 +406,12 @@ test_access_denied_errorhandler_403 abgedeckt.
 3. Rollen-Review: kein Principal ohne
    `device.read` anlegen (sonst 403 nach Login,
    weil `/` device.read erfordert).
+   Erledigt in e45bc87 (Punkt 3, 2026-09-27):
+   AccessService.create_principal prueft
+   device.read und wirft AccessServiceError
+   bei Rollen ohne device.read (Reviewer-GO
+   Variante B, Auflagen 597-602). Doku in
+   PERMISSIONS.md und DESIGN_DECISIONS §10.
 
 4. `WEB_SECURITY_CHECKLIST.md` § E auf strenge
    CSP korrigiert (kein `'unsafe-inline'`) —
