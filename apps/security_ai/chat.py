@@ -124,12 +124,52 @@ _CRITICAL_CATEGORIES = frozenset({"CONFIRMED", "SECURITY_ALERT"})
 # concept       -> LLM, kein Kontext-Zwang
 # interpretation -> LLM mit Kontext (7B via Auto-Switch)
 
+# Auflage 805-811 (Punkt 32): Veto-Wortliste fuer den
+# fact-Pfad. Nur Woerter, die eine Bewertung implizieren.
+# "Auffaellig" ist NICHT dabei (das ist eine Sachverhaltsfrage).
+# "Status", "Info", "Event" sind bewusst NICHT dabei (zu breit).
+_CRITICAL_STATE_WORDS = (
+    "kritisch",
+    "alarm",
+    "vorfall",
+    "vorfaelle",
+    "vorfaellen",
+    "bestaetigt",
+    "confirmed",
+    "security_alert",
+    "security-alert",
+    "suspicion",
+    "verdacht",
+    "warnung",
+    "warnungen",
+)
+
+
 _FACT_RE = re.compile(
     r"\b(wie\s+viele|wieviele|welche\s+kategorien|"
     r"wie\s+hoch|wie\s+oft|wie\s+lange|"
-    r"gab\s+es|liste|zeig\s+mir)\b",
+    r"gab\s+es|gibt\s+es|gibts|gibt's|"
+    r"liste|zeig\s+mir)\b",
     re.IGNORECASE,
 )
+
+
+def _has_critical_state_word(q: str) -> bool:
+    """
+    Auflage 810: Substring-Match gegen _CRITICAL_STATE_WORDS.
+
+    Nur fuer den fact-Pfad. Prueft, ob die Frage ein
+    Bewertungswort enthaelt. Flektierte Formen werden
+    durch Substring-Match mit erfasst ("alarm" matcht
+    auch "alarme").
+    """
+    if not isinstance(q, str):
+        return False
+    q_lower = q.lower()
+    for word in _CRITICAL_STATE_WORDS:
+        if word in q_lower:
+            return True
+    return False
 
 _CONCEPT_RE = re.compile(
     r"\b(was\s+ist|was\s+bedeutet|wie\s+funktioniert|"
@@ -149,7 +189,10 @@ def _classify_question(question: str) -> str:
     if not isinstance(question, str) or not question.strip():
         return "interpretation"
     q = question.lower()
-    if _FACT_RE.search(q):
+    # Auflage 809 (Punkt 32): Veto gegen Bewertungsworte.
+    # "Gibt es kritische Alarme?" -> interpretation,
+    # "Gibt es Auffaelligkeiten?" -> fact.
+    if _FACT_RE.search(q) and not _has_critical_state_word(q):
         return "fact"
     # Auflage 513/515/516: concept nur, wenn nicht Zustandsfrage.
     # "Was ist heute Nacht passiert?" ist Zustandsfrage und

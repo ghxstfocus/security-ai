@@ -88,6 +88,50 @@ class ClassifyTests(unittest.TestCase):
             "interpretation",
         )
 
+    # A807 (Punkt 32): "gibt es" im fact-Pfad, aber nur ohne
+    # Bewertungswort (_has_critical_state_word als Veto).
+    def test_gibt_es_auffaelligkeiten_is_fact(self):
+        self.assertEqual(
+            _classify_question("Gibt es Auffaelligkeiten?"),
+            "fact",
+        )
+
+    def test_gibt_es_portscans_is_fact(self):
+        self.assertEqual(
+            _classify_question("Gibt es Portscans?"),
+            "fact",
+        )
+
+    def test_gibt_es_mit_kontext_is_fact(self):
+        self.assertEqual(
+            _classify_question("Gibt es neue Geraete?"),
+            "fact",
+        )
+
+    def test_gibt_es_derzeit_auffaelligkeiten_is_fact(self):
+        self.assertEqual(
+            _classify_question("Gibt es derzeit Auffaelligkeiten?"),
+            "fact",
+        )
+
+    def test_gibt_es_kritische_alarme_is_interpretation(self):
+        self.assertEqual(
+            _classify_question("Gibt es kritische Alarme?"),
+            "interpretation",
+        )
+
+    def test_gibt_es_vorfaelle_is_interpretation(self):
+        self.assertEqual(
+            _classify_question("Gibt es Vorfaelle?"),
+            "interpretation",
+        )
+
+    def test_gibt_es_aktuell_kritische_alarme_is_interpretation(self):
+        self.assertEqual(
+            _classify_question("Gibt es aktuell kritische Alarme?"),
+            "interpretation",
+        )
+
 
 class ModelReasonConsistencyTests(unittest.TestCase):
     """A519: model_reason-Werte konsistent."""
