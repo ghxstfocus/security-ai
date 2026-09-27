@@ -147,6 +147,24 @@ Nicht Pflicht:
 Pflicht bleibt Pflicht: Ein Update ohne HEAD und
 Testzahl ist kein Update.
 
+Beispiel-Format (verbindlich):
+
+    REVIEWER-UPDATE — <Block> abgeschlossen
+
+    HEAD: <hash> (origin/main synchron?)
+    Tests: <gemessen> passed (Vollsuite, venv)
+
+    ABGESCHLOSSEN:
+    - <Block> (<commit>, <commit>)
+      Auflagen <N>-<M>.
+      - <was gebaut wurde>
+
+    OFFENE PUNKTE:
+    - <Punkt>: <Status>
+
+    NAECHSTER SCHRITT:
+    - <was als naechstes>
+
 ## Rollen
 
 - **Mensch** ist die Hand. Er fuehrt Befehle aus, pastet

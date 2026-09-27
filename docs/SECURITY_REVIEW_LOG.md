@@ -273,11 +273,13 @@ test_access_denied_errorhandler_403 abgedeckt.
 
 ## Chronologie
 
+Sortiert nach Commit-Zeit (aelteste zuerst, HEAD zuletzt).
+Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
+
 - 3.6.4: AuditReaderService.
 - Venv-Umstellung.
 - 3.6.5: Flask-App-Factory + RBAC-Middleware.
-- 3.6.6: Login + Logout + CSRF + Rate-Limit +
-  Audit.
+- 3.6.6: Login + Logout + CSRF + Rate-Limit + Audit.
 - 3.6.7a: Static (CSS, JS, SVG).
 - 3.6.7b: base.html + Partials + CSP.
 - 3.6.7c: login.html als Template.
@@ -286,41 +288,24 @@ test_access_denied_errorhandler_403 abgedeckt.
 - 3.6.8a: /inventory (device.read, InventoryService).
   Fix: CSS-Klassen an reale components.css angeglichen.
 - 3.6.8b: /alerts (alert.view, AuditReaderService).
-  Fix: AuditReaderService.list_recent_assessments nutzt
-  self._audit.base_dir (Audit-Quelle == App-Konfig).
-  Review: NO-GO-Korrektur war der base_dir-Bug.
+  Fix: list_recent_assessments nutzt self._audit.base_dir.
 - 3.6.8c: /approvals (approval.view + approval.decide,
   CSRF, Variante A um ApprovalQueue).
-  NO-GO-Korrekturen: unmatched-route-403-Test,
-  session_transaction-Helper, decision_reason-Anzeige.
 - 3.6.8d: /changes (change.view + change.create).
-  Review: NO-GO -> zwei Fehlerklassen eingefuehrt
-  (ServiceError Format, OperationError Betrieb).
+  Review: NO-GO -> zwei Fehlerklassen (ServiceError,
+  OperationError).
 - 3.6.8e: /chat + /api/chat (chat.ask, Rate-Limit,
   CSRF-Header, _inject_csrf).
-  Review: NO-GO -> CSRF-Header statt Body, 502 bei
-  LLM-Fehler, Rate-Limit jetzt, chat.js bedingt,
-  Test-Kontext app_context -> test_request_context.
 - 3.6.8f: /users (principal.manage, principal_to_view,
   MIN_PASSWORD_LEN=12, list_roles mit principal.manage).
-  Review: NO-GO -> create_principal ohne password_hash,
-  MIN_PASSWORD_LEN in der Service-Schicht, Test-Passwoerter
-  auf 12 Zeichen, self-deactivate verboten.
 - 3.6.8g: /roles (role.manage, role_to_view,
   permission_to_view, assign/revoke, self-critical
   Warnung bei Entzug aus eigener Rolle).
-  Review: GO mit Auflagen 179-189, Nachtrag 190-194
-  (praezise Warn-Bedingung, fester Wortlaut).
 - 3.6.8h: /audit (audit.read, Tag-Filter, UTC heute
   default, Detail mit formatiertem details, kein
   read_all im UI).
-  Review: GO mit Auflagen 195-206 (Query-Parameter
-  400, Pfad-Parameter 404, kein Reflexions-Dump).
 - 3.6.8i: /settings (role.manage, read-only Konfig-
-  Anzeige, kein SECRET_KEY, kein os.environ-Dump,
-  kein Existenz-Check).
-  Review: GO Variante A mit Auflagen 207-221
-  (Test-Umbenennung wegen tmp_path-Kollision).
+  Anzeige, kein SECRET_KEY, kein os.environ-Dump).
 - 3.6.8 Doku-Abschluss: 3beab99 (a-i alle [x]).
 - 3.6.10: responsive Tabellen (CSS-only, E+B).
 - 3.6.11: Hamburger-Navigation (Sidebar-Overlay,
@@ -330,65 +315,22 @@ test_access_denied_errorhandler_403 abgedeckt.
   nachgezogen, Audit-Log-Rechte korrigiert.
 - 3.6.13: Systemvoraussetzungen (DEPLOYMENT §3d).
 - 3.6.14: UI-Politur Alerts-Tabelle (bba4ac7).
-  Badge-Label statt Rohkategorie (Auflage 424),
+  Badge-Label statt Rohkategorie (A424),
   format_ts/format_score_label/format_score in
   apps/dashboard/filters.py, .badge nowrap.
   alert_row.html entfernt (verwaist).
-  test_dashboard_alerts.py an neue Semantik angepasst.
   Pro-Tabelle-Klassen als Punkt 19 verschoben.
 - 3.6.15a: Migrations-Tracking (ce25660),
   Schema-Check im Dashboard (1cedb26),
   ExecStartPre + DEPLOYMENT 3e (dd10214).
-  Punkt 15 erledigt.
 - 3.6.15b: Audit-Rechte fail closed (a3589db).
-  Fix 13 Option B (Modus-Check in write, kein
-  Silent Repair), Fix 14 (check_audit_logs beim
+  Fix 13 Option B, Fix 14 (check_audit_logs beim
   App-Start), Fix A (Test-Isolation in
-  OrchestratorTests.setUp), Fix C
-  (test_setup_isolation). Punkte 13/14 erledigt.
-  Punkt 21 neu (gemischte audit-logs).
-- 3.6.15d: Chat-Klassifikations-Bug behoben (f7b0fba).
-- Punkt 9 (c4a1fa0): Rate-Limit Multi-Worker.
-  SQLite-basiert (chat_rate_hits), BEGIN IMMEDIATE,
-  Fail closed. Migration 0009.
-- Punkt 19 (0b970ec): Pro-Tabelle-Klassen <500px.
-  Sieben Tabellen-Klassen, globale nth-child-Regel
-  ersetzt. Spaltenauswahl je Tabelle begruendet.
-  Auflagen 614-622.
-- Punkt 3 (e45bc87): create_principal erzwingt
-  device.read. Doku in PERMISSIONS.md und
-  DESIGN_DECISIONS §10. Fail closed beim Anlegen
-  statt beim Login.
-- Punkt 23 (dccebf1): chat_answered-Audit traegt
-  model_reason auch in fact/detail_append/no_context.
-  Drei neue Tests.
-- 3.6.16-topbar-usermenu (45853f3): <details>-
-  Dropdown mit Logout. person.svg lokal, kein JS,
-  kein Escape-Handler. CSRF-Feld im Logout-Formular.
-  A535/A536: eigener Zwischenblock. Der seit 3.6.7b
-  offene Logout-Button ist damit erledigt.
-- 3.6.16: Globale Suche (c3b962b). Migration 0008
-  (search.run, admin+operator). Neues Modul core/search/
-  (SearchRepository). SearchService mit Query-Validierung,
-  Permission-Filter pro Quelle, RA-Python-Filter.
-  Route GET /search, Template search.html,
-  Topbar-Suchfeld (topbar-title entfaellt).
-  28 neue Tests. Limite 20 pro Quelle (A531).
-- Punkt-22-Neumessung 2026-09-26 (25 Fragen, LLM live):
-  Sanity-Check feuert jetzt (2 Faelle), Auto-Switch
-  greift (10/15 LLM auf 7B), Concept bleibt 3B (5/5),
-  Fact-Pfad deterministisch (9). Retry 0, weil die
-  2 Contradictions bereits 7B waren. Punkt 22 erledigt.
-  Punkt 23 neu (Audit model_reason=null bei fact/detail).
-  B1: _classify_question -- concept nur, wenn nicht
-  _is_state_question. B2: _STATE_QUESTION_RE erweitert.
-  Auto-Switch bei jeder Interpretation mit kritischen
-  Assessments (nicht nur Zustandsfrage).
-  Live verifiziert: 3B concept -> 7B auto_critical_state.
-  Punkt 22 neu (Sanity-Check-Neumessung noetig).
+  OrchestratorTests.setUp), Fix C (test_setup_isolation).
+  Punkte 13/14 erledigt. Punkt 21 neu.
 - 3.6.15c: Fehlerklassen-Trennung (Punkte 5/6).
-  Variante D (Reviewer, Auflagen 502-506):
-  Repo-Fehler propagieren, Route behandelt direkt.
+  Variante D (Auflagen 502-506): Repo-Fehler
+  propagieren, Route behandelt direkt.
   Fuenf Commits:
     f2fc220 chat: ChatServiceError(ServiceError)
             + ChatOperationError(OperationError).
@@ -396,9 +338,76 @@ test_access_denied_errorhandler_403 abgedeckt.
             decide 404/409/400.
     c7f2649 inventory: InventoryOperationError.
     b0834d0 audit_reader: AuditReaderOperationError.
-    (Doku-Nachzug: dieser Commit.)
+    34e44c7 Doku-Nachzug.
   Punkte 5 und 6 erledigt.
-
+- 3.6.15d: Chat-Klassifikations-Bug behoben (f7b0fba).
+  B1: _classify_question -- concept nur, wenn nicht
+  _is_state_question. B2: _STATE_QUESTION_RE erweitert.
+  Auto-Switch bei jeder Interpretation mit kritischen
+  Assessments. Live verifiziert: 3B concept -> 7B.
+- Punkt-22-Neumessung 2026-09-26 (25 Fragen, LLM live,
+  Commit cca22ef):
+  Sanity-Check feuert jetzt (2 Faelle), Auto-Switch
+  greift (10/15 LLM auf 7B), Concept bleibt 3B (5/5),
+  Fact-Pfad deterministisch (9). Retry 0, weil die
+  2 Contradictions bereits 7B waren. Punkt 22 erledigt.
+- 3.6.16: Globale Suche (c3b962b, 6dd50fa).
+  Migration 0008 (search.run, admin+operator).
+  core/search/repository.py, core/services/
+  search_service.py, GET /search, search.html.
+  Topbar-Suchfeld (topbar-title entfaellt).
+  Limite 20 pro Quelle (A531). Punkte 365-379 + 523-560.
+- 3.6.16-topbar-usermenu (45853f3, 554d9ef):
+  <details>-Dropdown mit Logout. person.svg lokal,
+  kein JS. CSRF-Feld im Logout-Formular.
+  A535/A536: eigener Zwischenblock. Der seit 3.6.7b
+  offene Logout-Button ist damit erledigt.
+- Punkt 23 (dccebf1, 71a1095): chat_answered-Audit
+  traegt model_reason auch in fact/detail_append/
+  no_context. Drei neue Tests.
+- Commit A (08b94de): offene Punkte 2, 7, 18.
+  DEPLOYMENT §3e WorkingDirectory, Schema-Version
+  7->8, Topologie-Drift behoben.
+- Commit B (534a172): PROJECT_VISION aktualisiert,
+  Phasen 6-11 angelegt (DSGVO, Data Connectors,
+  LLM-Bridges, Kunden-Mitarbeiter-KI, Physische
+  Sicherheit, Ganzheitliche Korrelation).
+- WORKFLOW HR10 (d671aa8): Reviewer-Update nach
+  jedem Block, verbindlich.
+- Punkt 1 (b4c515c): AuditReaderError -> AuditJsonlError.
+- PROJECT_VISION neu (3328ef8, 5b3de3b GitHub).
+  Drei KI-Ebenen, Bridges, DSGVO, physische
+  Sicherheit. Bridge-Vorbereitbarkeit (90da86b).
+  Phasen 6-11 (706ab5e).
+- Punkt 3 (e45bc87): create_principal erzwingt
+  device.read. Doku in PERMISSIONS.md und
+  DESIGN_DECISIONS §10. Fail closed beim Anlegen
+  statt beim Login. Log-Markierung: 3b36753.
+- 3.6.17 (d4c6fa7): SearchRepository setzt
+  row_factory defensiv.
+- Punkt 19 (0b970ec, c05d4fe): Pro-Tabelle-Klassen
+  <500px. Sieben Tabellen-Klassen, globale
+  nth-child-Regel ersetzt. Auflagen 614-622.
+- Punkt 21 (1f28feb): Gemischte audit-logs.
+  21.-25.09. enthalten Burst-Eintraege aus
+  OrchestratorTests (210/176/38/14/30 Burst-Sekunden).
+  Fix in 3.6.15b. Dokumentiert in
+  audit-logs/README.md. Kein Eingriff in die Logs.
+- Punkt 17 (6f37fa5): check_schema_version beim
+  security_ai-Start geklaert (kein Startpfad heute).
+  Punkt 26 neu.
+- Nummerierungs-Vermerk (87aa614): 633-637 verworfen.
+- Punkt 16a (bd7d187): gunicorn + ProxyFix.
+  pyproject extra "prod", wsgi.py, ProxyFix,
+  gunicorn.conf.py, systemd-Unit. Login-Rate-Limit
+  jetzt pro Client (Punkt 27).
+- Punkt 9 (c4a1fa0, 26e8176): Rate-Limit Multi-Worker.
+  SQLite-basiert (chat_rate_hits, Migration 0009),
+  BEGIN IMMEDIATE, Fail closed.
+- Punkt 16b (b4a21e4): gunicorn control_socket_disable.
+  Verifikation: gunicorn --check-config OK,
+  systemd-Start OK, HTTPS /login 200, POST mit
+  falschem CSRF 400.
 
 ## Offene Punkte (Stand 3.6.8)
 

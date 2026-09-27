@@ -710,6 +710,12 @@ zum Anlegen (frueh). Rollen ohne `device.read`
 bleiben fuer Nicht-Login-Zwecke zulaessig
 (z. B. Service-Rollen).
 
+### Chat-Rate-Limit-Store (Punkt 9, c4a1fa0)
+
+RateLimitService nutzt SQLite (chat_rate_hits),
+Multi-Worker-fest und Fail closed bei Fehler.
+Login-Rate-Limit bleibt getrennt in login_attempts.
+
 ### Fail closed
 
 - AccessChecker.has_permission -> False bei jedem Fehler
@@ -1271,6 +1277,13 @@ Responsive Loesung heute (3.6.10):
   angefasst (A553-A557).
 - risk_assessments kommen aus JSONL (read_risk_assessments),
   Python-Filter im SearchService (A557).
+
+### ProxyFix (Punkt 16a, bd7d187)
+
+ProxyFix aktiv (x_for=1, x_proto=1, x_host=1),
+weil nginx einziger vorgelagerter Proxy ist.
+Login-Rate-Limit greift dadurch pro Client
+statt global.
 
 ### server_name (3.6.12)
 

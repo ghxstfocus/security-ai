@@ -239,22 +239,26 @@ abgeschlossen. Phase 3.6 (Web-Dashboard):
 3.6.1-3.6.7e fertig.
 Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
 a-i.
-Phase 3.6.10, 3.6.11, 3.6.12, 3.6.13, 3.6.14,
-3.6.15a, 3.6.15b, 3.6.15c, 3.6.15d, 3.6.16 fertig.
-HEAD 71a1095, Working Tree sauber.
+Phase 3.6.10 bis 3.6.17 fertig (inkl. 16a/16b
+gunicorn, Punkt 9 Rate-Limit, Punkt 19 Pro-Tabelle).
+HEAD b4a21e4, Working Tree sauber.
 
-Aktuell offen (Reihenfolge vom Reviewer):
-1. Spaeter: Punkte 9 (Rate-Limit Multi-Worker),
-   16 (gunicorn), 20 (Test-Erwartungen bei gewollter
-   Produktaenderung -- Muster dokumentiert),
-   21 (gemischte audit-logs 21.-24. Sep).
+Aktuell offen (bewusst, kein Bau heute):
+- Punkt 11: SSH-Zugang Windows -> CT102
+  (Betriebsakt, jederzeit).
+- Punkt 24: assign_role device.read (bedingt).
+- Punkt 25: Test-Artefakte im Dashboard
+  (kein Bau geplant).
+- Punkt 26: security_ai-Startpfad fehlt
+  (Kategorie 3, eigener Block, wenn gebaut wird).
 
-Offene Punkte 1-23 in docs/SECURITY_REVIEW_LOG.md.
-Chronologie bis 3.6.15d dokumentiert.
+Offene Punkte 1-27 in docs/SECURITY_REVIEW_LOG.md.
+Chronologie bis b4a21e4 dokumentiert (sortiert nach
+Commit-Zeit).
 DESIGN_DECISIONS: §16 (Web-Dashboard) um server_name,
 default_server, display-Konsequenz erweitert.
 
-Tests: 864 gruen (venv, pytest 9.1.1).
+Tests: 879 gruen (venv, pytest 9.1.1).
 Hinweis: Der vorher genannte Wert 728 war ungenau;
 korrekt war 720 vor 3.6.15a. Quelle der Wahrheit ist
 `pytest --collect-only -q`.

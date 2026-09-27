@@ -744,7 +744,7 @@ Fix:
 
 Tests: 864 passed (Vollsuite, venv).
 
-## Zwischenblock Punkt 16 — gunicorn + ProxyFix  [~]
+## Zwischenblock Punkt 16 — gunicorn + ProxyFix  [x]
 
 Ziel: Flask dev-Server durch gunicorn ersetzen;
 Login-Rate-Limit pro Client statt global.
@@ -760,11 +760,13 @@ Erledigt (16a, Commit <hash>):
 - systemd-Unit ExecStart auf gunicorn.
 - Tests: ProxyFix aktiv, wsgi-Quelltext.
 
-Offen (16b, wartet auf Betriebsakt):
-- gunicorn --check-config.
-- systemd-Start und curl-Tests.
-- Fail closed, solange audit-logs/2026-09-25/26
-  root:root sind.
+Erledigt (16b, Commit b4a21e4, nach Betriebsakt):
+- gunicorn --check-config: OK (als security-ai).
+- systemd-Start: active, Main + 2 Worker.
+- ss -ltnp: 127.0.0.1:5000.
+- HTTPS /login -> 200, POST mit falschem
+  CSRF -> 400.
+- control_socket_disable = True.
 
 ## Zwischenblock Punkt 9 — Rate-Limit Multi-Worker  [x]
 
