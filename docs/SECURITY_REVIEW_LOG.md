@@ -463,6 +463,10 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   SVG-Farben (#9ca3af), Spaltennamen anwenderfreundlich
   (alle 7 Listen), Sidebar-Namen (Freigaben, Aenderungen,
   Protokoll), Suchquellen-Namen (format_source_label).
+- Punkt 30 (f737d3f): Links im Chat (fact/detail_append).
+  core/context/links.py, API-Antwort 7 Schluessel.
+- Punkt 29 (<commit>): Wert-Synonyme fuer die Suche.
+  synonyms.yaml, synonyms.py, SearchService-Erweiterung.
 - 3.6.18a: risk_assessments.category durchsuchbar
   (Bugfix aus 3.6.16). Punkt 29 neu (Synonym-
   Mapping offen).
@@ -796,16 +800,11 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     Fragen landen im Interpretations-Pfad statt
     im Fact-Pfad. Kategorie 3, eigener Block.
 
-29. Suchbegriffe wie "alarme", "alerts", "freigaben"
-    finden keine Treffer. Grund: kein Synonym-Mapping.
-    Der Nutzer muss die englischen RiskCategory-Werte
-    oder Quellennamen tippen. Kategorie 3, eigener
-    Block (Variante B/C).
-    Teil-Fix in 3.6.18a: category ist jetzt durchsuchbar
-    (CONFIRMED, SECURITY_ALERT, ...). Deutsche Synonyme
-    bleiben offen.
-    Konkret: die Suche findet nur technische Feldwerte
-    (IDs, Codes, rule_id, category), nicht die in der
-    UI angezeigten Begriffe (Alarme, Freigaben,
-    Aenderungen). Siehe docs/WERKZEUGE.md,
-    Abschnitt "Suche".
+29 (erledigt, <commit>): Synonym-Mapping.
+    Variante 2 (Werte-Synonyme). Neue Datei
+    core/search/synonyms.yaml, neues Modul
+    core/search/synonyms.py (load_synonyms,
+    expand_query). SearchService erweitert
+    Suchbegriffe auf Synonym-Zielwerte.
+    Keine Quellen-Synonyme (Variante 1 verworfen).
+    Kategorie 3, Auflagen 776-790.

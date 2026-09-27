@@ -115,6 +115,20 @@ Limit: 20 Treffer pro Quelle (Auflage 368).
 Die Suche liefert nur die Quellen, fuer die der
 Principal die Berechtigung hat (A525/A526).
 
+### Wert-Synonyme (Punkt 29)
+
+Suchbegriffe werden auf Synonym-Zielwerte erweitert.
+Quelle: core/search/synonyms.yaml.
+Beispiele:
+- alarm        -> category=SECURITY_ALERT.
+- verdacht     -> category=SUSPICION.
+- freigegeben  -> status=granted (approvals),
+                  status=approved (changes).
+
+Kein Quellen-Synonym. "alarme" findet keine
+risk_assessments (Punkt 29: Variante 1 verworfen).
+Die normale String-Suche bleibt.
+
 ### Was die Suche NICHT findet
 
 - Anzeigenamen aus der UI (z. B. "Alarme",

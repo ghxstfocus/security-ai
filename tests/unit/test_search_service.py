@@ -157,3 +157,93 @@ class TestRiskAssessments:
         result = svc.search("admin1", "security_alert")
         assert "risk_assessments" in result
         assert len(result["risk_assessments"]) == 1
+
+
+# --- Punkt 29: Synonym-Erweiterung (A786) --------------------------- #
+
+class _SynRepo:
+    """Repo, das die Dedup-Felder liefert (request_id, change_id)."""
+
+    def __init__(self):
+        self.approvals_calls = []
+        self.changes_calls = []
+
+    def search_approvals(self, q, limit):
+        self.approvals_calls.append(q)
+        # q="granted" oder q="freigegeben" -> ein Treffer
+        if q in ("granted", "freigegeben"):
+            return [{"request_id": "APR-2026-00001", "status": "granted"}]
+        return []
+
+    def search_changes(self, q, limit):
+        self.changes_calls.append(q)
+        if q in ("approved", "freigegeben"):
+            return [{"change_id": "CHG-2026-00042", "status": "approved"}]
+        return []
+
+
+def test_synonym_alarm_findet_security_alert():
+    ra = [
+        {"audit_id": "A1", "event_id": "E1", "rule_id": "r",
+         "tool": "risk_engine", "category": "SECURITY_ALERT"},
+        {"audit_id": "A2", "event_id": "E2", "rule_id": "r",
+         "tool": "risk_engine", "category": "SUSPICION"},
+    ]
+    svc = _svc({"audit.read"}, ra=ra)
+    result = svc.search("admin1", "alarm")
+    assert "risk_assessments" in result
+    cats = [e["category"] for e in result["risk_assessments"]]
+    assert "SECURITY_ALERT" in cats
+
+
+def test_synonym_verdacht_findet_suspicion():
+    ra = [
+        {"audit_id": "A1", "event_id": "E1", "rule_id": "r",
+         "tool": "risk_engine", "category": "SUSPICION"},
+        {"audit_id": "A2", "event_id": "E2", "rule_id": "r",
+         "tool": "risk_engine", "category": "CONFIRMED"},
+    ]
+    svc = _svc({"audit.read"}, ra=ra)
+    result = svc.search("admin1", "verdacht")
+    assert "risk_assessments" in result
+    cats = [e["category"] for e in result["risk_assessments"]]
+    assert cats == ["SUSPICION"]
+
+
+def test_synonym_freigegeben_findet_approvals_und_changes():
+    repo = _SynRepo()
+    svc = SearchService(
+        repo=repo,
+        audit_reader=lambda **kw: [],
+        checker=_FakeChecker({"approval.view", "change.view"}),
+    )
+    result = svc.search("admin1", "freigegeben")
+    assert "approvals" in result
+    assert result["approvals"][0]["status"] == "granted"
+    assert "changes" in result
+    assert result["changes"][0]["status"] == "approved"
+
+
+def test_synonym_dedup_bei_doppeltem_treffer():
+    repo = _SynRepo()
+    svc = SearchService(
+        repo=repo,
+        audit_reader=lambda **kw: [],
+        checker=_FakeChecker({"approval.view"}),
+    )
+    result = svc.search("admin1", "freigegeben")
+    # Obwohl approvals zweimal gerufen wird (q + q_synonym),
+    # nur ein Treffer in der Antwort (Dedup per request_id).
+    assert len(result["approvals"]) == 1
+
+
+def test_kein_synonym_bei_unbekanntem_begriff():
+    repo = _SynRepo()
+    svc = SearchService(
+        repo=repo,
+        audit_reader=lambda **kw: [],
+        checker=_FakeChecker({"approval.view"}),
+    )
+    result = svc.search("admin1", "unbekannt")
+    # Keine Treffer, aber keine Exception.
+    assert "approvals" not in result

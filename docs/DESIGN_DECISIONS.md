@@ -808,6 +808,15 @@ gefangen -> globaler 500.
 LLM-Fehler werden nicht in OperationError gewickelt.
 Sie haben eigene Semantik (502 Upstream).
 
+### Wert-Synonyme fuer die Suche (Punkt 29)
+
+Suchbegriffe werden auf Synonym-Zielwerte erweitert
+(core/search/synonyms.yaml + synonyms.py).
+Beispiel: "alarm" -> category=SECURITY_ALERT.
+Nur Werte, nicht Quellen. Die normale String-Suche
+bleibt zusaetzlich. Dedup pro Quelle (Audit-ID,
+Request-ID, Change-ID). Kein Regex, kein Stemming.
+
 ### Suchfelder pro Quelle (Auflage 530, 3.6.16)
 
 Suchfelder pro Quelle werden in Auflage 530 (3.6.16)

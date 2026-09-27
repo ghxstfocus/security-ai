@@ -1,0 +1,56 @@
+# Synonyme fuer die Suche (Punkt 29, Auflagen 776-790).
+#
+# Struktur:
+#   <feld>:
+#     <zielwert>:
+#       - synonym1
+#       - synonym2
+#
+# Der Suchbegriff wird case-insensitiv auf
+# diese Synonyme geprueft. Wenn ein Synonym
+# passt, wird zusaetzlich der Zielwert gesucht.
+#
+# Kein Regex, kein Stemming, keine unscharfe
+# Suche. Nur exakte Synonym-Ersetzung.
+
+risk_category:
+  EVENT:
+    - ereignis
+    - normal
+  ANOMALY:
+    - anomalie
+    - unauffaellig
+  SUSPICION:
+    - verdacht
+    - warnung
+  SECURITY_ALERT:
+    - alarm
+    - sicherheitsalarm
+  CONFIRMED:
+    - kritisch
+    - bestaetigt
+    - vorfall
+
+approval_status:
+  pending:
+    - offen
+    - wartend
+  granted:
+    - freigegeben
+    - genehmigt
+  rejected:
+    - abgelehnt
+  expired:
+    - abgelaufen
+
+change_status:
+  draft:
+    - entwurf
+  pending_review:
+    - wartet auf review
+  approved:
+    - freigegeben
+  deployed:
+    - ausgerollt
+  rolled_back:
+    - zurueckgerollt
