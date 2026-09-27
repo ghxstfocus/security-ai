@@ -465,7 +465,7 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Protokoll), Suchquellen-Namen (format_source_label).
 - Punkt 30 (f737d3f): Links im Chat (fact/detail_append).
   core/context/links.py, API-Antwort 7 Schluessel.
-- Punkt 29 (<commit>): Wert-Synonyme fuer die Suche.
+- Punkt 29 (0ede98f): Wert-Synonyme fuer die Suche.
   synonyms.yaml, synonyms.py, SearchService-Erweiterung.
 - 3.6.18a: risk_assessments.category durchsuchbar
   (Bugfix aus 3.6.16). Punkt 29 neu (Synonym-
@@ -800,7 +800,7 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     Fragen landen im Interpretations-Pfad statt
     im Fact-Pfad. Kategorie 3, eigener Block.
 
-29 (erledigt, <commit>): Synonym-Mapping.
+29 (erledigt, 0ede98f): Synonym-Mapping.
     Variante 2 (Werte-Synonyme). Neue Datei
     core/search/synonyms.yaml, neues Modul
     core/search/synonyms.py (load_synonyms,
