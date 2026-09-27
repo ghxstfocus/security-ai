@@ -27,6 +27,10 @@ scanner = [
     "docker>=7.0",
 ]
 
+prod = [
+    "gunicorn>=21.0",
+]
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"

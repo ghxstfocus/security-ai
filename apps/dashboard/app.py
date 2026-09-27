@@ -58,6 +58,16 @@ def create_app(
     secret_key: str | None = None,
 ) -> Flask:
     app = Flask(__name__)
+
+    # Punkt 16 (Auflage 649): ProxyFix nur, weil
+    # nginx der einzige vorgelagerte Proxy ist
+    # (Flask bindet auf 127.0.0.1:5000). Bei einem
+    # zweiten Proxy: neue Bewertung, Werte anpassen.
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=1, x_proto=1, x_host=1,
+    )
     app.config["SECRET_KEY"] = (
         secret_key if secret_key is not None
         else get_secret_key()

@@ -465,6 +465,10 @@ test_access_denied_errorhandler_403 abgedeckt.
    ist In-Memory (Single-Process). Bei mehreren
    Workern gemeinsamer Store (Redis/DB)
    (Auflage 98, 3.6.8e).
+   Nach gunicorn (Punkt 16a, Commit <hash>): 2 Worker
+   -> 2 getrennte Rate-Limit-Sichten. Effektiv
+   2x Limit pro Fenster. Der Fix (Redis/DB) kommt
+   in einem eigenen Block.
 
 10. HTTPS fuer Dashboard-Test im Browser:
     SESSION_COOKIE_SECURE=True (apps/dashboard/app.py:56)
@@ -538,11 +542,26 @@ test_access_denied_errorhandler_403 abgedeckt.
     DEPLOYMENT 3e + deploy/systemd/-Vorlage).
     Der Punkt bleibt hier als Referenz stehen.
 
-16. Flask dev-Server-Warnung.
-    Der Service laeuft heute als Flask-dev-Server hinter
-    nginx. Die Warnung "This is a development server"
-    im journal wird im Heimnetz akzeptiert. Fix:
-    gunicorn/uwsgi in eigener Runde. Kategorie 3.
+16a (erledigt, Commit <hash>): gunicorn + ProxyFix.
+    - pyproject extra "prod" mit gunicorn>=21.0.
+    - apps/dashboard/wsgi.py (create_app(), kein
+      __main__, kein Debug).
+    - app.py: ProxyFix (x_for=1, x_proto=1, x_host=1).
+      Nur, weil nginx der einzige vorgelagerte
+      Proxy ist (Flask bindet 127.0.0.1:5000).
+    - deploy/gunicorn.conf.py (2 Worker, 2 Threads,
+      timeout 180, journal-Logging).
+    - deploy/systemd/security-ai-dashboard.service:
+      ExecStart auf gunicorn.
+    - Tests: ProxyFix aktiv, wsgi.py-Quelltext.
+    Kategorie 3, Auflagen 642-655.
+
+16b (offen, wartet auf Betriebsakt): systemd-Start
+    mit gunicorn verifizieren. gunicorn --check-config,
+    curl /login, Login-POST, ss :5000. Wartet auf
+    chown/chmod der zwei root:root-Dateien in
+    audit-logs/ (25./26.09.), sonst fail closed.
+    Kategorie 3, Auflagen 656-659.
 
 17 (erledigt, Commit <hash>): Kein security_ai-Startpfad
     heute. check_schema_version dort nicht anwendbar.
@@ -667,3 +686,10 @@ test_access_denied_errorhandler_403 abgedeckt.
     security-ai-dashboard.service), __main__.py,
     check_schema_version und Reviewer-Block.
     Kategorie 3, eigener Block.
+
+27. Login-Rate-Limit nutzte request.remote_addr
+    (= 127.0.0.1 hinter nginx). 5 Fehlversuche
+    sperrten global, nicht pro Client. Fix:
+    ProxyFix (Punkt 16a, Commit <hash>).
+    Verifikation wartet auf Betriebsakt (16b).
+    Kategorie 3, Auflagen 650.

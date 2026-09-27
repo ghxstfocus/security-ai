@@ -508,6 +508,13 @@ Keine Secrets in dieser Datei.
 
 ## 3e. Migrationspflicht
 
+> Produktionsstart (Punkt 16, seit 2026-09-27):
+> `pip install -e .[prod]` installiert gunicorn.
+> Der Dashboard-Start laeuft ueber gunicorn
+> (deploy/gunicorn.conf.py), nicht mehr ueber den
+> Flask dev-Server. `ExecStart` der systemd-Unit
+> entsprechend angepasst.
+
 Seit 3.6.15a traegt apply_migrations jede angewandte
 Migration in schema_migrations ein. Beim App-Start prueft
 check_schema_version (Fix D), ob die DB-Version zur

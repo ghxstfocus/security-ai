@@ -744,6 +744,28 @@ Fix:
 
 Tests: 864 passed (Vollsuite, venv).
 
+## Zwischenblock Punkt 16 — gunicorn + ProxyFix  [~]
+
+Ziel: Flask dev-Server durch gunicorn ersetzen;
+Login-Rate-Limit pro Client statt global.
+
+Auflagen 642-659 (Kategorie 3).
+
+Erledigt (16a, Commit <hash>):
+- pyproject extra "prod": gunicorn>=21.0.
+- apps/dashboard/wsgi.py.
+- app.py: ProxyFix (x_for=1, x_proto=1, x_host=1).
+- deploy/gunicorn.conf.py (2 Worker, 2 Threads,
+  timeout 180, journal).
+- systemd-Unit ExecStart auf gunicorn.
+- Tests: ProxyFix aktiv, wsgi-Quelltext.
+
+Offen (16b, wartet auf Betriebsakt):
+- gunicorn --check-config.
+- systemd-Start und curl-Tests.
+- Fail closed, solange audit-logs/2026-09-25/26
+  root:root sind.
+
 ## Phase 5 — Admin AI  [ ]
 
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI

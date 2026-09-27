@@ -1,5 +1,5 @@
 # Quelle: /etc/systemd/system/security-ai-dashboard.service
-# Stand: 2026-09-25
+# Stand: 2026-09-27 (Punkt 16: gunicorn)
 # Bei Aenderungen: systemctl daemon-reload
 #
 # Diese Datei ist die Repo-Vorlage der aktiven Unit.
@@ -21,7 +21,11 @@ Group=security-ai
 WorkingDirectory=/opt/security-ai
 EnvironmentFile=/opt/security-ai/.env
 ExecStartPre=/opt/security-ai/.venv/bin/python3 /opt/security-ai/scripts/init_db.py --no-principal
-ExecStart=/opt/security-ai/.venv/bin/python3 -m apps.dashboard.app
+# Punkt 16 (A652): gunicorn statt Flask dev-Server.
+# Konfiguration: deploy/gunicorn.conf.py.
+ExecStart=/opt/security-ai/.venv/bin/gunicorn \
+    -c /opt/security-ai/deploy/gunicorn.conf.py \
+    apps.dashboard.wsgi:app
 Restart=always
 RestartSec=10
 StandardOutput=journal
