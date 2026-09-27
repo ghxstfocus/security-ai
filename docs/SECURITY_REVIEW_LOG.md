@@ -796,9 +796,30 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     (links neu, A768). Modul core/context/links.py.
     Kategorie 3, Auflagen 757-772, Variante 4.
 
-31. (offen) Fact-Antwort-Stil: Anzeige-Anker
+31. (erledigt, 7a92b54) Fact-Antwort-Stil: Anzeige-Anker
     (Zeitraum, Begriff "Alarme" statt "Assessments",
     optional Link auf /alerts). Eigener Block.
+    Erledigt in 7a92b54 (Auflagen 821-854), Teil 1+2:
+    - CATEGORY_LABELS in core/risk/models.py (A823).
+      filters.py importiert von dort.
+    - _answer_fact nutzt _label(cat) und
+      _ORDERED_CATEGORIES (A821/A824).
+    - "Assessments" -> "Vorkommen" (A825).
+    - ContextBundle.since_hours (A837), durchgereicht
+      von ChatService.ask (A844/A845) und
+      ContextBuilder.build (A846).
+    - _format_hours (A839) fuer dynamischen Zeitraum.
+    Teil 3 (Link auf /alerts) als Punkt 33.
+
+33. (offen) Fact-Pfad liefert keinen Link auf /alerts.
+    extract_links (Punkt 30) erkennt nur IDs (AUD, CHG,
+    APR, IPv4) und laeuft nur in apps/dashboard/
+    routes_chat.py, nicht im ChatService. Die Link-
+    Whitelist enthaelt /alerts/ nicht. Wenn ein
+    Navigations-Hinweis auf /alerts gewuenscht ist:
+    eigener Block mit Bestandsaufnahme, wie der Link
+    transportiert wird (Text-Marker, separates Feld,
+    oder Route-Hinweis). Kein Markup im Text.
 
 32. (erledigt, 213ab7b) Klassifikations-Luecke: "Gibt es X?"
     matcht nicht _FACT_RE (nur "gab es"). Solche

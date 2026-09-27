@@ -1084,6 +1084,20 @@ Wenn interpretation und LLM-Antwort dem Kontext widerspricht:
 - Audit chat_answer_contradicts_context.
 - Optional Retry mit 7B.
 
+### Anzeige-Labels und Zeitraum im Fact-Pfad (Punkt 31)
+
+Der Fact-Pfad nutzt die Anzeige-Labels aus
+core/risk/models.py (CATEGORY_LABELS). Rohkategorien
+werden nicht angezeigt (Auflage 829).
+Reihenfolge nach Schweregrad absteigend:
+CONFIRMED, SECURITY_ALERT, SUSPICION, ANOMALY, EVENT.
+Der Begriff "Assessments" wird im Fact-Text durch
+"Vorkommen" ersetzt.
+
+ChatService.ask nimmt since_hours (Default 24). Der
+Wert fliesst in ContextBundle.since_hours und wird
+in _answer_fact zur Anzeige genutzt (Auflage 854).
+
 ## 15. Redaction / Prompt-Injection-Schutz (Phase 3.5)
 
 ### Prinzip
