@@ -54,6 +54,22 @@ class SearchChainTests(unittest.TestCase):
         self.conn.close()
         self.tmp.cleanup()
 
+    def test_kategorie_im_risk_assessment_suchbar(self):
+        # A738: category wird durchsucht.
+        ra = [
+            {"audit_id": "AUD-X", "event_id": "EVT-X",
+             "rule_id": "port_scan", "tool": "risk_engine",
+             "category": "CONFIRMED"},
+        ]
+        svc = SearchService(
+            repo=SearchRepository(self.conn),
+            audit_reader=lambda **kw: ra,
+            checker=_Checker(),
+        )
+        result = svc.search("admin1", "confirmed")
+        assert "risk_assessments" in result
+        assert result["risk_assessments"][0]["category"] == "CONFIRMED"
+
     def test_drei_quellen(self):
         svc = SearchService(
             repo=SearchRepository(self.conn),

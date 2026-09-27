@@ -68,7 +68,10 @@ SOURCE_PERMISSION = {
 }
 
 # Felder fuer den risk_assessments-Python-Filter (A557).
-RA_FIELDS = ("audit_id", "event_id", "rule_id", "tool")
+# Auflage 735 (3.6.18a): category ergaenzt.
+# Der Filter laeuft in Python (risk_assessments
+# kommen aus JSONL, kein SQL).
+RA_FIELDS = ("audit_id", "event_id", "rule_id", "tool", "category")
 
 
 class SearchServiceError(ServiceError):

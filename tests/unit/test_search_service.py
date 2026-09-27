@@ -131,3 +131,29 @@ class TestRiskAssessments:
                "event_id": None, "rule_id": None, "tool": None}]
         svc = _svc({"audit.read"}, ra=ra)
         assert "risk_assessments" not in svc.search("admin1", "xyz")
+
+    def test_ra_filter_by_category(self):
+        ra = [
+            {"audit_id": "AUD-1", "event_id": "E1",
+             "rule_id": "r1", "tool": "t1",
+             "category": "CONFIRMED"},
+            {"audit_id": "AUD-2", "event_id": "E2",
+             "rule_id": "r2", "tool": "t2",
+             "category": "SUSPICION"},
+        ]
+        svc = _svc({"audit.read"}, ra=ra)
+        result = svc.search("admin1", "CONFIRMED")
+        assert "risk_assessments" in result
+        assert len(result["risk_assessments"]) == 1
+        assert result["risk_assessments"][0]["category"] == "CONFIRMED"
+
+    def test_ra_filter_by_category_lowercase(self):
+        ra = [
+            {"audit_id": "AUD-1", "event_id": "E1",
+             "rule_id": "r1", "tool": "t1",
+             "category": "SECURITY_ALERT"},
+        ]
+        svc = _svc({"audit.read"}, ra=ra)
+        result = svc.search("admin1", "security_alert")
+        assert "risk_assessments" in result
+        assert len(result["risk_assessments"]) == 1

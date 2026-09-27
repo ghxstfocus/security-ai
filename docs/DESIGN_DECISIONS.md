@@ -808,6 +808,13 @@ gefangen -> globaler 500.
 LLM-Fehler werden nicht in OperationError gewickelt.
 Sie haben eigene Semantik (502 Upstream).
 
+### Suchfelder pro Quelle (Auflage 530, 3.6.16)
+
+Suchfelder pro Quelle werden in Auflage 530 (3.6.16)
+definiert. Bei jeder Aenderung an einer Quelle pruefen,
+ob ein Feld ergaenzt oder entfernt werden muss.
+Stand 3.6.18a: category bei risk_assessments ergaenzt.
+
 ### Kontext-Aufbau fuer den Chat (Punkt 28)
 
 Der Kontext fuer ChatService.ask liegt in

@@ -463,6 +463,9 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   SVG-Farben (#9ca3af), Spaltennamen anwenderfreundlich
   (alle 7 Listen), Sidebar-Namen (Freigaben, Aenderungen,
   Protokoll), Suchquellen-Namen (format_source_label).
+- 3.6.18a: risk_assessments.category durchsuchbar
+  (Bugfix aus 3.6.16). Punkt 29 neu (Synonym-
+  Mapping offen).
 - Punkt 28 (a2b58c1): Dashboard-Chat bekommt Kontext
   (core/context/builder.build_chat_context). CLI und
   Dashboard nutzen denselben Builder.
@@ -774,3 +777,12 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     neues Modul core/context/ mit build_chat_context.
     CLI und Dashboard nutzen denselben Builder.
     Kategorie 3, Auflagen 719-728, Variante C.
+
+29. Suchbegriffe wie "alarme", "alerts", "freigaben"
+    finden keine Treffer. Grund: kein Synonym-Mapping.
+    Der Nutzer muss die englischen RiskCategory-Werte
+    oder Quellennamen tippen. Kategorie 3, eigener
+    Block (Variante B/C).
+    Teil-Fix in 3.6.18a: category ist jetzt durchsuchbar
+    (CONFIRMED, SECURITY_ALERT, ...). Deutsche Synonyme
+    bleiben offen.
