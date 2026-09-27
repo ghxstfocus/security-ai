@@ -48,6 +48,10 @@ class SearchRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:
         if conn is None:
             raise ValueError("conn ist Pflicht")
+        # 3.6.17: row_factory defensiv setzen, konsistent
+        # zu ChangeRepository/ApprovalRepository.
+        if conn.row_factory is None:
+            conn.row_factory = sqlite3.Row
         self._conn = conn
 
     def _rows_to_dicts(

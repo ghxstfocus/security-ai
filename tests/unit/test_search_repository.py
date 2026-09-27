@@ -104,3 +104,38 @@ class TestSearchRepository:
 
     def test_escape_like_ordre(self):
         assert escape_like("a%b_c\\d") == "a\\%b\\_c\\\\d"
+
+class TestSearchRepositoryRawConnection:
+    """3.6.17: SearchRepository setzt row_factory defensiv."""
+
+    def test_search_repository_with_raw_connection(self):
+        import sqlite3 as _sq
+        # Rohe Verbindung ohne row_factory.
+        conn = _sq.connect(":memory:")
+        assert conn.row_factory is None
+        conn.execute(
+            "CREATE TABLE devices ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "identifier TEXT NOT NULL UNIQUE, "
+            "entity_name TEXT, "
+            "network_type TEXT, "
+            "first_seen TEXT NOT NULL, "
+            "last_seen TEXT NOT NULL, "
+            "notes TEXT)"
+        )
+        conn.execute(
+            "INSERT INTO devices (identifier, entity_name, "
+            "network_type, first_seen, last_seen) "
+            "VALUES (?, ?, ?, ?, ?)",
+            ("192.168.178.99", "kamera-raw", "Hauptnetz",
+             "2026-09-27T10:00:00+00:00",
+             "2026-09-27T10:00:00+00:00"),
+        )
+        conn.commit()
+        repo = SearchRepository(conn)
+        rows = repo.search_devices("kamera", 20)
+        assert isinstance(rows, list)
+        assert len(rows) == 1
+        assert isinstance(rows[0], dict)
+        assert rows[0]["identifier"] == "192.168.178.99"
+        conn.close()
