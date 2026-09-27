@@ -766,6 +766,27 @@ Offen (16b, wartet auf Betriebsakt):
 - Fail closed, solange audit-logs/2026-09-25/26
   root:root sind.
 
+## Zwischenblock Punkt 9 — Rate-Limit Multi-Worker  [x]
+
+Ziel: Rate-Limit fuer /api/chat Multi-Worker-fest.
+Ausloeser: gunicorn mit 2 Workern (Punkt 16a) ->
+In-Memory-Limit verdoppelte sich faktisch.
+
+Kategorie 3, Auflagen 663-676, Option B.
+Commit c4a1fa0.
+
+Umgesetzt:
+- Migration 0009: chat_rate_hits + Index.
+- RateLimitService(conn): DELETE + COUNT + INSERT,
+  BEGIN IMMEDIATE, Fail closed bei sqlite3.Error.
+- routes_chat.py: pro Request, g.conn, Werte aus
+  app.config.
+- Login-Rate-Limit unveraendert.
+- Tests: 7 neu in test_rate_limit_service.py,
+  4 in test_dashboard_chat.py umgestellt.
+
+Tests: 879 passed (Vollsuite, venv).
+
 ## Phase 5 — Admin AI  [ ]
 
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI

@@ -348,6 +348,9 @@ test_access_denied_errorhandler_403 abgedeckt.
   (test_setup_isolation). Punkte 13/14 erledigt.
   Punkt 21 neu (gemischte audit-logs).
 - 3.6.15d: Chat-Klassifikations-Bug behoben (f7b0fba).
+- Punkt 9 (c4a1fa0): Rate-Limit Multi-Worker.
+  SQLite-basiert (chat_rate_hits), BEGIN IMMEDIATE,
+  Fail closed. Migration 0009.
 - Punkt 19 (0b970ec): Pro-Tabelle-Klassen <500px.
   Sieben Tabellen-Klassen, globale nth-child-Regel
   ersetzt. Spaltenauswahl je Tabelle begruendet.
@@ -461,14 +464,15 @@ test_access_denied_errorhandler_403 abgedeckt.
    Betriebs-Fehler -> OperationError-Subklasse -> 5xx."
    ergaenzen (Auflage 74, 3.6.8d).
 
-9. Rate-Limit Multi-Worker: RateLimitService
-   ist In-Memory (Single-Process). Bei mehreren
-   Workern gemeinsamer Store (Redis/DB)
-   (Auflage 98, 3.6.8e).
-   Nach gunicorn (Punkt 16a, Commit <hash>): 2 Worker
-   -> 2 getrennte Rate-Limit-Sichten. Effektiv
-   2x Limit pro Fenster. Der Fix (Redis/DB) kommt
-   in einem eigenen Block.
+9 (erledigt, Commit c4a1fa0): Rate-Limit Multi-Worker.
+   RateLimitService nutzt jetzt SQLite
+   (chat_rate_hits, Migration 0009). Multi-
+   Worker-fest, BEGIN IMMEDIATE, Fail closed
+   bei SQLite-Fehler. Pro Request mit g.conn,
+   Werte aus app.config CHAT_RATE_MAX/
+   CHAT_RATE_WINDOW. Login-Rate-Limit bleibt
+   unveraendert (login_attempts).
+   Kategorie 3, Auflagen 663-676, Option B.
 
 10. HTTPS fuer Dashboard-Test im Browser:
     SESSION_COOKIE_SECURE=True (apps/dashboard/app.py:56)
