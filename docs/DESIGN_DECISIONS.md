@@ -697,6 +697,19 @@ principal.manage, role.manage
 - viewer   -> chat.ask, device.read, audit.read
 - system   -> chat.ask, device.read, audit.write
 
+### Web-Login-Regel (Punkt 3, 2026-09-27)
+
+Ein Principal, der sich einloggen koennen soll,
+braucht eine Rolle mit `device.read`.
+`AccessService.create_principal` erzwingt das und
+wirft `AccessServiceError` bei Rollen ohne
+`device.read`.
+
+Fail-closed-Zeitpunkt verschoben: vom Login (spaet)
+zum Anlegen (frueh). Rollen ohne `device.read`
+bleiben fuer Nicht-Login-Zwecke zulaessig
+(z. B. Service-Rollen).
+
 ### Fail closed
 
 - AccessChecker.has_permission -> False bei jedem Fehler

@@ -339,6 +339,23 @@ Level UND Permission erfuellt sind.
 | viewer    | chat.ask, device.read, audit.read                    |
 | system    | chat.ask, device.read, audit.write                   |
 
+### Web-Login-Regel (Punkt 3, 2026-09-27)
+
+Alle Web-Login-Rollen muessen `device.read`
+enthalten. `AccessService.create_principal` prueft
+das und lehnt Rollen ohne `device.read` mit
+`AccessServiceError` ab.
+
+Grund: Nach dem Login leitet `/` (device.read) um.
+Ein Principal mit Rolle ohne `device.read` wuerde
+sich einloggen koennen und dann bei jedem Aufruf
+der Startseite ein 403 sehen. Fail closed beim
+Anlegen statt beim Login.
+
+Rollen ohne `device.read` bleiben zulaessig (z. B.
+reine Service- oder Audit-Rollen). Nur der
+Web-Login-Pfad braucht die Permission.
+
 ### AccessChecker
 
 - check(name, code) -> bool  (fail closed, kein raise)

@@ -181,6 +181,15 @@ class AccessService:
             raise AccessServiceError(
                 f"Rolle {role_name!r} nicht gefunden"
             ) from exc
+        # Auflage 597-602: Jeder Principal, der sich
+        # einloggen koennen soll, braucht eine Rolle
+        # mit device.read. Fail closed beim Anlegen
+        # (nicht erst beim Login).
+        if not role.has_permission("device.read"):
+            raise AccessServiceError(
+                f"Rolle {role_name!r} hat kein device.read. "
+                f"Principal kann sich nicht einloggen."
+            )
         try:
             p = self._principals.create(
                 name=name,

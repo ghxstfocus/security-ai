@@ -608,3 +608,8 @@ test_access_denied_errorhandler_403 abgedeckt.
     uebergibt model_reason jetzt in allen drei
     Pfaden (fact, detail_append, no_context).
     Drei neue Tests in tests/unit/test_chat.py.
+
+24. Wenn assign_role im AccessService gebaut wird:
+    device.read-Pruefung ebenfalls dort. Heute kein
+    assign_role, kein Handlungsbedarf.
+    Kategorie 2, Auflage 597.

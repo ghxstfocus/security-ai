@@ -403,3 +403,68 @@ def test_list_roles_with_principal_manage_only(
     roles = svc.list_roles("p1")
     assert isinstance(roles, list)
     assert any(r.name == "admin" for r in roles)
+
+# ---------------------------------------------------------------------- #
+# Punkt 3: create_principal erzwingt device.read (A597-A602)
+# ---------------------------------------------------------------------- #
+
+def _make_admin_actor(deps: dict, name: str = "actor-admin"):
+    """Legt einen Principal mit Rolle admin an (fuer principal.manage)."""
+    admin_role = deps["roles"].get_by_name("admin")
+    return deps["principals"].create(
+        name=name,
+        role_id=admin_role.row_id,
+        kind=PrincipalKind.HUMAN,
+        password_hash=None,
+    )
+
+
+def _make_role_without_device_read(deps: dict, name: str = "no_dev_read"):
+    """Legt eine Rolle ohne device.read an (nur audit.read)."""
+    conn = deps["principals"]._conn
+    conn.execute(
+        "INSERT INTO roles (name, description, created_at) "
+        "VALUES (?, ?, ?)",
+        (name, "Test-Rolle ohne device.read",
+         "2026-09-27T00:00:00+00:00"),
+    )
+    conn.commit()
+    deps["role_perms"].assign(name, "audit.read")
+    return deps["roles"].get_by_name(name)
+
+
+def test_create_principal_role_without_device_read(
+    deps: dict, audit: AuditWriter,
+) -> None:
+    actor = _make_admin_actor(deps)
+    _make_role_without_device_read(deps)
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=SessionRepository(
+            deps["principals"]._conn
+        ),
+    )
+    with pytest.raises(AccessServiceError) as exc_info:
+        svc.create_principal(
+            actor.name, name="neu1",
+            role_name="no_dev_read",
+        )
+    assert "device.read" in str(exc_info.value)
+
+
+def test_create_principal_role_with_device_read_ok(
+    deps: dict, audit: AuditWriter,
+) -> None:
+    actor = _make_admin_actor(deps)
+    svc = AccessService(
+        deps["principals"], deps["roles"], deps["perms"],
+        deps["role_perms"], deps["checker"], audit,
+        session_repo=SessionRepository(
+            deps["principals"]._conn
+        ),
+    )
+    p = svc.create_principal(
+        actor.name, name="neu2", role_name="viewer",
+    )
+    assert p.name == "neu2"
