@@ -12,3 +12,10 @@ accesslog = "-"
 errorlog = "-"
 loglevel = "info"
 proc_name = "security-ai-dashboard"
+
+# Punkt 16b: Control-Socket deaktivieren. systemd
+# ProtectSystem=strict macht das Projektverzeichnis
+# read-only; gunicorn versucht sonst, .gunicorn/ dort
+# anzulegen (ERROR im Journal). Der Control-Socket ist
+# optional und wird hier nicht gebraucht.
+control_socket_disable = True
