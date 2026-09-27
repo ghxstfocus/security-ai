@@ -241,7 +241,12 @@ Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
 a-i.
 Phase 3.6.10 bis 3.6.17 fertig (inkl. 16a/16b
 gunicorn, Punkt 9 Rate-Limit, Punkt 19 Pro-Tabelle).
-HEAD b4a21e4, Working Tree sauber.
+Zusaetzlich fertig: Punkt 28 (Chat-Kontext),
+Punkt 29 (Wert-Synonyme), Punkt 30 (Links im Chat),
+3.6.18a (category durchsuchbar), UI-Feinschliff
+(SVG, Spalten, Sidebar, Suche, Topbar-Dropdown),
+Diagnose 2026-09-27 (ruff/mypy eingerichtet).
+HEAD 5caabea, Working Tree sauber.
 
 Aktuell offen (bewusst, kein Bau heute):
 - Punkt 11: SSH-Zugang Windows -> CT102
@@ -251,14 +256,20 @@ Aktuell offen (bewusst, kein Bau heute):
   (kein Bau geplant).
 - Punkt 26: security_ai-Startpfad fehlt
   (Kategorie 3, eigener Block, wenn gebaut wird).
+- Punkt 31: Fact-Antwort-Stil (Bestandsaufnahme
+  zuerst, eigener Block).
+- Punkt 32: Klassifikations-Luecke "gibt es"
+  (Kategorie 3, eigener Block).
+- Lint/Typen: ruff 435, mypy 87 (eigene Runde).
 
-Offene Punkte 1-27 in docs/SECURITY_REVIEW_LOG.md.
-Chronologie bis b4a21e4 dokumentiert (sortiert nach
+Offene Punkte 1-32 in docs/SECURITY_REVIEW_LOG.md.
+Chronologie bis 5caabea dokumentiert (sortiert nach
 Commit-Zeit).
-DESIGN_DECISIONS: §16 (Web-Dashboard) um server_name,
-default_server, display-Konsequenz erweitert.
+DESIGN_DECISIONS: §11 (Kontext, Wert-Synonyme,
+Suchfelder), §16 (ProxyFix, Links im Chat, JS-Ausnahme,
+server_name, default_server).
 
-Tests: 879 gruen (venv, pytest 9.1.1).
+Tests: 921 gruen (venv, pytest 9.1.1).
 Hinweis: Der vorher genannte Wert 728 war ungenau;
 korrekt war 720 vor 3.6.15a. Quelle der Wahrheit ist
 `pytest --collect-only -q`.
