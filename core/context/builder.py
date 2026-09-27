@@ -53,6 +53,7 @@ def build_chat_context(
     return {
         "risk_assessments": risk_assessments,
         "inventory_snapshot": inventory_snapshot,
+        "since_hours": since_hours,
         "open_approvals": open_approvals,
         "open_changes": open_changes,
         # Auflage 720: Log-Excerpts bleiben leer.

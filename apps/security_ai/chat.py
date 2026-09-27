@@ -35,6 +35,7 @@ from typing import Any, Protocol
 
 from core.access.checker import AccessChecker, AccessDeniedError
 from core.config import get_model_default, get_model_large
+from core.risk.models import CATEGORY_LABELS
 from core.services import OperationError, ServiceError
 from harness.audit.writer import AuditWriter
 from harness.context.builder import ContextBuilder
@@ -115,6 +116,25 @@ def _is_state_question(question: str) -> bool:
 # Kritische Kategorien: bei Zustandsfrage mit diesen Werten
 # schaltet der Service auf das grosse Modell um.
 _CRITICAL_CATEGORIES = frozenset({"CONFIRMED", "SECURITY_ALERT"})
+
+
+# Auflage 824: Anzeige-Reihenfolge nach Schweregrad absteigend.
+_ORDERED_CATEGORIES = (
+    "CONFIRMED",
+    "SECURITY_ALERT",
+    "SUSPICION",
+    "ANOMALY",
+    "EVENT",
+)
+
+
+def _label(cat: str) -> str:
+    """RiskCategory-Wert -> Anzeige-Label (A821/A823).
+
+    Unbekannte Kategorie -> Rohstring als Fallback
+    (konsistent zu apps/dashboard/filters.py).
+    """
+    return CATEGORY_LABELS.get(cat, cat)
 
 
 # ---------------------------------------------------------------------- #
@@ -225,6 +245,26 @@ def _ra_counts_by_category(context: ContextBundle) -> dict[str, int]:
     return counts
 
 
+def _format_hours(hours: int) -> str:
+    """
+    Zeitraum-Anzeige (Auflage 839, Punkt 31).
+
+    Mapping:
+      1          -> "in der letzten Stunde"
+      2-23       -> "in den letzten {n} Stunden"
+      24         -> "in den letzten 24 Stunden"
+      25-47      -> "in den letzten {n} Stunden"
+      Vielfache von 24 ab 48 -> "in den letzten {n/24} Tagen"
+      sonst      -> "in den letzten {n} Stunden"
+    """
+    if hours == 1:
+        return "in der letzten Stunde"
+    if hours >= 48 and hours % 24 == 0:
+        tage = hours // 24
+        return f"in den letzten {tage} Tagen"
+    return f"in den letzten {hours} Stunden"
+
+
 def _answer_fact(question: str, context: ContextBundle) -> str:
     """
     Deterministische Antwort auf eine Faktenfrage aus dem Kontext.
@@ -241,24 +281,30 @@ def _answer_fact(question: str, context: ContextBundle) -> str:
     # "Gab es Auffaelligkeiten?" / "... Verdaechtiges?" / "... etwas?"
     if any(w in q for w in ("auff", "verdaecht", "anomal",
                             "passiert", "vorgefallen", "aufgefallen")):
+        zeitraum = _format_hours(context.since_hours)
+        # Auflage 824: Schweregrad absteigend.
+        # Auflage 821: Anzeige-Labels statt Rohkategorien.
+        # Auflage 825: "Assessments" -> "Vorkommen".
         if critical > 0:
             teile = ", ".join(
-                f"{cat}={counts[cat]}"
-                for cat in sorted(counts) if cat in _CRITICAL_CATEGORIES
+                f"{_label(cat)}={counts[cat]}"
+                for cat in _ORDERED_CATEGORIES if cat in counts
+                and cat in _CRITICAL_CATEGORIES
             )
             return (
-                f"JA. {teile} in den letzten 24 Stunden "
-                f"(insgesamt {total} Assessments)."
+                f"JA. {teile} {zeitraum} "
+                f"(insgesamt {total} Vorkommen)."
             )
         if total > 0:
             teile = ", ".join(
-                f"{cat}={n}" for cat, n in sorted(counts.items())
+                f"{_label(cat)}={counts[cat]}"
+                for cat in _ORDERED_CATEGORIES if cat in counts
             )
             return (
-                f"NEIN. Keine CONFIRMED- oder SECURITY_ALERT-"
-                f"Assessments. Andere Kategorien: {teile}."
+                f"NEIN. Keine kritischen Vorkommen. "
+                f"Andere Kategorien: {teile}."
             )
-        return "NEIN. Keine Assessments im Kontext."
+        return "NEIN. Keine Vorkommen im Kontext."
 
     # "Welche Kategorien?"
     if "kategorie" in q:
@@ -569,6 +615,7 @@ class ChatService:
         max_tokens: int | None = None,
         timeout: float | None = None,
         on_model_selected: Any | None = None,
+        since_hours: int = 24,
     ) -> ChatResponse:
         """
         Beantwortet eine Frage.
@@ -608,6 +655,7 @@ class ChatService:
 
         # 3) Kontext bauen
         context = self._builder.build(
+            since_hours=since_hours,
             event=event,
             recent_events=recent_events,
             inventory_snapshot=inventory_snapshot,

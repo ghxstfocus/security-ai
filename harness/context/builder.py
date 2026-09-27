@@ -78,6 +78,7 @@ class ContextBuilder:
         open_approvals: "Sequence[ApprovalRequest]" = (),
         open_changes: "Sequence[ChangeRequest]" = (),
         log_excerpts: "Sequence[LogExcerpt]" = (),
+        since_hours: int = 24,
     ) -> ContextBundle:
         redacted_flag = False
 
@@ -136,6 +137,7 @@ class ContextBuilder:
         # werden nur uebernommen und als Tupel gefroren.
         return ContextBundle(
             built_at=utc_now(),
+            since_hours=since_hours,
             event=event,
             recent_events=tuple(safe_events),
             inventory_snapshot=inv_out,

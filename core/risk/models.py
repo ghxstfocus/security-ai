@@ -34,6 +34,19 @@ class RiskCategory(str, Enum):
         return self.value
 
 
+# Anzeige-Labels pro RiskCategory-Wert (Auflage 823, Punkt 31).
+# Eine Quelle der Wahrheit fuer Dashboard (filters.py) und
+# ChatService (_answer_fact). Wortlaut deckungsgleich mit
+# der bestehenden Badge-Zuordnung in alerts.html (Auflage 424).
+CATEGORY_LABELS: dict[str, str] = {
+    "EVENT": "Info",
+    "ANOMALY": "Hinweis",
+    "SUSPICION": "Warnung",
+    "SECURITY_ALERT": "Alarm",
+    "CONFIRMED": "Kritisch",
+}
+
+
 # Default-Schwellen. In rules.yaml ueberschreibbar.
 DEFAULT_THRESHOLDS: dict[str, float] = {
     "anomaly": 0.2,

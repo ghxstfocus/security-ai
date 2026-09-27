@@ -143,6 +143,7 @@ def register_chat_routes(app: Flask) -> None:
                 open_changes=ctx["open_changes"],
                 log_excerpts=ctx["log_excerpts"],
                 recent_events=ctx["recent_events"],
+                since_hours=ctx["since_hours"],
                 detail=detail,
             )
         except LLMTimeout:

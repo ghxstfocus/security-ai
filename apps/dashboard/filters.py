@@ -11,17 +11,12 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+from core.risk.models import CATEGORY_LABELS
 
-# RiskCategory-Wert -> Anzeige-Label (Auflage 424).
-# Wortlaut fest, deckungsgleich mit dem Vokabular der
-# bestehenden Badge-Zuordnung in alerts.html.
-_SCORE_LABELS = {
-    "EVENT": "Info",
-    "ANOMALY": "Hinweis",
-    "SUSPICION": "Warnung",
-    "SECURITY_ALERT": "Alarm",
-    "CONFIRMED": "Kritisch",
-}
+# RiskCategory-Wert -> Anzeige-Label. Quelle der Wahrheit:
+# core/risk/models.py::CATEGORY_LABELS (Auflage 823, Punkt 31).
+# Alias _SCORE_LABELS bleibt fuer bestehende Aufrufer.
+_SCORE_LABELS = CATEGORY_LABELS
 
 
 def format_ts(value: str | None) -> str:

@@ -99,6 +99,10 @@ class ContextBundle:
     """
 
     built_at: datetime
+    # Zeitraum des Kontexts in Stunden (Auflage 837, Punkt 31).
+    # Bestimmt den Anzeige-Text in _answer_fact
+    # ("in den letzten N Stunden/Tagen"). Default 24.
+    since_hours: int = 24
     event: Event | None = None
     recent_events: tuple[Event, ...] = field(default_factory=tuple)
     inventory_snapshot: dict[str, Any] = field(default_factory=dict)

@@ -471,7 +471,12 @@ class ChatServiceNoContextTests(_ChatBase):
         self.assertEqual(r.source, "fact")
         self.assertFalse(r.used_llm)
         self.assertIn("JA", r.answer)
-        self.assertIn("CONFIRMED=1", r.answer)
+        # Punkt 31 (A821/A824): Anzeige-Label statt Rohkategorie.
+        self.assertIn("Kritisch=1", r.answer)
+        # A825: "Assessments" -> "Vorkommen".
+        self.assertIn("Vorkommen", r.answer)
+        # A839: Zeitraum aus since_hours (Default 24).
+        self.assertIn("in den letzten 24 Stunden", r.answer)
         self.assertEqual(self.llm.calls, [])
 
     def test_konzeptfrage_leerer_kontext_llm_pfad(self):
