@@ -73,6 +73,8 @@ def create_app(
         else get_secret_key()
     )
     app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config.setdefault("CHAT_RATE_MAX", 10)
+    app.config.setdefault("CHAT_RATE_WINDOW", 60)
     app.config["SESSION_COOKIE_SECURE"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
     app.config["PERMANENT_SESSION_LIFETIME"] = (

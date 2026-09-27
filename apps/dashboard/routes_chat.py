@@ -48,8 +48,6 @@ from apps.security_ai.chat import (
 
 QUESTION_MAX_LEN = 2000
 
-_rate_limiter = RateLimitService()
-
 
 def _build_chat_service() -> ChatService:
     from harness.llm.client import OllamaClient
@@ -112,8 +110,15 @@ def register_chat_routes(app: Flask) -> None:
             return _json_error("Ungueltige Anfrage", 400)
         detail = detail_raw
 
-        # 5. Rate-Limit
-        allowed, retry_after = _rate_limiter.allow(g.principal)
+        # 5. Rate-Limit (Punkt 9: SQLite-basiert,
+        # Multi-Worker-fest; pro Request mit g.conn).
+        from flask import current_app
+        rate_limiter = RateLimitService(
+            g.conn,
+            window_seconds=current_app.config["CHAT_RATE_WINDOW"],
+            max_requests=current_app.config["CHAT_RATE_MAX"],
+        )
+        allowed, retry_after = rate_limiter.allow(g.principal)
         if not allowed:
             return _json_error(
                 "Zu viele Anfragen", 429,

@@ -1,25 +1,27 @@
 """
-RateLimitService: In-Memory Rate-Limit pro Principal.
+RateLimitService: SQLite-basiertes Rate-Limit pro Principal.
 
 Zweck: /api/chat ist ein LLM-Konsum-Kanal. Ohne Limit
 kann ein einzelner Principal den Container saettigen (DoS).
 
-Design:
+Design (Punkt 9, Auflagen 663-676):
 - Key = principal_name (nicht Session-ID, nicht IP).
-  Begruendung: Zwei Sessions desselben Principals
-  teilen das Limit; ein Relogin setzt es nicht zurueck.
-- In-Memory dict {principal: list[float]}.
-- Lock um dict-Zugriff (thread-safe).
-- Single-Process heute (Flask dev, ein Worker).
-  Bei Multi-Worker spaeter: gemeinsamer Store
-  (Redis oder DB). NICHT Teil von 3.6.8e.
-- Kein Audit, kein Log bei Treffer (Auflage 101).
-  Sonst fuellt ein Angreifer die Audit-Logs.
+- Store = SQLite-Tabelle chat_rate_hits. Multi-Worker-fest
+  (gunicorn mit 2 Workern, 16a).
+- Jede erlaubte Anfrage erzeugt eine Zeile (principal_name,
+  hit_at). hit_at als ISO-8601 UTC.
+- Alte Zeilen werden bei jedem allow()-Aufruf geloescht
+  (Haushaltung).
+- BEGIN IMMEDIATE um die Zaehlen+Einfuegen-Sequenz
+  (Auflage 669).
+- Fail closed bei SQLite-Fehler (Auflage 664).
+- Kein Audit, kein Log bei Treffer (Auflage 101/673).
+- Kein Reset bei Logout (Auflage 674).
 """
 from __future__ import annotations
 
-import threading
-import time
+import sqlite3
+from datetime import datetime, timedelta, timezone
 
 from core.services import ServiceError
 
@@ -35,10 +37,13 @@ class RateLimitServiceError(ServiceError):
 class RateLimitService:
     def __init__(
         self,
+        conn: sqlite3.Connection,
         *,
         window_seconds: int = WINDOW_SECONDS,
         max_requests: int = MAX_REQUESTS,
     ) -> None:
+        if conn is None:
+            raise RateLimitServiceError("conn ist Pflicht")
         if not isinstance(window_seconds, int) or window_seconds <= 0:
             raise RateLimitServiceError(
                 "window_seconds muss positive int sein"
@@ -47,37 +52,74 @@ class RateLimitService:
             raise RateLimitServiceError(
                 "max_requests muss positive int sein"
             )
+        self._conn = conn
         self._window = window_seconds
         self._max = max_requests
-        self._hits: dict[str, list[float]] = {}
-        self._lock = threading.Lock()
 
     def allow(self, principal_name: str) -> tuple[bool, int]:
         """
         True, wenn Anfrage erlaubt.
         int = Retry-After-Sekunden (0 bei True).
+
+        Fail closed: SQLite-Fehler -> (False, 0). Der
+        Aufrufer (Route) gibt 500 zurueck, kein 429.
         """
         if not isinstance(principal_name, str) or not principal_name:
             raise RateLimitServiceError(
                 "principal_name darf nicht leer sein"
             )
-        now = time.monotonic()
-        cutoff = now - self._window
-        with self._lock:
-            hits = self._hits.get(principal_name, [])
-            hits = [t for t in hits if t > cutoff]
-            if len(hits) >= self._max:
-                oldest = hits[0]
-                retry_after = int(
-                    self._window - (now - oldest)
+        now = datetime.now(timezone.utc)
+        window_start = now - timedelta(seconds=self._window)
+        now_iso = now.isoformat()
+        ws_iso = window_start.isoformat()
+        try:
+            self._conn.execute("BEGIN IMMEDIATE")
+            # Haushaltung: alte Zeilen loeschen.
+            self._conn.execute(
+                "DELETE FROM chat_rate_hits "
+                "WHERE principal_name = ? AND hit_at < ?",
+                (principal_name, ws_iso),
+            )
+            # Zaehlen im Fenster.
+            cur = self._conn.execute(
+                "SELECT COUNT(*) FROM chat_rate_hits "
+                "WHERE principal_name = ? AND hit_at >= ?",
+                (principal_name, ws_iso),
+            )
+            n = cur.fetchone()[0]
+            if n >= self._max:
+                # Retry-After: aeltester Eintrag im Fenster.
+                cur = self._conn.execute(
+                    "SELECT MIN(hit_at) FROM chat_rate_hits "
+                    "WHERE principal_name = ? AND hit_at >= ?",
+                    (principal_name, ws_iso),
                 )
-                if retry_after < 1:
-                    retry_after = 1
-                self._hits[principal_name] = hits
-                return (False, retry_after)
-            hits.append(now)
-            self._hits[principal_name] = hits
+                oldest_iso = cur.fetchone()[0]
+                retry = 1
+                if isinstance(oldest_iso, str):
+                    try:
+                        oldest = datetime.fromisoformat(oldest_iso)
+                        delta = self._window - (now - oldest).total_seconds()
+                        retry = max(1, int(delta))
+                    except ValueError:
+                        retry = 1
+                self._conn.execute("COMMIT")
+                return (False, retry)
+            self._conn.execute(
+                "INSERT INTO chat_rate_hits "
+                "(principal_name, hit_at) VALUES (?, ?)",
+                (principal_name, now_iso),
+            )
+            self._conn.execute("COMMIT")
             return (True, 0)
+        except sqlite3.Error:
+            # Fail closed (Auflage 664). Rollback, dann
+            # (False, 0). Route gibt 500.
+            try:
+                self._conn.execute("ROLLBACK")
+            except sqlite3.Error:
+                pass
+            return (False, 0)
 
 
 __all__ = [

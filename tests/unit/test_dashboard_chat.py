@@ -27,10 +27,10 @@ def app(tmp_path: Path):
 
 @pytest.fixture(autouse=True)
 def _reset_rate_limiter():
-    """Vor jedem Test: Rate-Limit-Zaehler leeren."""
-    from apps.dashboard.routes_chat import _rate_limiter
-    with _rate_limiter._lock:
-        _rate_limiter._hits.clear()
+    """Vor jedem Test: Rate-Limit-Tabelle leeren (Punkt 9)."""
+    # Kein Modul-State mehr. Leeren passiert im Test-Helper
+    # _clear_rate_hits, der die tmp-DB nutzt. Hier nur
+    # ein Platzhalter, damit die Fixture-Anzahl bleibt.
     yield
 
 
@@ -240,8 +240,7 @@ def test_chat_api_llm_unavailable_502(app, monkeypatch):
 # --- Rate-Limit (A100, A102, A113, A114, A122) ----------------------- #
 
 def test_chat_api_rate_limit_429_and_retry_after(app, monkeypatch):
-    from apps.dashboard.routes_chat import _rate_limiter
-    monkeypatch.setattr(_rate_limiter, "_max", 2)
+    app.config["CHAT_RATE_MAX"] = 2
     _patch_chat_service(app, monkeypatch)
     c, tok = _client_with_csrf(app, "viewer")
     for _ in range(2):
@@ -253,9 +252,7 @@ def test_chat_api_rate_limit_429_and_retry_after(app, monkeypatch):
 
 
 def test_chat_service_not_called_on_rate_limit(app, monkeypatch):
-    from apps.dashboard.routes_chat import _rate_limiter
-    # Limiter im Modul mit kleiner Grenze bauen.
-    monkeypatch.setattr(_rate_limiter, "_max", 2)
+    app.config["CHAT_RATE_MAX"] = 2
     calls: list[int] = []
     _patch_chat_service(app, monkeypatch, counter=calls)
     c, tok = _client_with_csrf(app, "viewer")
@@ -265,8 +262,7 @@ def test_chat_service_not_called_on_rate_limit(app, monkeypatch):
 
 
 def test_rate_limit_per_principal(app, monkeypatch):
-    from apps.dashboard.routes_chat import _rate_limiter
-    monkeypatch.setattr(_rate_limiter, "_max", 2)
+    app.config["CHAT_RATE_MAX"] = 2
     _patch_chat_service(app, monkeypatch)
     c1, tok1 = _client_with_csrf(app, "viewer")
     c2, tok2 = _client_with_csrf(app, "operator")
@@ -281,21 +277,28 @@ def test_rate_limit_per_principal(app, monkeypatch):
 
 
 def test_rate_limit_window_resets(app, monkeypatch):
-    from apps.dashboard.routes_chat import _rate_limiter
-    monkeypatch.setattr(_rate_limiter, "_max", 1)
+    app.config["CHAT_RATE_MAX"] = 1
     _patch_chat_service(app, monkeypatch)
     c, tok = _client_with_csrf(app, "viewer")
     r = _post(app, c, tok, body=b'{"question": "x"}')
     assert r.status_code == 200
     r = _post(app, c, tok, body=b'{"question": "x"}')
     assert r.status_code == 429
-    # Fenster kuenstlich ueberspringen.
-    with _rate_limiter._lock:
-        for k in _rate_limiter._hits:
-            _rate_limiter._hits[k] = [
-                t - _rate_limiter._window - 1
-                for t in _rate_limiter._hits[k]
-            ]
+    # Fenster kuenstlich ueberspringen: DB-Eintraege
+    # auf ein altes hit_at setzen.
+    from datetime import datetime, timedelta, timezone
+    from core.inventory.repository import connect
+    old = (
+        datetime.now(timezone.utc)
+        - timedelta(seconds=app.config["CHAT_RATE_WINDOW"] + 5)
+    ).isoformat()
+    conn = connect(app.config["DB_PATH"])
+    conn.execute(
+        "UPDATE chat_rate_hits SET hit_at = ?",
+        (old,),
+    )
+    conn.commit()
+    conn.close()
     r = _post(app, c, tok, body=b'{"question": "x"}')
     assert r.status_code == 200
 
