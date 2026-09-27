@@ -587,14 +587,27 @@ test_access_denied_errorhandler_403 abgedeckt.
     wenn das Produktverhalten selbst Kategorie 3 war.
     Kategorie 1 (Doku), Reviewer-Auflage 435.
 
-21. audit-logs/ 21.-24. Sep enthalten wahrscheinlich
-    Test-Artefakte aus OrchestratorTests (Bug in setUp,
-    gefixt in 3.6.15b, Commit a3589db). Pruefung, welche
-    Eintraege Test-Artefakte sind, und ob sie das
-    Dashboard verfaelschen, ist ein eigener Block
-    (Kategorie 3). Kein automatisches Loeschen, keine
-    Migration. audit-logs ist append-only.
-    Kategorie 3, Reviewer-Auflage 477.
+21. audit-logs/ 21.-25. Sep enthalten Burst-Eintraege
+    aus OrchestratorTests (Bug in setUp, gefixt in
+    3.6.15b, Commit a3589db). Analyse 2026-09-27:
+    - 21.09.: 210 Burst-Sekunden (>=20 Eintraege/Sek),
+      9053 von 9958 Eintraegen (91 %).
+    - 22.09.: 176 Burst-Sekunden, 5759 von 7236 (80 %).
+    - 23.09.: 38 Burst-Sekunden, 1291 von 1978 (65 %).
+    - 24.09.: 14 Burst-Sekunden, 471 von 750 (63 %).
+    - 25.09.: 30 Burst-Sekunden, 977 von 1508 (65 %).
+    - 26.09. und 27.09.: 0 Burst-Sekunden.
+    Feld-Marker (network_id, event_id-Format, audit_id,
+    timestamp-Datum) sind unauffaellig. Eindeutig ist
+    nur der Burst-Marker (>=20 Eintraege in derselben
+    Sekunde, vollstaendige Orchestrator-Kette pro
+    Event).
+    Verfaelschung: Dashboard-Kacheln, /audit, /alerts
+    (24h-Fenster nur an den Tagen selbst), 3.6.16-Suche
+    (risk_assessments) zaehlen die Burst-Eintraege mit.
+    Kein Eingriff in audit-logs (append-only).
+    Dokumentiert in audit-logs/README.md.
+    Kategorie 3, Reviewer-Auflagen 477, 627-631.
 
 22. Sanity-Check hat in 0 von 14 kritischen Faellen
     gefeuert (gemessen am 2026-09-26 vor 3.6.15d).
@@ -633,3 +646,13 @@ test_access_denied_errorhandler_403 abgedeckt.
     device.read-Pruefung ebenfalls dort. Heute kein
     assign_role, kein Handlungsbedarf.
     Kategorie 2, Auflage 597.
+
+25. Audit-Eintraege aus Testlaeufen sind im Dashboard
+    nicht von echten Events unterscheidbar. Eine
+    zuverlaessige Unterscheidung ist heute nicht
+    moeglich (kein Marker). Kuenftige Praevention:
+    alle Test-Audits in tmp-Pfade schreiben (seit
+    3.6.15b implementiert). Eine nachtraegliche
+    Markierung im Dashboard ist nicht geplant.
+    Kategorie 3 (Audit/Nachweis-Integritaet).
+    Kein Bau heute.
