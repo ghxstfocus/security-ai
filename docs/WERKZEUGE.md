@@ -65,6 +65,24 @@ Optionen:
 Auto-Bootstrap: fehlt die DB, wird sie angelegt und `cli-admin`
 (role=admin) erzeugt. Mit `--no-bootstrap` stattdessen Exit 1.
 
+### Fact-Antwort (Punkt 31)
+
+Fragen wie "Gibt es Auffaelligkeiten?" werden ohne LLM
+deterministisch aus dem Kontext beantwortet. Anzeige-Labels
+aus CATEGORY_LABELS (core/risk/models.py), Reihenfolge nach
+Schweregrad absteigend (CONFIRMED, SECURITY_ALERT, SUSPICION,
+ANOMALY, EVENT). "Assessments" heisst im Text "Vorkommen".
+Der Zeitraum kommt aus --context-hours (Default 24).
+
+    .venv/bin/python3 scripts/chat_cli.py --principal cli-admin \
+        --question "Gibt es Auffaelligkeiten?"
+    # JA. Kritisch=1, Alarm=1 in den letzten 24 Stunden
+    # (insgesamt 3 Vorkommen).
+
+    .venv/bin/python3 scripts/chat_cli.py --principal cli-admin \
+        --question "Gibt es Auffaelligkeiten?" --context-hours 1
+    # NEIN. Keine Vorkommen im Kontext.
+
 ## scripts/approvals_cli.py
 
 Approvals verwalten. DB muss existieren (fail closed).
