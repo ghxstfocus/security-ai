@@ -39,7 +39,7 @@
         <a data-nav="approvals"
            class="sidebar-link{% if request.path == '/approvals' %} active{% endif %}"
            href="/approvals">
-            <span>Approvals</span>
+            <span>Freigaben</span>
             <span class="badge badge-yellow" data-badge="approvals"></span>
         </a>
         {% endif %}
@@ -47,7 +47,7 @@
         <a data-nav="changes"
            class="sidebar-link{% if request.path == '/changes' %} active{% endif %}"
            href="/changes">
-            <span>Changes</span>
+            <span>Aenderungen</span>
         </a>
         {% endif %}
         {% if can_view_chat %}
@@ -76,7 +76,7 @@
         <a data-nav="audit"
            class="sidebar-link{% if request.path == '/audit' %} active{% endif %}"
            href="/audit">
-            <span>Audit</span>
+            <span>Protokoll</span>
         </a>
         {% endif %}
         {% if can_view_settings %}
