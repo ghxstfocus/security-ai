@@ -23,7 +23,7 @@
 
 {% for source, hits in results.items() %}
 <details class="search-source">
-    <summary>{{ source }} ({{ hits|length }})</summary>
+    <summary>{{ source|format_source_label }} ({{ hits|length }})</summary>
     <ul class="search-hits">
     {% for hit in hits %}
         <li>

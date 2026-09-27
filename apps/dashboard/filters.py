@@ -74,3 +74,27 @@ def format_score(value) -> str:
         return f"{float(value):.2f}"
     except (ValueError, TypeError):
         return "" if value is None else str(value)
+
+
+_SOURCE_LABELS = {
+    "devices": "Geraete",
+    "whitelisted_devices": "Freigegebene Geraete",
+    "changes": "Aenderungen",
+    "approvals": "Freigaben",
+    "principals": "Benutzer",
+    "roles": "Rollen",
+    "permissions": "Berechtigungen",
+    "risk_assessments": "Alarme",
+}
+
+
+def format_source_label(source: str | None) -> str:
+    """
+    Suchquellen-Schluessel -> Anzeige-Label.
+
+    Unbekannte Quelle -> Rohstring als Fallback.
+    None -> "".
+    """
+    if source is None:
+        return ""
+    return _SOURCE_LABELS.get(source, str(source))

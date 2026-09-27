@@ -235,13 +235,17 @@ def create_app(
     register_search_routes(app)
 
     from apps.dashboard.filters import (
-        format_score, format_score_label, format_ts,
+        format_score, format_score_label,
+        format_source_label, format_ts,
     )
     app.add_template_filter(format_ts, "format_ts")
     app.add_template_filter(
         format_score_label, "format_score_label",
     )
     app.add_template_filter(format_score, "format_score")
+    app.add_template_filter(
+        format_source_label, "format_source_label",
+    )
 
     @app.context_processor
     def _inject_nav_permissions():
