@@ -1295,6 +1295,16 @@ Responsive Loesung heute (3.6.10):
 - risk_assessments kommen aus JSONL (read_risk_assessments),
   Python-Filter im SearchService (A557).
 
+### User-Menue-Dropdown: JS-Ausnahme (A711, A749)
+
+Das User-Menue-Dropdown ist die einzige Ausnahme
+von der Regel "kein JS in Templates". Es nutzt
+<details>/<summary> + ein separates user_menu.js
+fuer Klick-ausserhalb-Schliessen. Kein Inline-JS,
+kein onclick=, keine Aenderung an nav.js.
+Jede weitere JS-Anforderung braucht einen eigenen
+Reviewer-Block.
+
 ### ProxyFix (Punkt 16a, bd7d187)
 
 ProxyFix aktiv (x_for=1, x_proto=1, x_host=1),

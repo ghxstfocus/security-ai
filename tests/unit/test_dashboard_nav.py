@@ -223,3 +223,42 @@ def test_keine_globale_nth_child_regel(tmp_path):
     assert r.status_code == 200
     assert b".table th:nth-child(n+4)" not in r.data
     assert b".table td:nth-child(n+4)" not in r.data
+
+
+# --- Topbar-Dropdown-JS (Auflagen 703-706, 745-750) ---------------- #
+
+def test_user_menu_js_served(tmp_path):
+    # A748: user_menu.js wird ausgeliefert.
+    c = _admin(tmp_path)
+    r = c.get("/static/js/user_menu.js")
+    assert r.status_code == 200
+    ct = r.headers.get("Content-Type", "")
+    assert "javascript" in ct or "ecmascript" in ct
+    assert b"addEventListener" in r.data
+    assert b'"use strict"' in r.data
+
+
+def test_user_menu_js_keine_verbotenen_patterns(tmp_path):
+    # A748: kein innerHTML, kein onclick, kein eval.
+    c = _admin(tmp_path)
+    r = c.get("/static/js/user_menu.js")
+    assert r.status_code == 200
+    assert b"innerHTML" not in r.data
+    assert b"onclick" not in r.data
+    assert b"eval(" not in r.data
+
+
+def test_user_menu_js_eingebunden_im_dashboard(tmp_path):
+    # A746: base.html bindet user_menu.js ein.
+    c = _admin(tmp_path)
+    r = c.get("/")
+    assert r.status_code == 200
+    assert b"js/user_menu.js" in r.data
+
+
+def test_user_menu_js_nicht_im_login(tmp_path):
+    # A748: Login ist standalone, kein user_menu.js.
+    c = _anon(tmp_path)
+    r = c.get("/login")
+    assert r.status_code == 200
+    assert b"js/user_menu.js" not in r.data
