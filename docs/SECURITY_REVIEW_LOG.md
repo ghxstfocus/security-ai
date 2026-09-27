@@ -778,6 +778,24 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     CLI und Dashboard nutzen denselben Builder.
     Kategorie 3, Auflagen 719-728, Variante C.
 
+30. Links im Chat: fact/detail_append-Antworten
+    liefern jetzt eine strukturierte Link-Liste
+    (label, href) an das Frontend. Sicherheit:
+    nur interne Pfade (Whitelist), RBAC pro Link,
+    kein Href aus dem Text. LLM-Antworten werden
+    nicht verlinkt. API-Antwort hat jetzt 7 Schluessel
+    (links neu, A768). Modul core/context/links.py.
+    Kategorie 3, Auflagen 757-772, Variante 4.
+
+31. (offen) Fact-Antwort-Stil: Anzeige-Anker
+    (Zeitraum, Begriff "Alarme" statt "Assessments",
+    optional Link auf /alerts). Eigener Block.
+
+32. (offen) Klassifikations-Luecke: "Gibt es X?"
+    matcht nicht _FACT_RE (nur "gab es"). Solche
+    Fragen landen im Interpretations-Pfad statt
+    im Fact-Pfad. Kategorie 3, eigener Block.
+
 29. Suchbegriffe wie "alarme", "alerts", "freigaben"
     finden keine Treffer. Grund: kein Synonym-Mapping.
     Der Nutzer muss die englischen RiskCategory-Werte

@@ -218,9 +218,10 @@ def test_chat_api_happy_path_200_and_whitelist(app, monkeypatch):
     assert r.status_code == 200
     assert r.headers["Content-Type"].startswith("application/json")
     data = r.get_json()
+    # A768: Antwort hat jetzt 7 Schluessel (links neu).
     assert set(data.keys()) == {
         "answer", "model", "model_reason", "source",
-        "denied", "answer_id",
+        "denied", "answer_id", "links",
     }
     assert data["answer"] == "Antwort"
 
@@ -452,3 +453,96 @@ def test_chat_api_route_uebergibt_kontext(app, monkeypatch):
     ra = eingefangen["risk_assessments"]
     assert len(ra) == 1
     assert ra[0]["category"] == "SECURITY_ALERT"
+
+
+# --- Punkt 30: Links im Chat (Auflagen 757-772) -------------------- #
+
+def test_chat_api_response_hat_links_feld(app, monkeypatch):
+    # A768: die API-Antwort hat immer ein links-Feld.
+    from apps.security_ai.chat import ChatService, ChatResponse
+
+    def _ask(self, principal_name, question, *, detail=False, **kw):
+        return ChatResponse(
+            answer="Antwort ohne IDs.",
+            principal=principal_name,
+            question=question,
+            context_used=None,
+            used_llm=False,
+            source="fact",
+        )
+
+    monkeypatch.setattr(ChatService, "ask", _ask)
+    c, tok = _client_with_csrf(app, "viewer")
+    r = _post(app, c, tok, body=b'{"question": "hallo"}')
+    assert r.status_code == 200
+    data = r.get_json()
+    assert "links" in data
+    assert data["links"] == []
+
+
+def test_chat_api_links_bei_change_id(app, monkeypatch):
+    # A757: fact-Antwort mit CHG-ID -> Link-Liste.
+    from apps.security_ai.chat import ChatService, ChatResponse
+
+    def _ask(self, principal_name, question, *, detail=False, **kw):
+        return ChatResponse(
+            answer="Aenderung CHG-2026-00042 offen.",
+            principal=principal_name,
+            question=question,
+            context_used=None,
+            used_llm=False,
+            source="fact",
+        )
+
+    monkeypatch.setattr(ChatService, "ask", _ask)
+    # Operator hat change.view.
+    c, tok = _client_with_csrf(app, "operator")
+    r = _post(app, c, tok, body=b'{"question": "hallo"}')
+    assert r.status_code == 200
+    data = r.get_json()
+    assert len(data["links"]) == 1
+    assert data["links"][0]["href"] == "/changes/CHG-2026-00042"
+
+
+def test_chat_api_links_bei_viewer_ohne_change_view(app, monkeypatch):
+    # A770: viewer hat kein change.view -> kein Link.
+    from apps.security_ai.chat import ChatService, ChatResponse
+
+    def _ask(self, principal_name, question, *, detail=False, **kw):
+        return ChatResponse(
+            answer="Aenderung CHG-2026-00042 offen.",
+            principal=principal_name,
+            question=question,
+            context_used=None,
+            used_llm=False,
+            source="fact",
+        )
+
+    monkeypatch.setattr(ChatService, "ask", _ask)
+    c, tok = _client_with_csrf(app, "viewer")
+    r = _post(app, c, tok, body=b'{"question": "hallo"}')
+    assert r.status_code == 200
+    data = r.get_json()
+    assert data["links"] == []
+
+
+def test_chat_api_links_nicht_bei_llm_source(app, monkeypatch):
+    # A758: LLM-Antworten werden nicht verlinkt.
+    from apps.security_ai.chat import ChatService, ChatResponse
+
+    def _ask(self, principal_name, question, *, detail=False, **kw):
+        return ChatResponse(
+            answer="Aenderung CHG-2026-00042 offen.",
+            principal=principal_name,
+            question=question,
+            context_used=None,
+            used_llm=True,
+            source="llm",
+        )
+
+    monkeypatch.setattr(ChatService, "ask", _ask)
+    c, tok = _client_with_csrf(app, "operator")
+    r = _post(app, c, tok, body=b'{"question": "hallo"}')
+    assert r.status_code == 200
+    data = r.get_json()
+    assert data["links"] == []

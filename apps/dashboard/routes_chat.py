@@ -39,6 +39,7 @@ from flask import Flask, g, jsonify, render_template, request
 from apps.dashboard.decorators import require_permission
 from core.services.rate_limit_service import RateLimitService
 from core.context.builder import build_chat_context
+from core.context.links import extract_links
 from harness.llm.errors import LLMError, LLMTimeout, LLMUnavailable
 from apps.security_ai.chat import (
     ChatOperationError,
@@ -160,6 +161,14 @@ def register_chat_routes(app: Flask) -> None:
                 return _json_error("Zugriff verweigert", 403)
             raise
 
+        # Punkt 30 (A757/A758): Links nur im
+        # fact/detail_append-Pfad (deterministisch).
+        # LLM-Antworten werden nicht durchsucht.
+        links: list[dict] = []
+        if resp.source in ("fact", "detail_append"):
+            links = extract_links(
+                resp.answer, g.principal, g.access_checker,
+            )
         body = {
             "answer": resp.answer,
             "model": resp.model,
@@ -167,6 +176,7 @@ def register_chat_routes(app: Flask) -> None:
             "source": resp.source,
             "denied": bool(resp.denied),
             "answer_id": resp.answer_id,
+            "links": links,
         }
         return jsonify(body)
 

@@ -1295,6 +1295,21 @@ Responsive Loesung heute (3.6.10):
 - risk_assessments kommen aus JSONL (read_risk_assessments),
   Python-Filter im SearchService (A557).
 
+### Links im Chat (Punkt 30, Auflagen 757-772)
+
+fact/detail_append-Antworten liefern eine
+strukturierte Link-Liste (core/context/links.py).
+Regeln:
+- Nur interne Pfade (Whitelist: /audit/, /changes/,
+  /approvals/, /inventory/, /users/, /roles/).
+  Kein externer Link, kein mailto, kein javascript:.
+- RBAC pro Link (AccessChecker.check).
+- Kein Href aus dem Text (Href wird aus der ID gebaut).
+- Label = Rohstring, Client rendert via textContent.
+- LLM-Antworten werden nicht verlinkt (A758).
+Client-Rendering: renderLinks in chat.js,
+createElement("a"), kein innerHTML.
+
 ### User-Menue-Dropdown: JS-Ausnahme (A711, A749)
 
 Das User-Menue-Dropdown ist die einzige Ausnahme

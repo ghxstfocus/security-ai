@@ -24,6 +24,32 @@
         container.appendChild(div);
     }
 
+    // Punkt 30 (A765-A767): Links als eigene Liste
+    // unter der Antwort. Kein innerHTML, kein Regex.
+    // Server liefert die Links fertig (label, href).
+    function renderLinks(container, links) {
+        if (!Array.isArray(links) || links.length === 0) {
+            return;
+        }
+        var wrap = document.createElement("div");
+        wrap.className = "chat-links";
+        links.forEach(function (entry) {
+            if (!entry || typeof entry.href !== "string") {
+                return;
+            }
+            if (entry.href.charAt(0) !== "/") {
+                return;
+            }
+            var a = document.createElement("a");
+            a.href = entry.href;
+            a.textContent = String(entry.label || entry.href);
+            wrap.appendChild(a);
+        });
+        if (wrap.childNodes.length > 0) {
+            container.appendChild(wrap);
+        }
+    }
+
     function init() {
         var input = document.getElementById("chat-input");
         var send = document.getElementById("chat-send");
@@ -65,6 +91,7 @@
                         String(result.data.answer || ""),
                         "assistant",
                     );
+                    renderLinks(messages, result.data.links);
                     return;
                 }
                 var err = "Fehler";
