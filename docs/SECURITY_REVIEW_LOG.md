@@ -343,6 +343,10 @@ test_access_denied_errorhandler_403 abgedeckt.
   (test_setup_isolation). Punkte 13/14 erledigt.
   Punkt 21 neu (gemischte audit-logs).
 - 3.6.15d: Chat-Klassifikations-Bug behoben (f7b0fba).
+- Punkt 19 (0b970ec): Pro-Tabelle-Klassen <500px.
+  Sieben Tabellen-Klassen, globale nth-child-Regel
+  ersetzt. Spaltenauswahl je Tabelle begruendet.
+  Auflagen 614-622.
 - Punkt 3 (e45bc87): create_principal erzwingt
   device.read. Doku in PERMISSIONS.md und
   DESIGN_DECISIONS §10. Fail closed beim Anlegen
@@ -558,6 +562,12 @@ test_access_denied_errorhandler_403 abgedeckt.
     table-inventory, ...), damit pro Seite definiert
     wird, welche Spalten auf schmalen Displays
     wichtig sind. Ersetzt die globale Regel.
+    Erledigt in 0b970ec (Punkt 19, 2026-09-27):
+    sieben Pro-Tabelle-Klassen (alerts, approvals,
+    audit, changes, inventory, users, roles).
+    Globales nth-child(n+4) ersetzt. Spaltenauswahl
+    pro Tabelle mit Begruendung im CSS. 3 neue
+    Tests. Reviewer-Auflagen 614-622.
     Betrifft sechs Tabellen (inventory, audit,
     users, changes, approvals, alerts).
     Eigener Folgeschritt nach 3.6.14.
