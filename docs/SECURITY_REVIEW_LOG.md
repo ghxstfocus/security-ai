@@ -445,6 +445,11 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   security_ai-Start geklaert (kein Startpfad heute).
   Punkt 26 neu.
 - Nummerierungs-Vermerk (87aa614): 633-637 verworfen.
+- Nummerierungskonflikt A791-812 (2026-09-28).
+  Nummern A791-794 waren in Doku-Commits 5caabea
+  und baa011a vergeben. Die Auflagen der
+  Punkt-32-Runde werden auf A813-A832 umbenannt.
+  Kein Inhaltsverlust.
 - Punkt 16a (bd7d187): gunicorn + ProxyFix.
   pyproject extra "prod", wsgi.py, ProxyFix,
   gunicorn.conf.py, systemd-Unit. Login-Rate-Limit
