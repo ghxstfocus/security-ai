@@ -12,7 +12,6 @@ import hmac
 import secrets
 from typing import Any
 
-
 _CSRF_KEY = "_csrf_token"
 _TOKEN_BYTES = 32
 

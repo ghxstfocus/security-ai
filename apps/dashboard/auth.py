@@ -12,25 +12,32 @@ import urllib.parse as _urlparse
 from enum import Enum
 
 from flask import (
-    Flask, g, jsonify, redirect, render_template,
-    request, session,
+    Flask,
+    g,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
 )
 
+from apps.dashboard import csrf
+from apps.dashboard.decorators import (
+    SESSION_COOKIE_NAME,
+    require_permission,
+)
+from core.access.models import (
+    hash_password,
+    verify_password,
+)
 from core.access.repository import (
     AccessNotFoundError,
     PrincipalRepository,
 )
-from core.access.models import (
-    hash_password, verify_password,
-)
 from core.access.session_repo import (
-    SessionRepository, LoginAttemptRepository,
+    LoginAttemptRepository,
+    SessionRepository,
 )
-from apps.dashboard import csrf
-from apps.dashboard.decorators import (
-    require_permission, SESSION_COOKIE_NAME,
-)
-
 
 LOGIN_MAX_FAILURES = 5
 LOGIN_HARD_LIMIT = 20

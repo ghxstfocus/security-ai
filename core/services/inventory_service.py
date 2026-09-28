@@ -24,7 +24,6 @@ from core.inventory.repository import DeviceRepository
 from core.inventory.whitelist import WhitelistRepository
 from core.services import OperationError, ServiceError
 
-
 IDENTIFIER_RE = re.compile(
     r"^[A-Za-z0-9](?:[A-Za-z0-9._:-]{0,253}[A-Za-z0-9])?$"
 )

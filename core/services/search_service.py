@@ -35,9 +35,8 @@ from typing import Any, Callable
 
 from core.access.checker import AccessChecker
 from core.search.repository import DEFAULT_LIMIT, SearchRepository
-from core.search.synonyms import load_synonyms, expand_query
+from core.search.synonyms import expand_query, load_synonyms
 from core.services import ServiceError
-
 
 # Zeichen-Whitelist (Auflage 532).
 QUERY_RE = re.compile(r"^[A-Za-z0-9 ._:/@-]+$")

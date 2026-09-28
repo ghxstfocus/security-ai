@@ -19,7 +19,6 @@ from typing import Any
 from harness.permissions.levels import Level
 from harness.tool_registry.tool import Tool, ToolArgumentError
 
-
 # ---------------------------------------------------------------------- #
 # Erlaubte Werte
 # ---------------------------------------------------------------------- #

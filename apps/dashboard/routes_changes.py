@@ -23,16 +23,22 @@ Fehler (K1):
 from __future__ import annotations
 
 from flask import (
-    Flask, abort, g, redirect, render_template, request, session,
+    Flask,
+    abort,
+    g,
+    redirect,
+    render_template,
+    request,
+    session,
 )
 
 from apps.dashboard import csrf
 from apps.dashboard.decorators import require_permission
 from core.changes.repository import ChangeRepository
 from core.services.change_service import (
+    VALID_TYPES,
     ChangeService,
     ChangeServiceError,
-    VALID_TYPES,
 )
 
 

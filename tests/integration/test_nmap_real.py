@@ -16,9 +16,7 @@ import unittest
 import pytest
 
 from harness.tool_registry.tool import ToolError
-
 from tools.nmap_scan import nmap_scan_run
-
 
 pytestmark = pytest.mark.skipif(
     shutil.which("nmap") is None,

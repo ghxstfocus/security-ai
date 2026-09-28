@@ -6,5 +6,4 @@ Routes kommen in eigenen Modulen (routes_*.py).
 """
 from apps.dashboard.app import create_app
 
-
 __all__ = ["create_app"]

@@ -18,7 +18,6 @@ from core.risk.models import (
     score_to_category,
 )
 
-
 RULES_PATH = Path("core/risk/rules.yaml")
 
 

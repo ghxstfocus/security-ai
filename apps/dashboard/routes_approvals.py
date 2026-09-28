@@ -31,7 +31,13 @@ Kein str(e) im Response. Kein Logging des request_id (A39).
 from __future__ import annotations
 
 from flask import (
-    Flask, abort, g, redirect, render_template, request, session,
+    Flask,
+    abort,
+    g,
+    redirect,
+    render_template,
+    request,
+    session,
 )
 
 from apps.dashboard import csrf
@@ -41,9 +47,9 @@ from core.approval.repository import (
     ApprovalStateError,
 )
 from core.services.approval_service import (
+    REASON_MAX_LEN,
     ApprovalService,
     ApprovalServiceError,
-    REASON_MAX_LEN,
 )
 from harness.approval.queue import ApprovalQueue
 

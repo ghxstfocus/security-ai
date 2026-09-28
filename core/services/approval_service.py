@@ -32,7 +32,6 @@ from core.approval.repository import (
 from core.services import ServiceError
 from harness.approval.queue import ApprovalQueue
 
-
 REQUEST_ID_RE = re.compile(r"^APR-\d{4}-\d{5}$")
 DECISION_GRANTED = "granted"
 DECISION_REJECTED = "rejected"

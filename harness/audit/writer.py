@@ -37,7 +37,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 # Erlaubte Werte für policy_result
 VALID_POLICY_RESULTS = frozenset({
     "ALLOWED",

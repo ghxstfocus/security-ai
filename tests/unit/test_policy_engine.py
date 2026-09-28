@@ -25,7 +25,6 @@ from harness.policy_engine.policy import (
     strictest,
 )
 
-
 RULES_PATH = Path("policies/tools.yaml")
 
 

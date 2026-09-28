@@ -4,24 +4,21 @@ from __future__ import annotations
 import os
 import tempfile
 import unittest
-from unittest import mock
 from pathlib import Path
+from unittest import mock
 
+from core.inventory.repository import DeviceRepository, apply_migrations, connect
+from core.inventory.whitelist import WhitelistRepository
 from harness.permissions.levels import Level
 from harness.policy_engine.engine import PolicyEngine
 from harness.policy_engine.policy import Decision, PolicyContext
 from harness.tool_registry.registry import ToolRegistry
 from harness.tool_registry.tool import Tool, ToolArgumentError, ToolError
-
-from core.inventory.repository import connect, apply_migrations, DeviceRepository
-from core.inventory.whitelist import WhitelistRepository
-
 from tools.get_devices import GET_DEVICES_TOOL, get_devices_run
 from tools.nmap_scan import NMAP_SCAN_TOOL, nmap_scan_run
 from tools.read_logs import READ_LOGS_TOOL, read_logs_run
 from tools.telegram_alert import TELEGRAM_ALERT_TOOL, telegram_alert_run
 from tools.whitelist_check import WHITELIST_CHECK_TOOL, whitelist_check_run
-
 
 ALL_TOOLS = [
     NMAP_SCAN_TOOL,

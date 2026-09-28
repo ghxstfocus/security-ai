@@ -20,7 +20,6 @@ from typing import Any, Iterable
 
 from core.inventory.device import Device
 
-
 # Single source of truth fuer den DB-Pfad.
 # Kann spaeter nach core/config.py wandern, wenn mehr
 # Einstellungen dazukommen (Log-Level, Telegram,

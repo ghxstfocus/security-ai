@@ -25,7 +25,6 @@ from datetime import datetime, timedelta, timezone
 
 from core.services import ServiceError
 
-
 WINDOW_SECONDS = 60
 MAX_REQUESTS = 10
 

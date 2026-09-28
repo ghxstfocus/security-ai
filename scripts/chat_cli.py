@@ -35,24 +35,8 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from core.access.checker import AccessDeniedError
-from core.config import (
-    get_model_default,
-    get_model_large,
-    get_ollama_base_url,
-    load_env,
-)
-from core.inventory.repository import (
-    DEFAULT_DB_PATH,
-    apply_migrations,
-    connect,
-)
 from apps.security_ai.chat import ChatService, ChatServiceError
-from core.services.access_service import (
-    AccessService,
-    AccessServiceError,
-)
-from core.access.checker import AccessChecker
+from core.access.checker import AccessChecker, AccessDeniedError
 from core.access.repository import (
     PermissionRepository,
     PrincipalRepository,
@@ -60,12 +44,26 @@ from core.access.repository import (
     RoleRepository,
 )
 from core.access.session_repo import SessionRepository
+from core.config import (
+    get_model_default,
+    get_model_large,
+    get_ollama_base_url,
+    load_env,
+)
 from core.context.builder import build_chat_context
+from core.inventory.repository import (
+    DEFAULT_DB_PATH,
+    apply_migrations,
+    connect,
+)
+from core.services.access_service import (
+    AccessService,
+    AccessServiceError,
+)
 from harness.audit.writer import AuditWriter
 from harness.llm.client import OllamaClient
 from harness.llm.errors import LLMError
 from scripts.init_db import init_db
-
 
 DEFAULT_MIGRATIONS_DIR = "data/migrations"
 DEFAULT_AUDIT_DIR = "audit-logs"

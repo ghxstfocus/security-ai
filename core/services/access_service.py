@@ -41,7 +41,6 @@ from core.access.session_repo import SessionRepository
 from core.services import ServiceError
 from harness.audit.writer import AuditWriter
 
-
 AGENT = "security_ai"
 TOOL = "access_service"
 

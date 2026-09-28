@@ -9,8 +9,8 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timezone
 
-from core.events.event import Event, Severity, new_event_id
 from apps.security_ai.planning import SecurityPlanModel
+from core.events.event import Event, Severity, new_event_id
 
 
 def _event(event_type: str, data: dict) -> Event:

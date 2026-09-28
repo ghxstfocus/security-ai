@@ -14,14 +14,18 @@ from __future__ import annotations
 
 import os
 import pwd
-
 from datetime import datetime, timedelta, timezone
 
 from flask import Flask, g, redirect, request
 from werkzeug.exceptions import HTTPException
 
+from apps.dashboard.decorators import (
+    SESSION_COOKIE_NAME,
+    is_public_path,
+)
 from core.access.checker import (
-    AccessChecker, AccessDeniedError,
+    AccessChecker,
+    AccessDeniedError,
 )
 from core.access.session_repo import SessionRepository
 from core.config import get_secret_key
@@ -37,12 +41,6 @@ from harness.audit.writer import (
     AuditWriter,
     check_audit_logs,
 )
-
-from apps.dashboard.decorators import (
-    SESSION_COOKIE_NAME,
-    is_public_path,
-)
-
 
 DEFAULT_AUDIT_DIR = "audit-logs"
 IDLE_TIMEOUT_SECONDS = 30 * 60
@@ -235,8 +233,10 @@ def create_app(
     register_search_routes(app)
 
     from apps.dashboard.filters import (
-        format_score, format_score_label,
-        format_source_label, format_ts,
+        format_score,
+        format_score_label,
+        format_source_label,
+        format_ts,
     )
     app.add_template_filter(format_ts, "format_ts")
     app.add_template_filter(
@@ -280,8 +280,9 @@ def create_app(
     def _inject_csrf():
         # Token nur lesen oder anlegen (get_or_create ist
         # idempotent, kein Rotieren pro Request).
-        from apps.dashboard import csrf
         from flask import session
+
+        from apps.dashboard import csrf
         return {"csrf_token": csrf.get_or_create(session)}
 
     @app.after_request

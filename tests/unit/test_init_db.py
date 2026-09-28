@@ -16,9 +16,9 @@ from core.access.repository import (
     PrincipalRepository,
     RoleRepository,
 )
-from scripts.init_db import init_db, main as init_db_main
 from scripts.chat_cli import main as chat_cli_main
-
+from scripts.init_db import init_db
+from scripts.init_db import main as init_db_main
 
 MIGRATIONS = "data/migrations"
 

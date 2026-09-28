@@ -54,7 +54,6 @@ from core.inventory.repository import (
 )
 from harness.audit.writer import AuditWriter
 
-
 DEFAULT_MIGRATIONS_DIR = "data/migrations"
 DEFAULT_AUDIT_DIR = "audit-logs"
 AGENT = "security_ai"

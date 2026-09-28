@@ -26,7 +26,6 @@ from core.access.session_repo import (
 )
 from tests.unit._helpers import migrated_conn
 
-
 # ---------------------------------------------------------------------- #
 # Fixtures
 # ---------------------------------------------------------------------- #

@@ -57,7 +57,6 @@ from core.changes.repository import (
 from core.services import OperationError, ServiceError
 from harness.audit.writer import AuditWriter
 
-
 CHANGE_ID_RE = re.compile(r"^CHG-\d{4}-\d{5}$")
 
 TITLE_MIN = 1

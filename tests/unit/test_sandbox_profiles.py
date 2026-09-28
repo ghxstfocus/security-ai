@@ -12,7 +12,6 @@ from pathlib import Path
 
 from harness.tool_registry.tool import KNOWN_SANDBOX_PROFILES
 
-
 PROFILES_DIR = Path("harness/sandbox/profiles")
 
 

@@ -43,7 +43,6 @@ from harness.context.models import ContextBundle
 from harness.llm.errors import LLMError
 from harness.llm.models import LLMRequest
 
-
 AGENT = "security_ai"
 TOOL = "chat_service"
 

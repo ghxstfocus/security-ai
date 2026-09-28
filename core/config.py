@@ -15,7 +15,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-
 DEFAULT_ENV_PATH = ".env"
 
 DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"

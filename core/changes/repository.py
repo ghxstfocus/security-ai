@@ -23,7 +23,6 @@ from core.changes.models import (
     utc_now_iso,
 )
 
-
 _PREFIX = "CHG"
 
 

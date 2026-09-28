@@ -22,7 +22,13 @@ from __future__ import annotations
 import re
 
 from flask import (
-    Flask, abort, g, redirect, render_template, request, session,
+    Flask,
+    abort,
+    g,
+    redirect,
+    render_template,
+    request,
+    session,
 )
 
 from apps.dashboard import csrf
@@ -36,7 +42,6 @@ from core.services.access_service import (
     AccessService,
     AccessServiceError,
 )
-
 
 ROLE_NAME_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 PERMISSION_CODE_RE = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")

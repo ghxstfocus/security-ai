@@ -10,7 +10,10 @@ import pytest
 
 from core.services import ServiceError
 from core.services.search_service import (
-    QUERY_MAX, QUERY_MIN, SearchService, SearchServiceError,
+    QUERY_MAX,
+    QUERY_MIN,
+    SearchService,
+    SearchServiceError,
 )
 
 

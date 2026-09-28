@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from core.access.models import PrincipalKind
 from core.access.checker import AccessChecker
+from core.access.models import PrincipalKind
 from core.access.repository import (
     PrincipalRepository,
     RoleRepository,

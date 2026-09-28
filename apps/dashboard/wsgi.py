@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from apps.dashboard.app import create_app
 
-
 app = create_app()
 
 

@@ -4,21 +4,20 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
-from unittest import mock
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest import mock
 
-from harness.agent_loop.loop import Plan, PlanStep
-from harness.agent_loop.model import BaseModel
-from harness.permissions.levels import Level
-from harness.tool_registry.registry import ToolRegistry
-from harness.tool_registry.tool import Tool
 from apps.security_ai.orchestrator import (
     ProcessingAuditError,
     SecurityAI,
 )
 from core.events.event import Event, EventType, Severity, new_event_id
-
+from harness.agent_loop.loop import Plan, PlanStep
+from harness.agent_loop.model import BaseModel
+from harness.permissions.levels import Level
+from harness.tool_registry.registry import ToolRegistry
+from harness.tool_registry.tool import Tool
 
 RULES_YAML = Path("detection/rules.yaml")
 RISK_RULES = Path("core/risk/rules.yaml")

@@ -27,7 +27,6 @@ import requests
 from harness.permissions.levels import Level
 from harness.tool_registry.tool import Tool, ToolArgumentError, ToolError
 
-
 _DEFAULT_BASE_URL = "https://api.telegram.org"
 _TIMEOUT_S = 5
 _MAX_TITLE_LEN = 200

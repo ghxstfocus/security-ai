@@ -3,9 +3,9 @@ Integrationstest: Suche ueber echte SQLite (3.6.16, A546).
 """
 from __future__ import annotations
 
+import tempfile
 import unittest
 from pathlib import Path
-import tempfile
 
 from core.search.repository import SearchRepository
 from core.services.search_service import SearchService

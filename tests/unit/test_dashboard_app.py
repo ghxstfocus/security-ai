@@ -24,11 +24,11 @@ from pathlib import Path
 
 import pytest
 
+from apps.dashboard.app import create_app
 from apps.dashboard.decorators import (
     PUBLIC_PATHS,
     require_permission,
 )
-from apps.dashboard.app import create_app
 from core.inventory.repository import (
     DEFAULT_MIGRATIONS_DIR,
     SchemaVersionError,

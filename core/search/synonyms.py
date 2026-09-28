@@ -23,7 +23,6 @@ import yaml
 from core.risk.models import RiskCategory
 from core.services import ServiceError
 
-
 DEFAULT_SYNONYMS_PATH = Path("core/search/synonyms.yaml")
 
 

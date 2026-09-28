@@ -48,7 +48,6 @@ from core.inventory.repository import (
 from harness.approval.queue import ApprovalQueue
 from harness.audit.writer import AuditWriter
 
-
 DEFAULT_MIGRATIONS_DIR = "data/migrations"
 DEFAULT_AUDIT_DIR = "audit-logs"
 

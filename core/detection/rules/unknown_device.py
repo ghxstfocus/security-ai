@@ -41,7 +41,8 @@ class UnknownDeviceRule(Rule):
         if event.data.get("known") is not False:
             return []
 
-        from core.events.event import Event as _Event, new_event_id
+        from core.events.event import Event as _Event
+        from core.events.event import new_event_id
         return [
             _Event(
                 event_id=new_event_id(),

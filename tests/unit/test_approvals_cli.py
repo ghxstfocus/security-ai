@@ -13,9 +13,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from core.approval.models import ApprovalStatus
-from core.inventory.repository import apply_migrations, connect
 from core.approval.repository import ApprovalRepository
-
+from core.inventory.repository import apply_migrations, connect
 from scripts.approvals_cli import main
 
 
@@ -81,8 +80,8 @@ class ApprovalsCliTests(unittest.TestCase):
     # ------------------------------------------------------------------ #
 
     def test_list_leer(self):
-        import io
         import contextlib
+        import io
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             rc = self._run("list")
@@ -90,8 +89,8 @@ class ApprovalsCliTests(unittest.TestCase):
         self.assertIn("keine Approvals", buf.getvalue())
 
     def test_approve_unbekannte_id_exit_1(self):
-        import io
         import contextlib
+        import io
         err = io.StringIO()
         with contextlib.redirect_stderr(err):
             rc = self._run("approve", "APR-2026-99999", "--by", "admin")
@@ -115,8 +114,8 @@ class ApprovalsCliTests(unittest.TestCase):
     def test_doppeltes_approve_exit_1(self):
         rid = self._seed()
         self._run("approve", rid, "--by", "admin")
-        import io
         import contextlib
+        import io
         err = io.StringIO()
         with contextlib.redirect_stderr(err):
             rc = self._run("approve", rid, "--by", "admin")
@@ -124,8 +123,8 @@ class ApprovalsCliTests(unittest.TestCase):
         self.assertIn("FEHLER", err.getvalue())
 
     def test_count_zeigt_pending(self):
-        import io
         import contextlib
+        import io
         self._seed()
         self._seed()
         buf = io.StringIO()
@@ -138,8 +137,8 @@ class ApprovalsCliTests(unittest.TestCase):
 
     def test_expire_markiert_abgelaufen(self):
         rid = self._seed(expires_at="2000-01-01T00:00:00+00:00")
-        import io
         import contextlib
+        import io
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             rc = self._run("expire")
@@ -148,8 +147,8 @@ class ApprovalsCliTests(unittest.TestCase):
         self.assertIs(self._status(rid), ApprovalStatus.EXPIRED)
 
     def test_show_unbekannte_id_exit_1(self):
-        import io
         import contextlib
+        import io
         err = io.StringIO()
         with contextlib.redirect_stderr(err):
             rc = self._run("show", "APR-2026-99999")
@@ -157,8 +156,8 @@ class ApprovalsCliTests(unittest.TestCase):
         self.assertIn("FEHLER", err.getvalue())
 
     def test_show_zeigt_details(self):
-        import io
         import contextlib
+        import io
         rid = self._seed()
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
@@ -170,8 +169,8 @@ class ApprovalsCliTests(unittest.TestCase):
         self.assertIn("nmap_scan", out)
 
     def test_db_fehlt_exit_1(self):
-        import io
         import contextlib
+        import io
         err = io.StringIO()
         rc = main([
             "--db", str(self.tmp / "gibts-nicht.db"),
@@ -193,8 +192,8 @@ class ApprovalsCliTests(unittest.TestCase):
         self.assertIn("approval_granted", kinds)
 
     def test_list_all_zeigt_entschiedene(self):
-        import io
         import contextlib
+        import io
         rid = self._seed()
         self._run("approve", rid, "--by", "admin")
         buf = io.StringIO()

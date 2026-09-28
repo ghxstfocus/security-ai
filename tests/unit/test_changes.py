@@ -6,28 +6,35 @@ Audit landet in tmp-Verzeichnis.
 """
 from __future__ import annotations
 
+import contextlib
 import io
 import json
 import tempfile
 import unittest
-import contextlib
 from pathlib import Path
 
 from core.changes.models import (
-    ChangeRequest, ChangeStatus, ChangeType, utc_now_iso,
+    ChangeRequest,
+    ChangeStatus,
+    ChangeType,
+    utc_now_iso,
 )
 from core.changes.parser import (
-    ChangeParserError, change_from_dict, change_to_dict,
-    change_to_json, default_path, read_change_file,
+    ChangeParserError,
+    change_from_dict,
+    change_to_dict,
+    change_to_json,
+    default_path,
+    read_change_file,
     write_change_file,
 )
 from core.changes.repository import (
-    ChangeNotFoundError, ChangeRepository, ChangeStateError,
+    ChangeNotFoundError,
+    ChangeRepository,
+    ChangeStateError,
 )
 from core.inventory.repository import apply_migrations, connect
-
 from scripts.changes_cli import main as changes_main
-
 
 # ---------------------------------------------------------------------- #
 # Parser

@@ -21,7 +21,6 @@ import re
 
 from core.access.checker import AccessChecker
 
-
 # Erkannte ID-Muster. Reihenfolge ist wichtig:
 # laengste/spezifischste zuerst.
 _ID_PATTERNS = (

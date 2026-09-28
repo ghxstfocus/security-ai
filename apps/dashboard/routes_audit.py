@@ -22,7 +22,11 @@ import json
 from datetime import datetime, timezone
 
 from flask import (
-    Flask, abort, g, render_template, request,
+    Flask,
+    abort,
+    g,
+    render_template,
+    request,
 )
 
 from apps.dashboard.decorators import require_permission

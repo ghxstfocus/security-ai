@@ -20,16 +20,14 @@ from __future__ import annotations
 import sqlite3
 from typing import Any
 
-from harness.audit.writer import AuditWriter, AuditWriteError
-
 from core.approval.models import ApprovalRequest, ApprovalStatus
 from core.approval.repository import (
-    ApprovalRepository,
     ApprovalNotFoundError,
+    ApprovalRepository,
     ApprovalRepositoryError,
     ApprovalStateError,
 )
-
+from harness.audit.writer import AuditWriteError, AuditWriter
 
 AGENT = "security_ai"
 TOOL = "approval_queue"

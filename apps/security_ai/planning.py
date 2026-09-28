@@ -22,7 +22,6 @@ from core.events.event import Event
 from harness.agent_loop.loop import Plan, PlanStep
 from harness.agent_loop.model import BaseModel
 
-
 _ALERT_CATEGORIES = frozenset({"SECURITY_ALERT", "CONFIRMED"})
 
 _CATEGORY_TO_SEVERITY = {

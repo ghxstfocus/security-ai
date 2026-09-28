@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from typing import Any, Callable, TypeVar
 
-
 PUBLIC_PATHS: frozenset[str] = frozenset({
     "/login",
     "/favicon.ico",

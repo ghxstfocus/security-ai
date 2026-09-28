@@ -16,7 +16,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-
 DEFAULT_AUDIT_DIR = "audit-logs"
 
 

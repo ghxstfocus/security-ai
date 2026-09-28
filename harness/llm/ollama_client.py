@@ -26,7 +26,6 @@ from harness.llm.models import (
     LLMResponse,
 )
 
-
 __all__ = [
     "OllamaClient",
     "LLMError",

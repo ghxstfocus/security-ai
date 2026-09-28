@@ -26,15 +26,14 @@ from harness.agent_loop.loop import (
 )
 from harness.agent_loop.model import DummyModel
 from harness.audit.writer import AuditWriter
+from harness.permissions.levels import Level
 from harness.policy_engine.engine import PolicyEngine
 from harness.policy_engine.policy import (
     Decision,
     PolicyContext,
 )
-from harness.permissions.levels import Level
 from harness.tool_registry.registry import ToolRegistry
 from harness.tool_registry.tool import Tool
-
 
 # --- Fixtures ---
 

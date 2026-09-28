@@ -16,7 +16,8 @@ from apps.dashboard.app import create_app
 from apps.dashboard.decorators import SESSION_COOKIE_NAME
 from core.access.models import PrincipalKind
 from core.access.repository import (
-    PrincipalRepository, RoleRepository,
+    PrincipalRepository,
+    RoleRepository,
 )
 from core.access.session_repo import SessionRepository
 from core.inventory.repository import (

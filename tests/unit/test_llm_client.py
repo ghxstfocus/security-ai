@@ -11,14 +11,13 @@ import unittest
 import urllib.error
 from unittest import mock
 
-from harness.llm.client import OllamaClient, DEFAULT_BASE_URL
+from harness.llm.client import DEFAULT_BASE_URL, OllamaClient
 from harness.llm.errors import LLMError, LLMTimeout, LLMUnavailable
 from harness.llm.models import (
     DEFAULT_MODEL,
     LLMRequest,
     LLMResponse,
 )
-
 
 # ---------------------------------------------------------------------- #
 # Fake-Response

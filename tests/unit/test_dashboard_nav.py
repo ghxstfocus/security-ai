@@ -125,6 +125,7 @@ def _seed_all_tables(app):
     import json
     from datetime import datetime, timezone
     from pathlib import Path as _P
+
     from core.inventory.repository import connect
 
     now = datetime.now(timezone.utc)

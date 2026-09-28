@@ -37,11 +37,11 @@ from datetime import datetime, timezone
 from typing import Any, Protocol
 
 from core.events.event import Event
-from harness.audit.writer import AuditWriter
 from harness.approval.queue import (
-    ApprovalQueue,
     ApprovalEnqueueError,
+    ApprovalQueue,
 )
+from harness.audit.writer import AuditWriter
 from harness.permissions.levels import (
     ForbiddenActionError,
     Level,
@@ -51,7 +51,6 @@ from harness.policy_engine.engine import PolicyEngine
 from harness.policy_engine.policy import Decision, PolicyContext
 from harness.tool_registry.registry import ToolRegistry
 from harness.tool_registry.tool import Tool, ToolArgumentError
-
 
 # --- Exceptions ---
 

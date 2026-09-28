@@ -28,7 +28,6 @@ from core.inventory.repository import (
 from harness.permissions.levels import Level
 from harness.tool_registry.tool import Tool, ToolArgumentError, ToolError
 
-
 # ---------------------------------------------------------------------- #
 # Validierung
 # ---------------------------------------------------------------------- #

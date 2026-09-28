@@ -22,11 +22,11 @@ from core.access.repository import (
     RoleRepository,
 )
 from core.services.audit_reader_service import (
-    AuditReaderServiceError,
     AuditReaderService,
+    AuditReaderServiceError,
 )
-from tests.unit._helpers import migrated_conn
 from harness.audit.writer import AuditWriter
+from tests.unit._helpers import migrated_conn
 
 
 @pytest.fixture()

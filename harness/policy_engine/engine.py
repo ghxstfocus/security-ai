@@ -47,7 +47,6 @@ from harness.policy_engine.policy import (
     strictest,
 )
 
-
 Predicate = Callable[[dict[str, Any], PolicyContext], PredicateResult]
 
 

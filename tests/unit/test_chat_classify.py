@@ -21,8 +21,8 @@ import unittest
 
 from apps.security_ai.chat import (
     _classify_question,
-    _is_state_question,
     _has_critical_assessments,
+    _is_state_question,
 )
 from harness.context.models import ContextBundle, utc_now
 
@@ -139,20 +139,23 @@ class ModelReasonConsistencyTests(unittest.TestCase):
     def test_fact_path_has_reason_fact(self):
         # Der fact-Pfad setzt model_reason="fact" (bereits vor
         # 3.6.15d). Der Test schuetzt vor Regression.
-        from apps.security_ai.chat import ChatService
         import inspect
+
+        from apps.security_ai.chat import ChatService
         src = inspect.getsource(ChatService.ask)
         self.assertIn('model_reason="fact"', src)
 
     def test_no_context_path_has_reason_no_context(self):
-        from apps.security_ai.chat import ChatService
         import inspect
+
+        from apps.security_ai.chat import ChatService
         src = inspect.getsource(ChatService.ask)
         self.assertIn('model_reason="no_context"', src)
 
     def test_detail_path_has_reason_detail_append(self):
-        from apps.security_ai.chat import ChatService
         import inspect
+
+        from apps.security_ai.chat import ChatService
         src = inspect.getsource(ChatService.ask)
         self.assertIn('model_reason="detail_append"', src)
 

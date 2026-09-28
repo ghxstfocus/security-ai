@@ -8,7 +8,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from flask import render_template_string
 
 from tests.unit._helpers import build_dashboard_app

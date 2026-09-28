@@ -12,16 +12,14 @@ import json
 import sqlite3
 import tempfile
 import unittest
-
-from apps.security_ai.chat import ChatService
 from datetime import datetime, timezone
 from pathlib import Path
 
 from apps.security_ai.chat import (
     ChatOperationError,
+    ChatResponse,
     ChatService,
     ChatServiceError,
-    ChatResponse,
 )
 from core.access.checker import AccessChecker, AccessDeniedError
 from core.access.models import PrincipalKind
@@ -35,7 +33,6 @@ from harness.audit.writer import AuditWriter
 from harness.context.models import LogExcerpt
 from harness.llm.errors import LLMError, LLMUnavailable
 from harness.llm.models import LLMRequest, LLMResponse
-
 
 # ---------------------------------------------------------------------- #
 # Fake-LLM
@@ -774,9 +771,10 @@ class _FailThenPassLLM:
 
 class ChatServiceSanityRetryTests(_ChatBase):
     def test_answer_contradicts_context_mit_31_confirmed(self):
+        from datetime import datetime, timezone
+
         from apps.security_ai.chat import _answer_contradicts_context
         from harness.context.models import ContextBundle
-        from datetime import datetime, timezone
         now = datetime.now(timezone.utc)
         ctx = ContextBundle(
             built_at=now,

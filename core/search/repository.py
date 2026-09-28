@@ -24,7 +24,6 @@ from __future__ import annotations
 import sqlite3
 from typing import Any
 
-
 DEFAULT_LIMIT = 20
 
 # LIKE-Sonderzeichen escapen (Auflage 528).

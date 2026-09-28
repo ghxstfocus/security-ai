@@ -28,9 +28,8 @@ from core.services.access_service import (
     AccessService,
     AccessServiceError,
 )
-from tests.unit._helpers import migrated_conn
 from harness.audit.writer import AuditWriter
-
+from tests.unit._helpers import migrated_conn
 
 # ---------------------------------------------------------------------- #
 # Fixtures

@@ -31,7 +31,6 @@ from core.changes.models import (
     utc_now_iso,
 )
 
-
 DEFAULT_CHANGES_DIR = "changes"
 
 _PFLICHT_FELDER = (

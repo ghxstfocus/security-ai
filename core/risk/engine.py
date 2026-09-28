@@ -34,7 +34,6 @@ from core.risk.models import (
     score_to_category,
 )
 
-
 Predicate = Callable[[Event, RiskContext], bool]
 
 

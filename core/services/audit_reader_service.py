@@ -27,7 +27,6 @@ from core.reporting.audit_reader import (
 from core.services import OperationError, ServiceError
 from harness.audit.writer import AuditWriter
 
-
 AUDIT_ID_RE = re.compile(r"^AUD-\d{4}-\d{2}-\d{2}-[0-9a-f]{8}$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 

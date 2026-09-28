@@ -6,8 +6,8 @@ Treffer, kein Treffer, LIKE-Sonderzeichen, Limit.
 """
 from __future__ import annotations
 
-from tests.unit._helpers import migrated_conn
 from core.search.repository import SearchRepository, escape_like
+from tests.unit._helpers import migrated_conn
 
 
 def _seed(conn):

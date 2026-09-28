@@ -17,7 +17,13 @@ Kein DELETE, kein delete_principal. Deaktivieren reicht
 from __future__ import annotations
 
 from flask import (
-    Flask, abort, g, redirect, render_template, request, session,
+    Flask,
+    abort,
+    g,
+    redirect,
+    render_template,
+    request,
+    session,
 )
 
 from apps.dashboard import csrf

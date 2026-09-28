@@ -186,7 +186,7 @@ def test_chat_api_detail_not_bool_400(app):
 
 def _patch_chat_service(app, monkeypatch, response=None,
                         exc=None, counter=None):
-    from apps.security_ai.chat import ChatService, ChatResponse
+    from apps.security_ai.chat import ChatResponse, ChatService
 
     def _ask(self, principal_name, question, *, detail=False,
              **kw):
@@ -289,6 +289,7 @@ def test_rate_limit_window_resets(app, monkeypatch):
     # Fenster kuenstlich ueberspringen: DB-Eintraege
     # auf ein altes hit_at setzen.
     from datetime import datetime, timedelta, timezone
+
     from core.inventory.repository import connect
     old = (
         datetime.now(timezone.utc)
@@ -423,7 +424,7 @@ def test_chat_api_route_uebergibt_kontext(app, monkeypatch):
     an ChatService.ask. Wir pruefen das ueber einen
     Fakes, der die kwargs einfaengt.
     """
-    from apps.security_ai.chat import ChatService, ChatResponse
+    from apps.security_ai.chat import ChatResponse, ChatService
 
     _seed_risk_assessment(app)
     eingefangen = {}
@@ -460,7 +461,7 @@ def test_chat_api_route_uebergibt_kontext(app, monkeypatch):
 
 def test_chat_api_response_hat_links_feld(app, monkeypatch):
     # A768: die API-Antwort hat immer ein links-Feld.
-    from apps.security_ai.chat import ChatService, ChatResponse
+    from apps.security_ai.chat import ChatResponse, ChatService
 
     def _ask(self, principal_name, question, *, detail=False, **kw):
         return ChatResponse(
@@ -483,7 +484,7 @@ def test_chat_api_response_hat_links_feld(app, monkeypatch):
 
 def test_chat_api_links_bei_change_id(app, monkeypatch):
     # A757: fact-Antwort mit CHG-ID -> Link-Liste.
-    from apps.security_ai.chat import ChatService, ChatResponse
+    from apps.security_ai.chat import ChatResponse, ChatService
 
     def _ask(self, principal_name, question, *, detail=False, **kw):
         return ChatResponse(
@@ -507,7 +508,7 @@ def test_chat_api_links_bei_change_id(app, monkeypatch):
 
 def test_chat_api_links_bei_viewer_ohne_change_view(app, monkeypatch):
     # A770: viewer hat kein change.view -> kein Link.
-    from apps.security_ai.chat import ChatService, ChatResponse
+    from apps.security_ai.chat import ChatResponse, ChatService
 
     def _ask(self, principal_name, question, *, detail=False, **kw):
         return ChatResponse(
@@ -529,7 +530,7 @@ def test_chat_api_links_bei_viewer_ohne_change_view(app, monkeypatch):
 
 def test_chat_api_links_nicht_bei_llm_source(app, monkeypatch):
     # A758: LLM-Antworten werden nicht verlinkt.
-    from apps.security_ai.chat import ChatService, ChatResponse
+    from apps.security_ai.chat import ChatResponse, ChatService
 
     def _ask(self, principal_name, question, *, detail=False, **kw):
         return ChatResponse(

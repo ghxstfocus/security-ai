@@ -27,20 +27,25 @@ from pathlib import Path
 
 import pytest
 
+from apps.dashboard.auth import _safe_next
+from apps.dashboard.decorators import SESSION_COOKIE_NAME
 from core.access.models import (
-    PrincipalKind, hash_password,
+    PrincipalKind,
+    hash_password,
 )
 from core.access.repository import (
-    PrincipalRepository, RoleRepository,
+    PrincipalRepository,
+    RoleRepository,
 )
 from core.access.session_repo import SessionRepository
 from core.inventory.repository import (
-    DEFAULT_MIGRATIONS_DIR, apply_migrations, connect,
+    DEFAULT_MIGRATIONS_DIR,
+    apply_migrations,
+    connect,
 )
-from apps.dashboard.decorators import SESSION_COOKIE_NAME
-from apps.dashboard.auth import _safe_next
 from tests.unit._helpers import (
-    build_dashboard_app, set_session_cookie,
+    build_dashboard_app,
+    set_session_cookie,
 )
 
 

@@ -13,11 +13,10 @@ from __future__ import annotations
 import pytest
 
 from core.config import (
-    ConfigError,
     SECRET_KEY_MIN_BYTES,
+    ConfigError,
     get_secret_key,
 )
-
 
 # ---------------------------------------------------------------------- #
 # Fixtures

@@ -37,16 +37,15 @@ from __future__ import annotations
 from flask import Flask, g, jsonify, render_template, request
 
 from apps.dashboard.decorators import require_permission
-from core.services.rate_limit_service import RateLimitService
-from core.context.builder import build_chat_context
-from core.context.links import extract_links
-from harness.llm.errors import LLMError, LLMTimeout, LLMUnavailable
 from apps.security_ai.chat import (
     ChatOperationError,
     ChatService,
     ChatServiceError,
 )
-
+from core.context.builder import build_chat_context
+from core.context.links import extract_links
+from core.services.rate_limit_service import RateLimitService
+from harness.llm.errors import LLMError, LLMTimeout, LLMUnavailable
 
 QUESTION_MAX_LEN = 2000
 

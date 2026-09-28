@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import sqlite3
 import unittest
-from tempfile import TemporaryDirectory
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from core.access.checker import AccessChecker, AccessDeniedError
 from core.access.models import PrincipalKind

@@ -22,7 +22,6 @@ from core.approval.models import (
     utc_now_iso,
 )
 
-
 _PREFIX = "APR"
 
 

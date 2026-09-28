@@ -15,14 +15,13 @@ from core.access.repository import RoleRepository
 from core.inventory.repository import (
     DEFAULT_MIGRATIONS_DIR,
     SchemaVersionError,
+    _parse_migration_version,
     apply_migrations,
     check_schema_version,
     connect,
     ensure_schema_migrations,
-    _parse_migration_version,
 )
 from tests.unit._helpers import migrated_conn
-
 
 PERMISSION_PATTERN = re.compile(
     r"^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$",

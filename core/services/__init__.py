@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from core.services.errors import OperationError, ServiceError
 
-
 __all__ = [
     "OperationError",
     "ServiceError",
