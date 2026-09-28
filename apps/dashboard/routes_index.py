@@ -22,13 +22,13 @@ Fehlerverhalten pro Kachel (A1284, L2):
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from flask import Flask, g, render_template
 
 from apps.dashboard.decorators import require_permission
 from core.access.checker import AccessDeniedError
-from harness.approval.queue import ApprovalQueue
 from core.changes.repository import ChangeRepository
 from core.inventory.repository import DeviceRepository
 from core.inventory.whitelist import WhitelistRepository
@@ -36,6 +36,7 @@ from core.services.approval_service import ApprovalService
 from core.services.audit_reader_service import AuditReaderService
 from core.services.change_service import ChangeService
 from core.services.inventory_service import InventoryService
+from harness.approval.queue import ApprovalQueue
 
 log = logging.getLogger(__name__)
 
