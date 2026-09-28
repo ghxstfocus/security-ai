@@ -1,10 +1,11 @@
-cat > README.md << 'READMEEOF'
 # Security AI
 
 > Ein modulares, defensives Security- und Admin-System fuer
 > autorisierte IT- und Gebaeudeumgebungen. Referenz-Implementierung
 > einer foederierten, KI-gestuetzten Sicherheitsarchitektur mit
 > strikter Human-in-the-Loop-Kontrolle.
+
+Stand: 2026-09-28 | HEAD: 811fafc | Tests: 950 gruen (venv, pytest 9.1.1)
 
 ## Die Vision in einem Absatz
 
@@ -41,21 +42,27 @@ Die vollstaendige Vision: [PROJECT_VISION.md](PROJECT_VISION.md).
   qwen2.5:7b fuer tiefe Fragen (Auto-Switch). Keine Cloud,
   keine Datenabfluesse.
 - **Chat mit der Security AI:** Fragen in natuerlicher Sprache
-  ("Gab es heute Nacht Auffaelligkeiten?").
+  ("Gab es heute Nacht Auffaelligkeiten?"). Fact-Pfad
+  deterministisch (Labels statt Rohkategorien, dynamischer
+  Zeitraum), Interpretations-Pfad mit Auto-Switch und
+  Sanity-Check.
 - **Approval Queue:** Level-4-Aktionen warten auf
   Human-Approval.
 - **Change Requests:** Aenderungen mit Diff, Rollback, Tests.
 - **Audit-Log:** Append-only JSONL. Jede Aktion unveraenderlich
   protokolliert.
 - **Web-Dashboard:** Flask-basiert, RBAC, CSP-konform.
-- **723 Tests, alle gruen.**
+  Seiten: Dashboard, Inventar, Alarme, Approvals, Changes,
+  Chat, Benutzer, Rollen, Audit, Einstellungen, Suche.
+  Links im Chat (Objekt-Referenzen und Navigations-Hinweise).
+- **HTTPS hinter nginx** mit eigener CA, gunicorn (2 Worker).
+- **950 Tests, alle gruen.**
 
 ## Was gerade gebaut wird
 
-- Responsive Design (Tablet, Handy).
-- Charts und Live-Timeline im Dashboard.
-- UI-Politur.
-- Security-Audit.
+- Lint/Typen-Aufraeumen (ruff 435, mypy 87 — eigene Runde).
+- Punkt 11 (SSH-Zugang Windows -> CT102) — Betriebsakt.
+- Phasen 5-11 in Planung (siehe Was geplant ist).
 
 ## Was geplant ist
 
@@ -118,4 +125,7 @@ Details: [docs/SECURITY.md](docs/SECURITY.md)
 - [Deployment](docs/DEPLOYMENT.md) — Proxmox-Setup
 - [Design-Entscheidungen](docs/DESIGN_DECISIONS.md) — 40+ Entscheidungen
 - [Phasen](docs/PHASES.md) — Skalierungspfad
-- [Werk
+- [Werkzeuge](docs/WERKZEUGE.md) — Skripte und CLIs
+- [Web-Security-Checkliste](docs/WEB_SECURITY_CHECKLIST.md) — verbindliche Checkliste
+- [Security-Review-Log](docs/SECURITY_REVIEW_LOG.md) — Entscheidungen und offene Punkte
+- [Workflow](docs/WORKFLOW.md) — Prozess, Hard-Rules
