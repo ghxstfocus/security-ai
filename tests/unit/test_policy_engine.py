@@ -29,12 +29,12 @@ RULES_PATH = Path("policies/tools.yaml")
 
 
 def _ctx(**kwargs) -> PolicyContext:
-    defaults = dict(
-        network_id="homelab-default",
-        authorized_networks=frozenset({"192.168.178.0/24"}),
-        now=datetime.now(UTC),
-        config={"read_only_paths": ["/var/log"]},
-    )
+    defaults = {
+        "network_id": "homelab-default",
+        "authorized_networks": frozenset({"192.168.178.0/24"}),
+        "now": datetime.now(UTC),
+        "config": {"read_only_paths": ["/var/log"]},
+    }
     defaults.update(kwargs)
     return PolicyContext(**defaults)
 

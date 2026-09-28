@@ -178,13 +178,13 @@ class NmapScanTests(unittest.TestCase):
 
     def test_validierung(self):
         for bad in [
-            dict(target=""),
-            dict(target=None),
-            dict(target=123),
-            dict(target="x" * 300),
-            dict(target="x", ports="22; rm -rf /"),
-            dict(target="x", ports=[22, "a"]),
-            dict(target="x", scan_type="unbekannt"),
+            {"target": ""},
+            {"target": None},
+            {"target": 123},
+            {"target": "x" * 300},
+            {"target": "x", "ports": "22; rm -rf /"},
+            {"target": "x", "ports": [22, "a"]},
+            {"target": "x", "scan_type": "unbekannt"},
         ]:
             with self.assertRaises(ToolArgumentError, msg=bad):
                 nmap_scan_run(**bad)
@@ -301,10 +301,10 @@ class GetDevicesTests(unittest.TestCase):
 
     def test_argument_validierung(self):
         for bad in [
-            dict(identifier=123),
-            dict(identifier=""),
-            dict(mock="ja"),
-            dict(db_path=123),
+            {"identifier": 123},
+            {"identifier": ""},
+            {"mock": "ja"},
+            {"db_path": 123},
         ]:
             with self.assertRaises(ToolArgumentError, msg=bad):
                 get_devices_run(**bad)
@@ -382,11 +382,11 @@ class TelegramAlertTests(unittest.TestCase):
 
     def test_validierung_vor_env_check(self):
         for bad in [
-            dict(title="", message="y"),
-            dict(title="x", message=""),
-            dict(title="x", message="y", severity="unbekannt"),
-            dict(title=123, message="y"),
-            dict(title="x", message=123),
+            {"title": "", "message": "y"},
+            {"title": "x", "message": ""},
+            {"title": "x", "message": "y", "severity": "unbekannt"},
+            {"title": 123, "message": "y"},
+            {"title": "x", "message": 123},
         ]:
             with self.assertRaises(ToolArgumentError, msg=bad):
                 telegram_alert_run(**bad)

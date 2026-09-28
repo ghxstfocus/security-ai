@@ -75,11 +75,11 @@ class OllamaClientConstructorTests(unittest.TestCase):
 
     def test_ungueltige_werte(self):
         for bad in [
-            dict(base_url=""),
-            dict(base_url="ftp://x"),
-            dict(default_model=""),
-            dict(default_timeout=0),
-            dict(default_timeout=-1),
+            {"base_url": ""},
+            {"base_url": "ftp://x"},
+            {"default_model": ""},
+            {"default_timeout": 0},
+            {"default_timeout": -1},
         ]:
             with self.assertRaises(ValueError, msg=bad):
                 OllamaClient(**bad)
