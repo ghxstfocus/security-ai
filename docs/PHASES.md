@@ -370,6 +370,22 @@ Commits: e4d032e, e7a669e, 22ad6d5, 8eb9772, 50daee8.
 Punkt 42 (MAC-Identifier) erledigt. Punkt 43
 (MAC-Randomisierung) offen.
 
+## Phase 3.8b — Orchestrator-Startpfad  [x]
+
+Event-Reader (tools/event_reader.py) liest Tagesdatei,
+verarbeitet Events ueber SecurityAI.process(), Cursor
+in event_cursor, Idempotenz via processed_events.
+
+Commits: 6220997, 3d944db, c23c6af, 02f17c4, 468a14d (Doku).
+
+- Migration 0011 (processed_events).
+- SecurityAI(skip_migrations=True).
+- tools/event_reader.py + tests/unit/test_event_reader.py.
+- deploy/systemd/security-ai-event-reader.{timer,service}.
+
+Punkt 26 erledigt. Punkt 47 (processed_events-Aufraeumen)
+offen.
+
 ## Phase 3.8 — Host-Scanner / Netzwerk-Discovery  [ ]
 
 Ziel: das gesamte Heimnetz beobachten, nicht nur den

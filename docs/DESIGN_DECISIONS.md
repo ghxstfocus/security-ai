@@ -449,6 +449,28 @@ klein, kein Query-Bedarf, single Prozess.
 Audit: ein watcher_run-Eintrag pro Lauf mit Events,
 kein Audit bei 0 Events und kein Audit bei Fehler-Exit.
 
+### processed_events und event_cursor (Phase 3.8b)
+
+Zwei Tabellen in der DB (beide Migrations):
+
+- event_cursor (Migration 0010): eine Zeile (id=1) mit
+  file_name + line_offset. Fortschritt des Event-Readers.
+  Tageswechsel: file_name aendert sich, line_offset 0.
+- processed_events (Migration 0011): event_id PRIMARY KEY,
+  processed_at. Idempotenz-Marker.
+
+Der Reader (tools/event_reader.py) nutzt beide:
+1. INSERT OR IGNORE INTO processed_events (event_id).
+2. rowcount == 0 -> skip.
+3. SecurityAI.process(event).
+4. Bei Erfolg: Cursor +1.
+5. Bei Fehler: DELETE FROM processed_events.
+   Cursor bleibt, naechster Lauf versucht es erneut.
+
+Grund: SecurityAI.process() ist NICHT idempotent
+(AgentLoop kann Tools ausloesen, Audit ist append-only).
+Ohne Marker wuerde ein Fehler zu doppelten Alarmen fuehren.
+
 ## 6. Approval-Flow (Phase 4a)
 
 ### Rollen

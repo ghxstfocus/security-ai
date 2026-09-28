@@ -1036,6 +1036,19 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   8e79495): README-Heredoc-Vorfall repariert,
   Kernzahlen 950, PHASES 3.6.10/3.6.11 abgehakt.
 
+26. (erledigt in 02f17c4, 468a14d, Commit 5) security_ai-Startpfad.
+    Neue Migration 0011 (processed_events).
+    SecurityAI(skip_migrations=True).
+    tools/event_reader.py: liest data/events-YYYY-MM-DD.jsonl,
+    ruft SecurityAI.process() pro Event, Cursor in DB
+    (event_cursor), Idempotenz-Marker in DB
+    (processed_events). Fail closed (Exit 1-4).
+    systemd-Timer security-ai-event-reader.timer (30s).
+
+47. (offen) processed_events waechst (ein Eintrag pro
+    verarbeitetem Event). Aufraeum-Routine (aelter als
+    30 Tage) als eigener Block. Kategorie 2.
+
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
   device_presence/offline. identifier=MAC.
@@ -1044,7 +1057,7 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Punkt 42 (MAC-Identifier) erledigt. Punkt 43
   (MAC-Randomisierung) neu offen.
 
-Core-Stand 2026-09-28: HEAD 50daee8, 983 Tests,
+Core-Stand 2026-09-28: HEAD 468a14d, 1003 Tests,
 mypy 0 echte Typfehler, ruff 122 (nicht-auto-fixbare
 Codes als bewusste Reste).
 

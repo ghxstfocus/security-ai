@@ -623,6 +623,36 @@ letzten Lauf, schreibt Events nach data/events-YYYY-MM-DD.jsonl.
 Exit-Codes: 0=OK, 1=Fritz!Box nicht erreichbar,
 2=Credentials fehlen, 3=Schreibfehler.
 
+## 3g. Event-Reader (Phase 3.8b)
+
+Liest data/events-YYYY-MM-DD.jsonl und uebergibt
+jedes Event an SecurityAI.process(). Cursor in DB
+(event_cursor), Idempotenz-Marker in processed_events.
+
+### 3g.1 Voraussetzungen
+
+Migration 0011 muss angewandt sein. Beim Service-Start
+prueft der Reader selbst: check_audit_logs (Exit 1),
+check_schema_version (Exit 2). Fail closed.
+
+### 3g.2 systemd-Units installieren (Betriebsakt)
+
+    cp deploy/systemd/security-ai-event-reader.timer \
+       deploy/systemd/security-ai-event-reader.service \
+       /etc/systemd/system/
+    systemctl daemon-reload
+    systemctl enable --now security-ai-event-reader.timer
+
+### 3g.3 Erster Lauf beobachten
+
+    systemctl status security-ai-event-reader.service
+    journalctl -u security-ai-event-reader.service
+    sqlite3 data/inventory.db "SELECT * FROM event_cursor"
+    sqlite3 data/inventory.db "SELECT COUNT(*) FROM processed_events"
+
+Exit-Codes: 0=OK, 1=Audit-Check, 2=Schema-Check,
+3=process-Fehler, 4=Datei/IO.
+
 ## 4. Netzwerk und Firewall
 
 ### 4.1 Feste IP
