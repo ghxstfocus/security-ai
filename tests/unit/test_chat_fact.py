@@ -41,10 +41,11 @@ class FactLabelsTests(unittest.TestCase):
     """A821/A824/A825: Labels, Schweregrad-Reihenfolge, Vorkommen."""
 
     def test_confirmed_und_security_alert_mit_labels(self):
-        text = _answer_fact(
+        text, kind = _answer_fact(
             "Gibt es Auffaelligkeiten?",
             _ctx(["CONFIRMED", "SECURITY_ALERT"]),
         )
+        self.assertEqual(kind, "auff_ja")
         self.assertIn("Kritisch=1", text)
         self.assertIn("Alarm=1", text)
         # A821: keine Rohkategorien.
@@ -55,19 +56,51 @@ class FactLabelsTests(unittest.TestCase):
         self.assertNotIn("Assessments", text)
 
     def test_nur_suspicion_wird_warnung(self):
-        text = _answer_fact(
+        text, kind = _answer_fact(
             "Gibt es Auffaelligkeiten?",
             _ctx(["SUSPICION"]),
         )
+        self.assertEqual(kind, "auff_nein")
         self.assertIn("Warnung=1", text)
         self.assertNotIn("SUSPICION=", text)
 
     def test_zeitraum_default_24(self):
-        text = _answer_fact(
+        text, kind = _answer_fact(
             "Gibt es Auffaelligkeiten?",
             _ctx(["CONFIRMED"]),
         )
+        self.assertEqual(kind, "auff_ja")
         self.assertIn("in den letzten 24 Stunden", text)
+
+    def test_kind_auff_nein_ohne_daten(self):
+        _text, kind = _answer_fact(
+            "Gibt es Auffaelligkeiten?", _ctx([]),
+        )
+        self.assertEqual(kind, "auff_nein")
+
+    def test_kind_kategorien(self):
+        _text, kind = _answer_fact(
+            "Welche Kategorien?", _ctx(["CONFIRMED"]),
+        )
+        self.assertEqual(kind, "kategorien")
+
+    def test_kind_anzahl(self):
+        _text, kind = _answer_fact(
+            "Wie viele Events?", _ctx(["CONFIRMED"]),
+        )
+        self.assertEqual(kind, "anzahl")
+
+    def test_kind_liste(self):
+        _text, kind = _answer_fact(
+            "Liste alle Geraete", _ctx(["CONFIRMED"]),
+        )
+        self.assertEqual(kind, "liste")
+
+    def test_kind_fallback(self):
+        _text, kind = _answer_fact(
+            "Sonstige Frage", _ctx(["CONFIRMED"]),
+        )
+        self.assertEqual(kind, "fallback")
 
 
 class FormatHoursTests(unittest.TestCase):

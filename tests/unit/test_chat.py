@@ -12,6 +12,8 @@ import json
 import sqlite3
 import tempfile
 import unittest
+
+from apps.security_ai.chat import ChatService
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -881,3 +883,83 @@ class ChatServiceSanityRetryTests(_ChatBase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class _NavChecker:
+    """Checker-Double: alert.view steuerbar."""
+
+    def __init__(self, allow_alert_view):
+        self.allow_alert_view = allow_alert_view
+
+    def role_of(self, name):
+        return "admin"
+
+    def require_permission(self, name, code):
+        return None
+
+    def check(self, name, code):
+        if code == "alert.view":
+            return self.allow_alert_view
+        return True
+
+
+class _NavAudit:
+    def log(self, *a, **k):
+        return None
+
+
+class _NavLLM:
+    def complete(self, *a, **k):
+        raise AssertionError("LLM darf im fact-Pfad nicht laufen")
+
+
+class _NavBuilder:
+    def build(self, **kwargs):
+        from harness.context.models import ContextBundle, utc_now
+        ra = kwargs.get("risk_assessments")
+        if not ra:
+            ra = ({"category": "CONFIRMED", "score": 0.9},)
+        return ContextBundle(
+            built_at=utc_now(),
+            risk_assessments=tuple(ra),
+        )
+
+
+class NavLinksTests(unittest.TestCase):
+    """A875: nav_links nur bei auff_ja + alert.view."""
+
+    def _svc(self, allow_alert_view):
+        return ChatService(
+            audit_writer=_NavAudit(),
+            llm_client=_NavLLM(),
+            checker=_NavChecker(allow_alert_view),
+            context_builder=_NavBuilder(),
+        )
+
+    def test_auff_ja_mit_alert_view_setzt_nav_links(self):
+        r = self._svc(True).ask(
+            "admin", "Gibt es Auffaelligkeiten?",
+        )
+        self.assertEqual(r.source, "fact")
+        self.assertEqual(len(r.nav_links), 1)
+        self.assertEqual(r.nav_links[0]["href"], "/alerts")
+
+    def test_auff_ja_ohne_alert_view_leer(self):
+        r = self._svc(False).ask(
+            "admin", "Gibt es Auffaelligkeiten?",
+        )
+        self.assertEqual(r.nav_links, [])
+
+    def test_auff_nein_leer(self):
+        svc = self._svc(True)
+        r = svc.ask(
+            "admin", "Gibt es Auffaelligkeiten?",
+            risk_assessments=(
+                {"category": "SUSPICION", "score": 0.5},
+            ),
+        )
+        self.assertEqual(r.nav_links, [])
+
+    def test_kategorien_zweig_leer(self):
+        r = self._svc(True).ask("admin", "Welche Kategorien?")
+        self.assertEqual(r.nav_links, [])

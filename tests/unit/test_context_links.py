@@ -3,7 +3,7 @@ Tests fuer core/context/links.py (Punkt 30, Auflage 771).
 """
 from __future__ import annotations
 
-from core.context.links import extract_links
+from core.context.links import _is_allowed_href, extract_links
 
 
 class _Checker:
@@ -105,3 +105,22 @@ def test_reihenfolge_nach_vorkommen():
         "CHG-2026-00042",
         "AUD-2026-09-27-abcdef01",
     ]
+
+
+# --- A880: /alerts exakt, kein /alerts/<id> ------------------------ #
+
+def test_allowed_href_alerts_exact():
+    assert _is_allowed_href("/alerts") is True
+
+
+def test_allowed_href_alerts_mit_suffix_verboten():
+    assert _is_allowed_href("/alerts/foo") is False
+
+
+def test_allowed_href_audit_prefix_erlaubt():
+    assert _is_allowed_href("/audit/AUD-2026-01-01-abcdef01") is True
+
+
+def test_allowed_href_extern_verboten():
+    assert _is_allowed_href("https://evil.example/") is False
+    assert _is_allowed_href("//evil.example/") is False

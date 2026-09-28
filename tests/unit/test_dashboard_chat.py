@@ -218,10 +218,11 @@ def test_chat_api_happy_path_200_and_whitelist(app, monkeypatch):
     assert r.status_code == 200
     assert r.headers["Content-Type"].startswith("application/json")
     data = r.get_json()
-    # A768: Antwort hat jetzt 7 Schluessel (links neu).
+    # A768/A862: Antwort hat jetzt 8 Schluessel
+    # (links und nav_links).
     assert set(data.keys()) == {
         "answer", "model", "model_reason", "source",
-        "denied", "answer_id", "links",
+        "denied", "answer_id", "links", "nav_links",
     }
     assert data["answer"] == "Antwort"
 

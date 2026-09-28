@@ -64,12 +64,20 @@ _ALLOWED_PREFIXES = (
     "/roles/",
 )
 
+# A880: exakte Pfade ohne ID-Suffix. /alerts ist eine
+# Aggregat-Ansicht, kein /alerts/<id>.
+_ALLOWED_EXACT = (
+    "/alerts",
+)
+
 
 def _is_allowed_href(href: str) -> bool:
     if not isinstance(href, str):
         return False
     if not href.startswith("/"):
         return False
+    if href in _ALLOWED_EXACT:
+        return True
     return any(href.startswith(p) for p in _ALLOWED_PREFIXES)
 
 

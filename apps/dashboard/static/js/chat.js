@@ -50,6 +50,31 @@
         }
     }
 
+    // Punkt 33 (A867/A868): Navigations-Hinweise.
+    // Nach answer-Text und links. Kein innerHTML.
+    function renderNavLinks(container, navLinks) {
+        if (!Array.isArray(navLinks) || navLinks.length === 0) {
+            return;
+        }
+        var wrap = document.createElement("div");
+        wrap.className = "chat-nav-links";
+        navLinks.forEach(function (entry) {
+            if (!entry || typeof entry.href !== "string") {
+                return;
+            }
+            if (entry.href.charAt(0) !== "/") {
+                return;
+            }
+            var a = document.createElement("a");
+            a.href = entry.href;
+            a.textContent = String(entry.label || entry.href);
+            wrap.appendChild(a);
+        });
+        if (wrap.childNodes.length > 0) {
+            container.appendChild(wrap);
+        }
+    }
+
     function init() {
         var input = document.getElementById("chat-input");
         var send = document.getElementById("chat-send");
@@ -92,6 +117,7 @@
                         "assistant",
                     );
                     renderLinks(messages, result.data.links);
+                    renderNavLinks(messages, result.data.nav_links);
                     return;
                 }
                 var err = "Fehler";

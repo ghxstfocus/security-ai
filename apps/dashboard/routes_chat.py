@@ -178,6 +178,7 @@ def register_chat_routes(app: Flask) -> None:
             "denied": bool(resp.denied),
             "answer_id": resp.answer_id,
             "links": links,
+            "nav_links": list(resp.nav_links),
         }
         return jsonify(body)
 

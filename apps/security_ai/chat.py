@@ -29,7 +29,7 @@ from __future__ import annotations
 import hashlib
 import re
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Protocol
 
@@ -265,7 +265,9 @@ def _format_hours(hours: int) -> str:
     return f"in den letzten {hours} Stunden"
 
 
-def _answer_fact(question: str, context: ContextBundle) -> str:
+def _answer_fact(
+    question: str, context: ContextBundle,
+) -> tuple[str, str]:
     """
     Deterministische Antwort auf eine Faktenfrage aus dem Kontext.
 
@@ -293,7 +295,8 @@ def _answer_fact(question: str, context: ContextBundle) -> str:
             )
             return (
                 f"JA. {teile} {zeitraum} "
-                f"(insgesamt {total} Vorkommen)."
+                f"(insgesamt {total} Vorkommen).",
+                "auff_ja",
             )
         if total > 0:
             teile = ", ".join(
@@ -302,25 +305,30 @@ def _answer_fact(question: str, context: ContextBundle) -> str:
             )
             return (
                 f"NEIN. Keine kritischen Vorkommen. "
-                f"Andere Kategorien: {teile}."
+                f"Andere Kategorien: {teile}.",
+                "auff_nein",
             )
-        return "NEIN. Keine Vorkommen im Kontext."
+        return "NEIN. Keine Vorkommen im Kontext.", "auff_nein"
 
     # "Welche Kategorien?"
     if "kategorie" in q:
         if not counts:
-            return "Keine Kategorien im Kontext."
-        return ", ".join(
-            f"{cat}={n}" for cat, n in sorted(counts.items())
+            return "Keine Kategorien im Kontext.", "kategorien"
+        return (
+            ", ".join(
+                f"{cat}={n}" for cat, n in sorted(counts.items())
+            ),
+            "kategorien",
         )
 
     # "Wie viele ...?"
     if "wie" in q and ("viele" in q or "viele" in q or "oft" in q):
         if not total:
-            return "0 Assessments im Kontext."
+            return "0 Assessments im Kontext.", "anzahl"
         return (
             f"{total} Assessments: "
-            + ", ".join(f"{cat}={n}" for cat, n in sorted(counts.items()))
+            + ", ".join(f"{cat}={n}" for cat, n in sorted(counts.items())),
+            "anzahl",
         )
 
     # "Liste alle ..." / "Zeig mir ..."
@@ -335,15 +343,19 @@ def _answer_fact(question: str, context: ContextBundle) -> str:
                 lines.append(f"- risk_assessments.{cat}: {n}")
         lines.append(f"- open_approvals: {len(context.open_approvals)}")
         lines.append(f"- open_changes: {len(context.open_changes)}")
-        return "\n".join(lines) if lines else "Keine Daten im Kontext."
+        return (
+            "\n".join(lines) if lines else "Keine Daten im Kontext.",
+            "liste",
+        )
 
     # Fallback: Gesamtuebersicht
     if not total and not context.inventory_snapshot:
-        return "Der Kontext enthaelt keine passenden Daten."
+        return "Der Kontext enthaelt keine passenden Daten.", "fallback"
     return (
         f"Assessments: {total}. "
         f"Kategorien: "
-        + ", ".join(f"{cat}={n}" for cat, n in sorted(counts.items()))
+        + ", ".join(f"{cat}={n}" for cat, n in sorted(counts.items())),
+        "fallback",
     )
 
 
@@ -436,6 +448,7 @@ class ChatResponse:
     model: str | None = None
     model_reason: str | None = None
     denied: bool = False
+    nav_links: list[dict] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------- #
@@ -721,9 +734,21 @@ class ChatService:
         # 4a) Fact-Pfad: deterministisch, kein LLM
         if kind == "fact":
             if context.has_data():
-                answer = _answer_fact(question, context)
+                answer, fact_kind = _answer_fact(question, context)
             else:
                 answer = "Der Kontext enthaelt keine passenden Daten."
+                fact_kind = "empty"
+            # A875/A866: nav_links nur bei "auff_ja" und mit
+            # alert.view. Kein Log der RBAC-Pruefung.
+            nav_links: list[dict] = []
+            if fact_kind == "auff_ja":
+                if self._checker.check(
+                    principal_name, "alert.view"
+                ):
+                    nav_links = [{
+                        "label": "Alle Alarme ansehen",
+                        "href": "/alerts",
+                    }]
             self._log(
                 "chat_answered",
                 principal=principal_name,
@@ -741,6 +766,7 @@ class ChatService:
                 source="fact",
                 model=None,
                 model_reason="fact",
+                nav_links=nav_links,
             )
 
         # 4b) no_context-Pfad: Interpretation ohne Kontext -> ehrlich
