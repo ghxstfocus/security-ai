@@ -883,3 +883,43 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   /root/.ssh/authorized_keys.bak2 (enthaelt eine
   ungueltige Fingerprint-Zeile aus alter
   Paste-Verwechslung; sshd ignoriert sie).
+
+35. (offen) mypy method-assign app.py:64 (app.wsgi_app = ProxyFix(...)).
+    Flask-Attribut wird von mypy als Methode gesehen.
+    Kein Laufzeitfehler heute. Fix waere ProxyFix anders
+    anwenden (z. B. app.wsgi_app = ProxyFix(...) mit
+    # type: ignore[method-assign] oder anderer Aufbau).
+    Eigener Block, Kategorie 3.
+    Hinweis: urspruenglich app.py:67, durch Lint-Runde
+    auf 64 verschoben.
+
+36. (offen) DetectionEngine.list kollidiert mit list[str].
+    Die Methode heisst wie der Builtin, mypy deutet
+    Rueckgabe-Annotationen als Methode (valid-type).
+    In der Lint-Runde mit # type: ignore[valid-type]
+    entschaerft. Umbenennen in list_rules
+    (eigener Block, Kategorie 3).
+
+37. (offen) ApprovalRequired.args ueberschreibt
+    BaseException.args. self.args = args setzt ein dict
+    ueber das tuple der Basisklasse (Semantik-Konflikt,
+    nicht nur mypy). Umbenennen in tool_args
+    (eigener Block, Kategorie 3).
+
+38. (offen) redact_mapping-Signatur ist zu eng
+    (dict[str, str] statt dict[str, Any]). Der Aufrufer
+    in harness/context/builder.py weist list[str] zu,
+    mypy meldet assignment. Signatur richtig stellen
+    (eigener Block, Kategorie 3).
+
+- Lint-Bestandsaufnahme (2026-09-28, A905/A921):
+  ruff vorher 452, nachher 122. Auto-Fix-Kategorien
+  I001 (151), UP017 (98), kleine Gruppen (85),
+  F401 (88) abgearbeitet. mypy vorher 89, nachher 80;
+  echte Typfehler 15 -> 6 (Gruppe 2+3, Punkte
+  35/36/37/38 und die drei Bug-Kandidaten).
+  Reste: C408 (22), BLE001 (18), SIM117 (17),
+  TRY004 (17), RUF015 (15), S110, DTZ001, SIM102 u. a.
+  -- nicht auto-fixbar, eigener Reviewer-Block (A901).
+  no-untyped-def (67) -- eigene Runde (A900).
+  method-assign app.py:67 -- Punkt 35, eigener Block.
