@@ -481,6 +481,14 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Verifikation: gunicorn --check-config OK,
   systemd-Start OK, HTTPS /login 200, POST mit
   falschem CSRF 400.
+- Vorfall 2026-09-28: README.md durch cat >-Heredoc
+  zerhackt (5b5a727). Erkennbar an Heredoc-Kopf
+  ("cat > README.md << 'READMEEOF'", Zeile 1) und
+  abgeschnittenem Ende ("- [Werk", 121 Zeilen).
+  Repariert in e0a6aa4/4cc0a45. Ursache: TTY-Puffer
+  bei langen Heredocs (WORKFLOW W2/W7a). Kein
+  Sicherheitsvorfall, sondern Prozess-/Doku-Vorfall;
+  kein neuer offener Punkt (A883).
 
 ## Offene Punkte (Stand 3.6.8)
 
