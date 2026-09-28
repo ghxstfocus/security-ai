@@ -866,6 +866,10 @@ Commits 540b205, 3a5dbab, 6426967, d6ecc01,
 ## Doku-Nachzug README + PHASES  [x]
 
 README repariert (Heredoc-Vorfall 5b5a727),
+- Vorfall-Nachtrag 2026-09-28: PROJECT_VISION.md
+  Heredoc-Kopfzeile entfernt (A883-Klasse, zweiter
+  Fall, Datei vollstaendig). Details in
+  docs/SECURITY_REVIEW_LOG.md.
 Kernzahlen 950 Tests. PHASES 3.6.10/3.6.11
 abgehakt. Commits e0a6aa4, 4cc0a45, 8e79495.
 

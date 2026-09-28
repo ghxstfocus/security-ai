@@ -489,6 +489,19 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   bei langen Heredocs (WORKFLOW W2/W7a). Kein
   Sicherheitsvorfall, sondern Prozess-/Doku-Vorfall;
   kein neuer offener Punkt (A883).
+- Vorfall 2026-09-28 (zweiter Heredoc-Fall): PROJECT_VISION.md
+  begann mit der Heredoc-Kopfzeile
+  ("cat > PROJECT_VISION.md << 'VISIONEOF'", Zeile 1).
+  Anders als beim README-Vorfall (A883) kein
+  abgeschnittener Inhalt: die Datei ist vollstaendig
+  (676 Zeilen, Ende sauber bei "## 17. Referenzen").
+  Reparatur: die Muell-Zeile entfernt (jetzt 675 Zeilen),
+  Commit folgt.
+  Ursache: derselbe Paste-/TTY-Puffer-Effekt wie A883
+  (WORKFLOW W2/W7a). Kein Sicherheitsvorfall, sondern
+  Prozess-/Doku-Vorfall.
+  Praevention: Heredoc > ~3 KB nie in die interaktive
+  Shell, Patch-Skripte in /tmp (WORKFLOW HR9).
 
 ## Offene Punkte (Stand 3.6.8)
 

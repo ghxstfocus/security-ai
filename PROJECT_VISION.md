@@ -1,4 +1,3 @@
-cat > PROJECT_VISION.md << 'VISIONEOF'
 # Homelab Security AI — Projekt-Vision
 
 > Ein modulares, defensives Security- und Admin-System fuer
