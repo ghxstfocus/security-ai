@@ -937,7 +937,15 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     _require_len/_optional_len. Annotation statt
     str | None. Kein Verhalten geaendert.
 
-41. (offen) apps/dashboard/decorators.py:32
+41. (erledigt, 01466e0) apps/dashboard/decorators.py:32 attr-defined.
+    Regression durch B010-Auto-Fix in 3b20891:
+    setattr(fn, "_required_permission", code) wurde zu
+    fn._required_permission = code. F ist TypeVar(
+    bound=Callable), direkte Zuweisung nicht moeglich.
+    setattr zurueck + # noqa: B010 mit Begruendung.
+    Notiz: B010-Auto-Fix ist nicht in allen Faellen
+    korrekt (TypeVar-gebundene Callables).
+    Ur-Text: apps/dashboard/decorators.py:32
     attr-defined. Regression durch B010-Auto-Fix
     in 3b20891: setattr(fn, "_required_permission",
     code) wurde zu fn._required_permission = code.

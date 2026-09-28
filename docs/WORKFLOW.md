@@ -428,6 +428,20 @@ listet (z. B. `200.`, `True,`, `DB-Hash`):
 Konkrete Fehler, die in Sessions aufgetreten sind.
 Generisch formuliert, damit sie uebertragbar sind.
 
+### Auto-Fix-Regeln pruefen, nicht blind anwenden
+
+`ruff --fix --select <CODE>` ist mechanisch, aber
+nicht immer semantisch korrekt. Beispiel B010
+(set-attr-with-constant): `setattr(x, "y", v)` wird
+zu `x.y = v`. Bei `TypeVar(bound=Callable)` ist die
+direkte Zuweisung nicht moeglich, mypy meldet
+`attr-defined`. Der Fix war ruff-konform, aber eine
+Regression (Punkt 41, 3b20891, korrigiert in 01466e0).
+
+Regel: Vor einem Auto-Fix pruefen, ob die Regel im
+konkreten Kontext passt. Wenn ein Fix mypy bricht:
+STOP, Ursache sehen, `# noqa: CODE` mit Begruendung.
+
 ### API aus dem Gedaechtnis
 
 Aufruf von `RoleRepository.create(...)` — die Methode
