@@ -74,7 +74,7 @@ class DetectionEngine:
     """
     Registriert Regeln und wendet sie auf Events an.
 
-    Thread-Sicherheit: register/get/list sind unkritisch nach dem
+    Thread-Sicherheit: register/get/list_rules sind unkritisch nach dem
     Setup. process() ist read-only auf der Registry. Die RuleStates
     sind intern thread-sicher (siehe rule_base.RuleState).
     """
@@ -104,7 +104,7 @@ class DetectionEngine:
         except KeyError as exc:
             raise DetectionEngineError(f"Regel unbekannt: {rule_id!r}") from exc
 
-    def list(self) -> list[Rule]:
+    def list_rules(self) -> list[Rule]:
         return list(self._rules.values())
 
     def state_for(self, rule_id: str) -> RuleState:
@@ -127,7 +127,7 @@ class DetectionEngine:
         self,
         package_name: str,
         configs: dict[str, dict[str, Any]] | None = None,
-    ) -> list[str]:  # type: ignore[valid-type]  # Methode list verdeckt Builtin
+    ) -> list[str]:
         """
         Laedt alle Regel-Klassen aus einem Package.
 
@@ -176,7 +176,7 @@ class DetectionEngine:
         configs: dict[str, dict[str, Any]] | None = None,
         history: Any = None,
         now: datetime | None = None,
-    ) -> list[RuleRunReport]:  # type: ignore[valid-type]  # Methode list verdeckt Builtin
+    ) -> list[RuleRunReport]:
         """
         Wendet alle zustaendigen Regeln auf ein Event an.
 
@@ -259,14 +259,14 @@ class DetectionEngine:
 
         return reports
 
-    def alerts_from(self, reports: Iterable[RuleRunReport]) -> list[Event]:  # type: ignore[valid-type]  # Methode list verdeckt Builtin
+    def alerts_from(self, reports: Iterable[RuleRunReport]) -> list[Event]:
         """Sammelt alle Alerts aus mehreren Reports flach ein."""
         out: list[Event] = []
         for r in reports:
             out.extend(r.alerts)
         return out
 
-    def errors_from(self, reports: Iterable[RuleRunReport]) -> list[RuleExecutionError]:  # type: ignore[valid-type]  # Methode list verdeckt Builtin
+    def errors_from(self, reports: Iterable[RuleRunReport]) -> list[RuleExecutionError]:
         """Sammelt alle Fehler aus mehreren Reports."""
         return [r.error for r in reports if r.error is not None]
 

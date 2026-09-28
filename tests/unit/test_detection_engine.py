@@ -106,5 +106,29 @@ class EngineIntegrationTests(unittest.TestCase):
         self.assertEqual(unknown.alerts, [])
 
 
+class ListRulesApiTests(unittest.TestCase):
+    """Punkt 36: DetectionEngine.list_rules als oeffentliche API."""
+
+    def setUp(self):
+        self.engine = DetectionEngine()
+        if not _HAVE_YAML:
+            self.skipTest("PyYAML fehlt")
+        self.configs = _load_configs()
+        self.engine.load_rules_from_package(
+            "core.detection.rules"
+        )
+
+    def test_list_rules_returns_rule_objects(self):
+        rules = self.engine.list_rules()
+        self.assertIsInstance(rules, list)
+        self.assertGreater(len(rules), 0)
+        for r in rules:
+            self.assertTrue(hasattr(r, "id"))
+
+    def test_list_rules_contains_unknown_device(self):
+        ids = {r.id for r in self.engine.list_rules()}
+        self.assertIn("unknown_device", ids)
+
+
 if __name__ == "__main__":
     unittest.main()
