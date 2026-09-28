@@ -9,7 +9,7 @@ Aufrufstellen.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from core.risk.models import CATEGORY_LABELS
 
@@ -39,8 +39,8 @@ def format_ts(value: str | None) -> str:
         except ValueError:
             dt = datetime.fromisoformat(value)
         if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
-        dt = dt.astimezone(timezone.utc)
+            dt = dt.replace(tzinfo=UTC)
+        dt = dt.astimezone(UTC)
         return dt.strftime("%d.%m.%y %H:%M UTC")
     except (ValueError, TypeError):
         return value

@@ -23,7 +23,7 @@ from __future__ import annotations
 import json
 import uuid
 from dataclasses import asdict, dataclass, field, replace
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from enum import Enum
 from typing import Any
 
@@ -111,7 +111,7 @@ def new_event_id() -> str:
     Format: EVT-YYYY-MM-DD-XXXXXXXX
     Die letzten 8 Zeichen sind ein zufälliger Hex-String.
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     suffix = uuid.uuid4().hex[:8]
     return f"EVT-{now.strftime('%Y-%m-%d')}-{suffix}"
 
@@ -132,7 +132,7 @@ def new_event(
     """
     return Event(
         event_id=new_event_id(),
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         source=source,
         event_type=event_type,
         severity=severity,

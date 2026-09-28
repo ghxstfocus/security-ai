@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from pathlib import Path
 from unittest import mock
 
@@ -31,7 +31,7 @@ def _event(
 ) -> Event:
     return Event(
         event_id=new_event_id(),
-        timestamp=ts or datetime.now(timezone.utc),
+        timestamp=ts or datetime.now(UTC),
         source="test",
         event_type=event_type,
         severity=Severity.INFO,
@@ -83,7 +83,7 @@ class OrchestratorTests(unittest.TestCase):
         })
         self.ai.process(e1)
         first = self.ai.devices.get("192.168.178.10")
-        later = datetime.now(timezone.utc) + timedelta(seconds=5)
+        later = datetime.now(UTC) + timedelta(seconds=5)
         e2 = _event(EventType.DEVICE_PRESENCE.value, data={
             "identifier": "192.168.178.10", "network_type": "Hauptnetz",
         }, ts=later)
@@ -111,7 +111,7 @@ class OrchestratorTests(unittest.TestCase):
 
     def test_unknown_device_hauptnetz_unbekannt_hoher_score(self):
         # 23:30 -> nachts greift
-        ts = datetime(2026, 9, 21, 23, 30, tzinfo=timezone.utc)
+        ts = datetime(2026, 9, 21, 23, 30, tzinfo=UTC)
         e = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
             "identifier": "192.168.178.87",
             "entity_name": "Ghxst-Server",
@@ -143,7 +143,7 @@ class OrchestratorTests(unittest.TestCase):
 
     def test_whitelist_senkt_score(self):
         # Geraet in Inventory + auf Whitelist.
-        ts = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)  # Montagmittag
+        ts = datetime(2026, 9, 21, 12, 0, tzinfo=UTC)  # Montagmittag
         e1 = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
             "identifier": "192.168.178.10",
             "entity_name": "Laptop",
@@ -153,7 +153,7 @@ class OrchestratorTests(unittest.TestCase):
         self.ai.process(e1)
         self.ai.whitelist.add("192.168.178.10", "Laptop", added_by="admin")
 
-        base = datetime(2026, 9, 21, 12, 1, tzinfo=timezone.utc)
+        base = datetime(2026, 9, 21, 12, 1, tzinfo=UTC)
         alerts_total = []
         assessments_total = []
         for i in range(12):
@@ -174,7 +174,7 @@ class OrchestratorTests(unittest.TestCase):
         self.assertAlmostEqual(assessments_total[0].score, 0.5, places=4)
 
     def test_first_seen_bonus_greift(self):
-        ts = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)  # Montagmittag
+        ts = datetime(2026, 9, 21, 12, 0, tzinfo=UTC)  # Montagmittag
         e = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
             "identifier": "192.168.178.99",
             "entity_name": "Neues-Geraet",
@@ -189,7 +189,7 @@ class OrchestratorTests(unittest.TestCase):
         self.assertAlmostEqual(r.assessments[0].score, 0.85, places=4)
 
     def test_second_seen_kein_bonus(self):
-        ts = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)
+        ts = datetime(2026, 9, 21, 12, 0, tzinfo=UTC)
         e1 = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
             "identifier": "192.168.178.98",
             "network_type": "Hauptnetz",
@@ -209,7 +209,7 @@ class OrchestratorTests(unittest.TestCase):
         self.assertAlmostEqual(r.assessments[0].score, 0.7, places=4)
 
     def test_port_scan_durch_den_stack(self):
-        base = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)
+        base = datetime(2026, 9, 21, 12, 0, tzinfo=UTC)
         results = []
         for i in range(12):
             e = _event(EventType.SYN_PACKET.value,
@@ -322,7 +322,7 @@ class OrchestratorAuditTests(unittest.TestCase):
         return lines
 
     def test_unknown_device_drei_bis_vier_eintraege(self):
-        ts = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)
+        ts = datetime(2026, 9, 21, 12, 0, tzinfo=UTC)
         e = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
             "identifier": "192.168.178.77",
             "entity_name": "Neuling",
@@ -485,7 +485,7 @@ class OrchestratorLoopTests(unittest.TestCase):
     # --- Test 1a: unknown_device, Hauptnetz, nachmittags -> Loop ---
 
     def test_unknown_device_loest_telegram_alert_aus(self):
-        ts = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        ts = datetime(2026, 9, 21, 14, 0, tzinfo=UTC)
         e = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
             "identifier": "192.168.178.77",
             "entity_name": "Neuling",
@@ -519,7 +519,7 @@ class OrchestratorLoopTests(unittest.TestCase):
     # --- Test 1b: bekanntes Geraet -> kein Loop ---
 
     def test_bekanntes_geraet_kein_loop(self):
-        ts = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        ts = datetime(2026, 9, 21, 14, 0, tzinfo=UTC)
         # Geraet zuerst in die DB bringen
         self.ai.devices.upsert_seen(
             "192.168.178.10",
@@ -540,7 +540,7 @@ class OrchestratorLoopTests(unittest.TestCase):
     # --- Test 2: Gastnetz -> kein Loop ---
 
     def test_gastnetz_kein_loop(self):
-        ts = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        ts = datetime(2026, 9, 21, 14, 0, tzinfo=UTC)
         e = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
             "identifier": "192.168.179.5",
             "entity_name": "Gast-Phone",
@@ -554,7 +554,7 @@ class OrchestratorLoopTests(unittest.TestCase):
     # --- Test 3: Port-Scan -> Loop ---
 
     def test_port_scan_loest_telegram_alert_aus(self):
-        base = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        base = datetime(2026, 9, 21, 14, 0, tzinfo=UTC)
         results = []
         for i in range(15):
             e = _event(EventType.SYN_PACKET.value,
@@ -578,7 +578,7 @@ class OrchestratorLoopTests(unittest.TestCase):
     # --- Test 4: Brute-Force -> Loop mit CRITICAL ---
 
     def test_brute_force_loest_telegram_alert_aus(self):
-        base = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        base = datetime(2026, 9, 21, 14, 0, tzinfo=UTC)
         results = []
         for i in range(25):
             e = _event(EventType.SYN_PACKET.value,
@@ -691,7 +691,7 @@ class ApprovalFlowIntegrationTests(unittest.TestCase):
     def _read_audit_kinds(self) -> list:
         """Liest die heutige Audit-JSONL und liefert details.kind-Werte."""
         from datetime import datetime, timezone
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
         f = self.audit_dir / f"{today}.jsonl"
         if not f.exists():
             return []
@@ -708,7 +708,7 @@ class ApprovalFlowIntegrationTests(unittest.TestCase):
         # Event wie in OrchestratorLoopTests.test_unknown_device_loest_-
         # telegram_alert_aus: DEVICE_PRESENCE, Hauptnetz, known=False.
         # Das triggert Detection + Risk + Loop.
-        ts = datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+        ts = datetime(2026, 9, 21, 14, 0, tzinfo=UTC)
         ev = _event(
             EventType.DEVICE_PRESENCE.value,
             ts=ts,

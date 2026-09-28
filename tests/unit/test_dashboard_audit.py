@@ -7,7 +7,7 @@ Auflagen 195-206 aus Review-Runde 3.6.8h.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 
 import pytest
@@ -39,7 +39,7 @@ def _write_audit(app, **overrides):
 
 
 def _today_utc():
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return datetime.now(UTC).strftime("%Y-%m-%d")
 
 
 # --- RBAC ------------------------------------------------------------- #

@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from enum import Enum
 from typing import Any, Mapping
 
@@ -63,7 +63,7 @@ class ChangeType(str, Enum):
 
 def utc_now_iso() -> str:
     """Aktueller UTC-Zeitstempel als ISO-8601-String."""
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def require_utc_iso(value: str, field_name: str) -> str:

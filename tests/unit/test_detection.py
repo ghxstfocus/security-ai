@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 
 from core.detection.rule_base import RuleContext, RuleState
 from core.detection.rules.port_scan import PortScanRule
@@ -18,7 +18,7 @@ from core.events.event import (
 
 def _ctx(now=None, config=None, state=None):
     return RuleContext(
-        now=now or datetime.now(timezone.utc),
+        now=now or datetime.now(UTC),
         network_id="homelab-default",
         config=config or {},
         state=state or RuleState(maxlen=500),
@@ -70,7 +70,7 @@ class PortScanTests(unittest.TestCase):
     def setUp(self):
         self.rule = PortScanRule()
         self.state = RuleState(maxlen=2000)
-        self.base = datetime.now(timezone.utc)
+        self.base = datetime.now(UTC)
 
     def _syn(self, port, ts, *, src_ip="192.168.178.87",
              dst_ip="192.168.178.1"):

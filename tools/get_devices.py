@@ -16,7 +16,7 @@ Also: get_devices_run(identifier=..., db_path=..., mock=...).
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 from typing import Any
 
@@ -99,7 +99,7 @@ def get_devices_run(
     explicit_path = _validate_db_path(db_path)
     want_mock = _validate_mock(mock)
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
 
     # Mock-Modus: kein DB-Zugriff
     if want_mock:

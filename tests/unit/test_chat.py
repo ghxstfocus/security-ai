@@ -12,7 +12,7 @@ import json
 import sqlite3
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 
 from apps.security_ai.chat import (
@@ -101,7 +101,7 @@ class _ChatBase(unittest.TestCase):
     # ------------------------------------------------------------------ #
 
     def _audit_entries(self) -> list[dict]:
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
         f = self.audit_dir / f"{today}.jsonl"
         if not f.exists():
             return []
@@ -775,7 +775,7 @@ class ChatServiceSanityRetryTests(_ChatBase):
 
         from apps.security_ai.chat import _answer_contradicts_context
         from harness.context.models import ContextBundle
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         ctx = ContextBundle(
             built_at=now,
             risk_assessments=(

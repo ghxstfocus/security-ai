@@ -19,7 +19,7 @@ DoS-Vektor.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from flask import (
     Flask,
@@ -61,7 +61,7 @@ def register_audit_routes(app: Flask) -> None:
     def audit_list():
         date_arg = request.args.get("date")
         if date_arg is None:
-            date_str = datetime.now(timezone.utc).strftime(
+            date_str = datetime.now(UTC).strftime(
                 "%Y-%m-%d",
             )
         else:

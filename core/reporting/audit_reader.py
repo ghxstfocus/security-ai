@@ -12,7 +12,7 @@ Fail-soft: korrupte Zeilen werden uebersprungen und gezaehlt.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -121,7 +121,7 @@ def read_risk_assessments(
     if max_entries <= 0:
         return []
 
-    now_dt = now or datetime.now(timezone.utc)
+    now_dt = now or datetime.now(UTC)
     since = now_dt - timedelta(hours=since_hours)
 
     entries, _skipped = _iter_entries(

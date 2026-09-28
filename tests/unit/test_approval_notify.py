@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 from unittest import mock
 
@@ -29,7 +29,7 @@ from harness.agent_loop.loop import LoopResult, StepResult
 def _event() -> Event:
     return Event(
         event_id="evt-1",
-        timestamp=datetime(2026, 4, 21, 12, 0, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 4, 21, 12, 0, 0, tzinfo=UTC),
         source="test",
         event_type="device_presence",
         severity=Severity.WARNING,
@@ -42,7 +42,7 @@ def _event() -> Event:
 
 def _loop_result(status: str, request_id: str | None,
                  tool: str = "nmap_scan") -> LoopResult:
-    now = datetime(2026, 4, 21, 12, 0, 1, tzinfo=timezone.utc)
+    now = datetime(2026, 4, 21, 12, 0, 1, tzinfo=UTC)
     steps = [
         StepResult(
             tool=tool,

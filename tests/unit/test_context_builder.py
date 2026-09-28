@@ -3,7 +3,7 @@ Tests fuer core/context/builder.py (Punkt 28, Auflage 726).
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 
 from core.context.builder import build_chat_context
@@ -12,7 +12,7 @@ from tests.unit._helpers import migrated_conn
 
 
 def _seed_device(conn):
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     conn.execute(
         "INSERT INTO devices (identifier, entity_name, network_type, "
         "first_seen, last_seen) VALUES (?, ?, ?, ?, ?)",
@@ -22,7 +22,7 @@ def _seed_device(conn):
 
 
 def _seed_approval(conn):
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     conn.execute(
         "INSERT INTO approvals (request_id, timestamp, tool_name, "
         "args_json, requested_by, status, created_at) "
@@ -34,7 +34,7 @@ def _seed_approval(conn):
 
 
 def _seed_change(conn):
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     conn.execute(
         "INSERT INTO change_requests (change_id, timestamp, title, "
         "description, requested_by, status, type, created_at) "

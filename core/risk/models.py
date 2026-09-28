@@ -13,7 +13,7 @@ in den RiskContext geladen werden.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from enum import Enum
 from typing import Any
 
@@ -121,7 +121,7 @@ class RiskAssessment:
     modifiers: list[tuple[str, float]] = field(default_factory=list)
     reasons: list[str] = field(default_factory=list)
     timestamp: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
+        default_factory=lambda: datetime.now(UTC)
     )
 
     def __post_init__(self) -> None:

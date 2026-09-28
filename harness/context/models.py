@@ -16,7 +16,7 @@ Wichtig:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ def _require_utc(dt: datetime, field_name: str) -> None:
 
 def utc_now() -> datetime:
     """Aktueller UTC-Zeitstempel. Helfer fuer Builder und Tests."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 # ---------------------------------------------------------------------- #

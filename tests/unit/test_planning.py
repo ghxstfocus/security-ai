@@ -7,7 +7,7 @@ Kein Orchestrator, kein AgentLoop, keine Detection.
 from __future__ import annotations
 
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from apps.security_ai.planning import SecurityPlanModel
 from core.events.event import Event, Severity, new_event_id
@@ -16,7 +16,7 @@ from core.events.event import Event, Severity, new_event_id
 def _event(event_type: str, data: dict) -> Event:
     return Event(
         event_id=new_event_id(),
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         source="test",
         event_type=event_type,
         severity=Severity.INFO,

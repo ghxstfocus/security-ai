@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from typing import Any, Protocol
 
 from core.events.event import Event
@@ -208,7 +208,7 @@ class AgentLoop:
 
         Rückgabe: LoopResult mit Status und Schritten.
         """
-        started_at = datetime.now(timezone.utc)
+        started_at = datetime.now(UTC)
         steps: list[StepResult] = []
 
         try:
@@ -240,7 +240,7 @@ class AgentLoop:
                     return LoopResult(
                         event_id=event.event_id,
                         started_at=started_at,
-                        finished_at=datetime.now(timezone.utc),
+                        finished_at=datetime.now(UTC),
                         status="APPROVAL_REQUIRED",
                         steps=steps,
                         approval_request_id=rid,
@@ -249,7 +249,7 @@ class AgentLoop:
             return LoopResult(
                 event_id=event.event_id,
                 started_at=started_at,
-                finished_at=datetime.now(timezone.utc),
+                finished_at=datetime.now(UTC),
                 status="OK",
                 steps=steps,
             )
@@ -271,7 +271,7 @@ class AgentLoop:
             return LoopResult(
                 event_id=event.event_id,
                 started_at=started_at,
-                finished_at=datetime.now(timezone.utc),
+                finished_at=datetime.now(UTC),
                 status="BUDGET_EXCEEDED",
                 steps=steps,
                 error=str(exc),
@@ -294,7 +294,7 @@ class AgentLoop:
             return LoopResult(
                 event_id=event.event_id,
                 started_at=started_at,
-                finished_at=datetime.now(timezone.utc),
+                finished_at=datetime.now(UTC),
                 status="ERROR",
                 steps=steps,
                 error=f"{type(exc).__name__}: {exc}",

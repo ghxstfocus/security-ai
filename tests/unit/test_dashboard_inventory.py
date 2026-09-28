@@ -27,6 +27,7 @@ from tests.unit._helpers import (
     create_role_client,
     set_session_cookie,
 )
+from datetime import UTC
 
 
 @pytest.fixture()
@@ -53,7 +54,7 @@ def _make_no_devread_client(app):
             (
                 "no_dev_read",
                 "Test-Rolle ohne device.read",
-                datetime.now(timezone.utc).isoformat(),
+                datetime.now(UTC).isoformat(),
             ),
         )
         conn.commit()

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 
 from harness.policy_engine.engine import (
@@ -32,7 +32,7 @@ def _ctx(**kwargs) -> PolicyContext:
     defaults = dict(
         network_id="homelab-default",
         authorized_networks=frozenset({"192.168.178.0/24"}),
-        now=datetime.now(timezone.utc),
+        now=datetime.now(UTC),
         config={"read_only_paths": ["/var/log"]},
     )
     defaults.update(kwargs)

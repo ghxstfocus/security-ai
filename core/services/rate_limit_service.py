@@ -21,7 +21,7 @@ Design (Punkt 9, Auflagen 663-676):
 from __future__ import annotations
 
 import sqlite3
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 
 from core.services import ServiceError
 
@@ -67,7 +67,7 @@ class RateLimitService:
             raise RateLimitServiceError(
                 "principal_name darf nicht leer sein"
             )
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         window_start = now - timedelta(seconds=self._window)
         now_iso = now.isoformat()
         ws_iso = window_start.isoformat()

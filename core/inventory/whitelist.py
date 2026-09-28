@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import sqlite3
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from typing import Any
 
 from core.inventory.repository import DeviceRepository
@@ -118,7 +118,7 @@ class WhitelistRepository:
         if existing is not None:
             return existing
 
-        ts = (timestamp or datetime.now(timezone.utc)).isoformat()
+        ts = (timestamp or datetime.now(UTC)).isoformat()
         cur = self._conn.execute(
             "INSERT INTO whitelisted_devices "
             "(timestamp, identifier, entity_name, added_by, notes) "

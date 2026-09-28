@@ -5,7 +5,7 @@ Configs aus detection/rules.yaml durchgereicht.
 from __future__ import annotations
 
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from pathlib import Path
 
 from core.detection.engine import DetectionEngine
@@ -64,7 +64,7 @@ class EngineIntegrationTests(unittest.TestCase):
         )
 
     def test_port_scan_ueber_engine(self):
-        base = datetime.now(timezone.utc)
+        base = datetime.now(UTC)
         alerts = []
         for i in range(12):
             ts = base + timedelta(seconds=i)

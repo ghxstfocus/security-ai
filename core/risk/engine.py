@@ -14,7 +14,7 @@ Predicates selbst werfen nie; fehlende Felder im event.data -> False.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 from typing import Any, Callable
 
@@ -247,7 +247,7 @@ class RiskEngine:
         unbrauchbar (sollte nicht vorkommen, da default Pflicht ist).
         """
         ctx = context or RiskContext(
-            now=datetime.now(timezone.utc),
+            now=datetime.now(UTC),
             network_id=event.network_id,
         )
 

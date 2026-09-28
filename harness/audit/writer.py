@@ -33,7 +33,7 @@ import pwd
 import threading
 import uuid
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 from typing import Any
 
@@ -74,7 +74,7 @@ def _hash_args(args: dict[str, Any] | None) -> str:
 
 def new_audit_id() -> str:
     """Erzeugt eine Audit-ID im Format AUD-YYYY-MM-DD-XXXXXXXX."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     suffix = uuid.uuid4().hex[:8]
     return f"AUD-{now.strftime('%Y-%m-%d')}-{suffix}"
 
@@ -92,7 +92,7 @@ class AuditEntry:
     permission_level: int
     execution_status: str
     audit_id: str = field(default_factory=new_audit_id)
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     args_hash: str = "sha256:empty"
     duration_ms: int = 0
     output_hash: str = "sha256:empty"
@@ -268,7 +268,7 @@ class AuditWriter:
         """
         Liest alle Einträge eines Tages (nur für Tests / Auswertung).
         """
-        when = when or datetime.now(timezone.utc)
+        when = when or datetime.now(UTC)
         path = self._file_for(when)
         if not path.exists():
             return []

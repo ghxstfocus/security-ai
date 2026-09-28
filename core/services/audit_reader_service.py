@@ -17,7 +17,7 @@ Design:
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from typing import Any
 
 from core.access.checker import AccessChecker
@@ -74,7 +74,7 @@ class AuditReaderService:
 
     def _read_day_impl(self, date_str: str) -> list[dict[str, Any]]:
         when = datetime.strptime(date_str, "%Y-%m-%d").replace(
-            tzinfo=timezone.utc,
+            tzinfo=UTC,
         )
         return [e.to_dict() for e in self._audit.read_day(when)]
 

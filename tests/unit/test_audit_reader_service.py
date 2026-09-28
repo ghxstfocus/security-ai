@@ -6,7 +6,7 @@ Kategorie 3 (RBAC audit.read, Input-Validierung).
 from __future__ import annotations
 
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 
 import pytest
@@ -74,7 +74,7 @@ def test_read_day_ok(
         policy_result="ALLOWED", permission_level=0,
         execution_status="OK",
     )
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
     entries = svc.read_day("alice", today)
     assert len(entries) == 1
     assert entries[0]["agent"] == "security_ai"

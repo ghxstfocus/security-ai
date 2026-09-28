@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from pathlib import Path
 
 from core.events.event import Event, EventType, Severity, new_event_id
@@ -30,7 +30,7 @@ def _event(
 ) -> Event:
     return Event(
         event_id=new_event_id(),
-        timestamp=ts or datetime.now(timezone.utc),
+        timestamp=ts or datetime.now(UTC),
         source=source,
         event_type=event_type,
         severity=Severity.INFO,
@@ -45,7 +45,7 @@ def _ctx(
     inventory: dict | None = None,
 ) -> RiskContext:
     return RiskContext(
-        now=now or datetime.now(timezone.utc),
+        now=now or datetime.now(UTC),
         network_id="homelab-default",
         inventory=inventory,
     )
@@ -109,13 +109,13 @@ class AssessmentTests(unittest.TestCase):
 
 class ContextTests(unittest.TestCase):
     def test_leer(self):
-        c = RiskContext(now=datetime.now(timezone.utc), network_id="x")
+        c = RiskContext(now=datetime.now(UTC), network_id="x")
         self.assertFalse(c.is_in_inventory("a"))
         self.assertFalse(c.is_whitelisted("a"))
 
     def test_gefuellt(self):
         c = RiskContext(
-            now=datetime.now(timezone.utc), network_id="x",
+            now=datetime.now(UTC), network_id="x",
             inventory={"devices": {"a"}, "whitelist": {"b"}},
         )
         self.assertTrue(c.is_in_inventory("a"))
@@ -147,11 +147,11 @@ class PredicateTests(unittest.TestCase):
             _event("x", data={"network_type": "Extern"}), self.ctx))
 
     def test_nachts(self):
-        ts = datetime(2026, 9, 21, 23, 30, tzinfo=timezone.utc)
+        ts = datetime(2026, 9, 21, 23, 30, tzinfo=UTC)
         self.assertTrue(PREDICATES["nachts"](_event("x", ts=ts), self.ctx))
-        ts2 = datetime(2026, 9, 21, 4, 0, tzinfo=timezone.utc)
+        ts2 = datetime(2026, 9, 21, 4, 0, tzinfo=UTC)
         self.assertTrue(PREDICATES["nachts"](_event("x", ts=ts2), self.ctx))
-        ts3 = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)
+        ts3 = datetime(2026, 9, 21, 12, 0, tzinfo=UTC)
         self.assertFalse(PREDICATES["nachts"](_event("x", ts=ts3), self.ctx))
 
     def test_nachts_naive_ts_false(self):
@@ -162,9 +162,9 @@ class PredicateTests(unittest.TestCase):
 
     def test_wochenende(self):
         # 2026-09-19 ist ein Samstag
-        ts = datetime(2026, 9, 19, 12, 0, tzinfo=timezone.utc)
+        ts = datetime(2026, 9, 19, 12, 0, tzinfo=UTC)
         self.assertTrue(PREDICATES["wochenende"](_event("x", ts=ts), self.ctx))
-        ts2 = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)  # Montag
+        ts2 = datetime(2026, 9, 21, 12, 0, tzinfo=UTC)  # Montag
         self.assertFalse(PREDICATES["wochenende"](_event("x", ts=ts2), self.ctx))
 
     def test_not_in_inventory(self):
@@ -250,7 +250,7 @@ class EngineLoadTests(unittest.TestCase):
 class EngineEvaluateTests(unittest.TestCase):
     def setUp(self):
         self.engine = RiskEngine(RULES_PATH)
-        self.now = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)  # Montag, mittags
+        self.now = datetime(2026, 9, 21, 12, 0, tzinfo=UTC)  # Montag, mittags
         self.ctx = _ctx(now=self.now, inventory={"devices": set(), "whitelist": set()})
 
     def test_default_fuer_unbekannten_typ(self):
@@ -274,7 +274,7 @@ class EngineEvaluateTests(unittest.TestCase):
         self.assertNotIn("nachts", names)
 
     def test_unknown_device_hauptnetz_nachts(self):
-        ts = datetime(2026, 9, 21, 23, 30, tzinfo=timezone.utc)
+        ts = datetime(2026, 9, 21, 23, 30, tzinfo=UTC)
         e = _event(EventType.UNKNOWN_DEVICE.value, ts=ts,
                    data={"identifier": "10.0.0.1", "network_type": "Hauptnetz"})
         a = self.engine.evaluate(e, self.ctx)
@@ -292,7 +292,7 @@ class EngineEvaluateTests(unittest.TestCase):
         self.assertIs(a.category, RiskCategory.SUSPICION)
 
     def test_port_scan_brute_force(self):
-        ts = datetime(2026, 9, 21, 23, 30, tzinfo=timezone.utc)
+        ts = datetime(2026, 9, 21, 23, 30, tzinfo=UTC)
         e = _event(EventType.PORT_SCAN.value, ts=ts,
                    data={"kind": "brute_force"})
         a = self.engine.evaluate(e, self.ctx)

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import os
 import pwd
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 
 from flask import Flask, g, redirect, request
 from werkzeug.exceptions import HTTPException
@@ -129,7 +129,7 @@ def create_app(
         s = sr.get(session_id) if session_id else None
         if s is None or not s.is_active:
             return redirect("/login?next=" + request.path)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         try:
             last = datetime.fromisoformat(s.last_seen_at)
         except ValueError:

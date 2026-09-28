@@ -12,7 +12,7 @@ Also: read_logs_run(path=..., max_lines=...).
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 from typing import Any
 
@@ -105,7 +105,7 @@ def read_logs_run(
     p = _validate_path(path)
     n = _validate_max_lines(max_lines)
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     return {
         "source": "mock",
         "tool": "read_logs",

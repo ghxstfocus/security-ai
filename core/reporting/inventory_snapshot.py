@@ -16,7 +16,7 @@ Felder:
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from typing import Any, Iterable
 
 
@@ -76,7 +76,7 @@ def build_inventory_snapshot(
             "offline_hours muss >= 0 sein"
         )
 
-    now_dt = now or datetime.now(timezone.utc)
+    now_dt = now or datetime.now(UTC)
     recent_cut = now_dt - timedelta(hours=recent_hours)
     offline_cut = now_dt - timedelta(hours=offline_hours)
 

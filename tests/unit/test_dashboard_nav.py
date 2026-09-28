@@ -1,6 +1,7 @@
 """Tests fuer 3.6.11 Hamburger-Navigation (Auflagen 357-360)."""
 
 from tests.unit._helpers import build_dashboard_app, create_role_client
+from datetime import UTC
 
 
 def _admin(tmp_path):
@@ -128,7 +129,7 @@ def _seed_all_tables(app):
 
     from core.inventory.repository import connect
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     now_iso = now.isoformat()
     conn = connect(app.config["DB_PATH"])
     conn.execute(

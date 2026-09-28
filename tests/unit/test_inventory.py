@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 
 from core.inventory.device import Device, DeviceType
 from core.inventory.repository import (
@@ -22,7 +22,7 @@ def _fresh_conn():
 
 class DeviceModelTests(unittest.TestCase):
     def test_frozen(self):
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         d = Device(identifier="10.0.0.1", first_seen=now, last_seen=now)
         with self.assertRaises(Exception):
             d.identifier = "x"
@@ -37,7 +37,7 @@ class DeviceModelTests(unittest.TestCase):
             Device(identifier="x", first_seen=naive)
 
     def test_to_dict(self):
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         d = Device(
             identifier="10.0.0.1",
             entity_name="Server",
@@ -76,7 +76,7 @@ class DeviceRepositoryTests(unittest.TestCase):
 
     def test_upsert_seen_aktualisiert_last_seen_behaelt_first_seen(self):
         d1 = self.repo.upsert_seen("192.168.178.87", entity_name="A")
-        later = datetime.now(timezone.utc) + timedelta(seconds=5)
+        later = datetime.now(UTC) + timedelta(seconds=5)
         d2 = self.repo.upsert_seen("192.168.178.87", timestamp=later)
         self.assertEqual(d2.first_seen, d1.first_seen)
         self.assertGreaterEqual(d2.last_seen, d1.last_seen)
@@ -120,7 +120,7 @@ class DeviceRepositoryTests(unittest.TestCase):
 
     def test_history_limit(self):
         for i in range(5):
-            self.repo.upsert_seen("10.0.0.1", timestamp=datetime.now(timezone.utc))
+            self.repo.upsert_seen("10.0.0.1", timestamp=datetime.now(UTC))
         h = self.repo.history("10.0.0.1", limit=2)
         self.assertEqual(len(h), 2)
 

@@ -21,7 +21,7 @@ import shutil
 import socket
 import subprocess
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from typing import Any
 
 from harness.permissions.levels import Level
@@ -309,7 +309,7 @@ def nmap_scan_run(
 
     argv = _build_argv(t, p, st)
 
-    started = datetime.now(timezone.utc)
+    started = datetime.now(UTC)
 
     try:
         proc = subprocess.run(
@@ -331,7 +331,7 @@ def nmap_scan_run(
     except OSError as exc:
         raise ToolError(f"nmap_scan: OSError: {exc}") from exc
 
-    finished = datetime.now(timezone.utc)
+    finished = datetime.now(UTC)
 
     if proc.returncode != 0:
         raise ToolError(

@@ -14,7 +14,7 @@ import json
 import logging
 import re
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def connect(db_path: Path | str = DEFAULT_DB_PATH) -> sqlite3.Connection:
@@ -282,7 +282,7 @@ class DeviceRepository:
         "device_seen"). entity_name/network_type werden nur ueberschrieben,
         wenn sie nicht None sind — so verliert ein Update nichts.
         """
-        ts = (timestamp or datetime.now(timezone.utc)).isoformat()
+        ts = (timestamp or datetime.now(UTC)).isoformat()
         data_json = json.dumps(data or {}, ensure_ascii=False, sort_keys=True)
 
         existing = self.get(identifier)
@@ -336,7 +336,7 @@ class DeviceRepository:
         if row is None:
             return False
 
-        ts = (timestamp or datetime.now(timezone.utc)).isoformat()
+        ts = (timestamp or datetime.now(UTC)).isoformat()
         data_json = json.dumps(data or {}, ensure_ascii=False, sort_keys=True)
         self._conn.execute(
             "INSERT INTO device_history "
@@ -367,7 +367,7 @@ class DeviceRepository:
         ).fetchone()
         if row is None:
             return False
-        ts = (timestamp or datetime.now(timezone.utc)).isoformat()
+        ts = (timestamp or datetime.now(UTC)).isoformat()
         data_json = json.dumps(data or {}, ensure_ascii=False, sort_keys=True)
         self._conn.execute(
             "INSERT INTO device_history "

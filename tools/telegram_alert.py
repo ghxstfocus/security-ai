@@ -19,7 +19,7 @@ Also: telegram_alert_run(title=..., message=..., severity=...).
 from __future__ import annotations
 
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from typing import Any
 
 import requests
@@ -183,7 +183,7 @@ def telegram_alert_run(
         "ok": True,
         "message_id": message_id,
         "source": "telegram",
-        "sent_at": datetime.now(timezone.utc).isoformat(),
+        "sent_at": datetime.now(UTC).isoformat(),
     }
 
 

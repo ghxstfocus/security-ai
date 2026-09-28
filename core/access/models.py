@@ -15,7 +15,7 @@ import hashlib
 import hmac
 import os
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from enum import Enum
 from typing import Any, Mapping
 
@@ -36,7 +36,7 @@ class PrincipalKind(str, Enum):
 # ---------------------------------------------------------------------- #
 
 def utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def require_utc_iso(value: str, field_name: str) -> str:
@@ -64,7 +64,7 @@ def _require_str(value: str, field_name: str) -> str:
 
 def utc_now() -> datetime:
     """datetime, fuer timedelta-Rechnungen (nicht fuer Modelle)."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def to_utc(value: datetime | str) -> datetime:
@@ -92,7 +92,7 @@ def to_utc(value: datetime | str) -> datetime:
         )
     if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
         raise ValueError("Zeit muss timezone-aware sein")
-    return dt.astimezone(timezone.utc)
+    return dt.astimezone(UTC)
 
 
 def to_iso(value: datetime | str) -> str:

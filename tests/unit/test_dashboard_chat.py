@@ -18,6 +18,7 @@ from tests.unit._helpers import (
     build_dashboard_app,
     create_role_client,
 )
+from datetime import UTC
 
 
 @pytest.fixture()
@@ -292,7 +293,7 @@ def test_rate_limit_window_resets(app, monkeypatch):
 
     from core.inventory.repository import connect
     old = (
-        datetime.now(timezone.utc)
+        datetime.now(UTC)
         - timedelta(seconds=app.config["CHAT_RATE_WINDOW"] + 5)
     ).isoformat()
     conn = connect(app.config["DB_PATH"])
@@ -394,7 +395,7 @@ def _seed_risk_assessment(app):
     from datetime import datetime, timezone
     from pathlib import Path as _P
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     audit_dir = _P(app.config["AUDIT_BASE_DIR"])
     audit_dir.mkdir(parents=True, exist_ok=True)
     day = now.strftime("%Y-%m-%d")

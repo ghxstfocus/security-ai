@@ -12,6 +12,7 @@ from core.services.rate_limit_service import (
     RateLimitServiceError,
 )
 from tests.unit._helpers import migrated_conn
+from datetime import UTC
 
 
 def test_limit_and_retry_after(tmp_path):
@@ -59,7 +60,7 @@ def test_window_expires(tmp_path):
     # hit_at kuenstlich altern.
     from datetime import datetime, timedelta, timezone
     old = (
-        datetime.now(timezone.utc) - timedelta(seconds=5)
+        datetime.now(UTC) - timedelta(seconds=5)
     ).isoformat()
     conn.execute("UPDATE chat_rate_hits SET hit_at = ?", (old,))
     conn.commit()
@@ -93,7 +94,7 @@ def test_household_deletes_old_rows(tmp_path):
     # Alte Zeile direkt einsetzen.
     from datetime import datetime, timedelta, timezone
     old = (
-        datetime.now(timezone.utc) - timedelta(seconds=300)
+        datetime.now(UTC) - timedelta(seconds=300)
     ).isoformat()
     conn.execute(
         "INSERT INTO chat_rate_hits (principal_name, hit_at) "
@@ -107,7 +108,7 @@ def test_household_deletes_old_rows(tmp_path):
         "SELECT COUNT(*) FROM chat_rate_hits "
         "WHERE hit_at < ?",
         (
-            (datetime.now(timezone.utc) - timedelta(seconds=60))
+            (datetime.now(UTC) - timedelta(seconds=60))
             .isoformat(),
         ),
     ).fetchone()[0]

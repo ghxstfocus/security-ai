@@ -24,7 +24,7 @@ import importlib
 import inspect
 import pkgutil
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from typing import Any, Iterable
 
 from core.detection.rule_base import (
@@ -189,7 +189,7 @@ class DetectionEngine:
         weiter.
         """
         configs = configs or {}
-        now = now or datetime.now(timezone.utc)
+        now = now or datetime.now(UTC)
         reports: list[RuleRunReport] = []
 
         for rule in self._rules.values():

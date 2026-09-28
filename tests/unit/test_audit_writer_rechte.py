@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import os
 import stat
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 
 import pytest
@@ -34,7 +34,7 @@ def _entry() -> AuditEntry:
         policy_result="ALLOWED",
         permission_level=0,
         execution_status="OK",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
 
 
@@ -50,7 +50,7 @@ def test_neue_datei_wird_640_angelegt(tmp_path):
         # Auflage 468: neue Datei, kein Check vorher.
         w = AuditWriter(base_dir=tmp_path)
         w.write(_entry())
-        datei = tmp_path / (datetime.now(timezone.utc)
+        datei = tmp_path / (datetime.now(UTC)
                             .strftime("%Y-%m-%d") + ".jsonl")
         assert datei.exists()
         assert _mode(datei) == 0o640
@@ -59,7 +59,7 @@ def test_bestehende_datei_644_fail_closed(tmp_path):
         # Auflage 471/472: fail closed, kein Silent Repair.
         w = AuditWriter(base_dir=tmp_path)
         w.write(_entry())
-        datei = tmp_path / (datetime.now(timezone.utc)
+        datei = tmp_path / (datetime.now(UTC)
                             .strftime("%Y-%m-%d") + ".jsonl")
         os.chmod(datei, 0o644)
         # Datei ist jetzt 644. Naechster Schreibversuch muss
@@ -75,7 +75,7 @@ def test_bestehende_datei_600_fail_closed(tmp_path):
         # Auflage 473: jeder Modus != 0o640 ist ein Fehler.
         w = AuditWriter(base_dir=tmp_path)
         w.write(_entry())
-        datei = tmp_path / (datetime.now(timezone.utc)
+        datei = tmp_path / (datetime.now(UTC)
                             .strftime("%Y-%m-%d") + ".jsonl")
         os.chmod(datei, 0o600)
         with pytest.raises(AuditWriteError):
@@ -118,7 +118,7 @@ def test_falscher_owner_fail_closed(tmp_path, monkeypatch):
 def test_falscher_modus_fail_closed(tmp_path):
         w = AuditWriter(base_dir=tmp_path)
         w.write(_entry())
-        datei = tmp_path / (datetime.now(timezone.utc)
+        datei = tmp_path / (datetime.now(UTC)
                             .strftime("%Y-%m-%d") + ".jsonl")
         os.chmod(datei, 0o644)
         import pwd as _pwd
