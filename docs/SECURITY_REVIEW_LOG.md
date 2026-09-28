@@ -583,6 +583,14 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     Kein Blocker fuer 3.6.8f-i (Dashboard-Arbeit laeuft
     ueber die bestehende SSH-Session).
     Eigener Kategorie-3-Block (SSH-Zugang).
+    Erledigt am 2026-09-28: sshd_config angepasst
+    (PermitRootLogin prohibit-password,
+    PasswordAuthentication no, PubkeyAuthentication yes).
+    Key windows@... in /root/.ssh/authorized_keys.
+    Backups: sshd_config.bak-20260928-095059 und
+    sshd_config.bak-vor-punkt11.
+    Tests von Windows: Key-Login OK, Passwort-Login
+    -> Permission denied (publickey).
 
 12. Test-Client / Orchestrator nie als root gegen die
     Produktions-DB. Immer via `runuser -u security-ai`.

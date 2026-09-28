@@ -729,7 +729,7 @@ Checkliste:
 - [ ] .env hat chmod 600
 - [ ] Capabilities in 102.conf gesetzt
 - [ ] Firewall-Regeln aktiv
-- [ ] SSH nur mit Key (kein Passwort)
+- [x] SSH nur mit Key (kein Passwort) -- 2026-09-28
 - [ ] Telegram-Bot-Token nicht in Logs
 - [ ] Audit-Logs schreibgeschuetzt (chattr +a)
 - [ ] Backups laufen
