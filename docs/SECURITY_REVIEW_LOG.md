@@ -970,6 +970,25 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     (B010 nicht anwendbar, weil F kein konkreter Typ).
     Eigener Block, Kategorie 3 (Dekorator/Flask-Setup).
 
+42. (erledigt, Commit siehe Chronologie) Identifier-Schema MAC.
+    Bestandsaufnahme: devices + device_history sind leer
+    (0 Zeilen). Keine Migration noetig. identifier bleibt
+    TEXT (MAC passt rein). nmap liefert heute keinen
+    identifier (nur ip im parser). nmap produziert heute
+    keine device_presence-Events. Der MAC-Umstieg wirkt
+    im Fritz!Box-Watcher (Block 3.8a) — der Watcher setzt
+    identifier=MAC.
+    Punkt 42 selbst = neue Tests (tests/unit/
+    test_identifier_mac.py, 4 Tests) + Doku. Kein
+    nmap-Patch, kein Schema-Wechsel.
+    Kategorie 3.
+
+43. (offen) MAC-Randomisierung (iOS, Android, Windows).
+    Randomisierte MACs erscheinen als eigene Geraete.
+    Eine Policy noetig (z. B. randomisierte MAC +
+    gleicher Hostname = dasselbe Geraet).
+    Kategorie 3, eigener Block.
+
 - 3.6.18b (7a92b54): Fact-Antwort-Stil. Labels statt
   Rohkategorien, dynamischer Zeitraum, "Vorkommen".
   Punkt 31, Auflagen 821-854.

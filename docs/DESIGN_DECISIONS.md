@@ -419,6 +419,20 @@ Naive datetime wird abgelehnt (Fail closed).
 Event ist frozen. Aenderungen erzeugen ein neues Event
 (core/events/event.py::with_data).
 
+### identifier in devices/whitelisted_devices
+
+identifier ist TEXT. Kein Format-Check, kein
+Schema-Zwang. MAC bevorzugt (stabil ueber DHCP-
+Wechsel). Fallback IP, wenn keine MAC verfuegbar
+(z. B. nmap ohne Root).
+
+Der Fritz!Box-Watcher (Phase 3.8a) liefert MACs.
+Der nmap-Parser liefert weiterhin nur IP (kein
+identifier). Beide Werte sind gueltig.
+
+MAC-Randomisierung (iOS/Android/Windows) ist
+offener Punkt 43 in SECURITY_REVIEW_LOG.
+
 ## 6. Approval-Flow (Phase 4a)
 
 ### Rollen
