@@ -911,12 +911,14 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     Hinweis: urspruenglich app.py:67, durch Lint-Runde
     auf 64 verschoben.
 
-36. (offen) DetectionEngine.list kollidiert mit list[str].
-    Die Methode heisst wie der Builtin, mypy deutet
-    Rueckgabe-Annotationen als Methode (valid-type).
-    In der Lint-Runde mit # type: ignore[valid-type]
-    entschaerft. Umbenennen in list_rules
-    (eigener Block, Kategorie 3).
+36. (erledigt, 809e861) DetectionEngine.list -> list_rules.
+    Methode umbenannt. Kein Aufrufer ausserhalb der
+    Definition. 4 # type: ignore[valid-type] in engine.py
+    entfernt. 2 # type: ignore[attr-defined] in
+    orchestrator.py entfernt (mypy: unused-ignore; der
+    Kommentar war schon vorher falsch). mypy engine.py:
+    Success. Tests: 2 neue Smoke-Tests fuer list_rules.
+    Kategorie 3.
 
 37. (erledigt, 75b5ec1) ApprovalRequired.tool_args statt .args.
     (Ur-Text: ApprovalRequired.args ueberschreibt
@@ -1115,7 +1117,7 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Fehler oder fehlender Permission (L2).
   Ticket 3.6.7d abgeschlossen.
 
-Core-Stand 2026-09-29: HEAD f256d83, 1026 Tests,
+Core-Stand 2026-09-29: HEAD 809e861, 1028 Tests,
 mypy 0 echte Typfehler, ruff 122 (nicht-auto-fixbare
 Codes als bewusste Reste).
 
