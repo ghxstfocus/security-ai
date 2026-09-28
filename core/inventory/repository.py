@@ -220,7 +220,7 @@ class DeviceRepository:
     def get(self, identifier: str) -> Device | None:
         row = self._conn.execute(
             "SELECT id, identifier, entity_name, network_type, "
-            "       first_seen, last_seen, notes "
+            "       first_seen, last_seen, notes, last_ip "
             "FROM devices WHERE identifier = ?",
             (identifier,),
         ).fetchone()
@@ -231,7 +231,7 @@ class DeviceRepository:
     def list_all(self) -> list[Device]:
         rows = self._conn.execute(
             "SELECT id, identifier, entity_name, network_type, "
-            "       first_seen, last_seen, notes "
+            "       first_seen, last_seen, notes, last_ip "
             "FROM devices ORDER BY last_seen DESC"
         ).fetchall()
         return [Device.from_row(r) for r in rows]
