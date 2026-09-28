@@ -33,7 +33,7 @@ import pwd
 import sqlite3
 import sys
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -55,6 +55,7 @@ _log = logging.getLogger(__name__)
 
 _EVENTS_DIR = Path("data")
 _AUDIT_BASE_DIR = "audit-logs"
+PROCESSED_EVENTS_MAX_AGE_DAYS = 30
 
 
 # ---------------------------------------------------------------------- #
@@ -142,6 +143,28 @@ def _unmark_processing(
         (event_id,),
     )
     conn.commit()
+
+
+# ---------------------------------------------------------------------- #
+# Aufraeumen
+# ---------------------------------------------------------------------- #
+
+def _cleanup_old_events(conn: sqlite3.Connection) -> int:
+    """
+    Loescht processed_events-Eintraege, deren processed_at
+    aelter ist als PROCESSED_EVENTS_MAX_AGE_DAYS. Rueckgabe:
+    Anzahl geloeschter Zeilen. Kein VACUUM, kein Audit.
+    """
+    cutoff = (
+        datetime.now(UTC)
+        - timedelta(days=PROCESSED_EVENTS_MAX_AGE_DAYS)
+    ).isoformat()
+    cur = conn.execute(
+        "DELETE FROM processed_events WHERE processed_at < ?",
+        (cutoff,),
+    )
+    conn.commit()
+    return cur.rowcount
 
 
 # ---------------------------------------------------------------------- #
@@ -241,6 +264,19 @@ def run() -> int:
 
                 _write_cursor(conn, today_name, cursor_offset + i + 1)
                 processed += 1
+
+            # 7) Aufraeumen (Buchhaltung, kein Audit).
+            # Fehler beim Aufraeumen sind kein Lauf-Fehler
+            # (Exit-Code bleibt 0), aber werden geloggt.
+            try:
+                removed = _cleanup_old_events(conn)
+                if removed > 0:
+                    _log.info(
+                        "cleanup: %d old events removed",
+                        removed,
+                    )
+            except Exception:  # noqa: BLE001
+                _log.error("cleanup fehlgeschlagen")
 
             duration_ms = int((time.monotonic() - start) * 1000)
             _log.info(

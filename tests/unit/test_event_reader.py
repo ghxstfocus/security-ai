@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import unittest
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import mock
@@ -301,6 +301,104 @@ class RunTests(unittest.TestCase):
             finally:
                 check.close()
             self.assertEqual(ai.process.call_count, 1)
+
+
+class CleanupTests(unittest.TestCase):
+    """Punkt 47: _cleanup_old_events."""
+
+    def test_cleanup_deletes_old(self) -> None:
+        with TemporaryDirectory() as d:
+            conn = _seed_conn(Path(d))
+            try:
+                old_ts = (
+                    datetime.now(UTC) - timedelta(days=31)
+                ).isoformat()
+                conn.execute(
+                    "INSERT INTO processed_events "
+                    "(event_id, processed_at) VALUES (?, ?)",
+                    ("EVT-old", old_ts),
+                )
+                conn.commit()
+                removed = er._cleanup_old_events(conn)
+                self.assertEqual(removed, 1)
+                n = conn.execute(
+                    "SELECT COUNT(*) FROM processed_events"
+                ).fetchone()[0]
+                self.assertEqual(n, 0)
+            finally:
+                conn.close()
+
+    def test_cleanup_keeps_new(self) -> None:
+        with TemporaryDirectory() as d:
+            conn = _seed_conn(Path(d))
+            try:
+                new_ts = datetime.now(UTC).isoformat()
+                conn.execute(
+                    "INSERT INTO processed_events "
+                    "(event_id, processed_at) VALUES (?, ?)",
+                    ("EVT-new", new_ts),
+                )
+                conn.commit()
+                removed = er._cleanup_old_events(conn)
+                self.assertEqual(removed, 0)
+                n = conn.execute(
+                    "SELECT COUNT(*) FROM processed_events"
+                ).fetchone()[0]
+                self.assertEqual(n, 1)
+            finally:
+                conn.close()
+
+    def test_cleanup_returns_count(self) -> None:
+        with TemporaryDirectory() as d:
+            conn = _seed_conn(Path(d))
+            try:
+                old_ts = (
+                    datetime.now(UTC) - timedelta(days=40)
+                ).isoformat()
+                for i in range(3):
+                    conn.execute(
+                        "INSERT INTO processed_events "
+                        "(event_id, processed_at) VALUES (?, ?)",
+                        (f"EVT-old-{i}", old_ts),
+                    )
+                conn.commit()
+                removed = er._cleanup_old_events(conn)
+                self.assertEqual(removed, 3)
+            finally:
+                conn.close()
+
+    def test_cleanup_zero_no_error(self) -> None:
+        with TemporaryDirectory() as d:
+            conn = _seed_conn(Path(d))
+            try:
+                removed = er._cleanup_old_events(conn)
+                self.assertEqual(removed, 0)
+            finally:
+                conn.close()
+
+    def test_cleanup_failure_does_not_fail_run(self) -> None:
+        ai = mock.MagicMock()
+        with TemporaryDirectory() as d:
+            db = Path(d) / "x.db"
+            conn = connect(db)
+            apply_migrations(conn, DEFAULT_MIGRATIONS_DIR)
+            conn.close()
+            with mock.patch.object(
+                er, "check_audit_logs",
+            ), mock.patch.object(
+                er, "check_schema_version",
+            ), mock.patch.object(
+                er, "connect", return_value=connect(db),
+            ), mock.patch.object(
+                er, "SecurityAI", return_value=ai,
+            ), mock.patch.object(
+                er, "_EVENTS_DIR", Path(d),
+            ), mock.patch.object(
+                er, "_cleanup_old_events",
+                side_effect=RuntimeError("kaputt"),
+            ):
+                # Aufraeum-Fehler -> trotzdem Exit 0.
+                self.assertEqual(er.run(), 0)
 
 
 if __name__ == "__main__":
