@@ -21,6 +21,9 @@ Nummern 633-637 wurden in einem Handoff
 referenziert, aber nie belegt. Verworfen.
 Nummerierung laeuft ab 633 neu (Runde
 2026-09-27, Punkt 17 / 16).
+Nummerierung: 958-965 waren Rahmenvorgaben
+fuer den Wechsel in den neuen Chat.
+Ab 966 wieder Auflagen fuer konkrete Bloecke.
 
 ## Diagnose 2026-09-27
 
