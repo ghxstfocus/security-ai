@@ -1,0 +1,36 @@
+# Quelle: deploy/systemd/security-ai-event-reader.service
+# Stand: 2026-09-28 (Phase 3.8b)
+# Bei Aenderungen: systemctl daemon-reload
+#
+# Nach Installation (Betriebsakt, nicht im Commit):
+#   cp deploy/systemd/security-ai-event-reader.service \
+#      /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now security-ai-event-reader.timer
+
+[Unit]
+Description=Event-Reader (Security AI)
+Documentation=file:/opt/security-ai/docs/DEPLOYMENT.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=security-ai
+Group=security-ai
+WorkingDirectory=/opt/security-ai
+EnvironmentFile=/opt/security-ai/.env
+ExecStart=/opt/security-ai/.venv/bin/python3 -m tools.event_reader
+StandardOutput=journal
+StandardError=journal
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+RestrictAddressFamilies=AF_UNIX AF_INET
+ReadWritePaths=/opt/security-ai/audit-logs
+ReadWritePaths=/opt/security-ai/data
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,22 @@
+# Quelle: deploy/systemd/security-ai-event-reader.timer
+# Stand: 2026-09-28 (Phase 3.8b)
+# Bei Aenderungen: systemctl daemon-reload
+#
+# Nach Installation (Betriebsakt, nicht im Commit):
+#   cp deploy/systemd/security-ai-event-reader.timer \
+#      /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now security-ai-event-reader.timer
+
+[Unit]
+Description=Event-Reader Timer
+Documentation=file:/opt/security-ai/docs/DEPLOYMENT.md
+Requires=security-ai-event-reader.service
+
+[Timer]
+OnBootSec=60s
+OnUnitActiveSec=30s
+Unit=security-ai-event-reader.service
+
+[Install]
+WantedBy=timers.target
