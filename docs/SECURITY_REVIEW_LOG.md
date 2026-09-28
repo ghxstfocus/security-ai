@@ -953,3 +953,37 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     Fix-Vorschlag: setattr zurueck + # noqa: B010
     (B010 nicht anwendbar, weil F kein konkreter Typ).
     Eigener Block, Kategorie 3 (Dekorator/Flask-Setup).
+
+- 3.6.18b (7a92b54): Fact-Antwort-Stil. Labels statt
+  Rohkategorien, dynamischer Zeitraum, "Vorkommen".
+  Punkt 31, Auflagen 821-854.
+- Punkt 33 (7b234df): nav_links im Fact-Pfad.
+  Auffaelligkeits-Antwort -> /alerts. API 8 Schluessel.
+  Auflagen 858-881.
+- Punkt 28 (a2b58c1): Dashboard-Chat-Kontext
+  (core/context/builder.build_chat_context).
+- Punkt 11 (d1602ef): SSH Key-only. Betriebsakt.
+  PermitRootLogin prohibit-password,
+  PasswordAuthentication no.
+- Punkt 32 (213ab7b): Klassifikations-Luecke "gibt es".
+  _FACT_RE erweitert, Veto gegen Bewertungsworte.
+- Zwischenblock Lint/Typen (540b205, 3a5dbab, 6426967,
+  d6ecc01, 3b20891, 6ec5c12, 9697c22, c1d2fe2,
+  c05283e, 2bdc16b, 75b5ec1, b3db49c, 01466e0):
+  ruff 452 -> 122, mypy 89 -> 71, echte Typfehler
+  15 -> 0. Gruppe 2+3 (5 Fixes). Punkt 41
+  (B010-Regression) gefunden und behoben.
+- Doku-Nachzug README + PHASES (e0a6aa4, 4cc0a45,
+  8e79495): README-Heredoc-Vorfall repariert,
+  Kernzahlen 950, PHASES 3.6.10/3.6.11 abgehakt.
+
+Core-Stand 2026-09-28: HEAD b8ca72b, 950 Tests,
+mypy 0 echte Typfehler, ruff 122 (nicht-auto-fixbare
+Codes als bewusste Reste).
+
+Bewusst offen (kein Bau heute):
+- Punkt 26: security_ai-Startpfad (naechster Block).
+- Punkt 36: DetectionEngine.list -> list_rules.
+- A900: mypy no-untyped-def (67 Stellen).
+- A901: ruff nicht-auto-fixbare Codes (C408, BLE001,
+  SIM117, TRY004, RUF015, S110, DTZ001, SIM102).

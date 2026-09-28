@@ -389,6 +389,9 @@ Vererbung ergaenzt.
 - Nach jedem Schreiben: wc -l, py_compile, Test, git commit.
 - Bei langen Dateien zwei oder drei Bloecke.
 - Bei Fehlern: kurze Ursache, dann Fix, keine langen Vorreden.
+- Auto-Fix-Regeln pruefen, nicht blind anwenden:
+  siehe WORKFLOW.md, Abschnitt "Auto-Fix-Regeln pruefen,
+  nicht blind anwenden" (B010/TypeVar, Punkt 41).
 
 ---
 

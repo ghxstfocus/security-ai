@@ -340,6 +340,13 @@ Nach 3.6.8i (Optik, sobald Struktur + Daten stehen):
       (extern, addEventListener, kein onclick=, kein
       Inline-<script>, keine style="..."), CSP-konform.
 
+## Punkt 26 — security_ai-Startpfad  [ ]
+
+Ziel: __main__.py, systemd-Unit (analog
+security-ai-dashboard), check_schema_version.
+Kategorie 3, eigener Block. Naechster Block
+(nach Core-Abschluss).
+
 ## Phase 3.8 — Host-Scanner / Netzwerk-Discovery  [ ]
 
 Ziel: das gesamte Heimnetz beobachten, nicht nur den
@@ -796,6 +803,71 @@ Umgesetzt:
   4 in test_dashboard_chat.py umgestellt.
 
 Tests: 879 passed (Vollsuite, venv).
+
+## Phase 3.6.18a — category durchsuchbar  [x]
+
+Bugfix aus 3.6.16: risk_assessments.category in die
+Suchfelder aufgenommen (A530).
+
+## Phase 3.6.18b — Fact-Antwort-Stil  [x]
+
+Labels statt Rohkategorien, dynamischer Zeitraum,
+"Vorkommen" statt "Assessments". Commit 7a92b54.
+Punkt 31, Auflagen 821-854.
+
+## Phase 3.6.18c — nav_links im Fact-Pfad  [x]
+
+Auffaelligkeits-Antwort liefert Navigations-Link
+auf /alerts. ChatResponse.nav_links, API 8 Schluessel,
+chat.js renderNavLinks. Commit 7b234df.
+Punkt 33, Auflagen 858-881.
+
+## Zwischenblock Punkt 28 — Chat-Kontext  [x]
+
+Dashboard-Chat bekommt Kontext
+(core/context/builder.build_chat_context).
+CLI und Dashboard nutzen denselben Builder.
+Commit a2b58c1, Auflagen 719-728.
+
+## Zwischenblock Punkt 29 — Wert-Synonyme  [x]
+
+core/search/synonyms.yaml + synonyms.py.
+Suchbegriffe werden auf Synonym-Zielwerte erweitert.
+Commit 0ede98f, Auflagen 776-790.
+
+## Zwischenblock Punkt 30 — Links im Chat  [x]
+
+fact/detail_append-Antworten liefern strukturierte
+Link-Liste (core/context/links.py). API-Antwort
+7 Schluessel. Commit f737d3f, Auflagen 757-772.
+
+## Punkt 11 — SSH Key-only  [x]
+
+Betriebsakt, kein Code. sshd_config:
+PermitRootLogin prohibit-password,
+PasswordAuthentication no, PubkeyAuthentication yes.
+Key windows@... in authorized_keys. Commit d1602ef.
+
+## Punkt 32 — Klassifikations-Luecke "gibt es"  [x]
+
+_FACT_RE um "gibt es" erweitert, Veto gegen
+Bewertungsworte. Commit 213ab7b, Auflagen 804-811.
+
+## Zwischenblock Lint/Typen  [x]
+
+ruff 452 -> 122, mypy 89 -> 71 (echte Typfehler
+15 -> 0). Auto-Fix-Kategorien I001, UP017,
+kleine Gruppen, F401. Gruppe 2+3 (5 Fixes).
+Punkt 41 (B010-Regression) gefunden und behoben.
+Commits 540b205, 3a5dbab, 6426967, d6ecc01,
+3b20891, 6ec5c12, 9697c22, c1d2fe2, c05283e,
+2bdc16b, 75b5ec1, b3db49c, 01466e0.
+
+## Doku-Nachzug README + PHASES  [x]
+
+README repariert (Heredoc-Vorfall 5b5a727),
+Kernzahlen 950 Tests. PHASES 3.6.10/3.6.11
+abgehakt. Commits e0a6aa4, 4cc0a45, 8e79495.
 
 ## Phase 5 — Admin AI  [ ]
 

@@ -246,33 +246,33 @@ Punkt 29 (Wert-Synonyme), Punkt 30 (Links im Chat),
 3.6.18a (category durchsuchbar), UI-Feinschliff
 (SVG, Spalten, Sidebar, Suche, Topbar-Dropdown),
 Diagnose 2026-09-27 (ruff/mypy eingerichtet).
-HEAD 5caabea, Working Tree sauber.
+HEAD b8ca72b, Working Tree sauber.
 
-Aktuell offen (bewusst, kein Bau heute):
-- Punkt 11: SSH-Zugang Windows -> CT102
-  (Betriebsakt, jederzeit).
-- Punkt 24: assign_role device.read (bedingt).
-- Punkt 25: Test-Artefakte im Dashboard
-  (kein Bau geplant).
+Core-Status: Core (Stufe 1-3.6.18) abgeschlossen.
+Orchestrator-Start (Punkt 26) und Watcher
+(Phase 3.8) sind der naechste Block und laufen
+in einem neuen Chat.
+
+Bewusst offen (kein Bau heute):
 - Punkt 26: security_ai-Startpfad fehlt
-  (Kategorie 3, eigener Block, wenn gebaut wird).
-- Punkt 31: Fact-Antwort-Stil (Bestandsaufnahme
-  zuerst, eigener Block).
-- Punkt 32: Klassifikations-Luecke "gibt es"
+  (Kategorie 3, naechster Block).
+- Punkt 36: DetectionEngine.list -> list_rules
   (Kategorie 3, eigener Block).
-- Lint/Typen: ruff 435, mypy 87 (eigene Runde).
+- Lint/Typen-Reste:
+  - ruff 122 (nicht-auto-fixbare Codes, A901).
+  - mypy no-untyped-def (A900, 67 Stellen).
+  - Echte Typfehler: 0.
 
-Offene Punkte 1-32 in docs/SECURITY_REVIEW_LOG.md.
-Chronologie bis 5caabea dokumentiert (sortiert nach
+Offene Punkte 1-41 in docs/SECURITY_REVIEW_LOG.md.
+Chronologie bis b8ca72b dokumentiert (sortiert nach
 Commit-Zeit).
 DESIGN_DECISIONS: §11 (Kontext, Wert-Synonyme,
-Suchfelder), §16 (ProxyFix, Links im Chat, JS-Ausnahme,
-server_name, default_server).
+Suchfelder), §14 (Frage-Klassifikation, Anzeige-Labels,
+since_hours), §16 (ProxyFix, Links im Chat, nav_links,
+JS-Ausnahme, server_name, default_server).
 
-Tests: 921 gruen (venv, pytest 9.1.1).
-Hinweis: Der vorher genannte Wert 728 war ungenau;
-korrekt war 720 vor 3.6.15a. Quelle der Wahrheit ist
-`pytest --collect-only -q`.
+Tests: 950 gruen (venv, pytest 9.1.1).
+Quelle der Wahrheit ist `pytest --collect-only -q`.
 
 ### Aufgabe jetzt
 
