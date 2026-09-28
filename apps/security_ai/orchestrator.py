@@ -604,7 +604,7 @@ class SecurityAI:
             configs=self._detection_config,
             now=event.timestamp,
         )
-        for r in reports:
+        for r in reports:  # type: ignore[attr-defined]  # Folge DetectionEngine.list
             if r.skipped:
                 continue
             _audit(
@@ -624,7 +624,7 @@ class SecurityAI:
         # 2b) Alerts anreichern: first_seen
         devices_before = pre_snapshot.get("devices", set())
         enriched_alerts: list[Event] = []
-        for alert in alerts:
+        for alert in alerts:  # type: ignore[attr-defined]  # Folge DetectionEngine.list
             ident = alert.data.get("identifier")
             if ident:
                 alert = with_data(

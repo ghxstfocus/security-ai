@@ -186,7 +186,7 @@ def _check_target_allowed(target: str) -> None:
         allowed_same_version = [
             a for a in _ALLOWED_NETWORKS if a.version == net.version
         ]
-        if not any(net.subnet_of(a) for a in allowed_same_version):
+        if not any(net.subnet_of(a) for a in allowed_same_version):  # type: ignore[arg-type]  # mypy sieht net.version-Filter nicht
             raise ToolError(
                 f"nmap_scan: Ziel {target!r} ({net}) liegt nicht komplett "
                 f"in den erlaubten Netzen (localhost, RFC1918)"

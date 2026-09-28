@@ -225,7 +225,7 @@ class RiskEngine:
                     f"Regel {name!r} Modifier {i}: unbekannter when-Name {when!r}"
                 )
             try:
-                float(m.get("add"))
+                float(m.get("add"))  # type: ignore[arg-type]  # TypeError wird gefangen
             except (TypeError, ValueError) as exc:
                 raise RiskRuleError(
                     f"Regel {name!r} Modifier {i}: 'add' ist keine Zahl"

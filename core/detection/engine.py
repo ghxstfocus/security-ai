@@ -126,7 +126,7 @@ class DetectionEngine:
         self,
         package_name: str,
         configs: dict[str, dict[str, Any]] | None = None,
-    ) -> list[str]:
+    ) -> list[str]:  # type: ignore[valid-type]  # Methode list verdeckt Builtin
         """
         Laedt alle Regel-Klassen aus einem Package.
 
@@ -175,7 +175,7 @@ class DetectionEngine:
         configs: dict[str, dict[str, Any]] | None = None,
         history: Any = None,
         now: datetime | None = None,
-    ) -> list[RuleRunReport]:
+    ) -> list[RuleRunReport]:  # type: ignore[valid-type]  # Methode list verdeckt Builtin
         """
         Wendet alle zustaendigen Regeln auf ein Event an.
 
@@ -258,14 +258,14 @@ class DetectionEngine:
 
         return reports
 
-    def alerts_from(self, reports: Iterable[RuleRunReport]) -> list[Event]:
+    def alerts_from(self, reports: Iterable[RuleRunReport]) -> list[Event]:  # type: ignore[valid-type]  # Methode list verdeckt Builtin
         """Sammelt alle Alerts aus mehreren Reports flach ein."""
         out: list[Event] = []
         for r in reports:
             out.extend(r.alerts)
         return out
 
-    def errors_from(self, reports: Iterable[RuleRunReport]) -> list[RuleExecutionError]:
+    def errors_from(self, reports: Iterable[RuleRunReport]) -> list[RuleExecutionError]:  # type: ignore[valid-type]  # Methode list verdeckt Builtin
         """Sammelt alle Fehler aus mehreren Reports."""
         return [r.error for r in reports if r.error is not None]
 
