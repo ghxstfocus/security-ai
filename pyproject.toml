@@ -21,9 +21,11 @@ dev = [
     "ruff>=0.5",
     "mypy>=1.10",
 ]
+fritzbox = [
+    "fritzconnection>=1.13",
+]
 scanner = [
     "scapy>=2.5",
-    "fritzconnection>=1.13",
     "docker>=7.0",
 ]
 

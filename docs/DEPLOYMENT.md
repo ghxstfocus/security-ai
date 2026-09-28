@@ -470,13 +470,23 @@ Fussnote: `psutil` und `PyYAML` sind deklariert, werden
 aber heute im Code nicht importiert. Sie bleiben als
 Vorbereitung fuer spaetere Phasen.
 
-Optionale Abhaengigkeiten (`scapy`, `fritzconnection`,
-`docker`) sind in `pyproject.toml` unter
-`[project.optional-dependencies].extras` deklariert,
-aber **nicht installiert**. Sie gehoeren zu spaeteren
-Phasen (Host-Scanner, Fritz!Box-Anbindung, Docker-Status).
+Optionale Abhaengigkeiten sind in `pyproject.toml` unter
+`[project.optional-dependencies]` in getrennten Extras
+deklariert:
 
-Installation: siehe §2.4.
+- `fritzbox` (`fritzconnection>=1.13`) — Fritz!Box-Watcher.
+- `scanner` (`scapy>=2.5`, `docker>=7.0`) — spaeterer
+  Netzwerk-Scanner (Phase 3.8, LXC 2).
+- `prod` (`gunicorn>=21.0`) — Dashboard hinter nginx.
+- `dev` (`pytest`, `pytest-cov`, `ruff`, `mypy`) — Tests
+  und Lint.
+
+Installation des Fritz!Box-Watchers:
+
+    .venv/bin/pip install -e .[fritzbox]
+
+`scanner` wird erst installiert, wenn LXC 2 (security-tools)
+steht. Siehe §2.4.
 
 ### 3d.4 systemd-Unit
 
