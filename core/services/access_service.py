@@ -189,6 +189,10 @@ class AccessService:
                 f"Rolle {role_name!r} hat kein device.read. "
                 f"Principal kann sich nicht einloggen."
             )
+        if role.row_id is None:
+            raise AccessServiceError(
+                f"Rolle '{role_name}' ist nicht persistiert."
+            )
         try:
             p = self._principals.create(
                 name=name,

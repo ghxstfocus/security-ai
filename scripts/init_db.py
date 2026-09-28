@@ -178,6 +178,11 @@ def init_db(
             print(f"Hinweis: Principal '{principal_name}' existiert "
                   f"bereits, kein Anlegen")
     except AccessNotFoundError:
+        if role.row_id is None:
+            raise AccessRepositoryError(
+                f"Rolle '{role_name}' ist nicht persistiert "
+                f"(row_id ist None)."
+            )
         try:
             principals.create(
                 name=principal_name,
