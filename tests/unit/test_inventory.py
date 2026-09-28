@@ -176,7 +176,7 @@ class WhitelistRepositoryTests(unittest.TestCase):
         h = self.repo.history("192.168.178.10")
         types = [x["event_type"] for x in h]
         self.assertIn("whitelist_added", types)
-        added = [x for x in h if x["event_type"] == "whitelist_added"][0]
+        added = next(x for x in h if x["event_type"] == "whitelist_added")
         self.assertEqual(added["data"], {"added_by": "admin"})
 
     def test_add_ohne_geraet_schreibt_keine_history(self):

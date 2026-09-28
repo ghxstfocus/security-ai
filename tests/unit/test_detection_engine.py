@@ -57,7 +57,7 @@ class EngineIntegrationTests(unittest.TestCase):
             },
         )
         reports = self.engine.process(e, configs=self.configs)
-        unknown = [r for r in reports if r.rule_id == "unknown_device"][0]
+        unknown = next(r for r in reports if r.rule_id == "unknown_device")
         self.assertEqual(len(unknown.alerts), 1)
         self.assertEqual(
             unknown.alerts[0].event_type, EventType.UNKNOWN_DEVICE.value
@@ -102,7 +102,7 @@ class EngineIntegrationTests(unittest.TestCase):
             },
         )
         reports = self.engine.process(e, configs=self.configs)
-        unknown = [r for r in reports if r.rule_id == "unknown_device"][0]
+        unknown = next(r for r in reports if r.rule_id == "unknown_device")
         self.assertEqual(unknown.alerts, [])
 
 

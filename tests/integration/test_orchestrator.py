@@ -512,7 +512,7 @@ class OrchestratorLoopTests(unittest.TestCase):
         kinds = [x["details"]["kind"] for x in entries]
         self.assertIn("loop_result", kinds)
         self.assertIn("tool_call", kinds)
-        tc = [x for x in entries if x["details"]["kind"] == "tool_call"][0]
+        tc = next(x for x in entries if x["details"]["kind"] == "tool_call")
         self.assertEqual(tc["details"]["tool"], "telegram_alert")
         self.assertEqual(tc["details"]["level"], int(Level.SECURITY_ACTION))
 

@@ -330,10 +330,10 @@ class ChatServiceAuditTests(_ChatBase):
     def test_question_hash(self):
         q = "Was ist passiert?"
         self.svc.ask("admin", q)
-        entry = [
+        entry = next(
             e for e in self._audit_entries()
             if e["details"]["kind"] == "chat_query"
-        ][0]
+        )
         expected = hashlib.sha256(q.encode("utf-8")).hexdigest()
         self.assertEqual(entry["details"]["question_hash"], expected)
         self.assertEqual(
@@ -342,10 +342,10 @@ class ChatServiceAuditTests(_ChatBase):
 
     def test_chat_query_enthaelt_role(self):
         self.svc.ask("admin", "Frage?")
-        entry = [
+        entry = next(
             e for e in self._audit_entries()
             if e["details"]["kind"] == "chat_query"
-        ][0]
+        )
         self.assertEqual(entry["details"]["role"], "admin")
 
     def test_chat_query_role_none_bei_unbekannt(self):
@@ -353,44 +353,44 @@ class ChatServiceAuditTests(_ChatBase):
             self.svc.ask("gibtsnicht", "Frage?")
         except AccessDeniedError:
             pass
-        entry = [
+        entry = next(
             e for e in self._audit_entries()
             if e["details"]["kind"] == "chat_query"
-        ][0]
+        )
         self.assertIsNone(entry["details"]["role"])
 
     def test_chat_query_enthaelt_detail_requested(self):
         self.svc.ask("admin", "Frage?", detail=True)
-        entry = [
+        entry = next(
             e for e in self._audit_entries()
             if e["details"]["kind"] == "chat_query"
-        ][0]
+        )
         self.assertTrue(entry["details"]["detail_requested"])
 
     def test_chat_answered_source_llm(self):
         self.svc.ask("admin", "Frage?")
-        answered = [
+        answered = next(
             e for e in self._audit_entries()
             if e["details"]["kind"] == "chat_answered"
-        ][0]
+        )
         self.assertEqual(answered["details"]["source"], "llm")
         self.assertEqual(answered["details"]["model"], "llama3.2:3b")
 
     def test_chat_answered_source_detail(self):
         self.svc.ask("admin", "welche IP?", detail=True)
-        answered = [
+        answered = next(
             e for e in self._audit_entries()
             if e["details"]["kind"] == "chat_answered"
-        ][0]
+        )
         self.assertEqual(answered["details"]["source"], "detail_append")
 
     def test_chat_answered_detail_has_model_reason(self):
         # Punkt 23: model_reason muss auch im Audit stehen.
         self.svc.ask("admin", "welche IP?", detail=True)
-        answered = [
+        answered = next(
             e for e in self._audit_entries()
             if e["details"]["kind"] == "chat_answered"
-        ][0]
+        )
         self.assertEqual(
             answered["details"].get("model_reason"),
             "detail_append",
@@ -403,10 +403,10 @@ class ChatServiceAuditTests(_ChatBase):
             risk_assessments=(),
             inventory_snapshot={"devices_total": 3},
         )
-        answered = [
+        answered = next(
             e for e in self._audit_entries()
             if e["details"]["kind"] == "chat_answered"
-        ][0]
+        )
         self.assertEqual(
             answered["details"].get("model_reason"),
             "fact",
@@ -416,10 +416,10 @@ class ChatServiceAuditTests(_ChatBase):
         # Punkt 23: no_context-Pfad muss model_reason setzen.
         # Zustandsfrage ohne Kontext -> no_context.
         self.svc.ask("admin", "Welche IPs sind online?")
-        answered = [
+        answered = next(
             e for e in self._audit_entries()
             if e["details"]["kind"] == "chat_answered"
-        ][0]
+        )
         self.assertIn(
             answered["details"].get("source"),
             ("no_context", "llm"),
@@ -433,10 +433,10 @@ class ChatServiceAuditTests(_ChatBase):
 
     def test_include_details_wird_nicht_geloggt_wenn_nicht_gesetzt(self):
         self.svc.ask("admin", "Frage?")
-        entry = [
+        entry = next(
             e for e in self._audit_entries()
             if e["details"]["kind"] == "chat_query"
-        ][0]
+        )
         self.assertFalse(entry["details"]["detail_requested"])
         self.assertNotIn("question", entry["details"])
 

@@ -160,10 +160,10 @@ class NotifyApprovalTests(unittest.TestCase):
             self.app._notify_approval(lr, _event(), self._audit)
         kinds = self._kinds()
         self.assertIn("approval_notify_failed", kinds)
-        failed = [
+        failed = next(
             c for c in self.audit_calls
             if c["details"].get("kind") == "approval_notify_failed"
-        ][0]
+        )
         self.assertIn("telegram down", failed["details"]["error"])
         self.assertEqual(failed["execution_status"], "ERROR")
 
