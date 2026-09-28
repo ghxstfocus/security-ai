@@ -989,6 +989,30 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     gleicher Hostname = dasselbe Geraet).
     Kategorie 3, eigener Block.
 
+44. (entfallen, A1125/A1126) Fritz!Box-Host-Status.
+    Der status-Key in get_hosts_info ist bool
+    (NewActive) laut fritzconnection-Code/Doku.
+    Damit keine unverifizierte Wette, kein
+    offener Punkt. Der Watcher kapselt bool(status)
+    defensiv.
+
+45. (offen) Verwaiste .env.example-Variablen
+    (Namen ohne Code-Nutzung). Liste:
+    ADMIN_AI_API_KEY, ADMIN_AI_MODEL, ADMIN_AI_PROVIDER,
+    BIND_HOST, DASHBOARD_PASSWORD, DASHBOARD_PORT,
+    DASHBOARD_USER, GUEST_NETWORK_PREFIX,
+    NETWORK_WATCH_ENABLED,
+    PORTSCAN_THRESHOLD_IPS, PORTSCAN_THRESHOLD_IPS_WINDOW,
+    PORTSCAN_THRESHOLD_PORTS, PORTSCAN_THRESHOLD_WINDOW,
+    PROXMOX_TOKEN_ID, PROXMOX_TOKEN_SECRET, PROXMOX_URL,
+    PROXMOX_VERIFY_SSL, SNIFF_IFACE, WEBHOOK_PORT,
+    WEBHOOK_TOKEN.
+    Kein Loeschen ohne Nutzer-Entscheidung. Viele
+    legitim fuer spaetere Phasen (PROXMOX_* Phase >5,
+    TELEGRAM_* heute genutzt, SNIFF_IFACE/PORTSCAN_*
+    Phase 3.8b, ADMIN_AI_* Phase 5).
+    Kategorie 1 (Doku).
+
 - 3.6.18b (7a92b54): Fact-Antwort-Stil. Labels statt
   Rohkategorien, dynamischer Zeitraum, "Vorkommen".
   Punkt 31, Auflagen 821-854.
