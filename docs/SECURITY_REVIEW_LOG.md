@@ -884,7 +884,9 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   ungueltige Fingerprint-Zeile aus alter
   Paste-Verwechslung; sshd ignoriert sie).
 
-35. (offen) mypy method-assign app.py:64 (app.wsgi_app = ProxyFix(...)).
+35. (erledigt, b3db49c) mypy method-assign app.py:64 (app.wsgi_app = ProxyFix(...)).
+    # type: ignore[method-assign] mit Kommentar,
+    Flask-/Werkzeug-Idiom, kein alternativer Weg.
     Flask-Attribut wird von mypy als Methode gesehen.
     Kein Laufzeitfehler heute. Fix waere ProxyFix anders
     anwenden (z. B. app.wsgi_app = ProxyFix(...) mit
@@ -900,13 +902,15 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     entschaerft. Umbenennen in list_rules
     (eigener Block, Kategorie 3).
 
-37. (offen) ApprovalRequired.args ueberschreibt
+37. (erledigt, 75b5ec1) ApprovalRequired.tool_args statt .args.
+    (Ur-Text: ApprovalRequired.args ueberschreibt
     BaseException.args. self.args = args setzt ein dict
     ueber das tuple der Basisklasse (Semantik-Konflikt,
     nicht nur mypy). Umbenennen in tool_args
     (eigener Block, Kategorie 3).
 
-38. (offen) redact_mapping-Signatur ist zu eng
+38. (erledigt, 2bdc16b) redact_mapping-Signatur korrigiert (dict[str, Any]).
+    (Ur-Text: redact_mapping-Signatur ist zu eng
     (dict[str, str] statt dict[str, Any]). Der Aufrufer
     in harness/context/builder.py weist list[str] zu,
     mypy meldet assignment. Signatur richtig stellen
@@ -923,3 +927,21 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   -- nicht auto-fixbar, eigener Reviewer-Block (A901).
   no-untyped-def (67) -- eigene Runde (A900).
   method-assign app.py:67 -- Punkt 35, eigener Block.
+
+39. (erledigt, c1d2fe2) role.row_id None fail closed.
+    init_db.py:182 und access_service.py:192 pruefen
+    vor dem create-Aufruf, klare Fehlermeldung statt
+    generischem AccessRepositoryError.
+
+40. (erledigt, c05283e) _validate_len getrennt in
+    _require_len/_optional_len. Annotation statt
+    str | None. Kein Verhalten geaendert.
+
+41. (offen) apps/dashboard/decorators.py:32
+    attr-defined. Regression durch B010-Auto-Fix
+    in 3b20891: setattr(fn, "_required_permission",
+    code) wurde zu fn._required_permission = code.
+    mypy sieht F (TypeVar) ohne Attribut.
+    Fix-Vorschlag: setattr zurueck + # noqa: B010
+    (B010 nicht anwendbar, weil F kein konkreter Typ).
+    Eigener Block, Kategorie 3 (Dekorator/Flask-Setup).
