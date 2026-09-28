@@ -590,6 +590,39 @@ Downgrade der DB ist nicht automatisiert; im Zweifel
 Backup einspielen.
 
 
+## 3f. Fritz!Box-Watcher (Phase 3.8a)
+
+Producer fuer device_presence/device_offline. Liest die
+Host-Liste der Fritz!Box via TR-064, vergleicht mit dem
+letzten Lauf, schreibt Events nach data/events-YYYY-MM-DD.jsonl.
+
+### 3f.1 Voraussetzungen
+
+- Python-Extra: .venv/bin/pip install -e .[fritzbox]
+- .env-Variablen:
+    FRITZ_USERNAME=<user>
+    FRITZ_PASSWORD=<pass>
+    FRITZ_HOST=fritz.box            (optional, Default)
+    FRITZ_NETWORK_TYPE=Hauptnetz    (optional, Default)
+
+### 3f.2 systemd-Units installieren (Betriebsakt)
+
+    cp deploy/systemd/security-ai-fritzbox-watcher.timer \
+       deploy/systemd/security-ai-fritzbox-watcher.service \
+       /etc/systemd/system/
+    systemctl daemon-reload
+    systemctl enable --now security-ai-fritzbox-watcher.timer
+
+### 3f.3 Erster Lauf beobachten
+
+    systemctl status security-ai-fritzbox-watcher.service
+    journalctl -u security-ai-fritzbox-watcher.service
+    cat data/fritzbox_state.json
+    cat data/events-YYYY-MM-DD.jsonl
+
+Exit-Codes: 0=OK, 1=Fritz!Box nicht erreichbar,
+2=Credentials fehlen, 3=Schreibfehler.
+
 ## 4. Netzwerk und Firewall
 
 ### 4.1 Feste IP

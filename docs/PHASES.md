@@ -347,6 +347,29 @@ security-ai-dashboard), check_schema_version.
 Kategorie 3, eigener Block. Naechster Block
 (nach Core-Abschluss).
 
+## Phase 3.8a — Fritz!Box-Watcher  [x]
+
+Producer fuer device_presence/device_offline. Liest die
+Fritz!Box-Hosts via TR-064, vergleicht mit letztem
+Zustand, schreibt Events (JSONL, tagesweise).
+
+identifier=MAC (stabil ueber DHCP).
+
+Commits: e4d032e, e7a669e, 22ad6d5, 8eb9772, 50daee8.
+
+- tools/fritzbox_watcher.py (Producer).
+- tests/unit/test_fritzbox_watcher.py (16 Tests).
+- tests/unit/test_identifier_mac.py (4 Tests).
+- tests/unit/test_config_fritz.py (9 Tests).
+- tests/unit/test_event_cursor.py (4 Tests).
+- Migration 0010 (event_cursor).
+- core/config.py: get_fritz_credentials/host/network_type.
+- deploy/systemd/security-ai-fritzbox-watcher.{timer,service}.
+- Extra fritzbox in pyproject.
+
+Punkt 42 (MAC-Identifier) erledigt. Punkt 43
+(MAC-Randomisierung) offen.
+
 ## Phase 3.8 — Host-Scanner / Netzwerk-Discovery  [ ]
 
 Ziel: das gesamte Heimnetz beobachten, nicht nur den

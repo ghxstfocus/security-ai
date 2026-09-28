@@ -1012,7 +1012,15 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   8e79495): README-Heredoc-Vorfall repariert,
   Kernzahlen 950, PHASES 3.6.10/3.6.11 abgehakt.
 
-Core-Stand 2026-09-28: HEAD b8ca72b, 950 Tests,
+- Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
+  22ad6d5, 8eb9772, 50daee8). Producer fuer
+  device_presence/offline. identifier=MAC.
+  Migration 0010 (event_cursor). Extra fritzbox
+  in pyproject. systemd Timer + Service.
+  Punkt 42 (MAC-Identifier) erledigt. Punkt 43
+  (MAC-Randomisierung) neu offen.
+
+Core-Stand 2026-09-28: HEAD 50daee8, 983 Tests,
 mypy 0 echte Typfehler, ruff 122 (nicht-auto-fixbare
 Codes als bewusste Reste).
 

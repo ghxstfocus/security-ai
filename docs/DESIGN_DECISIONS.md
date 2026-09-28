@@ -433,6 +433,22 @@ identifier). Beide Werte sind gueltig.
 MAC-Randomisierung (iOS/Android/Windows) ist
 offener Punkt 43 in SECURITY_REVIEW_LOG.
 
+### Event-Transport (Phase 3.8a)
+
+Fritz!Box-Watcher (Producer) schreibt Events als JSONL
+nach data/events-YYYY-MM-DD.jsonl (UTC-Datum,
+append-only, eine JSON-Zeile pro Event via Event.to_json).
+Der Orchestrator (Punkt 26) liest neue Zeilen und merkt
+sich Datei + Offset in der DB-Tabelle event_cursor
+(Migration 0010). Kein Datei-Cursor.
+
+Der Watcher-Zustand (letzter Host-Stand) liegt dagegen
+in data/fritzbox_state.json (Datei, nicht DB). Grund:
+klein, kein Query-Bedarf, single Prozess.
+
+Audit: ein watcher_run-Eintrag pro Lauf mit Events,
+kein Audit bei 0 Events und kein Audit bei Fehler-Exit.
+
 ## 6. Approval-Flow (Phase 4a)
 
 ### Rollen
