@@ -86,9 +86,8 @@ class GetFritzCredentialsTests(unittest.TestCase):
             os.environ,
             {"FRITZ_USERNAME": "", "FRITZ_PASSWORD": "geheim"},
             clear=False,
-        ):
-            with self.assertRaises(ConfigError):
-                get_fritz_credentials()
+        ), self.assertRaises(ConfigError):
+            get_fritz_credentials()
 
 
 if __name__ == "__main__":

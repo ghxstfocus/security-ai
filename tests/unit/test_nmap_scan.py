@@ -128,11 +128,10 @@ class NmapHappyPathTests(unittest.TestCase):
             return mock.Mock(returncode=0, stdout=_XML_ONE_HOST, stderr="")
 
         with mock.patch("tools.nmap_scan.shutil.which",
-                        return_value="/usr/bin/nmap"):
-            with mock.patch("tools.nmap_scan.subprocess.run",
-                            side_effect=_fake_run):
-                nmap_scan_run(target="127.0.0.1", ports="22,80",
-                              scan_type="connect")
+                        return_value="/usr/bin/nmap"), mock.patch("tools.nmap_scan.subprocess.run",
+                        side_effect=_fake_run):
+            nmap_scan_run(target="127.0.0.1", ports="22,80",
+                          scan_type="connect")
         argv = captured["argv"]
         self.assertEqual(argv[0], "nmap")
         self.assertIn("-sT", argv)
@@ -166,10 +165,9 @@ class NmapTargetWhitelistTests(unittest.TestCase):
             self.assertEqual(r["source"], "nmap", target)
 
     def test_ziel_oeffentlich_ipv6_nicht_erlaubt(self):
-        with mock.patch("tools.nmap_scan.subprocess.run"):
-            with self.assertRaises(ToolError):
-                nmap_scan_run(target="2001:4860:4860::8888",
-                              scan_type="connect")
+        with mock.patch("tools.nmap_scan.subprocess.run"), self.assertRaises(ToolError):
+            nmap_scan_run(target="2001:4860:4860::8888",
+                          scan_type="connect")
 
     def test_nmap_netz_ueberspannt_whitelist(self):
         # 192.168.0.0/16 ist NICHT subnet_of 192.168.0.0/16-Whitelist-Eintrag
@@ -188,11 +186,10 @@ class NmapTargetWhitelistTests(unittest.TestCase):
             return mock.Mock(returncode=0, stdout=_XML_ONE_HOST, stderr="")
 
         with mock.patch("tools.nmap_scan.shutil.which",
-                        return_value="/usr/bin/nmap"):
-            with mock.patch("tools.nmap_scan.subprocess.run",
-                            side_effect=_fake_run):
-                r = nmap_scan_run(target="192.168.178.0/25",
-                                  scan_type="connect")
+                        return_value="/usr/bin/nmap"), mock.patch("tools.nmap_scan.subprocess.run",
+                        side_effect=_fake_run):
+            r = nmap_scan_run(target="192.168.178.0/25",
+                              scan_type="connect")
         self.assertEqual(r["source"], "nmap")
         self.assertEqual(captured["argv"][-1], "192.168.178.0/25")
 
@@ -225,37 +222,30 @@ class NmapSubprocessErrorTests(unittest.TestCase):
         def _raise(*a, **kw):
             raise subprocess.TimeoutExpired(cmd="nmap", timeout=30)
         with mock.patch("tools.nmap_scan.shutil.which",
-                        return_value="/usr/bin/nmap"):
-            with mock.patch("tools.nmap_scan.subprocess.run",
-                            side_effect=_raise):
-                with self.assertRaises(ToolError):
-                    nmap_scan_run(target="127.0.0.1", scan_type="connect")
+                        return_value="/usr/bin/nmap"), mock.patch("tools.nmap_scan.subprocess.run",
+                        side_effect=_raise), self.assertRaises(ToolError):
+            nmap_scan_run(target="127.0.0.1", scan_type="connect")
 
     def test_nonzero_exit_wirft_toolerror(self):
         with mock.patch("tools.nmap_scan.shutil.which",
-                        return_value="/usr/bin/nmap"):
-            with mock.patch(
-                "tools.nmap_scan.subprocess.run",
-                side_effect=_fake_run_ok(returncode=1, stderr="boom"),
-            ):
-                with self.assertRaises(ToolError):
-                    nmap_scan_run(target="127.0.0.1", scan_type="connect")
+                        return_value="/usr/bin/nmap"), mock.patch(
+            "tools.nmap_scan.subprocess.run",
+            side_effect=_fake_run_ok(returncode=1, stderr="boom"),
+        ), self.assertRaises(ToolError):
+            nmap_scan_run(target="127.0.0.1", scan_type="connect")
 
     def test_xml_parse_fehler_wirft_toolerror(self):
         with mock.patch("tools.nmap_scan.shutil.which",
-                        return_value="/usr/bin/nmap"):
-            with mock.patch(
-                "tools.nmap_scan.subprocess.run",
-                side_effect=_fake_run_ok(xml="nicht xml"),
-            ):
-                with self.assertRaises(ToolError):
-                    nmap_scan_run(target="127.0.0.1", scan_type="connect")
+                        return_value="/usr/bin/nmap"), mock.patch(
+            "tools.nmap_scan.subprocess.run",
+            side_effect=_fake_run_ok(xml="nicht xml"),
+        ), self.assertRaises(ToolError):
+            nmap_scan_run(target="127.0.0.1", scan_type="connect")
 
     def test_fehlendes_binary_wirft_toolerror(self):
         with mock.patch("tools.nmap_scan.shutil.which",
-                        return_value=None):
-            with self.assertRaises(ToolError):
-                nmap_scan_run(target="127.0.0.1", scan_type="connect")
+                        return_value=None), self.assertRaises(ToolError):
+            nmap_scan_run(target="127.0.0.1", scan_type="connect")
 
 
 if __name__ == "__main__":

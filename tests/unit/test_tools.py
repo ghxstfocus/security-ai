@@ -148,10 +148,9 @@ class NmapScanTests(unittest.TestCase):
             return mock.Mock(returncode=0, stdout=self._FAKE_XML, stderr="")
 
         with mock.patch("tools.nmap_scan.shutil.which",
-                        return_value="/usr/bin/nmap"):
-            with mock.patch("tools.nmap_scan.subprocess.run",
-                            side_effect=_fake_run):
-                r = nmap_scan_run(target="192.168.178.1")
+                        return_value="/usr/bin/nmap"), mock.patch("tools.nmap_scan.subprocess.run",
+                        side_effect=_fake_run):
+            r = nmap_scan_run(target="192.168.178.1")
         self.assertIsNone(r["ports"])
         self.assertEqual(r["scan_type"], "connect")
         argv = captured["argv"]
@@ -169,10 +168,9 @@ class NmapScanTests(unittest.TestCase):
             return mock.Mock(returncode=0, stdout=self._FAKE_XML, stderr="")
 
         with mock.patch("tools.nmap_scan.shutil.which",
-                        return_value="/usr/bin/nmap"):
-            with mock.patch("tools.nmap_scan.subprocess.run",
-                            side_effect=_fake_run):
-                r = nmap_scan_run(target="192.168.178.1", ports=[22, 80])
+                        return_value="/usr/bin/nmap"), mock.patch("tools.nmap_scan.subprocess.run",
+                        side_effect=_fake_run):
+            r = nmap_scan_run(target="192.168.178.1", ports=[22, 80])
         self.assertEqual(r["ports"], "22,80")
         argv = captured["argv"]
         self.assertIn("-p", argv)

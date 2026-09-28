@@ -25,28 +25,26 @@ class SkipMigrationsTests(unittest.TestCase):
         }
 
     def test_default_calls_apply_migrations(self) -> None:
-        with TemporaryDirectory() as d:
-            with mock.patch.object(
-                orc, "apply_migrations",
-            ) as m:
-                orc.SecurityAI(
-                    db_path=Path(d) / "x.db",
-                    migrations_dir=Path("data/migrations"),
-                )
-                self.assertTrue(m.called)
-                self.assertEqual(m.call_count, 1)
+        with TemporaryDirectory() as d, mock.patch.object(
+            orc, "apply_migrations",
+        ) as m:
+            orc.SecurityAI(
+                db_path=Path(d) / "x.db",
+                migrations_dir=Path("data/migrations"),
+            )
+            self.assertTrue(m.called)
+            self.assertEqual(m.call_count, 1)
 
     def test_skip_migrations_does_not_call(self) -> None:
-        with TemporaryDirectory() as d:
-            with mock.patch.object(
-                orc, "apply_migrations",
-            ) as m:
-                orc.SecurityAI(
-                    db_path=Path(d) / "x.db",
-                    migrations_dir=Path("data/migrations"),
-                    skip_migrations=True,
-                )
-                self.assertFalse(m.called)
+        with TemporaryDirectory() as d, mock.patch.object(
+            orc, "apply_migrations",
+        ) as m:
+            orc.SecurityAI(
+                db_path=Path(d) / "x.db",
+                migrations_dir=Path("data/migrations"),
+                skip_migrations=True,
+            )
+            self.assertFalse(m.called)
 
 
 if __name__ == "__main__":

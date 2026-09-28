@@ -166,9 +166,9 @@ class OllamaClientGenerateTests(unittest.TestCase):
             raise urllib.error.HTTPError(
                 "u", 500, "Server Error", {}, None
             )
-        with mock.patch("urllib.request.urlopen", side_effect=_raise):
-            with self.assertRaises(LLMError) as cm:
-                self.c.generate(LLMRequest(prompt="x"))
+        with mock.patch("urllib.request.urlopen", side_effect=_raise), \
+                self.assertRaises(LLMError) as cm:
+            self.c.generate(LLMRequest(prompt="x"))
         self.assertNotIsInstance(cm.exception, LLMUnavailable)
         self.assertNotIsInstance(cm.exception, LLMTimeout)
         self.assertIn("500", str(cm.exception))
@@ -176,58 +176,52 @@ class OllamaClientGenerateTests(unittest.TestCase):
     def test_urlerror_wirft_llmunavailable(self):
         def _raise(req, timeout):
             raise urllib.error.URLError("refused")
-        with mock.patch("urllib.request.urlopen", side_effect=_raise):
-            with self.assertRaises(LLMUnavailable):
-                self.c.generate(LLMRequest(prompt="x"))
+        with mock.patch("urllib.request.urlopen", side_effect=_raise), \
+                self.assertRaises(LLMUnavailable):
+            self.c.generate(LLMRequest(prompt="x"))
 
     def test_connectionerror_wirft_llmunavailable(self):
         with mock.patch(
             "urllib.request.urlopen",
             side_effect=ConnectionError("refused"),
-        ):
-            with self.assertRaises(LLMUnavailable):
-                self.c.generate(LLMRequest(prompt="x"))
+        ), self.assertRaises(LLMUnavailable):
+            self.c.generate(LLMRequest(prompt="x"))
 
     def test_timeout_wirft_llmtimeout(self):
         with mock.patch(
             "urllib.request.urlopen",
             side_effect=TimeoutError("x"),
-        ):
-            with self.assertRaises(LLMTimeout):
-                self.c.generate(LLMRequest(prompt="x", timeout=1.0))
+        ), self.assertRaises(LLMTimeout):
+            self.c.generate(LLMRequest(prompt="x", timeout=1.0))
 
     def test_oserror_wirft_llmerror(self):
         with mock.patch(
             "urllib.request.urlopen",
             side_effect=OSError("sonstiger fehler"),
-        ):
-            with self.assertRaises(LLMError) as cm:
-                self.c.generate(LLMRequest(prompt="x"))
+        ), self.assertRaises(LLMError) as cm:
+            self.c.generate(LLMRequest(prompt="x"))
         self.assertNotIsInstance(cm.exception, (LLMTimeout, LLMUnavailable))
 
     def test_kaputtes_json_wirft_llmerror(self):
         with mock.patch(
             "urllib.request.urlopen",
             return_value=_BadJsonResp(b"nicht json"),
-        ):
-            with self.assertRaises(LLMError):
-                self.c.generate(LLMRequest(prompt="x"))
+        ), self.assertRaises(LLMError):
+            self.c.generate(LLMRequest(prompt="x"))
 
     def test_fehlendes_response_feld(self):
         with mock.patch(
             "urllib.request.urlopen",
             return_value=_FakeResp({"done": True}),
-        ):
-            with self.assertRaises(LLMError):
-                self.c.generate(LLMRequest(prompt="x"))
+        ), self.assertRaises(LLMError):
+            self.c.generate(LLMRequest(prompt="x"))
 
     def test_antwort_kein_objekt(self):
         with mock.patch(
             "urllib.request.urlopen",
             return_value=_BadJsonResp(b'["liste", "statt", "objekt"]'),
-        ):
-            with self.assertRaises(LLMError):
-                self.c.generate(LLMRequest(prompt="x"))
+        ), self.assertRaises(LLMError):
+            self.c.generate(LLMRequest(prompt="x"))
 
 
 # ---------------------------------------------------------------------- #
