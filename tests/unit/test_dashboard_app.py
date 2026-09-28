@@ -398,3 +398,46 @@ def test_create_app_check_schema_false_ok(tmp_path):
     )
     assert app is not None
     assert app.config["DB_PATH"] == str(db)
+
+
+# ---------------------------------------------------------------------- #
+# Kacheln mit Live-Werten (A7/A8, Block Kacheln)
+# ---------------------------------------------------------------------- #
+
+def test_index_viewer_sees_only_devices_card(
+    app, viewer_client,
+):
+    """viewer hat nur device.read -> nur Geraete-Kachel."""
+    r = viewer_client.get("/")
+    assert r.status_code == 200
+    assert b'data-card="devices"' in r.data
+    assert b'data-card="alerts"' not in r.data
+    assert b'data-card="approvals"' not in r.data
+    assert b'data-card="changes"' not in r.data
+
+
+def test_index_admin_sees_all_four_cards(
+    app, client,
+):
+    """admin hat alle vier Permissions -> vier Kacheln."""
+    r = client.get("/")
+    assert r.status_code == 200
+    for slug in (b"devices", b"alerts", b"approvals", b"changes"):
+        assert b'data-card="' + slug + b'"' in r.data
+
+
+def test_index_cards_show_live_value_not_dash(
+    app, client,
+):
+    """
+    Admin-Client mit leerer Test-DB:
+    Kachel-Werte sind 0 (Zahl), nicht "—" (em-dash).
+    Der em-dash waere das Zeichen fuer Service-Fehler
+    oder fehlende Permission.
+    """
+    r = client.get("/")
+    assert r.status_code == 200
+    # card-value-Block: nach dem Aufruf enthaelt jede
+    # Kachel eine Zahl oder "—". Wir erwarten KEIN
+    # em-dash fuer admin (leere DB = 0).
+    assert b"\xe2\x80\x94" not in r.data

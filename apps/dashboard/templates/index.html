@@ -13,16 +13,22 @@
 {% block content %}
 <div class="dashboard-grid">
     <div class="stat-cards">
-        {{ stat_card("Geraete", "—", "cyan",
+        {% if can_view_inventory %}
+        {{ stat_card("Geraete", device_count, "cyan",
                       data_card="devices") }}
+        {% endif %}
         {% if can_view_alerts %}
-        {{ stat_card("Alarme", "—", "red",
+        {{ stat_card("Alarme (24h)", alert_count, "red",
                       data_card="alerts") }}
         {% endif %}
-        {{ stat_card("Approvals", "—", "yellow",
-                      data_card="approvals") }}
-        {{ stat_card("Changes", "—", "green",
+        {% if can_view_approvals %}
+        {{ stat_card("Offene Approvals", approval_count,
+                      "yellow", data_card="approvals") }}
+        {% endif %}
+        {% if can_view_changes %}
+        {{ stat_card("Changes", change_count, "green",
                       data_card="changes") }}
+        {% endif %}
     </div>
     {% include "partials/timeline.html" %}
     {% include "partials/chat_widget.html" %}
