@@ -25,7 +25,7 @@ import inspect
 import pkgutil
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from core.detection.rule_base import (
@@ -34,7 +34,7 @@ from core.detection.rule_base import (
     RuleError,
     RuleState,
 )
-from core.events.event import Event, new_event
+from core.events.event import Event
 
 
 class DetectionEngineError(Exception):

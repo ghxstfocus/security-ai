@@ -5,7 +5,7 @@ Configs aus detection/rules.yaml durchgereicht.
 from __future__ import annotations
 
 import unittest
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from core.detection.engine import DetectionEngine

@@ -27,7 +27,6 @@ import re
 from core.access.checker import AccessChecker
 from core.approval.repository import (
     ApprovalNotFoundError,
-    ApprovalStateError,
 )
 from core.services import ServiceError
 from harness.approval.queue import ApprovalQueue

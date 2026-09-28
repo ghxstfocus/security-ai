@@ -13,7 +13,6 @@ Prüft die Sicherheitsgarantien:
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -21,7 +20,6 @@ import pytest
 from core.events.event import Event, Severity, new_event
 from harness.agent_loop.loop import (
     AgentLoop,
-    BudgetExceededError,
     LoopBudget,
 )
 from harness.agent_loop.model import DummyModel
@@ -29,7 +27,6 @@ from harness.audit.writer import AuditWriter
 from harness.permissions.levels import Level
 from harness.policy_engine.engine import PolicyEngine
 from harness.policy_engine.policy import (
-    Decision,
     PolicyContext,
 )
 from harness.tool_registry.registry import ToolRegistry

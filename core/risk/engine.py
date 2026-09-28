@@ -15,7 +15,7 @@ Predicates selbst werfen nie; fehlende Felder im event.data -> False.
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 

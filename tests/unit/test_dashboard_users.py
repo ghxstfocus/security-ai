@@ -14,7 +14,6 @@ from pathlib import Path
 import pytest
 
 from apps.dashboard import csrf
-from core.access.models import PrincipalKind
 from core.inventory.repository import connect
 from tests.unit._helpers import (
     build_dashboard_app,

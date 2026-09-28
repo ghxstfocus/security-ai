@@ -17,7 +17,6 @@ from core.inventory.repository import connect
 from tests.unit._helpers import (
     build_dashboard_app,
     create_role_client,
-    set_session_cookie,
 )
 
 

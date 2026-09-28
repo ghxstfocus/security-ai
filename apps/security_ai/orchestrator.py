@@ -21,14 +21,12 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from core.changes.models import ChangeStatus, ChangeType
+from core.changes.models import ChangeType
 from core.changes.repository import (
     ChangeRepository,
-    ChangeRepositoryError,
 )
 from core.detection.engine import DetectionEngine, RuleRunReport
 from core.events.event import Event, EventType, with_data
@@ -51,7 +49,6 @@ from harness.agent_loop.model import BaseModel
 from harness.approval.queue import ApprovalQueue
 from harness.audit.writer import (
     AuditEntry,
-    AuditWriteError,
     AuditWriter,
 )
 from harness.policy_engine.engine import PolicyEngine

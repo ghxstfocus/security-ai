@@ -16,7 +16,7 @@ Also: get_devices_run(identifier=..., db_path=..., mock=...).
 """
 from __future__ import annotations
 
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 

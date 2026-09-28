@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Protocol
 
 from core.events.event import Event
@@ -44,7 +44,6 @@ from harness.approval.queue import (
 from harness.audit.writer import AuditWriter
 from harness.permissions.levels import (
     ForbiddenActionError,
-    Level,
     check_level,
 )
 from harness.policy_engine.engine import PolicyEngine

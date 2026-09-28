@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import os
 import pwd
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from flask import Flask, g, redirect, request
 from werkzeug.exceptions import HTTPException
@@ -32,7 +32,6 @@ from core.config import get_secret_key
 from core.inventory.repository import (
     DEFAULT_DB_PATH,
     DEFAULT_MIGRATIONS_DIR,
-    SchemaVersionError,
     check_schema_version,
     connect,
 )

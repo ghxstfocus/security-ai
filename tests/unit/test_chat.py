@@ -12,7 +12,7 @@ import json
 import sqlite3
 import tempfile
 import unittest
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from apps.security_ai.chat import (
@@ -398,7 +398,6 @@ class ChatServiceAuditTests(_ChatBase):
 
     def test_chat_answered_fact_has_model_reason(self):
         # Punkt 23: fact-Pfad muss model_reason="fact" setzen.
-        from harness.context.models import utc_now
         self.svc.ask(
             "admin", "Wie viele Events gab es?",
             risk_assessments=(),
@@ -774,7 +773,7 @@ class ChatServiceSanityRetryTests(_ChatBase):
         from datetime import datetime
 
         from apps.security_ai.chat import _answer_contradicts_context
-        from harness.context.models import ContextBundle
+        from harness.context.models import ContextBundle, utc_now
         now = datetime.now(UTC)
         ctx = ContextBundle(
             built_at=now,

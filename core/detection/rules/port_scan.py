@@ -17,7 +17,7 @@ from __future__ import annotations
 from typing import Any
 
 from core.detection.rule_base import Rule, RuleContext
-from core.events.event import Event, EventType, Severity, new_event
+from core.events.event import Event, EventType, Severity
 
 _TRIGGER_TYPES = frozenset({
     EventType.CONNECTION_ATTEMPT.value,

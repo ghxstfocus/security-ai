@@ -14,7 +14,6 @@ import unittest
 from pathlib import Path
 
 from core.changes.models import (
-    ChangeRequest,
     ChangeStatus,
     ChangeType,
     utc_now_iso,

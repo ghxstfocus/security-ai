@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from core.changes.models import ChangeRequest, ChangeType
+from core.changes.models import ChangeRequest
 
 
 class ApplierError(RuntimeError):

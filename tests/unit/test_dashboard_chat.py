@@ -289,7 +289,7 @@ def test_rate_limit_window_resets(app, monkeypatch):
     assert r.status_code == 429
     # Fenster kuenstlich ueberspringen: DB-Eintraege
     # auf ein altes hit_at setzen.
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
 
     from core.inventory.repository import connect
     old = (
@@ -392,7 +392,7 @@ def test_no_csrf_token_in_response(app):
 def _seed_risk_assessment(app):
     """Legt einen risk_assessment-Eintrag im audit-log an."""
     import json
-    from datetime import datetime, timezone
+    from datetime import datetime
     from pathlib import Path as _P
 
     now = datetime.now(UTC)

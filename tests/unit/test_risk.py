@@ -3,13 +3,12 @@ from __future__ import annotations
 
 import tempfile
 import unittest
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from core.events.event import Event, EventType, Severity, new_event_id
 from core.risk.engine import PREDICATES, RiskEngine
 from core.risk.models import (
-    DEFAULT_THRESHOLDS,
     RiskAssessment,
     RiskCategory,
     RiskContext,

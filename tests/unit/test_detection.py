@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import unittest
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from core.detection.rule_base import RuleContext, RuleState
 from core.detection.rules.port_scan import PortScanRule

@@ -12,8 +12,8 @@ from unittest import mock
 from apps.security_ai.orchestrator import SecurityAI
 from core.changes.models import ChangeStatus, ChangeType
 from core.changes.repository import ChangeRepository
-from core.inventory.repository import apply_migrations, connect
-from harness.versioning.applier import ApplierError, ChangeApplier
+from core.inventory.repository import connect
+from harness.versioning.applier import ChangeApplier
 
 
 class ApplierStubTests(unittest.TestCase):

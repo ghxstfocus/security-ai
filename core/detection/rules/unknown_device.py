@@ -9,7 +9,7 @@ Gastnetz und bekannte Geraete: kein Output.
 from __future__ import annotations
 
 from core.detection.rule_base import Rule, RuleContext
-from core.events.event import Event, EventType, Severity, new_event
+from core.events.event import Event, EventType, Severity
 
 _DEFAULT_ALARM_NETWORK = "Hauptnetz"
 _TRIGGER_TYPES = frozenset({

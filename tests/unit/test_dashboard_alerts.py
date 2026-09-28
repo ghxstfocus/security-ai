@@ -17,12 +17,10 @@ hier pruefen das Label.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
 
-from core.inventory.repository import connect
 from harness.audit.writer import AuditWriter
 from tests.unit._helpers import (
     build_dashboard_app,

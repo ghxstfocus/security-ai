@@ -27,7 +27,7 @@ from core.approval.repository import (
     ApprovalRepositoryError,
     ApprovalStateError,
 )
-from harness.audit.writer import AuditWriteError, AuditWriter
+from harness.audit.writer import AuditWriter
 
 AGENT = "security_ai"
 TOOL = "approval_queue"

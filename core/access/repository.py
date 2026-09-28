@@ -15,14 +15,12 @@ Repositories:
 from __future__ import annotations
 
 import sqlite3
-from typing import Any
 
 from core.access.models import (
     Permission,
     Principal,
     PrincipalKind,
     Role,
-    require_utc_iso,
     utc_now_iso,
 )
 

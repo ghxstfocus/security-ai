@@ -46,7 +46,7 @@ def _make_no_devread_client(app):
     """
     conn = connect(app.config["DB_PATH"])
     try:
-        from datetime import datetime, timezone
+        from datetime import datetime
         roles = RoleRepository(conn)
         conn.execute(
             "INSERT INTO roles (name, description, created_at) "

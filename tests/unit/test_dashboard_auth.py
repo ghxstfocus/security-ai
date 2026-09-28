@@ -39,8 +39,6 @@ from core.access.repository import (
 )
 from core.access.session_repo import SessionRepository
 from core.inventory.repository import (
-    DEFAULT_MIGRATIONS_DIR,
-    apply_migrations,
     connect,
 )
 from tests.unit._helpers import (

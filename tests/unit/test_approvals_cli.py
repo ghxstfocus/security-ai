@@ -169,7 +169,6 @@ class ApprovalsCliTests(unittest.TestCase):
         self.assertIn("nmap_scan", out)
 
     def test_db_fehlt_exit_1(self):
-        import contextlib
         import io
         err = io.StringIO()
         rc = main([

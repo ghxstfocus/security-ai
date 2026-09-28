@@ -59,7 +59,7 @@ def test_window_expires(tmp_path):
     assert svc.allow("alice") == (True, 0)
     assert svc.allow("alice")[0] is False
     # hit_at kuenstlich altern.
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
     old = (
         datetime.now(UTC) - timedelta(seconds=5)
     ).isoformat()
@@ -93,7 +93,7 @@ def test_household_deletes_old_rows(tmp_path):
     conn = migrated_conn(tmp_path)
     svc = RateLimitService(conn, window_seconds=60, max_requests=5)
     # Alte Zeile direkt einsetzen.
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
     old = (
         datetime.now(UTC) - timedelta(seconds=300)
     ).isoformat()

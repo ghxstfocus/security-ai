@@ -21,7 +21,7 @@ Design (Punkt 9, Auflagen 663-676):
 from __future__ import annotations
 
 import sqlite3
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from core.services import ServiceError
 
