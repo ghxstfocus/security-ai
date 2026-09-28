@@ -274,13 +274,15 @@ class DeviceRepository:
         event_type: str = "device_seen",
         data: dict[str, Any] | None = None,
         timestamp: datetime | None = None,
+        ip: str | None = None,
     ) -> Device:
         """
         Legt das Geraet an oder aktualisiert last_seen.
 
         Schreibt immer einen History-Eintrag (event_type default
-        "device_seen"). entity_name/network_type werden nur ueberschrieben,
-        wenn sie nicht None sind — so verliert ein Update nichts.
+        "device_seen"). entity_name/network_type/last_ip werden
+        nur ueberschrieben, wenn sie nicht None sind — so verliert
+        ein Update nichts.
         """
         ts = (timestamp or datetime.now(UTC)).isoformat()
         data_json = json.dumps(data or {}, ensure_ascii=False, sort_keys=True)
@@ -289,19 +291,20 @@ class DeviceRepository:
         if existing is None:
             cur = self._conn.execute(
                 "INSERT INTO devices "
-                "(identifier, entity_name, network_type, first_seen, last_seen, notes) "
-                "VALUES (?, ?, ?, ?, ?, NULL)",
-                (identifier, entity_name, network_type, ts, ts),
+                "(identifier, entity_name, network_type, first_seen, last_seen, notes, last_ip) "
+                "VALUES (?, ?, ?, ?, ?, NULL, ?)",
+                (identifier, entity_name, network_type, ts, ts, ip),
             )
             device_id = cur.lastrowid
         else:
             device_id = existing.id
             new_name = entity_name if entity_name is not None else existing.entity_name
             new_net = network_type if network_type is not None else existing.network_type
+            new_ip = ip if ip is not None else existing.last_ip
             self._conn.execute(
-                "UPDATE devices SET entity_name = ?, network_type = ?, last_seen = ? "
-                "WHERE id = ?",
-                (new_name, new_net, ts, device_id),
+                "UPDATE devices SET entity_name = ?, network_type = ?, "
+                "last_seen = ?, last_ip = ? WHERE id = ?",
+                (new_name, new_net, ts, new_ip, device_id),
             )
 
         self._conn.execute(
