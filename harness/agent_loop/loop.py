@@ -74,7 +74,9 @@ class ApprovalRequired(LoopError):
             f"Args: {args}"
         )
         self.tool = tool
-        self.args = args
+        # A934: nicht self.args (ueberschreibt
+        # BaseException.args, tuple). Eigener Name.
+        self.tool_args = args
 
 
 # --- Budget ---
