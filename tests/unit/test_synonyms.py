@@ -3,7 +3,6 @@ Tests fuer core/search/synonyms.py (Punkt 29, A786).
 """
 from __future__ import annotations
 
-
 import pytest
 
 from core.search.synonyms import (

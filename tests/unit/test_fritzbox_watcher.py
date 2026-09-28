@@ -221,8 +221,11 @@ class RunTests(unittest.TestCase):
 class WriteEventsModeTests(unittest.TestCase):
     def test_new_file_mode_640(self) -> None:
         import os
+
         from core.events.event import (
-            EventType, Severity, new_event,
+            EventType,
+            Severity,
+            new_event,
         )
         with TemporaryDirectory() as d:
             p = Path(d) / "events-test.jsonl"
