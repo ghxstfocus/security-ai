@@ -19,7 +19,7 @@ DoS-Vektor.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime, timezone
 
 from flask import (
     Flask,

@@ -1,7 +1,8 @@
 """Tests fuer 3.6.11 Hamburger-Navigation (Auflagen 357-360)."""
 
-from tests.unit._helpers import build_dashboard_app, create_role_client
 from datetime import UTC
+
+from tests.unit._helpers import build_dashboard_app, create_role_client
 
 
 def _admin(tmp_path):

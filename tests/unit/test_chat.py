@@ -12,7 +12,7 @@ import json
 import sqlite3
 import tempfile
 import unittest
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 
 from apps.security_ai.chat import (

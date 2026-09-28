@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import os
 import pwd
-from datetime import datetime, timedelta, timezone, UTC
+from datetime import UTC, datetime, timedelta, timezone
 
 from flask import Flask, g, redirect, request
 from werkzeug.exceptions import HTTPException

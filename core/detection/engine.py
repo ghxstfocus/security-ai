@@ -24,7 +24,7 @@ import importlib
 import inspect
 import pkgutil
 from dataclasses import dataclass, field
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime, timezone
 from typing import Any, Iterable
 
 from core.detection.rule_base import (

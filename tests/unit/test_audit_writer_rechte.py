@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import os
 import stat
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 
 import pytest

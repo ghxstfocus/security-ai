@@ -21,7 +21,7 @@ import shutil
 import socket
 import subprocess
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime, timezone
 from typing import Any
 
 from harness.permissions.levels import Level

@@ -7,12 +7,13 @@ auf derselben DB).
 """
 from __future__ import annotations
 
+from datetime import UTC
+
 from core.services.rate_limit_service import (
     RateLimitService,
     RateLimitServiceError,
 )
 from tests.unit._helpers import migrated_conn
-from datetime import UTC
 
 
 def test_limit_and_retry_after(tmp_path):

@@ -7,7 +7,7 @@ Kein Orchestrator, kein AgentLoop, keine Detection.
 from __future__ import annotations
 
 import unittest
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime, timezone
 
 from apps.security_ai.planning import SecurityPlanModel
 from core.events.event import Event, Severity, new_event_id

@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 from unittest import mock
 

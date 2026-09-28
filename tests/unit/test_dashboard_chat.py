@@ -8,6 +8,7 @@ Auflagen 85-123 aus Review-Runde 3.6.8e.
 """
 from __future__ import annotations
 
+from datetime import UTC
 from pathlib import Path
 
 import pytest
@@ -18,7 +19,6 @@ from tests.unit._helpers import (
     build_dashboard_app,
     create_role_client,
 )
-from datetime import UTC
 
 
 @pytest.fixture()

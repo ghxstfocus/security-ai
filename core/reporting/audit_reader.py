@@ -12,7 +12,7 @@ Fail-soft: korrupte Zeilen werden uebersprungen und gezaehlt.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone, UTC
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable
 

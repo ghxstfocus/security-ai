@@ -7,6 +7,7 @@ Auflagen 1-14 aus Review-Runde 3.6.8a.
 """
 from __future__ import annotations
 
+from datetime import UTC
 from pathlib import Path
 
 import pytest
@@ -27,7 +28,6 @@ from tests.unit._helpers import (
     create_role_client,
     set_session_cookie,
 )
-from datetime import UTC
 
 
 @pytest.fixture()

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 import unittest
-from datetime import datetime, timedelta, timezone, UTC
+from datetime import UTC, datetime, timedelta, timezone
 
 from core.inventory.device import Device, DeviceType
 from core.inventory.repository import (

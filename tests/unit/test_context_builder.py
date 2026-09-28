@@ -3,7 +3,7 @@ Tests fuer core/context/builder.py (Punkt 28, Auflage 726).
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 
 from core.context.builder import build_chat_context
