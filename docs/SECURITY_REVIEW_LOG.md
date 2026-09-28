@@ -1084,6 +1084,15 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     bleibt die Identitaet.
     Kategorie 2.
 
+49. (offen, Kategorie 1) last_ip wird nur bei Events
+    gesetzt, die durch den Diff erzeugt werden.
+    Bestehende Geraete haben last_ip=NULL, bis sie
+    das naechste Mal in einem Event erscheinen
+    (device_presence bei neuem Geraet oder
+    aktiv-Werden). Bewusst nicht nachtraeglich
+    gefuellt. Wenn ein Backfill aus der Event-
+    Historie gewuenscht ist: eigener Block.
+
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
   device_presence/offline. identifier=MAC.
@@ -1100,7 +1109,7 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Fehler oder fehlender Permission (L2).
   Ticket 3.6.7d abgeschlossen.
 
-Core-Stand 2026-09-29: HEAD 58ea5ad, 1021 Tests,
+Core-Stand 2026-09-29: HEAD c44cdc4, 1021 Tests,
 mypy 0 echte Typfehler, ruff 122 (nicht-auto-fixbare
 Codes als bewusste Reste).
 
