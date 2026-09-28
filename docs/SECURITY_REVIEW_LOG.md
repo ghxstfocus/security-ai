@@ -1082,7 +1082,15 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Punkt 42 (MAC-Identifier) erledigt. Punkt 43
   (MAC-Randomisierung) neu offen.
 
-Core-Stand 2026-09-28: HEAD 4a03310, 1005 Tests,
+- Block Dashboard-Kacheln (e6aec9c):
+  Route / liefert Live-Werte (device_count,
+  alert_count, approval_count, change_count).
+  index.html: alle vier Kacheln conditional
+  per can_view_*. Fallback "—" bei Service-
+  Fehler oder fehlender Permission (L2).
+  Ticket 3.6.7d abgeschlossen.
+
+Core-Stand 2026-09-28: HEAD e6aec9c, 1008 Tests,
 mypy 0 echte Typfehler, ruff 122 (nicht-auto-fixbare
 Codes als bewusste Reste).
 

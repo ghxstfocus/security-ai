@@ -256,7 +256,12 @@ Commit: 63f6988
   ("device.read").
 - index.html (extends base).
 - stat_card.html als Makro.
-- 4 Stat-Cards mit Platzhalter em-dash.
+- 4 Stat-Cards mit Platzhalter em-dash (urspruenglich).
+  Nachgezogen in 3.8b (Commit e6aec9c): Live-Werte
+  aus InventoryService / AuditReaderService /
+  ApprovalService / ChangeService. RBAC pro Kachel
+  via can_view_* (context_processor). Fallback "—"
+  bei Service-Fehler oder fehlender Permission.
 
 ## Phase 3.6.7e — CSP-Test + PHASES  [x]
 
