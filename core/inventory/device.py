@@ -44,6 +44,7 @@ class Device:
     - last_seen:    letzter Auftritt (UTC)
     - device_type:  grobe Klassifikation
     - notes:        freies Textfeld
+    - last_ip:      zuletzt gesehene IP (Kontext, nicht Identitaet)
     - id:           DB-ID, erst nach Insert gesetzt (None vorher)
     """
     identifier: str
@@ -53,6 +54,7 @@ class Device:
     last_seen: datetime = field(default_factory=_utc_now)
     device_type: DeviceType = DeviceType.UNKNOWN
     notes: str | None = None
+    last_ip: str | None = None
     id: int | None = None
 
     def __post_init__(self) -> None:
@@ -74,6 +76,7 @@ class Device:
             "last_seen": self.last_seen.isoformat(),
             "device_type": self.device_type.value,
             "notes": self.notes,
+            "last_ip": self.last_ip,
         }
 
     @classmethod
@@ -92,6 +95,10 @@ class Device:
         except ValueError:
             device_type = DeviceType.UNKNOWN
 
+        # last_ip ist neu (Migration 0012). Alt-Zeilen haben
+        # kein Feld -> None.
+        last_ip = row["last_ip"] if "last_ip" in keys else None
+
         return cls(
             id=row["id"],
             identifier=row["identifier"],
@@ -101,6 +108,7 @@ class Device:
             last_seen=datetime.fromisoformat(row["last_seen"]),
             device_type=device_type,
             notes=row["notes"],
+            last_ip=last_ip,
         )
 
 
