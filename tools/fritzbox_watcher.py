@@ -136,6 +136,9 @@ def _fetch_hosts(
             "ip": h.get("ip") or "",
             "mac": mac,
             "name": h.get("name") or "",
+            # status ist bool (NewActive) laut fritzconnection-
+            # Doku/Code. A1123-A1126 erfuellt. Defensive
+            # bool()-Kapselung: toleriert auch 0/1/None.
             "active": bool(h.get("status")),
         })
     return out

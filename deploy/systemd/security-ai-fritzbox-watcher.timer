@@ -1,0 +1,22 @@
+# Quelle: deploy/systemd/security-ai-fritzbox-watcher.timer
+# Stand: 2026-09-28 (Phase 3.8a)
+# Bei Aenderungen: systemctl daemon-reload
+#
+# Nach Installation (Betriebsakt, nicht im Commit):
+#   cp deploy/systemd/security-ai-fritzbox-watcher.timer \
+#      /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now security-ai-fritzbox-watcher.timer
+
+[Unit]
+Description=Fritz!Box-Watcher Timer
+Documentation=file:/opt/security-ai/docs/DEPLOYMENT.md
+Requires=security-ai-fritzbox-watcher.service
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=60s
+Unit=security-ai-fritzbox-watcher.service
+
+[Install]
+WantedBy=timers.target
