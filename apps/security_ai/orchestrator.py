@@ -156,6 +156,11 @@ class SecurityAI:
     - detection_config_path: YAML mit Detection-Configs
     - risk_rules_path:       YAML mit Risk-Regeln
     - rules_package:         Python-Package mit Detection-Regeln
+
+    skip_migrations=True ueberspringt apply_migrations im
+    Konstruktor. Fuer Aufrufer (z.B. tools/event_reader),
+    die vorher check_schema_version ausfuehren und die
+    Migration selbst kontrollieren wollen.
     """
 
     def __init__(
@@ -175,9 +180,11 @@ class SecurityAI:
         approval_queue: ApprovalQueue | None = None,
         plan_model: BaseModel | None = None,
         approval_notify_enabled: bool | None = None,
+        skip_migrations: bool = False,
     ) -> None:
         self._conn = connect(db_path)
-        apply_migrations(self._conn, migrations_dir)
+        if not skip_migrations:
+            apply_migrations(self._conn, migrations_dir)
 
         self._devices = DeviceRepository(self._conn)
         self._whitelist = WhitelistRepository(self._conn)
