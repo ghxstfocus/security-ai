@@ -1349,6 +1349,28 @@ Regeln:
 Client-Rendering: renderLinks in chat.js,
 createElement("a"), kein innerHTML.
 
+### Navigations-Links im Fact-Pfad (Punkt 33, Auflagen 858-881)
+
+Zusaetzlich zu `links` (Objekt-Referenzen) liefert
+der Fact-Pfad ein eigenes Feld `nav_links` fuer
+Navigations-Hinweise. Getrennt, weil `links` auf
+IDs verweist und `nav_links` auf Routen.
+
+- `ChatResponse.nav_links: list[dict]` (Default []).
+- Nur bei `fact_kind == "auff_ja"` UND
+  `alert.view` (RBAC im ask()-Zweig, kein Log).
+- Inhalt: `{"label": "Alle Alarme ansehen",
+  "href": "/alerts"}`.
+- Kein Markup im answer-Text.
+- Whitelist: `/alerts` exakt (`_ALLOWED_EXACT`).
+  `/alerts/foo` bleibt verboten.
+- Client: `renderNavLinks` in chat.js, nach
+  `renderLinks`. createElement("a"), textContent,
+  kein innerHTML.
+- API-Antwort hat jetzt 8 Schluessel (answer, model,
+  model_reason, source, denied, answer_id, links,
+  nav_links).
+
 ### User-Menue-Dropdown: JS-Ausnahme (A711, A749)
 
 Das User-Menue-Dropdown ist die einzige Ausnahme

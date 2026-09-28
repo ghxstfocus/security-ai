@@ -811,7 +811,7 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     - _format_hours (A839) fuer dynamischen Zeitraum.
     Teil 3 (Link auf /alerts) als Punkt 33.
 
-33. (offen) Fact-Pfad liefert keinen Link auf /alerts.
+33. (erledigt, 7b234df) Fact-Pfad liefert keinen Link auf /alerts.
     extract_links (Punkt 30) erkennt nur IDs (AUD, CHG,
     APR, IPv4) und laeuft nur in apps/dashboard/
     routes_chat.py, nicht im ChatService. Die Link-
@@ -820,6 +820,15 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     eigener Block mit Bestandsaufnahme, wie der Link
     transportiert wird (Text-Marker, separates Feld,
     oder Route-Hinweis). Kein Markup im Text.
+    Erledigt in 7b234df (Auflagen 858-881), Option A:
+    - _answer_fact gibt (answer, kind) zurueck (A873/A874).
+    - ChatResponse.nav_links (A876).
+    - ask()-Fact-Zweig setzt nav_links nur bei
+      fact_kind == "auff_ja" UND alert.view (A875/A866).
+    - API-Antwort 8 Schluessel (A862/A878).
+    - chat.js renderNavLinks (A879).
+    - _ALLOWED_EXACT = ("/alerts",), exakter Match,
+      /alerts/foo bleibt verboten (A880).
 
 32. (erledigt, 213ab7b) Klassifikations-Luecke: "Gibt es X?"
     matcht nicht _FACT_RE (nur "gab es"). Solche
