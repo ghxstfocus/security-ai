@@ -471,6 +471,21 @@ Grund: SecurityAI.process() ist NICHT idempotent
 (AgentLoop kann Tools ausloesen, Audit ist append-only).
 Ohne Marker wuerde ein Fehler zu doppelten Alarmen fuehren.
 
+### last_ip in devices (Punkt 48)
+
+devices.last_ip TEXT (Migration 0012, nullable).
+
+- Kontext-Feld: zuletzt gesehene IP-Adresse.
+- KEIN Identitaets-Feld: identifier (MAC) bleibt
+  die Identitaet. DHCP kann die IP jederzeit
+  aendern.
+- Kein Index, kein UNIQUE, kein NOT NULL.
+- upsert_seen(..., ip=None): INSERT schreibt
+  last_ip; UPDATE ueberschreibt nur, wenn ip nicht
+  None (Muster wie entity_name/network_type).
+- Detailseite zeigt last_ip (Fallback "—").
+  Liste bleibt kompakt.
+
 ## 6. Approval-Flow (Phase 4a)
 
 ### Rollen

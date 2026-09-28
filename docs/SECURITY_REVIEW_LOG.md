@@ -1074,6 +1074,16 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     verarbeitetem Event). Aufraeum-Routine (aelter als
     30 Tage) als eigener Block. Kategorie 2.
 
+48. (erledigt, 58ea5ad) IP im Inventory fehlt.
+    Watcher liefert ip in data['ip'], Orchestrator
+    hat sie verworfen. Fix: Migration 0012
+    (devices.last_ip), Device.last_ip, upsert_seen
+    (ip=None), _update_inventory reicht ip durch,
+    inventory_detail.html zeigt IP (Fallback "—").
+    Kontext-Feld, keine Identitaet: identifier (MAC)
+    bleibt die Identitaet.
+    Kategorie 2.
+
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
   device_presence/offline. identifier=MAC.
@@ -1090,7 +1100,7 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Fehler oder fehlender Permission (L2).
   Ticket 3.6.7d abgeschlossen.
 
-Core-Stand 2026-09-28: HEAD e6aec9c, 1008 Tests,
+Core-Stand 2026-09-29: HEAD 58ea5ad, 1021 Tests,
 mypy 0 echte Typfehler, ruff 122 (nicht-auto-fixbare
 Codes als bewusste Reste).
 

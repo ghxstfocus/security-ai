@@ -391,6 +391,19 @@ Commits: 6220997, 3d944db, c23c6af, 02f17c4, 468a14d (Doku).
 Punkt 26 erledigt. Punkt 47 (processed_events-Aufraeumen)
 offen.
 
+## Punkt 48 — IP im Inventory  [x]
+
+Watcher liefert ip in data['ip'], Orchestrator hat sie
+verworfen. Fix: devices.last_ip (Migration 0012),
+upsert_seen(..., ip=None), _update_inventory reicht
+ip durch, Detailseite zeigt IP.
+
+Commits: 4d865d2, 1360560, 17411a3, 5d5fb15,
+1e86142, fcb0db7, 58ea5ad.
+
+identifier bleibt die Identitaet (MAC). last_ip ist
+Kontext-Feld.
+
 ## Phase 3.8 — Host-Scanner / Netzwerk-Discovery  [ ]
 
 Ziel: das gesamte Heimnetz beobachten, nicht nur den
