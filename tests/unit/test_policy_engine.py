@@ -95,9 +95,9 @@ class PredicateRegistryTests(unittest.TestCase):
         self.assertIn("authorized_target", names)
 
     def test_get_predicate(self):
-        fn, kind = get_predicate("no_shell_chars")
+        _fn, kind = get_predicate("no_shell_chars")
         self.assertEqual(kind, "global")
-        fn, kind = get_predicate("authorized_target")
+        _fn, kind = get_predicate("authorized_target")
         self.assertEqual(kind, "specific")
         with self.assertRaises(PolicyError):
             get_predicate("gibt_es_nicht")

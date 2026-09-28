@@ -292,7 +292,7 @@ class PolicyEngine:
         if not isinstance(conds, list):
             raise PolicyError(f"Policy {name!r}: 'conditions' muss Liste sein")
         for c in conds:
-            fn, kind = get_predicate(c)  # PolicyError bei unbekannt
+            _fn, kind = get_predicate(c)  # PolicyError bei unbekannt
             if kind == "global":
                 raise PolicyError(
                     f"Policy {name!r}: {c!r} ist ein globaler Pruefer "

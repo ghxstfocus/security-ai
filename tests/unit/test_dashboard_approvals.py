@@ -283,7 +283,7 @@ def test_approvals_csp_header_present(app):
 
 def test_no_internal_leak_in_body(app):
     rid = _seed_approval(app)
-    c, tok = _client_with_csrf(app, "admin")
+    c, _tok = _client_with_csrf(app, "admin")
     r = c.get("/approvals/" + rid)
     body = r.data
     assert b"ApprovalQueue" not in body
