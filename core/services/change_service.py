@@ -129,14 +129,13 @@ class ChangeService:
             raise ChangeServiceError("change_id ungueltig")
         return change_id
 
-    def _validate_len(
-        self, name: str, value, *, min_len: int, max_len: int,
-        required: bool = True,
-    ) -> str | None:
+    def _require_len(
+        self, name: str, value: object, *,
+        min_len: int, max_len: int,
+    ) -> str:
+        """Pflichtfeld. None -> ChangeServiceError."""
         if value is None:
-            if required:
-                raise ChangeServiceError(f"{name} fehlt")
-            return None
+            raise ChangeServiceError(f"{name} fehlt")
         if not isinstance(value, str):
             raise ChangeServiceError(f"{name} muss String sein")
         if len(value) < min_len:
@@ -148,6 +147,17 @@ class ChangeService:
                 f"{name} zu lang (max {max_len})"
             )
         return value
+
+    def _optional_len(
+        self, name: str, value: object, *,
+        min_len: int, max_len: int,
+    ) -> str | None:
+        """Optionales Feld. None -> None."""
+        if value is None:
+            return None
+        return self._require_len(
+            name, value, min_len=min_len, max_len=max_len,
+        )
 
     def _parse_files_affected(
         self, raw: str | None,
@@ -202,27 +212,27 @@ class ChangeService:
     ) -> dict:
         self._require(actor, "change.create")
 
-        t = self._validate_len(
+        t = self._require_len(
             "title", title,
             min_len=TITLE_MIN, max_len=TITLE_MAX,
         )
-        d = self._validate_len(
+        d = self._require_len(
             "description", description,
             min_len=DESCRIPTION_MIN, max_len=DESCRIPTION_MAX,
         )
         if not isinstance(type, str) or type not in VALID_TYPES:
             raise ChangeServiceError("type ungueltig")
-        dp = self._validate_len(
+        dp = self._optional_len(
             "diff_or_patch", diff_or_patch,
-            min_len=0, max_len=DIFF_MAX, required=False,
+            min_len=0, max_len=DIFF_MAX,
         )
-        rp = self._validate_len(
+        rp = self._optional_len(
             "rollback_plan", rollback_plan,
-            min_len=0, max_len=ROLLBACK_MAX, required=False,
+            min_len=0, max_len=ROLLBACK_MAX,
         )
-        tp = self._validate_len(
+        tp = self._optional_len(
             "test_plan", test_plan,
-            min_len=0, max_len=TEST_PLAN_MAX, required=False,
+            min_len=0, max_len=TEST_PLAN_MAX,
         )
         files = self._parse_files_affected(files_affected)
 
