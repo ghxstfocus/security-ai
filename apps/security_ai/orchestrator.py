@@ -469,6 +469,7 @@ class SecurityAI:
                     "known": event.data.get("known"),
                 },
                 timestamp=event.timestamp,
+                ip=event.data.get("ip"),
             )
         elif event.event_type == EventType.DEVICE_OFFLINE.value:
             # mark_offline aktualisiert last_seen NICHT.
@@ -482,6 +483,7 @@ class SecurityAI:
                     event_type="device_seen",
                     data={"trigger_event_id": event.event_id},
                     timestamp=event.timestamp,
+                    ip=event.data.get("ip"),
                 )
             self._devices.mark_offline(
                 identifier,
