@@ -332,10 +332,10 @@ Kategorie 3 fuer alle (Routes + RBAC + Templates).
 
 Nach 3.6.8i (Optik, sobald Struktur + Daten stehen):
 
-- [ ] 3.6.10 Responsive-Feinschliff (Kategorie 1, CSS-only)
+- [x] 3.6.10 Responsive-Feinschliff (Kategorie 1, CSS-only)  -- erledigt in 064ea5b
       .table-Verhalten auf <700px, .topbar, .card,
       .form-input. Keine Template-Aenderung.
-- [ ] 3.6.11 Hamburger-Navigation (Kategorie 3)
+- [x] 3.6.11 Hamburger-Navigation (Kategorie 3)  -- erledigt in bc058a1
       Button in topbar.html, Toggle in static/js/nav.js
       (extern, addEventListener, kein onclick=, kein
       Inline-<script>, keine style="..."), CSP-konform.
@@ -357,7 +357,7 @@ Regeln (aus ARCHITECTURE § 5):
 Status: noch nicht implementiert. Aktuell nur nmap-Scan
 im Container gegen Test-Ziele (Phase 3.4).
 
-## Phase 3.6.11 — Hamburger-Navigation  [ ]
+## Phase 3.6.11 — Hamburger-Navigation  [x]
 
 Ziel: Sidebar auf <=700px ausblenden und per Button
 in der Topbar ein-/ausblenden. Der Sidebar-Overflow
@@ -390,6 +390,14 @@ Kurzfassung Auflagen:
 
 Offen: "tare"-Effekt-Diagnose vor Baubeginn
 (Browser DevTools auf /alerts 400px).
+
+Erledigt in bc058a1. Auflagen 346-364 umgesetzt:
+nav.js extern (IIFE, addEventListener, kein eval/
+innerHTML/onclick, kein localStorage), nav-toggle in
+topbar.html (id, aria-label, aria-expanded,
+aria-controls), hamburger.svg extern, Fokus-Handling
+und Esc schliesst (nav.js), nav.js in base.html geladen.
+Sichtpruefung 1920/1100/700/400px bestaetigt.
 
 ## Phase 3.6.12 — HTTPS fuer das Dashboard  [x]
 
