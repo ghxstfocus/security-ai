@@ -61,7 +61,9 @@ def create_app(
     # (Flask bindet auf 127.0.0.1:5000). Bei einem
     # zweiten Proxy: neue Bewertung, Werte anpassen.
     from werkzeug.middleware.proxy_fix import ProxyFix
-    app.wsgi_app = ProxyFix(
+    # Flask/Werkzeug-Idiom: WSGI-Middleware wird per
+    # Zuweisung eingebunden. Kein alternativer Weg.
+    app.wsgi_app = ProxyFix(  # type: ignore[method-assign]
         app.wsgi_app,
         x_for=1, x_proto=1, x_host=1,
     )
