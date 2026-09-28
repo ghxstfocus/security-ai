@@ -21,6 +21,7 @@ Laengenbegrenzung.
 from __future__ import annotations
 
 import re
+from typing import Any
 
 # ---------------------------------------------------------------------- #
 # Konstanten
@@ -120,15 +121,16 @@ def redact_field(value: object, *, max_len: int = MAX_FIELD_LEN
 
 def redact_mapping(
     data: dict, *, max_len: int = MAX_FIELD_LEN
-) -> tuple[dict[str, str], bool]:
+) -> tuple[dict[str, Any], bool]:
     """
-    Filtert ein dict[str, Any] auf dict[str, str].
-    Alle Werte werden per redact_field behandelt.
-    Liefert (sauberes_dict, wurde_redigiert).
+    Filtert ein dict[str, Any] auf dict[str, Any].
+    Skalare werden per redact_field stringifiziert,
+    Listen/Objekte fail closed (leerer String,
+    redigiert). Liefert (sauberes_dict, wurde_redigiert).
     """
     if not isinstance(data, dict):
         return ({}, True)
-    out: dict[str, str] = {}
+    out: dict[str, Any] = {}
     redacted = False
     for k, v in data.items():
         if not isinstance(k, str):
