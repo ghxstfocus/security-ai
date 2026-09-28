@@ -867,3 +867,19 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     Suchbegriffe auf Synonym-Zielwerte.
     Keine Quellen-Synonyme (Variante 1 verworfen).
     Kategorie 3, Auflagen 776-790.
+
+34. (offen) sudo fehlt auf CT102. Nicht-Root-SSH
+    nicht moeglich (kein sudo). Wenn ein
+    Nicht-Root-Nutzer SSH nutzen soll: apt install
+    sudo + sudoers-Konfiguration. Eigener Betriebsakt,
+    Kategorie 1 (Doku + Betrieb). Kein Reviewer-Block.
+    Anlass: Befund 2026-09-28 bei Punkt 11 (SSH Key-only).
+
+- Backup-Bestaende (2026-09-28, A884/A885): kein
+  Loeschen jetzt. Beim naechsten Aufraeumen pruefen:
+  /etc/ssh/sshd_config.bak-20260928-095059,
+  /etc/ssh/sshd_config.bak-vor-punkt11,
+  /root/.ssh/authorized_keys.bak,
+  /root/.ssh/authorized_keys.bak2 (enthaelt eine
+  ungueltige Fingerprint-Zeile aus alter
+  Paste-Verwechslung; sshd ignoriert sie).
