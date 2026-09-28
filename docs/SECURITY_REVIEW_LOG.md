@@ -1013,6 +1013,17 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     Phase 3.8b, ADMIN_AI_* Phase 5).
     Kategorie 1 (Doku).
 
+46. (erledigt in 4a03310) Event-Datei-Modus 640.
+    tools/fritzbox_watcher.py::_write_events legt neue
+    Event-Dateien mit Modus 0o640 an (os.open +
+    os.chmod), konsistent zu audit-logs. State-Datei
+    bleibt 600 (Netzwerk-Topologie, vertraulicher).
+    Variante A (A1254): bestehende Event-Dateien werden
+    NICHT geprueft/repariert. Bestehende
+    data/events-2026-09-28.jsonl bleibt 644; neue
+    Tagesdateien sind 640. Betriebsakt (chmod) optional.
+    Kategorie 2.
+
 - 3.6.18b (7a92b54): Fact-Antwort-Stil. Labels statt
   Rohkategorien, dynamischer Zeitraum, "Vorkommen".
   Punkt 31, Auflagen 821-854.
@@ -1057,7 +1068,7 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Punkt 42 (MAC-Identifier) erledigt. Punkt 43
   (MAC-Randomisierung) neu offen.
 
-Core-Stand 2026-09-28: HEAD 468a14d, 1003 Tests,
+Core-Stand 2026-09-28: HEAD 4a03310, 1005 Tests,
 mypy 0 echte Typfehler, ruff 122 (nicht-auto-fixbare
 Codes als bewusste Reste).
 
