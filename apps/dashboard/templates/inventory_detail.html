@@ -24,6 +24,8 @@
     <dd>{{ device.first_seen }}</dd>
     <dt>Zuletzt gesehen</dt>
     <dd>{{ device.last_seen }}</dd>
+    <dt>IP</dt>
+    <dd>{{ device.last_ip if device.last_ip else "—" }}</dd>
     <dt>Notizen</dt>
     <dd>{{ device.notes if device.notes else "—" }}</dd>
 </dl>
