@@ -983,11 +983,25 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     nmap-Patch, kein Schema-Wechsel.
     Kategorie 3.
 
-43. (offen) MAC-Randomisierung (iOS, Android, Windows).
-    Randomisierte MACs erscheinen als eigene Geraete.
-    Eine Policy noetig (z. B. randomisierte MAC +
-    gleicher Hostname = dasselbe Geraet).
-    Kategorie 3, eigener Block.
+43. (Beobachtungsstand 2026-09-28) MAC-Randomisierung.
+    Aktueller Stand: 1 von 6 Geraeten randomisiert
+    (MAC-Lokal-Bit), 1 von 10 Events. Kein
+    Hostname-Konflikt (0 Kandidaten mit >1 MAC),
+    kein doppeltes Geraet im Inventory.
+    Kein Handlungsbedarf heute.
+    Beobachten:
+    - Waechst die Zahl randomisierter MACs?
+    - Erscheint derselbe Hostname mit mehreren MACs?
+    - Gibt es doppelte Geraete im Inventory?
+    Wenn ja: eigener Block, Kategorie 3,
+    Policy-Entwurf.
+    Kein vorsorglicher Filter (A1273): der Watcher
+    sendet weiter device_presence, der Orchestrator
+    nimmt weiter ins Inventory auf, Detection-Regeln
+    unveraendert.
+    Nutzer-Option (A1274): randomisierte MAC in die
+    Whitelist aufnehmen, wenn das Geraet vertraut ist.
+    Kategorie 1 (Doku), kein Bau.
 
 44. (entfallen, A1125/A1126) Fritz!Box-Host-Status.
     Der status-Key in get_hosts_info ist bool
