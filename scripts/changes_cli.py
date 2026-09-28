@@ -25,7 +25,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Sequence
+from collections.abc import Sequence
 
 # Bootstrap: erlaubt direkten Aufruf "python3 scripts/changes_cli.py"
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent

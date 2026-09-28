@@ -12,7 +12,8 @@ Wichtig:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 
 from core.events.event import Event
 from harness.agent_loop.loop import Plan, PlanStep
@@ -79,7 +80,7 @@ class CallableModel(BaseModel):
 
 __all__ = [
     "BaseModel",
+    "CallableModel",
     "DummyModel",
     "RuleModel",
-    "CallableModel",
 ]

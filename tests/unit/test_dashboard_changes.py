@@ -89,7 +89,7 @@ def test_changes_operator_lists_empty(app):
     c = create_role_client(app, "operator")
     r = c.get("/changes")
     assert r.status_code == 200
-    assert "Keine Change Requests vorhanden".encode() in r.data
+    assert b"Keine Change Requests vorhanden" in r.data
 
 
 def test_changes_admin_lists_entry(app):

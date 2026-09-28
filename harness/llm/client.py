@@ -188,6 +188,6 @@ class OllamaClient:
 
 
 __all__ = [
-    "OllamaClient",
     "DEFAULT_BASE_URL",
+    "OllamaClient",
 ]

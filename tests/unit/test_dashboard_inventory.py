@@ -117,7 +117,7 @@ def test_inventory_empty_shows_placeholder(app):
     c = create_role_client(app, "viewer")
     r = c.get("/inventory")
     assert r.status_code == 200
-    assert "Keine Geraete erfasst".encode() in r.data
+    assert b"Keine Geraete erfasst" in r.data
 
 
 def test_inventory_lists_device_with_whitelist_flag(app):

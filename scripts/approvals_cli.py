@@ -26,7 +26,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Sequence
+from collections.abc import Sequence
 
 # Bootstrap: erlaubt direkten Aufruf "python3 scripts/approvals_cli.py"
 # ohne PYTHONPATH=. ; Projekt-Root ist das Elternverzeichnis von scripts/.

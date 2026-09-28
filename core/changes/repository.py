@@ -366,8 +366,8 @@ class ChangeRepository:
 
 
 __all__ = [
+    "ChangeNotFoundError",
     "ChangeRepository",
     "ChangeRepositoryError",
-    "ChangeNotFoundError",
     "ChangeStateError",
 ]

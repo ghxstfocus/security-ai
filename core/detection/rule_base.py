@@ -26,7 +26,8 @@ from abc import ABC, abstractmethod
 from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 
 from core.events.event import Event, Severity
 

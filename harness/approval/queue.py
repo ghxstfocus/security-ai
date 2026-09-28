@@ -204,11 +204,11 @@ class ApprovalQueue:
 
 
 __all__ = [
-    "ApprovalQueue",
-    "ApprovalEnqueueError",
-    "ApprovalNotFoundError",
-    "ApprovalRepositoryError",
-    "ApprovalStateError",
     "AGENT",
     "TOOL",
+    "ApprovalEnqueueError",
+    "ApprovalNotFoundError",
+    "ApprovalQueue",
+    "ApprovalRepositoryError",
+    "ApprovalStateError",
 ]

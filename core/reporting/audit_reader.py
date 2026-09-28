@@ -14,7 +14,8 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
+from collections.abc import Iterable
 
 DEFAULT_AUDIT_DIR = "audit-logs"
 
@@ -167,8 +168,8 @@ def count_by_category(
 
 
 __all__ = [
-    "read_risk_assessments",
-    "count_by_category",
-    "AuditJsonlError",
     "DEFAULT_AUDIT_DIR",
+    "AuditJsonlError",
+    "count_by_category",
+    "read_risk_assessments",
 ]

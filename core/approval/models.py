@@ -18,7 +18,8 @@ import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Any, Mapping
+from typing import Any
+from collections.abc import Mapping
 
 
 class ApprovalStatus(str, Enum):
@@ -156,7 +157,7 @@ class ApprovalRequest:
         }
 
     @classmethod
-    def from_row(cls, row: Mapping[str, Any]) -> "ApprovalRequest":
+    def from_row(cls, row: Mapping[str, Any]) -> ApprovalRequest:
         """Baut eine ApprovalRequest aus einer sqlite3.Row / Mapping."""
         return cls(
             row_id=row["id"],
@@ -179,8 +180,8 @@ class ApprovalRequest:
 
 
 __all__ = [
-    "ApprovalStatus",
     "ApprovalRequest",
-    "utc_now_iso",
+    "ApprovalStatus",
     "require_utc_iso",
+    "utc_now_iso",
 ]

@@ -36,7 +36,7 @@ class _FakeOllama:
 
 
 def _patch_chat_cli_ollama() -> None:
-    import scripts.chat_cli as chat_cli
+    from scripts import chat_cli
     chat_cli.OllamaClient = _FakeOllama
 
 

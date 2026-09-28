@@ -1125,8 +1125,8 @@ def _build_prompt(
 
 __all__ = [
     "ChatOperationError",
+    "ChatResponse",
     "ChatService",
     "ChatServiceError",
-    "ChatResponse",
     "LLMClientProtocol",
 ]

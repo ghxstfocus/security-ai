@@ -142,10 +142,10 @@ class ApprovalService:
 
 
 __all__ = [
-    "ApprovalService",
-    "ApprovalServiceError",
     "DECISION_GRANTED",
     "DECISION_REJECTED",
     "REASON_MAX_LEN",
     "REQUEST_ID_RE",
+    "ApprovalService",
+    "ApprovalServiceError",
 ]

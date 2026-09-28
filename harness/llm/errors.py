@@ -30,6 +30,6 @@ class LLMTimeout(LLMError):
 
 __all__ = [
     "LLMError",
-    "LLMUnavailable",
     "LLMTimeout",
+    "LLMUnavailable",
 ]

@@ -690,7 +690,7 @@ class ApprovalFlowIntegrationTests(unittest.TestCase):
 
     def _read_audit_kinds(self) -> list:
         """Liest die heutige Audit-JSONL und liefert details.kind-Werte."""
-        from datetime import datetime, timezone
+        from datetime import datetime
         today = datetime.now(UTC).strftime("%Y-%m-%d")
         f = self.audit_dir / f"{today}.jsonl"
         if not f.exists():

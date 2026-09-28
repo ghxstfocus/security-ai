@@ -17,7 +17,8 @@ Felder:
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta, timezone
-from typing import Any, Iterable
+from typing import Any
+from collections.abc import Iterable
 
 
 class InventorySnapshotError(RuntimeError):
@@ -118,6 +119,6 @@ def build_inventory_snapshot(
 
 
 __all__ = [
-    "build_inventory_snapshot",
     "InventorySnapshotError",
+    "build_inventory_snapshot",
 ]

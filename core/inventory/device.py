@@ -77,7 +77,7 @@ class Device:
         }
 
     @classmethod
-    def from_row(cls, row: Any) -> "Device":
+    def from_row(cls, row: Any) -> Device:
         """
         Baut ein Device aus einer sqlite3.Row.
 

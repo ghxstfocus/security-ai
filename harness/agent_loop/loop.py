@@ -124,7 +124,7 @@ class Model(Protocol):
     Der Loop ruft nur plan() auf. Alles andere ist Sache des Modells.
     """
 
-    def plan(self, event: Event, context: dict[str, Any]) -> "Plan":
+    def plan(self, event: Event, context: dict[str, Any]) -> Plan:
         """Erzeugt einen Plan aus Event und Kontext."""
         ...
 
@@ -579,13 +579,13 @@ class AgentLoop:
 
 __all__ = [
     "AgentLoop",
+    "ApprovalRequired",
+    "BudgetExceededError",
     "LoopBudget",
+    "LoopError",
     "LoopResult",
+    "Model",
     "Plan",
     "PlanStep",
     "StepResult",
-    "Model",
-    "LoopError",
-    "BudgetExceededError",
-    "ApprovalRequired",
 ]

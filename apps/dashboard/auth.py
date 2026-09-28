@@ -233,4 +233,4 @@ def register_auth_routes(app: Flask) -> None:
         return jsonify(me)
 
 
-__all__ = ["register_auth_routes", "RateLimitResult"]
+__all__ = ["RateLimitResult", "register_auth_routes"]

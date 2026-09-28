@@ -771,7 +771,7 @@ class _FailThenPassLLM:
 
 class ChatServiceSanityRetryTests(_ChatBase):
     def test_answer_contradicts_context_mit_31_confirmed(self):
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         from apps.security_ai.chat import _answer_contradicts_context
         from harness.context.models import ContextBundle

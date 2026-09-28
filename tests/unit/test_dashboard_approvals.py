@@ -89,7 +89,7 @@ def test_approvals_operator_empty(app):
     c = create_role_client(app, "operator")
     r = c.get("/approvals")
     assert r.status_code == 200
-    assert "Keine offenen Approvals".encode() in r.data
+    assert b"Keine offenen Approvals" in r.data
 
 
 def test_approvals_admin_lists_pending(app):

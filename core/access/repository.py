@@ -302,10 +302,10 @@ class PrincipalRepository:
 
 
 __all__ = [
-    "AccessRepositoryError",
     "AccessNotFoundError",
+    "AccessRepositoryError",
     "PermissionRepository",
-    "RoleRepository",
-    "RolePermissionRepository",
     "PrincipalRepository",
+    "RolePermissionRepository",
+    "RoleRepository",
 ]

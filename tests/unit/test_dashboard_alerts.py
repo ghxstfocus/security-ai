@@ -92,7 +92,7 @@ def test_alerts_operator_empty(app):
     c = create_role_client(app, "operator")
     r = c.get("/alerts")
     assert r.status_code == 200
-    assert "Keine Alarme in den letzten 24 Stunden".encode() in r.data
+    assert b"Keine Alarme in den letzten 24 Stunden" in r.data
 
 
 def test_alerts_admin_empty(app):

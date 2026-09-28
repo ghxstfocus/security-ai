@@ -14,7 +14,8 @@ Kein Tool ohne Level. Kein Tool ohne Sandbox (außer Level 5).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 
 from harness.permissions.levels import Level
 
@@ -131,9 +132,9 @@ class Tool:
 
 
 __all__ = [
+    "KNOWN_SANDBOX_PROFILES",
     "Tool",
+    "ToolArgumentError",
     "ToolError",
     "ToolValidationError",
-    "ToolArgumentError",
-    "KNOWN_SANDBOX_PROFILES",
 ]

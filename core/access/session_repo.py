@@ -319,7 +319,7 @@ class LoginAttemptRepository:
 
 
 __all__ = [
+    "LoginAttemptRepository",
     "SessionRepository",
     "SessionRepositoryError",
-    "LoginAttemptRepository",
 ]

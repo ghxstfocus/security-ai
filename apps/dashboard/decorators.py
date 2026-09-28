@@ -4,7 +4,8 @@ fuer das Dashboard.
 """
 from __future__ import annotations
 
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
+from collections.abc import Callable
 
 PUBLIC_PATHS: frozenset[str] = frozenset({
     "/login",
@@ -28,7 +29,7 @@ def require_permission(code: str) -> Callable[[F], F]:
     kommt aus before_request.
     """
     def _wrap(fn: F) -> F:
-        setattr(fn, "_required_permission", code)
+        fn._required_permission = code
         return fn
     return _wrap
 
@@ -48,6 +49,6 @@ __all__ = [
     "PUBLIC_PATHS",
     "PUBLIC_PREFIXES",
     "SESSION_COOKIE_NAME",
-    "require_permission",
     "is_public_path",
+    "require_permission",
 ]

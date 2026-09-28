@@ -81,8 +81,8 @@ def check_level(level: Level, *, context: str = "") -> Level:
 
 
 __all__ = [
+    "ForbiddenActionError",
     "Level",
     "PermissionError",
-    "ForbiddenActionError",
     "check_level",
 ]

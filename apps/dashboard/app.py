@@ -312,9 +312,9 @@ def create_app(
 
 
 __all__ = [
-    "create_app",
     "DEFAULT_AUDIT_DIR",
     "IDLE_TIMEOUT_SECONDS",
+    "create_app",
 ]
 
 if __name__ == "__main__":

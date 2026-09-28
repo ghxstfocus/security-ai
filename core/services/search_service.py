@@ -31,7 +31,8 @@ Permissions pro Quelle (A525):
 from __future__ import annotations
 
 import re
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 
 from core.access.checker import AccessChecker
 from core.search.repository import DEFAULT_LIMIT, SearchRepository
@@ -247,11 +248,11 @@ class SearchService:
 
 
 __all__ = [
-    "SearchService",
-    "SearchServiceError",
-    "SOURCE_ORDER",
-    "SOURCE_PERMISSION",
     "QUERY_MAX",
     "QUERY_MIN",
     "QUERY_RE",
+    "SOURCE_ORDER",
+    "SOURCE_PERMISSION",
+    "SearchService",
+    "SearchServiceError",
 ]

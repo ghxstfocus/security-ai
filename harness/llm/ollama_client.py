@@ -27,14 +27,14 @@ from harness.llm.models import (
 )
 
 __all__ = [
-    "OllamaClient",
-    "LLMError",
-    "LLMTimeout",
-    "LLMUnavailable",
-    "LLMRequest",
-    "LLMResponse",
     "DEFAULT_BASE_URL",
+    "DEFAULT_MAX_TOKENS",
     "DEFAULT_MODEL",
     "DEFAULT_TIMEOUT",
-    "DEFAULT_MAX_TOKENS",
+    "LLMError",
+    "LLMRequest",
+    "LLMResponse",
+    "LLMTimeout",
+    "LLMUnavailable",
+    "OllamaClient",
 ]

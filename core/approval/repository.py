@@ -292,8 +292,8 @@ class ApprovalRepository:
 
 
 __all__ = [
+    "ApprovalNotFoundError",
     "ApprovalRepository",
     "ApprovalRepositoryError",
-    "ApprovalNotFoundError",
     "ApprovalStateError",
 ]

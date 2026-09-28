@@ -89,7 +89,7 @@ class AccessService:
         cls,
         conn: sqlite3.Connection,
         audit_writer: AuditWriter,
-    ) -> "AccessService":
+    ) -> AccessService:
         """Convenience: baut Repos + Checker aus der Connection."""
         principals = PrincipalRepository(conn)
         roles = RoleRepository(conn)
@@ -339,7 +339,7 @@ class AccessService:
 
 __all__ = [
     "MIN_PASSWORD_LEN",
+    "AccessDeniedError",
     "AccessService",
     "AccessServiceError",
-    "AccessDeniedError",
 ]

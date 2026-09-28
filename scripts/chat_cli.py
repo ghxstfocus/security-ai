@@ -28,7 +28,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Sequence
+from collections.abc import Sequence
 
 # Bootstrap: erlaubt direkten Aufruf "python3 scripts/chat_cli.py"
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -124,7 +124,7 @@ def _print_response(resp) -> None:
     """
     print(resp.answer)
     if resp.source == "detail_append":
-        print(f"\n[Quelle: Detail-Anhang]", file=sys.stderr)
+        print("\n[Quelle: Detail-Anhang]", file=sys.stderr)
 
 
 def _print_whoami(svc: AccessService, principal_name: str) -> int:

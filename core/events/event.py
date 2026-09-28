@@ -91,7 +91,7 @@ class Event:
         return json.dumps(self.to_dict(), ensure_ascii=False, sort_keys=True)
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "Event":
+    def from_dict(cls, d: dict[str, Any]) -> Event:
         """Erzeugt Event aus Dict (Umkehrung von to_dict)."""
         return cls(
             event_id=d["event_id"],
@@ -141,7 +141,7 @@ def new_event(
     )
 
 
-def with_data(event: "Event", updates: dict[str, Any]) -> "Event":
+def with_data(event: Event, updates: dict[str, Any]) -> Event:
     """
     Neues Event mit gleichem event_id/timestamp, data um updates erweitert.
 

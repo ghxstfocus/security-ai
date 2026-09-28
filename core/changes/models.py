@@ -17,7 +17,8 @@ import json
 from dataclasses import dataclass
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Any, Mapping
+from typing import Any
+from collections.abc import Mapping
 
 
 class ChangeStatus(str, Enum):
@@ -210,7 +211,7 @@ class ChangeRequest:
         }
 
     @classmethod
-    def from_row(cls, row: Mapping[str, Any]) -> "ChangeRequest":
+    def from_row(cls, row: Mapping[str, Any]) -> ChangeRequest:
         """Baut einen ChangeRequest aus einer sqlite3.Row / Mapping."""
         files_raw = row["files_affected"]
         files: list[str] | None
@@ -257,9 +258,9 @@ class ChangeRequest:
 
 
 __all__ = [
+    "ChangeRequest",
     "ChangeStatus",
     "ChangeType",
-    "ChangeRequest",
-    "utc_now_iso",
     "require_utc_iso",
+    "utc_now_iso",
 ]

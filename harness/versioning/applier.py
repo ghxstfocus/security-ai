@@ -58,6 +58,6 @@ class ChangeApplier:
 
 
 __all__ = [
-    "ChangeApplier",
     "ApplierError",
+    "ChangeApplier",
 ]

@@ -19,7 +19,7 @@ Verwendung:
 from __future__ import annotations
 
 import threading
-from typing import Iterable
+from collections.abc import Iterable
 
 from harness.permissions.levels import Level
 from harness.tool_registry.tool import Tool, ToolError
@@ -132,7 +132,7 @@ class ToolRegistry:
 
 
 __all__ = [
-    "ToolRegistry",
-    "ToolNotFoundError",
     "ToolAlreadyRegisteredError",
+    "ToolNotFoundError",
+    "ToolRegistry",
 ]

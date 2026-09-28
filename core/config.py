@@ -140,16 +140,16 @@ def get_secret_key() -> str:
 
 
 __all__ = [
-    "load_env",
-    "reset_cache",
-    "get_ollama_base_url",
-    "get_model_default",
-    "get_model_large",
     "DEFAULT_ENV_PATH",
-    "DEFAULT_OLLAMA_BASE_URL",
     "DEFAULT_MODEL",
     "DEFAULT_MODEL_LARGE",
-    "ConfigError",
+    "DEFAULT_OLLAMA_BASE_URL",
     "SECRET_KEY_MIN_BYTES",
+    "ConfigError",
+    "get_model_default",
+    "get_model_large",
+    "get_ollama_base_url",
     "get_secret_key",
+    "load_env",
+    "reset_cache",
 ]

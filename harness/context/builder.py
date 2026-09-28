@@ -19,7 +19,8 @@ Design:
 """
 from __future__ import annotations
 
-from typing import Any, Sequence
+from typing import Any
+from collections.abc import Sequence
 
 from harness.context.models import (
     ContextBundle,
@@ -71,13 +72,13 @@ class ContextBuilder:
     def build(
         self,
         *,
-        event: "Event | None" = None,
-        recent_events: "Sequence[Event]" = (),
-        inventory_snapshot: "dict[str, Any] | None" = None,
-        risk_assessments: "Sequence[RiskAssessment]" = (),
-        open_approvals: "Sequence[ApprovalRequest]" = (),
-        open_changes: "Sequence[ChangeRequest]" = (),
-        log_excerpts: "Sequence[LogExcerpt]" = (),
+        event: Event | None = None,
+        recent_events: Sequence[Event] = (),
+        inventory_snapshot: dict[str, Any] | None = None,
+        risk_assessments: Sequence[RiskAssessment] = (),
+        open_approvals: Sequence[ApprovalRequest] = (),
+        open_changes: Sequence[ChangeRequest] = (),
+        log_excerpts: Sequence[LogExcerpt] = (),
         since_hours: int = 24,
     ) -> ContextBundle:
         redacted_flag = False
@@ -152,7 +153,7 @@ class ContextBuilder:
     # interne Helfer
     # ------------------------------------------------------------------ #
 
-    def _redact_event(self, ev: "Event") -> "tuple[Event, bool]":
+    def _redact_event(self, ev: Event) -> tuple[Event, bool]:
         """
         Redigiert event_id und data eines Events.
 

@@ -51,7 +51,7 @@ class AccessChecker:
     # ------------------------------------------------------------------ #
 
     @classmethod
-    def from_conn(cls, conn: sqlite3.Connection) -> "AccessChecker":
+    def from_conn(cls, conn: sqlite3.Connection) -> AccessChecker:
         """Convenience: baut Repositories aus der Connection."""
         return cls(
             PrincipalRepository(conn),

@@ -26,7 +26,8 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 
 try:
     import yaml  # PyYAML
@@ -462,8 +463,8 @@ class PolicyEngine:
 
 __all__ = [
     "GLOBAL_PREDICATES",
-    "PolicyEngine",
     "SPECIFIC_PREDICATES",
+    "PolicyEngine",
     "all_predicate_names",
     "get_predicate",
 ]

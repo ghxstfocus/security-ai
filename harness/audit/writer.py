@@ -285,8 +285,8 @@ class AuditWriter:
 
 
 __all__ = [
-    "AuditEntry",
     "AuditDirInconsistentError",
+    "AuditEntry",
     "AuditError",
     "AuditWriteError",
     "AuditWriter",

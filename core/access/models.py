@@ -17,7 +17,8 @@ import os
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Any, Mapping
+from typing import Any
+from collections.abc import Mapping
 
 # ---------------------------------------------------------------------- #
 # Enums
@@ -162,7 +163,7 @@ class Permission:
         _require_str(self.code, "Permission.code")
 
     @classmethod
-    def from_row(cls, row: Mapping[str, Any]) -> "Permission":
+    def from_row(cls, row: Mapping[str, Any]) -> Permission:
         return cls(
             row_id=row["id"],
             code=row["code"],
@@ -196,7 +197,7 @@ class Role:
 
     @classmethod
     def from_row(cls, row: Mapping[str, Any],
-                 permissions: tuple[str, ...] = ()) -> "Role":
+                 permissions: tuple[str, ...] = ()) -> Role:
         return cls(
             row_id=row["id"],
             name=row["name"],
@@ -248,7 +249,7 @@ class Principal:
                 )
 
     @classmethod
-    def from_row(cls, row: Mapping[str, Any]) -> "Principal":
+    def from_row(cls, row: Mapping[str, Any]) -> Principal:
         return cls(
             row_id=row["id"],
             name=row["name"],
@@ -294,7 +295,7 @@ class Session:
         return self.revoked_at is None
 
     @classmethod
-    def from_row(cls, row: Mapping[str, Any]) -> "Session":
+    def from_row(cls, row: Mapping[str, Any]) -> Session:
         return cls(
             id=row["id"],
             principal_name=row["principal_name"],
@@ -358,20 +359,20 @@ def permission_to_view(permission: Permission) -> dict:
 
 
 __all__ = [
-    "PrincipalKind",
-    "Permission",
-    "Role",
-    "Principal",
-    "Session",
-    "utc_now",
-    "to_utc",
-    "to_iso",
-    "hash_password",
-    "verify_password",
     "PBKDF2_ITERATIONS",
-    "utc_now_iso",
-    "require_utc_iso",
-    "principal_to_view",
+    "Permission",
+    "Principal",
+    "PrincipalKind",
+    "Role",
+    "Session",
+    "hash_password",
     "permission_to_view",
+    "principal_to_view",
+    "require_utc_iso",
     "role_to_view",
+    "to_iso",
+    "to_utc",
+    "utc_now",
+    "utc_now_iso",
+    "verify_password",
 ]

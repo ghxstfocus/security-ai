@@ -21,7 +21,8 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
+from collections.abc import Mapping
 
 from core.changes.models import (
     ChangeRequest,
@@ -250,12 +251,12 @@ def read_change_file(
 
 
 __all__ = [
+    "DEFAULT_CHANGES_DIR",
     "ChangeParserError",
     "change_from_dict",
     "change_to_dict",
     "change_to_json",
     "default_path",
-    "write_change_file",
     "read_change_file",
-    "DEFAULT_CHANGES_DIR",
+    "write_change_file",
 ]

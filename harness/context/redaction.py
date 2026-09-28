@@ -142,8 +142,8 @@ def redact_mapping(
 
 
 __all__ = [
-    "redact_text",
+    "MAX_FIELD_LEN",
     "redact_field",
     "redact_mapping",
-    "MAX_FIELD_LEN",
+    "redact_text",
 ]
