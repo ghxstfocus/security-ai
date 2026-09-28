@@ -14,10 +14,10 @@ import json
 import logging
 import re
 import sqlite3
+from collections.abc import Iterable
 from datetime import UTC, datetime, timezone
 from pathlib import Path
 from typing import Any
-from collections.abc import Iterable
 
 from core.inventory.device import Device
 

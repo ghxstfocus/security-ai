@@ -23,10 +23,10 @@ from __future__ import annotations
 import importlib
 import inspect
 import pkgutil
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from typing import Any
-from collections.abc import Iterable
 
 from core.detection.rule_base import (
     Rule,

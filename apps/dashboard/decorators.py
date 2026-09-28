@@ -4,8 +4,8 @@ fuer das Dashboard.
 """
 from __future__ import annotations
 
-from typing import Any, TypeVar
 from collections.abc import Callable
+from typing import Any, TypeVar
 
 PUBLIC_PATHS: frozenset[str] = frozenset({
     "/login",

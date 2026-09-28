@@ -19,8 +19,8 @@ Design:
 """
 from __future__ import annotations
 
-from typing import Any
 from collections.abc import Sequence
+from typing import Any
 
 from harness.context.models import (
     ContextBundle,

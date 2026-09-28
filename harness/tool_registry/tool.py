@@ -13,9 +13,9 @@ Kein Tool ohne Level. Kein Tool ohne Sandbox (außer Level 5).
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
-from collections.abc import Callable
 
 from harness.permissions.levels import Level
 

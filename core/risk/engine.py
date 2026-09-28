@@ -14,10 +14,10 @@ Predicates selbst werfen nie; fehlende Felder im event.data -> False.
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime, timezone
 from pathlib import Path
 from typing import Any
-from collections.abc import Callable
 
 try:
     import yaml  # PyYAML

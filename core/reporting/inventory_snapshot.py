@@ -16,9 +16,9 @@ Felder:
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import UTC, datetime, timedelta, timezone
 from typing import Any
-from collections.abc import Iterable
 
 
 class InventorySnapshotError(RuntimeError):

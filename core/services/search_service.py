@@ -31,8 +31,8 @@ Permissions pro Quelle (A525):
 from __future__ import annotations
 
 import re
-from typing import Any
 from collections.abc import Callable
+from typing import Any
 
 from core.access.checker import AccessChecker
 from core.search.repository import DEFAULT_LIMIT, SearchRepository
