@@ -205,3 +205,39 @@ def test_inventory_csp_header_present(app):
     assert "default-src 'self'" in csp
     assert "script-src 'self'" in csp
     assert "style-src 'self'" in csp
+
+
+# ---------------------------------------------------------------------- #
+# Punkt 48: IP auf der Detailseite
+# ---------------------------------------------------------------------- #
+
+def _seed_device_with_ip(app, identifier, ip=None):
+    """Legt ein Geraet direkt in der Test-DB an."""
+    conn = connect(app.config["DB_PATH"])
+    try:
+        repo = DeviceRepository(conn)
+        repo.upsert_seen(
+            identifier,
+            entity_name="kamera",
+            network_type="Hauptnetz",
+            ip=ip,
+        )
+    finally:
+        conn.close()
+
+
+def test_inventory_detail_shows_ip(app):
+    _seed_device_with_ip(app, "aa:bb:cc:dd:ee:99", ip="10.0.0.42")
+    c = create_role_client(app, "viewer")
+    r = c.get("/inventory/aa:bb:cc:dd:ee:99")
+    assert r.status_code == 200
+    assert b"10.0.0.42" in r.data
+
+
+def test_inventory_detail_shows_dash_for_missing_ip(app):
+    _seed_device_with_ip(app, "aa:bb:cc:dd:ee:98", ip=None)
+    c = create_role_client(app, "viewer")
+    r = c.get("/inventory/aa:bb:cc:dd:ee:98")
+    assert r.status_code == 200
+    # em-dash (UTF-8: e2 80 94) als Platzhalter.
+    assert b"\xe2\x80\x94" in r.data

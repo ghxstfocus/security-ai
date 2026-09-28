@@ -194,5 +194,50 @@ class WhitelistRepositoryTests(unittest.TestCase):
         self.assertIn("whitelist_removed", types)
 
 
+class UpsertSeenLastIpTests(unittest.TestCase):
+    """Punkt 48: last_ip in upsert_seen."""
+
+    def setUp(self):
+        self.conn = _fresh_conn()
+        self.repo = DeviceRepository(self.conn)
+
+    def test_upsert_seen_with_ip_sets_last_ip(self):
+        d = self.repo.upsert_seen(
+            "aa:bb:cc:dd:ee:01",
+            entity_name="kamera",
+            network_type="Hauptnetz",
+            ip="10.0.0.5",
+        )
+        self.assertEqual(d.last_ip, "10.0.0.5")
+
+    def test_upsert_seen_without_ip_preserves_last_ip(self):
+        self.repo.upsert_seen(
+            "aa:bb:cc:dd:ee:02",
+            entity_name="kamera",
+            ip="10.0.0.5",
+        )
+        d2 = self.repo.upsert_seen(
+            "aa:bb:cc:dd:ee:02",
+            entity_name="kamera",
+        )
+        self.assertEqual(d2.last_ip, "10.0.0.5")
+
+    def test_upsert_seen_without_ip_first_time(self):
+        d = self.repo.upsert_seen(
+            "aa:bb:cc:dd:ee:03",
+            entity_name="kamera",
+        )
+        self.assertIsNone(d.last_ip)
+
+    def test_upsert_seen_new_ip_overwrites(self):
+        self.repo.upsert_seen(
+            "aa:bb:cc:dd:ee:04", ip="10.0.0.5",
+        )
+        d2 = self.repo.upsert_seen(
+            "aa:bb:cc:dd:ee:04", ip="10.0.0.6",
+        )
+        self.assertEqual(d2.last_ip, "10.0.0.6")
+
+
 if __name__ == "__main__":
     unittest.main()

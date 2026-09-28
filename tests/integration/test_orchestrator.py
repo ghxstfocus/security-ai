@@ -602,6 +602,52 @@ class OrchestratorLoopTests(unittest.TestCase):
 
 
 
+class OrchestratorLastIpTests(unittest.TestCase):
+    """Punkt 48: Orchestrator reicht ip aus Event-Data durch."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.tmp_path = Path(self.tmp.name)
+        self.db_path = self.tmp_path / "inventory.db"
+        self.audit_dir = self.tmp_path / "audit-logs"
+        self.ai = SecurityAI(
+            db_path=self.db_path,
+            migrations_dir="data/migrations",
+            detection_config_path=RULES_YAML,
+            risk_rules_path=RISK_RULES,
+            audit_base_dir=self.audit_dir,
+        )
+
+    def tearDown(self):
+        self.ai.close()
+        self.tmp.cleanup()
+
+    def test_orchestrator_sets_last_ip_from_event_data(self):
+        e = _event(EventType.DEVICE_PRESENCE.value, data={
+            "identifier": "aa:bb:cc:dd:ee:11",
+            "entity_name": "kamera",
+            "network_type": "Hauptnetz",
+            "ip": "10.0.0.42",
+            "known": False,
+        })
+        self.ai.process(e)
+        d = self.ai._devices.get("aa:bb:cc:dd:ee:11")
+        self.assertIsNotNone(d)
+        self.assertEqual(d.last_ip, "10.0.0.42")
+
+    def test_orchestrator_no_ip_no_change(self):
+        e = _event(EventType.DEVICE_PRESENCE.value, data={
+            "identifier": "aa:bb:cc:dd:ee:12",
+            "entity_name": "kamera",
+            "network_type": "Hauptnetz",
+            "known": False,
+        })
+        self.ai.process(e)
+        d = self.ai._devices.get("aa:bb:cc:dd:ee:12")
+        self.assertIsNotNone(d)
+        self.assertIsNone(d.last_ip)
+
+
 if __name__ == "__main__":
     unittest.main()
 
