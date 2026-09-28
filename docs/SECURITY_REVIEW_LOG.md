@@ -1070,9 +1070,15 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     (processed_events). Fail closed (Exit 1-4).
     systemd-Timer security-ai-event-reader.timer (30s).
 
-47. (offen) processed_events waechst (ein Eintrag pro
-    verarbeitetem Event). Aufraeum-Routine (aelter als
-    30 Tage) als eigener Block. Kategorie 2.
+47. (erledigt, f256d83) processed_events-Aufraeumen.
+    Im event_reader.run() nach der Event-Schleife:
+    DELETE FROM processed_events WHERE processed_at <
+    (now - 30 Tage). Konstante PROCESSED_EVENTS_MAX_AGE_DAYS
+    = 30 im Modul. Eigene kurze Transaktion, kein VACUUM,
+    kein Audit. Log INFO nur wenn > 0.
+    Aufraeum-Fehler: Log ERROR, run() returnt 0
+    (Hauptzweck Events verarbeiten ist erfuellt).
+    Kategorie 2.
 
 48. (erledigt, 58ea5ad) IP im Inventory fehlt.
     Watcher liefert ip in data['ip'], Orchestrator
@@ -1109,7 +1115,7 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Fehler oder fehlender Permission (L2).
   Ticket 3.6.7d abgeschlossen.
 
-Core-Stand 2026-09-29: HEAD c44cdc4, 1021 Tests,
+Core-Stand 2026-09-29: HEAD f256d83, 1026 Tests,
 mypy 0 echte Typfehler, ruff 122 (nicht-auto-fixbare
 Codes als bewusste Reste).
 
