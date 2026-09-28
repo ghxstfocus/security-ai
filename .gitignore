@@ -19,3 +19,9 @@ Thumbs.db
 *.log
 data/*.bak-*
 data/*.vacuum-*
+
+# SSH-Keys (nie im Repo)
+*.sshid_*
+id_ed25519
+id_rsa
+id_ecdsa
