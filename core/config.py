@@ -20,6 +20,8 @@ DEFAULT_ENV_PATH = ".env"
 DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
 DEFAULT_MODEL = "llama3.2:3b"
 DEFAULT_MODEL_LARGE = "qwen2.5:7b"
+DEFAULT_FRITZ_HOST = "fritz.box"
+DEFAULT_FRITZ_NETWORK_TYPE = "Hauptnetz"
 
 _loaded_paths: set[str] = set()
 
@@ -139,13 +141,61 @@ def get_secret_key() -> str:
     return value
 
 
+def get_fritz_host() -> str:
+    """Liest FRITZ_HOST aus der Umgebung. Default: fritz.box."""
+    return os.environ.get("FRITZ_HOST", DEFAULT_FRITZ_HOST)
+
+
+def get_fritz_network_type() -> str:
+    """
+    Liest FRITZ_NETWORK_TYPE aus der Umgebung.
+
+    Default: Hauptnetz. Der Wert landet in data['network_type']
+    des Watcher-Events; unknown_device.py vergleicht ihn mit
+    dem konfigurierten alarm_network.
+    """
+    return os.environ.get(
+        "FRITZ_NETWORK_TYPE", DEFAULT_FRITZ_NETWORK_TYPE
+    )
+
+
+def get_fritz_credentials() -> tuple[str, str]:
+    """
+    Liest FRITZ_USERNAME und FRITZ_PASSWORD aus der Umgebung.
+
+    Fail closed:
+    - Eine der beiden Variablen fehlt -> ConfigError.
+    - Kein Default, kein Fallback.
+
+    Rueckgabe: (username, password).
+    """
+    username = os.environ.get("FRITZ_USERNAME")
+    password = os.environ.get("FRITZ_PASSWORD")
+    if not username:
+        raise ConfigError(
+            "FRITZ_USERNAME fehlt in der Umgebung (.env). "
+            "Der Fritz!Box-Watcher braucht TR-064-Zugang."
+        )
+    if not password:
+        raise ConfigError(
+            "FRITZ_PASSWORD fehlt in der Umgebung (.env). "
+            "Der Fritz!Box-Watcher braucht TR-064-Zugang."
+        )
+    return username, password
+
+
 __all__ = [
     "DEFAULT_ENV_PATH",
+    "DEFAULT_FRITZ_HOST",
+    "DEFAULT_FRITZ_NETWORK_TYPE",
     "DEFAULT_MODEL",
     "DEFAULT_MODEL_LARGE",
     "DEFAULT_OLLAMA_BASE_URL",
     "SECRET_KEY_MIN_BYTES",
     "ConfigError",
+    "get_fritz_credentials",
+    "get_fritz_host",
+    "get_fritz_network_type",
     "get_model_default",
     "get_model_large",
     "get_ollama_base_url",
