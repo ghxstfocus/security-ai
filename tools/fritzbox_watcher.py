@@ -225,14 +225,29 @@ def _events_path(now: datetime | None = None) -> Path:
 
 
 def _write_events(events: list[Event], path: Path) -> int:
-    """Append-only. Eine JSON-Zeile pro Event. Rueckgabe: Anzahl."""
+    """
+    Append-only. Eine JSON-Zeile pro Event. Rueckgabe: Anzahl.
+
+    Neue Dateien mit Modus 0o640 (Konsistenz mit audit-logs).
+    os.open + os.chmod als umask-Absicherung.
+    Bestehende Dateien werden nicht geprueft (Variante A,
+    A1254): der Fix greift ab der naechsten Tagesdatei.
+    """
     if not events:
         return 0
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as fh:
-        for e in events:
-            fh.write(e.to_json())
-            fh.write("\n")
+    fd = os.open(
+        path, os.O_CREAT | os.O_APPEND | os.O_WRONLY, mode=0o640,
+    )
+    try:
+        os.chmod(path, 0o640)
+        with os.fdopen(fd, "a", encoding="utf-8") as fh:
+            for e in events:
+                fh.write(e.to_json())
+                fh.write("\n")
+    except Exception:
+        os.close(fd)
+        raise
     return len(events)
 
 

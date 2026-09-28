@@ -218,5 +218,35 @@ class RunTests(unittest.TestCase):
             self.assertTrue(mock_audit.return_value.log.called)
 
 
+class WriteEventsModeTests(unittest.TestCase):
+    def test_new_file_mode_640(self) -> None:
+        import os
+        from core.events.event import (
+            EventType, Severity, new_event,
+        )
+        with TemporaryDirectory() as d:
+            p = Path(d) / "events-test.jsonl"
+            e = new_event(
+                source="fritzbox",
+                event_type=EventType.DEVICE_PRESENCE.value,
+                severity=Severity.INFO,
+                data={"identifier": "aa:bb:cc:dd:ee:01"},
+            )
+            n = fw._write_events([e], p)
+            self.assertEqual(n, 1)
+            mode = os.stat(p).st_mode & 0o777
+            self.assertEqual(
+                mode, 0o640,
+                f"erwartet 0o640, ist {oct(mode)}",
+            )
+
+    def test_no_events_no_file(self) -> None:
+        with TemporaryDirectory() as d:
+            p = Path(d) / "events-empty.jsonl"
+            n = fw._write_events([], p)
+            self.assertEqual(n, 0)
+            self.assertFalse(p.exists())
+
+
 if __name__ == "__main__":
     unittest.main()
