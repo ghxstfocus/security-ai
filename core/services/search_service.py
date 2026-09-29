@@ -232,7 +232,10 @@ class SearchService:
         return result
 
     def _search_with_synonyms(
-        self, method, q_values: list[str], limit: int,
+        self,
+        method: Callable[[str, int], list[dict[str, Any]]],
+        q_values: list[str],
+        limit: int,
     ) -> list[dict[str, Any]]:
         """
         Ruft die Repo-Methode fuer jeden q-Wert auf und
