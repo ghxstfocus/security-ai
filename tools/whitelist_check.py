@@ -22,6 +22,7 @@ nicht None bei Liste-Abfrage.
 """
 from __future__ import annotations
 
+import contextlib
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -148,10 +149,8 @@ def whitelist_check_run(
             "read_at": now,
         }
     finally:
-        try:
+        with contextlib.suppress(Exception):
             conn.close()
-        except Exception:  # noqa: BLE001
-            pass
 
 
 # ---------------------------------------------------------------------- #

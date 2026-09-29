@@ -18,6 +18,7 @@ is_in_inventory wird dann False -> Risiko-Score geht eher hoch.
 """
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 from dataclasses import dataclass, field
@@ -580,7 +581,7 @@ class SecurityAI:
         updated = False
         try:
             updated = self._update_inventory(event)
-        except Exception:  # noqa: BLE001 - Detection/Risk laufen weiter
+        except Exception:  # noqa: BLE001, S110 - fail-safe: Detection/Risk laufen weiter
             pass
 
         if updated:
@@ -743,10 +744,8 @@ class SecurityAI:
         return self._risk
 
     def close(self) -> None:
-        try:
+        with contextlib.suppress(Exception):
             self._conn.close()
-        except Exception:  # noqa: BLE001
-            pass
 
 
 __all__ = [

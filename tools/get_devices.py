@@ -16,6 +16,7 @@ Also: get_devices_run(identifier=..., db_path=..., mock=...).
 """
 from __future__ import annotations
 
+import contextlib
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -139,10 +140,8 @@ def get_devices_run(
         else:
             rows = [d.to_dict() for d in repo.list_all()]
     finally:
-        try:
+        with contextlib.suppress(Exception):
             conn.close()
-        except Exception:  # noqa: BLE001
-            pass
 
     return {
         "devices": rows,
