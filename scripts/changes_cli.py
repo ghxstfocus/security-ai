@@ -26,6 +26,7 @@ import argparse
 import sys
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 # Bootstrap: erlaubt direkten Aufruf "python3 scripts/changes_cli.py"
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -109,7 +110,7 @@ def _print_counts(counts: dict[ChangeStatus, int]) -> None:
 # Audit
 # ---------------------------------------------------------------------- #
 
-def _audit(writer: AuditWriter, kind: str, **extra) -> None:
+def _audit(writer: AuditWriter, kind: str, **extra: Any) -> None:
     details = {"kind": kind}
     details.update(extra)
     writer.log(
