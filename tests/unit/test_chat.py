@@ -244,7 +244,8 @@ class ChatServiceDetailTests(_ChatBase):
 
     def test_detail_aus_event(self):
         class FakeEvent:
-            data = {"identifier": "10.0.0.5"}
+            def __init__(self):
+                self.data = {"identifier": "10.0.0.5"}
         r = self.svc.ask("admin", "welche IP?", detail=True,
                          event=FakeEvent())
         self.assertIn("10.0.0.5", r.answer)
