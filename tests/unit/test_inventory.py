@@ -32,7 +32,7 @@ class DeviceModelTests(unittest.TestCase):
             Device(identifier="")
 
     def test_naive_zeit_verboten(self):
-        naive = datetime(2026, 1, 1)
+        naive = datetime(2026, 1, 1)  # noqa: DTZ001 - absichtlich naiv (Negativtest)
         with self.assertRaises(ValueError):
             Device(identifier="x", first_seen=naive)
 

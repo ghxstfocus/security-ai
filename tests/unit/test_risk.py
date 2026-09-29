@@ -103,7 +103,7 @@ class AssessmentTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             RiskAssessment(event_id="e", rule_id="r", score=0.5,
                            category=RiskCategory.SUSPICION, base=0.5,
-                           timestamp=datetime(2026, 1, 1))
+                           timestamp=datetime(2026, 1, 1))  # noqa: DTZ001 - absichtlich naiv (Negativtest)
 
 
 class ContextTests(unittest.TestCase):
@@ -154,7 +154,7 @@ class PredicateTests(unittest.TestCase):
         self.assertFalse(PREDICATES["nachts"](_event("x", ts=ts3), self.ctx))
 
     def test_nachts_naive_ts_false(self):
-        e = Event(event_id=new_event_id(), timestamp=datetime(2026, 9, 21, 23, 0),
+        e = Event(event_id=new_event_id(), timestamp=datetime(2026, 9, 21, 23, 0),  # noqa: DTZ001 - absichtlich naiv (Negativtest)
                   source="x", event_type="x", severity=Severity.INFO,
                   data={}, network_id="n")
         self.assertFalse(PREDICATES["nachts"](e, self.ctx))

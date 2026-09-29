@@ -256,7 +256,7 @@ def test_purge_expired_deletes_old_inactive(
 
 def test_to_utc_naive_datetime_raises() -> None:
     with pytest.raises(ValueError):
-        to_utc(datetime(2026, 1, 1, 12, 0, 0))
+        to_utc(datetime(2026, 1, 1, 12, 0, 0))  # noqa: DTZ001 - absichtlich naiv (Negativtest)
 
 
 def test_to_utc_iso_string_with_tz() -> None:
