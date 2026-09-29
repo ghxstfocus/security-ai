@@ -292,8 +292,7 @@ def _answer_fact(
                 and cat in _CRITICAL_CATEGORIES
             )
             return (
-                f"JA. {teile} {zeitraum} "
-                f"(insgesamt {total} Vorkommen).",
+                f"JA. {teile} {zeitraum} (insgesamt {total} Vorkommen).",
                 "auff_ja",
             )
         if total > 0:
@@ -302,8 +301,7 @@ def _answer_fact(
                 for cat in _ORDERED_CATEGORIES if cat in counts
             )
             return (
-                f"NEIN. Keine kritischen Vorkommen. "
-                f"Andere Kategorien: {teile}.",
+                f"NEIN. Keine kritischen Vorkommen. Andere Kategorien: {teile}.",
                 "auff_nein",
             )
         return "NEIN. Keine Vorkommen im Kontext.", "auff_nein"
