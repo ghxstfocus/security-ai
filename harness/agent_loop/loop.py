@@ -48,7 +48,10 @@ from harness.permissions.levels import (
 )
 from harness.policy_engine.engine import PolicyEngine
 from harness.policy_engine.policy import Decision, PolicyContext
-from harness.tool_registry.registry import ToolRegistry
+from harness.tool_registry.registry import (
+    ToolNotFoundError,
+    ToolRegistry,
+)
 from harness.tool_registry.tool import Tool, ToolArgumentError
 
 # --- Exceptions ---
@@ -278,7 +281,7 @@ class AgentLoop:
                 error=str(exc),
             )
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - Audit loop_error
             self.audit.log(
                 agent="agent_loop",
                 tool="loop",
@@ -315,7 +318,7 @@ class AgentLoop:
         # TOOL SELECTION
         try:
             tool = self.registry.get(step.tool)
-        except Exception as exc:
+        except ToolNotFoundError as exc:
             self.audit.log(
                 agent="agent_loop",
                 tool=step.tool,
@@ -550,7 +553,7 @@ class AgentLoop:
                 output=output,
                 duration_ms=duration_ms,
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - Tool darf alles werfen
             duration_ms = int((time.monotonic() - started) * 1000)
             self.audit.log(
                 agent="agent_loop",

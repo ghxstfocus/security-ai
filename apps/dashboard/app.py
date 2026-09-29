@@ -180,8 +180,8 @@ def create_app(
         if hasattr(g, "conn") and g.conn is not None:
             try:
                 g.conn.close()
-            except Exception:
-                pass
+            except Exception:  # noqa: BLE001 - Teardown-Fehler nicht propagieren
+                app.logger.error("teardown: conn.close fehlgeschlagen", exc_info=True)
 
     @app.errorhandler(AccessDeniedError)
     def _denied(exc):
@@ -271,7 +271,7 @@ def create_app(
             return {k: False for k in flags}
         try:
             perms = checker.permissions_of(principal)
-        except Exception:
+        except Exception:  # noqa: BLE001 - fail closed (RBAC)
             perms = frozenset()
         return {
             k: (code in perms) for k, code in flags.items()

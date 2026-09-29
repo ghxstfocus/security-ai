@@ -275,7 +275,7 @@ def run(*, audit_base_dir: str | os.PathLike[str] = _DEFAULT_AUDIT_BASE_DIR) -> 
 
     try:
         new_hosts = _fetch_hosts(host, user, password)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - Fail closed: Exit 1
         _log.error("Fritz!Box nicht erreichbar (%s): %s", host, exc)
         return 1
 
@@ -307,7 +307,7 @@ def run(*, audit_base_dir: str | os.PathLike[str] = _DEFAULT_AUDIT_BASE_DIR) -> 
                     "duration_ms": duration_ms,
                 },
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - Fail closed: Exit 3
             _log.error("audit-Schreibfehler: %s", exc)
             return 3
 

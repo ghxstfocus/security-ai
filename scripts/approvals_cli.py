@@ -226,7 +226,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         conn = connect(db_path)
         apply_migrations(conn, args.migrations_dir)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI-Entry: alles -> FEHLER
         print(f"FEHLER: DB nicht initialisierbar: {exc}", file=sys.stderr)
         return 1
 
@@ -234,7 +234,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         audit = AuditWriter(base_dir=args.audit_base_dir)
         queue = ApprovalQueue(conn, audit)
         return int(args.func(args, queue))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI-Command: alles -> FEHLER
         print(f"FEHLER: {exc}", file=sys.stderr)
         return 1
     finally:

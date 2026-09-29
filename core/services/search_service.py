@@ -129,7 +129,7 @@ class SearchService:
     def _allowed_sources(self, actor: str) -> set[str]:
         try:
             perms = self._checker.permissions_of(actor)
-        except Exception:
+        except Exception:  # noqa: BLE001 - fail closed (keine Quellen)
             return set()
         return {
             src for src in SOURCE_ORDER
@@ -152,7 +152,7 @@ class SearchService:
             entries = self._audit_reader(
                 since_hours=24, max_entries=50,
             )
-        except Exception:
+        except Exception:  # noqa: BLE001 - eine Quelle faellt aus
             return []
         lowers = [v.lower() for v in q_values if isinstance(v, str)]
         out: list[dict[str, Any]] = []

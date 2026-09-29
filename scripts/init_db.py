@@ -147,7 +147,7 @@ def init_db(
     try:
         conn = connect(db_p)
         apply_migrations(conn, mig_p)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI-Entry: alles -> FEHLER
         print(f"FEHLER: DB nicht initialisierbar: {exc}",
               file=sys.stderr)
         return 1

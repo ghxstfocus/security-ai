@@ -221,7 +221,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         conn = connect(db_path)
         apply_migrations(conn, args.migrations_dir)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI-Entry: alles -> FEHLER
         print(f"FEHLER: DB nicht initialisierbar: {exc}", file=sys.stderr)
         return 1
 
@@ -276,7 +276,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             since_hours=args.context_hours,
             max_assessments=args.context_max_assessments,
         )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI: Kontext laden alles -> FEHLER
         print(f"FEHLER: Kontext laden: {exc}", file=sys.stderr)
         conn.close()
         return 1

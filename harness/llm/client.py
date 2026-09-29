@@ -183,7 +183,7 @@ class OllamaClient:
         try:
             with urllib.request.urlopen(url, timeout=float(timeout)) as r:
                 return r.status == 200
-        except Exception:
+        except Exception:  # noqa: BLE001 - is_available: kein raise (Docstring)
             return False
 
 

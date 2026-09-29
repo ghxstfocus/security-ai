@@ -298,7 +298,7 @@ def cmd_export(args: argparse.Namespace, repo: ChangeRepository,
     try:
         out_dir = args.out or DEFAULT_CHANGES_DIR
         path = write_change_file(r, base_dir=out_dir)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI-Export: alles -> FEHLER
         print(f"FEHLER: Export fehlgeschlagen: {exc}", file=sys.stderr)
         return 1
     print(f"OK: {path}")
@@ -423,7 +423,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         conn = connect(db_path)
         apply_migrations(conn, args.migrations_dir)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI-Entry: alles -> FEHLER
         print(f"FEHLER: DB nicht initialisierbar: {exc}", file=sys.stderr)
         return 1
 
@@ -431,7 +431,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         audit = AuditWriter(base_dir=args.audit_base_dir)
         repo = ChangeRepository(conn)
         return int(args.func(args, repo, audit))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI-Command: alles -> FEHLER
         print(f"FEHLER: {exc}", file=sys.stderr)
         return 1
     finally:

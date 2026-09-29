@@ -799,7 +799,7 @@ class ChatService:
         if on_model_selected is not None:
             try:
                 on_model_selected(effective_model, model_reason)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - Callback darf Chat nicht kippen
                 # Callback-Fehler nicht propagieren; Audit
                 self._log(
                     "chat_model_callback_failed",

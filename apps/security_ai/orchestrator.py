@@ -381,7 +381,7 @@ class SecurityAI:
                 message=message,
                 severity="WARNING",
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - Telegram best effort (§9)
             audit_fn(
                 tool="approval_notify",
                 details={
