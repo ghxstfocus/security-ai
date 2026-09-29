@@ -15,8 +15,9 @@ from __future__ import annotations
 import os
 import pwd
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
-from flask import Flask, g, redirect, request
+from flask import Flask, Response, g, redirect, request
 from werkzeug.exceptions import HTTPException
 
 from apps.dashboard.decorators import (
@@ -49,8 +50,8 @@ def create_app(
     *,
     check_audit: bool = True,
     check_schema: bool = True,
-    db_path=DEFAULT_DB_PATH,
-    migrations_dir=DEFAULT_MIGRATIONS_DIR,
+    db_path: Path = DEFAULT_DB_PATH,
+    migrations_dir: Path = DEFAULT_MIGRATIONS_DIR,
     audit_base_dir: str = DEFAULT_AUDIT_DIR,
     secret_key: str | None = None,
 ) -> Flask:
@@ -104,7 +105,7 @@ def create_app(
             _conn.close()
 
     @app.before_request
-    def _before():
+    def _before() -> Response | tuple[str, int] | None:
         g.conn = connect(app.config["DB_PATH"])
         g.audit = app.extensions["audit_writer"]
         if is_public_path(request.path):
@@ -176,7 +177,7 @@ def create_app(
         return None
 
     @app.teardown_request
-    def _teardown(exc):
+    def _teardown(exc: BaseException | None) -> None:
         if hasattr(g, "conn") and g.conn is not None:
             try:
                 g.conn.close()
@@ -186,11 +187,11 @@ def create_app(
                 )
 
     @app.errorhandler(AccessDeniedError)
-    def _denied(exc):
+    def _denied(exc: AccessDeniedError) -> tuple[str, int]:
         return ("Zugriff verweigert", 403)
 
     @app.errorhandler(Exception)
-    def _unhandled(exc):
+    def _unhandled(exc: Exception) -> HTTPException | tuple[str, int, dict[str, str]]:
         if isinstance(exc, HTTPException):
             return exc
         return (
@@ -251,7 +252,7 @@ def create_app(
     )
 
     @app.context_processor
-    def _inject_nav_permissions():
+    def _inject_nav_permissions() -> dict[str, bool]:
         # 1. before_request setzt g.access_checker, g.principal
         # 2. context_processor liest sie (hier)
         # 3. after_request setzt Security-Header
@@ -280,7 +281,7 @@ def create_app(
         }
 
     @app.context_processor
-    def _inject_csrf():
+    def _inject_csrf() -> dict[str, str]:
         # Token nur lesen oder anlegen (get_or_create ist
         # idempotent, kein Rotieren pro Request).
         from flask import session
@@ -289,7 +290,7 @@ def create_app(
         return {"csrf_token": csrf.get_or_create(session)}
 
     @app.after_request
-    def _security_headers(response):
+    def _security_headers(response: Response) -> Response:
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self'; "
