@@ -40,7 +40,7 @@ from harness.audit.writer import AuditWriter
 from harness.context.builder import ContextBuilder
 from harness.context.models import ContextBundle
 from harness.llm.errors import LLMError
-from harness.llm.models import LLMRequest
+from harness.llm.models import LLMRequest, LLMResponse
 
 AGENT = "security_ai"
 TOOL = "chat_service"
@@ -58,7 +58,7 @@ class LLMClientProtocol(Protocol):
     Test-Implementierung: ein Fake, der eine feste Antwort liefert.
     """
 
-    def generate(self, request: LLMRequest):  # pragma: no cover
+    def generate(self, request: LLMRequest) -> LLMResponse:  # pragma: no cover
         ...
 
 
@@ -552,7 +552,7 @@ class ChatService:
         include_details: bool = False,
         max_tokens: int | None = None,
         timeout: float | None = None,
-    ):
+    ) -> LLMResponse:
         """
         Baut den Prompt und ruft das LLM.
         timeout=None -> _timeout_for_model(model).
@@ -950,14 +950,18 @@ def _build_detail_suffix(context: ContextBundle) -> str:
 # Aggregation fuer den Prompt
 # ---------------------------------------------------------------------- #
 
-def _get_field(obj, name, default=None):
+def _get_field(
+    obj: Any, name: str, default: Any = None,
+) -> Any:
     """Liest aus dict oder Objekt. Beide Typen unterstuetzt."""
     if isinstance(obj, dict):
         return obj.get(name, default)
     return getattr(obj, name, default)
 
 
-def _ra_field(ra, name, default=None):
+def _ra_field(
+    ra: Any, name: str, default: Any = None,
+) -> Any:
     """Liest Feld aus einem risk_assessment-Eintrag.
 
     Unterstuetzt zwei Formen:
@@ -967,7 +971,7 @@ def _ra_field(ra, name, default=None):
     return _get_field(ra, name, default)
 
 
-def _format_categories(entries) -> str:
+def _format_categories(entries: list[Any]) -> str:
     counts: dict[str, int] = {}
     for e in entries:
         cat = _ra_field(e, "category")
@@ -981,7 +985,7 @@ def _format_categories(entries) -> str:
     )
 
 
-def _format_rules(entries) -> str:
+def _format_rules(entries: list[Any]) -> str:
     counts: dict[str, int] = {}
     for e in entries:
         r = _ra_field(e, "rule_id")
@@ -995,7 +999,7 @@ def _format_rules(entries) -> str:
     )
 
 
-def _format_time_range(entries) -> str:
+def _format_time_range(entries: list[Any]) -> str:
     ts = [
         _ra_field(e, "timestamp")
         for e in entries
@@ -1006,7 +1010,9 @@ def _format_time_range(entries) -> str:
     return f"{min(ts)} .. {max(ts)}"
 
 
-def _format_top_scores(entries, limit: int = 5) -> str:
+def _format_top_scores(
+    entries: list[Any], limit: int = 5,
+) -> str:
     scores = []
     for e in entries:
         s = _ra_field(e, "score")
