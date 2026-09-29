@@ -60,13 +60,15 @@ class LLMResponse:
 
     def __post_init__(self) -> None:
         if not isinstance(self.text, str):
-            raise ValueError("LLMResponse.text muss String sein")
-        if not isinstance(self.model, str) or not self.model:
+            raise TypeError("LLMResponse.text muss String sein")
+        if not isinstance(self.model, str):
+            raise TypeError("LLMResponse.model muss String sein")
+        if not self.model:
             raise ValueError("LLMResponse.model darf nicht leer sein")
         if not isinstance(self.done, bool):
-            raise ValueError("LLMResponse.done muss bool sein")
+            raise TypeError("LLMResponse.done muss bool sein")
         if not isinstance(self.raw, dict):
-            raise ValueError("LLMResponse.raw muss dict sein")
+            raise TypeError("LLMResponse.raw muss dict sein")
 
 
 __all__ = [

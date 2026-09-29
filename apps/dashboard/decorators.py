@@ -29,7 +29,7 @@ def require_permission(code: str) -> Callable[[F], F]:
     kommt aus before_request.
     """
     def _wrap(fn: F) -> F:
-        # noqa: B010 -- F ist TypeVar(bound=Callable).
+        # B010-Hinweis (Punkt 41): F ist TypeVar(bound=Callable).
         # Direkte Zuweisung (fn._required_permission = code)
         # ist nicht moeglich; setattr ist hier korrekt.
         setattr(fn, "_required_permission", code)  # noqa: B010

@@ -105,7 +105,7 @@ class ApprovalRequest:
                 "ApprovalRequest: requested_by darf nicht leer sein"
             )
         if not isinstance(self.status, ApprovalStatus):
-            raise ValueError(
+            raise TypeError(
                 f"ApprovalRequest: status muss ApprovalStatus sein, "
                 f"nicht {type(self.status).__name__}"
             )
@@ -123,7 +123,7 @@ class ApprovalRequest:
                 "ApprovalRequest: args_json ist kein valides JSON"
             ) from exc
         if not isinstance(parsed, (dict, list)):
-            raise ValueError(
+            raise TypeError(
                 "ApprovalRequest: args_json muss Objekt oder Array sein"
             )
 

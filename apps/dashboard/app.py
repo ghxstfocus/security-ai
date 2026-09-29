@@ -180,8 +180,10 @@ def create_app(
         if hasattr(g, "conn") and g.conn is not None:
             try:
                 g.conn.close()
-            except Exception:  # noqa: BLE001 - Teardown-Fehler nicht propagieren
-                app.logger.error("teardown: conn.close fehlgeschlagen", exc_info=True)
+            except Exception:
+                app.logger.exception(
+                    "teardown: conn.close fehlgeschlagen"
+                )
 
     @app.errorhandler(AccessDeniedError)
     def _denied(exc):

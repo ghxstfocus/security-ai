@@ -59,16 +59,20 @@ class LogExcerpt:
     redacted: bool = False
 
     def __post_init__(self) -> None:
-        if not isinstance(self.path, str) or not self.path:
+        if not isinstance(self.path, str):
+            raise TypeError("LogExcerpt: path muss String sein")
+        if not self.path:
             raise ValueError("LogExcerpt: path darf nicht leer sein")
         if not isinstance(self.text, str):
-            raise ValueError("LogExcerpt: text muss String sein")
-        if not isinstance(self.line_count, int) or self.line_count < 0:
+            raise TypeError("LogExcerpt: text muss String sein")
+        if not isinstance(self.line_count, int):
+            raise TypeError("LogExcerpt: line_count muss int sein")
+        if self.line_count < 0:
             raise ValueError(
-                "LogExcerpt: line_count muss int >= 0 sein"
+                "LogExcerpt: line_count muss >= 0 sein"
             )
         if not isinstance(self.redacted, bool):
-            raise ValueError("LogExcerpt: redacted muss bool sein")
+            raise TypeError("LogExcerpt: redacted muss bool sein")
 
 
 # ---------------------------------------------------------------------- #
@@ -122,11 +126,11 @@ class ContextBundle:
     def __post_init__(self) -> None:
         _require_utc(self.built_at, "built_at")
         if not isinstance(self.inventory_snapshot, dict):
-            raise ValueError(
+            raise TypeError(
                 "ContextBundle: inventory_snapshot muss dict sein"
             )
         if not isinstance(self.redacted, bool):
-            raise ValueError(
+            raise TypeError(
                 "ContextBundle: redacted muss bool sein"
             )
         for name, value in (
@@ -138,7 +142,7 @@ class ContextBundle:
             ("notes", self.notes),
         ):
             if not isinstance(value, tuple):
-                raise ValueError(
+                raise TypeError(
                     f"ContextBundle: {name} muss tuple sein"
                 )
 

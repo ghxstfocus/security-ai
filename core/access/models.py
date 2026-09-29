@@ -87,7 +87,7 @@ def to_utc(value: datetime | str) -> datetime:
     elif isinstance(value, datetime):
         dt = value
     else:
-        raise ValueError(
+        raise TypeError(
             f"Zeit muss datetime oder str sein, "
             f"nicht {type(value).__name__}"
         )
@@ -190,7 +190,7 @@ class Role:
         if self.created_at:
             require_utc_iso(self.created_at, "Role.created_at")
         if not isinstance(self.permissions, tuple):
-            raise ValueError("Role.permissions muss tuple sein")
+            raise TypeError("Role.permissions muss tuple sein")
 
     def has_permission(self, code: str) -> bool:
         return code in self.permissions
@@ -231,16 +231,18 @@ class Principal:
 
     def __post_init__(self) -> None:
         _require_str(self.name, "Principal.name")
-        if not isinstance(self.role_id, int) or self.role_id <= 0:
-            raise ValueError("Principal.role_id muss positive int sein")
+        if not isinstance(self.role_id, int):
+            raise TypeError("Principal.role_id muss int sein")
+        if self.role_id <= 0:
+            raise ValueError("Principal.role_id muss positive sein")
         if not isinstance(self.kind, PrincipalKind):
-            raise ValueError(
+            raise TypeError(
                 f"Principal.kind muss PrincipalKind sein, "
                 f"nicht {type(self.kind).__name__}"
             )
         require_utc_iso(self.created_at, "Principal.created_at")
         if not isinstance(self.is_active, bool):
-            raise ValueError("Principal.is_active muss bool sein")
+            raise TypeError("Principal.is_active muss bool sein")
         if self.password_hash is not None and (not isinstance(self.password_hash, str) or \
                     not self.password_hash):
             raise ValueError(

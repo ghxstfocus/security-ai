@@ -270,7 +270,9 @@ def test_to_utc_string_without_tz_raises() -> None:
 
 
 def test_to_utc_non_datetime_raises() -> None:
-    with pytest.raises(ValueError):
+    # TypeError statt ValueError (A1429, TRY004-Fix):
+    # falscher Typ -> TypeError (Python-Konvention).
+    with pytest.raises(TypeError):
         to_utc(123)  # type: ignore[arg-type]
 
 

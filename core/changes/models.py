@@ -147,12 +147,12 @@ class ChangeRequest:
         _require_str(self.description, "description")
         _require_str(self.requested_by, "requested_by")
         if not isinstance(self.status, ChangeStatus):
-            raise ValueError(
+            raise TypeError(
                 f"ChangeRequest: status muss ChangeStatus sein, "
                 f"nicht {type(self.status).__name__}"
             )
         if not isinstance(self.type, ChangeType):
-            raise ValueError(
+            raise TypeError(
                 f"ChangeRequest: type muss ChangeType sein, "
                 f"nicht {type(self.type).__name__}"
             )
@@ -163,12 +163,12 @@ class ChangeRequest:
         _require_opt_utc_iso(self.rolled_back_at, "rolled_back_at")
         if self.files_affected is not None:
             if not isinstance(self.files_affected, list):
-                raise ValueError(
+                raise TypeError(
                     "ChangeRequest: files_affected muss list[str] sein"
                 )
             for f in self.files_affected:
                 if not isinstance(f, str):
-                    raise ValueError(
+                    raise TypeError(
                         "ChangeRequest: files_affected enthaelt "
                         "Nicht-String"
                     )
