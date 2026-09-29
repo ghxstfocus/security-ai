@@ -32,6 +32,7 @@ from __future__ import annotations
 
 from flask import (
     Flask,
+    Response,
     abort,
     g,
     redirect,
@@ -64,7 +65,7 @@ def _build_service() -> ApprovalService:
 def register_approvals_routes(app: Flask) -> None:
     @app.route("/approvals", methods=["GET"])
     @require_permission("approval.view")
-    def approvals_list():
+    def approvals_list() -> str:
         service = _build_service()
         pending = service.list_pending(g.principal)
         return render_template(
@@ -76,7 +77,7 @@ def register_approvals_routes(app: Flask) -> None:
 
     @app.route("/approvals/<request_id>", methods=["GET"])
     @require_permission("approval.view")
-    def approvals_detail(request_id: str):
+    def approvals_detail(request_id: str) -> str:
         service = _build_service()
         try:
             entry = service.get(g.principal, request_id)
@@ -95,7 +96,7 @@ def register_approvals_routes(app: Flask) -> None:
         "/approvals/<request_id>/decide", methods=["POST"],
     )
     @require_permission("approval.decide")
-    def approvals_decide(request_id: str):
+    def approvals_decide(request_id: str) -> Response | tuple[str, int]:
         submitted = request.form.get("_csrf_token")
         expected = session.get("_csrf_token")
         if not csrf.validate(submitted, expected):
