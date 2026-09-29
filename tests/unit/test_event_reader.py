@@ -151,7 +151,6 @@ class RunTests(unittest.TestCase):
             conn = connect(db)
             apply_migrations(conn, DEFAULT_MIGRATIONS_DIR)
             conn.close()
-            events = Path(d) / "events-2026-09-28.jsonl"
             # Events-Datei fehlt absichtlich.
             with mock.patch.object(
                 er, "check_audit_logs",

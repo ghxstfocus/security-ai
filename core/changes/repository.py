@@ -346,7 +346,8 @@ class ChangeRepository:
                 f"nicht aktualisierbare Felder: {sorted(bad)}"
             )
 
-        current = self.get(change_id)
+        # Existenz-Check (wirft ChangeNotFoundError).
+        _ = self.get(change_id)
 
         sets: list[str] = []
         params: list[Any] = []

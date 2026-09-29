@@ -119,7 +119,7 @@ class WhitelistRepository:
             return existing
 
         ts = (timestamp or datetime.now(UTC)).isoformat()
-        cur = self._conn.execute(
+        self._conn.execute(
             "INSERT INTO whitelisted_devices "
             "(timestamp, identifier, entity_name, added_by, notes) "
             "VALUES (?, ?, ?, ?, ?)",

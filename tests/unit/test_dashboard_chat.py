@@ -372,7 +372,7 @@ def test_no_leak_502(app, monkeypatch):
 
 def test_no_csrf_token_in_response(app):
     c, tok = _client_with_csrf(app, "viewer")
-    r = c.get("/chat")
+    c.get("/chat")
     # Token im HTML ist ok (data-Attribut), aber nicht im
     # API-Response.
     r2 = c.post(
