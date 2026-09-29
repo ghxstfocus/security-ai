@@ -25,6 +25,7 @@ import json
 import re
 
 from core.access.checker import AccessChecker
+from core.approval.models import ApprovalRequest
 from core.approval.repository import (
     ApprovalNotFoundError,
 )
@@ -71,7 +72,7 @@ class ApprovalService:
             raise ApprovalServiceError("request_id ungueltig")
         return request_id
 
-    def _entry_to_dict(self, req) -> dict:
+    def _entry_to_dict(self, req: ApprovalRequest) -> dict:
         d = req.to_dict()
         raw_args = d.get("args")
         try:
