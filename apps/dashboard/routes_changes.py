@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from flask import (
     Flask,
+    Response,
     abort,
     g,
     redirect,
@@ -53,7 +54,7 @@ def _build_service() -> ChangeService:
 def register_changes_routes(app: Flask) -> None:
     @app.route("/changes", methods=["GET"])
     @require_permission("change.view")
-    def changes_list():
+    def changes_list() -> str:
         service = _build_service()
         changes = service.list_all(g.principal)
         return render_template(
@@ -64,7 +65,7 @@ def register_changes_routes(app: Flask) -> None:
 
     @app.route("/changes/new", methods=["GET"])
     @require_permission("change.create")
-    def changes_new_form():
+    def changes_new_form() -> str:
         return render_template(
             "change_new.html",
             page_title="Neuer Change",
@@ -74,7 +75,7 @@ def register_changes_routes(app: Flask) -> None:
 
     @app.route("/changes/new", methods=["POST"])
     @require_permission("change.create")
-    def changes_new_post():
+    def changes_new_post() -> Response | tuple[str, int]:
         submitted = request.form.get("_csrf_token")
         expected = session.get("_csrf_token")
         if not csrf.validate(submitted, expected):
@@ -104,7 +105,7 @@ def register_changes_routes(app: Flask) -> None:
 
     @app.route("/changes/<change_id>", methods=["GET"])
     @require_permission("change.view")
-    def changes_detail(change_id: str):
+    def changes_detail(change_id: str) -> str:
         service = _build_service()
         try:
             entry = service.get(g.principal, change_id)
