@@ -12,7 +12,7 @@ Fail-soft: korrupte Zeilen werden uebersprungen und gezaehlt.
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -40,7 +40,7 @@ def _parse_ts(value: Any) -> datetime | None:
     return dt
 
 
-def _iter_jsonl_lines(paths: Iterable[Path]):
+def _iter_jsonl_lines(paths: Iterable[Path]) -> Iterator[tuple[Path, int, str]]:
     """
     Liefert (lineno, line) fuer jede nicht-leere Zeile.
     Oeffnet jede Datei einmal. Kein raise bei OSError.
