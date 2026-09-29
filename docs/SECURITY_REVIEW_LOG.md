@@ -1101,6 +1101,15 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     gefuellt. Wenn ein Backfill aus der Event-
     Historie gewuenscht ist: eigener Block.
 
+51. (erledigt, c8f1f49) DTZ007 + PERF402 in
+    audit_reader_service.py.
+    DTZ007 (2x): datetime.strptime(date_str, "%Y-%m-%d")
+    -> date.fromisoformat(date_str). Reines Datum ohne
+    Zeit; %z nicht anwendbar. Z. 76: datetime.combine
+    (date.fromisoformat, time.min, tzinfo=UTC).
+    PERF402 (1x): for-Schleife mit append -> extend.
+    Kategorie 3 (produktiver Kern-Service).
+
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
   device_presence/offline. identifier=MAC.
@@ -1117,9 +1126,9 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Fehler oder fehlender Permission (L2).
   Ticket 3.6.7d abgeschlossen.
 
-Core-Stand 2026-09-29: HEAD 809e861, 1028 Tests,
-mypy 0 echte Typfehler, ruff 122 (nicht-auto-fixbare
-Codes als bewusste Reste).
+Core-Stand 2026-09-29: HEAD c8f1f49, 1028 Tests,
+mypy 0 echte Typfehler, ruff 43 (A901 137 -> 43,
+Reste: BLE001 20, TRY004 17, S110 5, RUF100 1).
 
 Bewusst offen (kein Bau heute):
 - Punkt 26: security_ai-Startpfad (naechster Block).
