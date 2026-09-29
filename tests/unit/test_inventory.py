@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import unittest
+from dataclasses import FrozenInstanceError
 from datetime import UTC, datetime, timedelta
 
 from core.inventory.device import Device, DeviceType
@@ -23,7 +24,7 @@ class DeviceModelTests(unittest.TestCase):
     def test_frozen(self):
         now = datetime.now(UTC)
         d = Device(identifier="10.0.0.1", first_seen=now, last_seen=now)
-        with self.assertRaises(Exception):
+        with self.assertRaises(FrozenInstanceError):
             d.identifier = "x"
 
     def test_identifier_pflicht(self):

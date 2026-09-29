@@ -30,6 +30,7 @@ from core.changes.parser import (
 from core.changes.repository import (
     ChangeNotFoundError,
     ChangeRepository,
+    ChangeRepositoryError,
     ChangeStateError,
 )
 from core.inventory.repository import apply_migrations, connect
@@ -285,7 +286,7 @@ class RepositoryTests(unittest.TestCase):
         repo = self._repo()
         r = repo.create(title="a", description="d",
                         requested_by="u", type=ChangeType.CODE_CHANGE)
-        with self.assertRaises(Exception):
+        with self.assertRaises(ChangeRepositoryError):
             repo.update_fields(r.change_id, status="x")
 
     def test_not_found(self):
