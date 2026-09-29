@@ -1130,6 +1130,19 @@ Letzte Aktualisierung: 2026-09-29 (HEAD 88628ec).
      Vorher: Bestandsaufnahme pro Regel-Gruppe.
      Nicht heute.
 
+54. (offen, Kategorie 1 / Betriebsakt) Capability-Abgleich
+    CT102 (lxc.cap.drop).
+    - SECURITY.md § 5.2 beschreibt die Ziel-Werte fuer
+      lxc.cap.drop (net_raw net_admin sys_admin
+      sys_module sys_ptrace).
+    - Der real gesetzte Wert liegt in
+      /etc/pve/lxc/102.conf auf dem Proxmox-Host.
+    - Von CT102 aus nicht messbar.
+    - Betriebsakt: cat /etc/pve/lxc/102.conf
+      (Host-Zugriff erforderlich). Ergebnis in § 5.2
+      nachziehen oder als Ist-Stand-Absatz ergaenzen.
+    - Kategorie 1, Doku-Nachtrag nach Messung.
+
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
   device_presence/offline. identifier=MAC.

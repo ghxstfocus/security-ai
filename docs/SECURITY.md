@@ -155,6 +155,23 @@ Die Zuordnung erfolgt über das **Permission-Level** des Tools:
 
 ## 5. Capabilities und Isolation
 
+> Ist-Stand 2026-09-29: aktiv ist nur CT102
+> (192.168.178.117, hostname security-ai), einziger
+> laufender Container mit Dashboard, Fritz!Box-Watcher
+> und Event-Reader. CT101 (192.168.178.116) ruht.
+> Ein security-tools-LXC (mit NET_RAW) und ein
+> security-db-LXC existieren nicht. host_scanner
+> (Phase 3.8) ist nicht implementiert.
+>
+> Die real auf CT102 gesetzten Capability-Werte liegen
+> in /etc/pve/lxc/102.conf auf dem Proxmox-Host. Von
+> CT102 aus sind sie nicht messbar. Der Abgleich der
+> Doku § 5.2 gegen die laufende lxc-config ist als
+> Betriebsakt vorgemerkt (SECURITY_REVIEW_LOG, Punkt 54).
+>
+> Die folgenden Abschnitte (5.1/5.2/5.3, 9.2)
+> beschreiben die Ziel-Topologie.
+
 ### 5.1 Container-Aufteilung
 
 | Container | Zweck               | Capabilities               |
@@ -164,7 +181,7 @@ Die Zuordnung erfolgt über das **Permission-Level** des Tools:
 | LXC 3     | security-db         | KEINE                       |
 | Host      | host_scanner        | NET_RAW (außerhalb LXC)     |
 
-### 5.2 LXC-Config für LXC 1
+### 5.2 LXC-Config für LXC 1 (Ziel: CT 102)
 
 In /etc/pve/lxc/102.conf:
 
@@ -174,7 +191,7 @@ In /etc/pve/lxc/102.conf:
 Damit kann der Security-Container **nichts** sniffen, scannen oder
 das System manipulieren. Tools laufen im separaten LXC 2.
 
-### 5.3 LXC-Config für LXC 2
+### 5.3 LXC-Config für LXC 2 (Ziel: CT 103)
 
 In /etc/pve/lxc/103.conf:
 
@@ -279,6 +296,9 @@ Logs sind für den Entwickler. Audit ist für den Sicherheitsnachweis.
 
 Ein Container im Hauptnetz. Alle Aktionen sind lokal.
 
+> Ist-Stand 2026-09-29: § 9.1 beschreibt den heutigen
+> Zustand (nur CT102 aktiv). § 9.2 ist Ziel-Topologie.
+
 ### 9.2 Ziel
 
     Proxmox-Host
@@ -325,4 +345,4 @@ Vor jedem Deployment:
 - [ ] Backups funktionieren
 
 ---
-Letzte Aktualisierung: 2026-09-20
+Letzte Aktualisierung: 2026-09-29
