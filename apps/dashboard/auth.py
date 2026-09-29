@@ -10,9 +10,11 @@ from __future__ import annotations
 import secrets
 import urllib.parse as _urlparse
 from enum import Enum
+from typing import Any
 
 from flask import (
     Flask,
+    Response,
     g,
     jsonify,
     redirect,
@@ -67,7 +69,7 @@ def _ua() -> str:
     return (request.headers.get("User-Agent") or "")[:200]
 
 
-def _details(kind: str, principal):
+def _details(kind: str, principal: str | None) -> dict[str, Any]:
     return {
         "kind": kind,
         "principal": principal if principal else None,
@@ -76,7 +78,7 @@ def _details(kind: str, principal):
     }
 
 
-def _audit(kind: str, policy: str, status: str, principal):
+def _audit(kind: str, policy: str, status: str, principal: str | None) -> None:
     g.audit.log(
         agent="security_ai", tool="dashboard",
         policy_result=policy, permission_level=0,
@@ -85,7 +87,7 @@ def _audit(kind: str, policy: str, status: str, principal):
     )
 
 
-def _check_rate_limit(ip, repo, app) -> RateLimitResult:
+def _check_rate_limit(ip: str, repo: LoginAttemptRepository, app: Flask) -> RateLimitResult:
     max_f = app.config.get(
         "LOGIN_MAX_FAILURES", LOGIN_MAX_FAILURES,
     )
@@ -102,7 +104,7 @@ def _check_rate_limit(ip, repo, app) -> RateLimitResult:
     return RateLimitResult.OK
 
 
-def _safe_next(raw) -> str:
+def _safe_next(raw: object) -> str:
     if not raw or not isinstance(raw, str):
         return "/"
     decoded = _urlparse.unquote(raw)
@@ -119,7 +121,7 @@ def _safe_next(raw) -> str:
 
 def register_auth_routes(app: Flask) -> None:
     @app.route("/login", methods=["GET"])
-    def login_form():
+    def login_form() -> str:
         token = csrf.get_or_create(session)
         nxt = _safe_next(request.args.get("next"))
         return render_template(
@@ -129,7 +131,7 @@ def register_auth_routes(app: Flask) -> None:
         )
 
     @app.route("/login", methods=["POST"])
-    def login_post():
+    def login_post() -> Response | tuple[str, int]:
         # 1. CSRF
         submitted = request.form.get("_csrf_token")
         expected = session.get("_csrf_token")
@@ -211,7 +213,7 @@ def register_auth_routes(app: Flask) -> None:
 
     @app.route("/logout", methods=["POST"])
     @require_permission("chat.ask")
-    def logout_post():
+    def logout_post() -> Response | tuple[str, int]:
         submitted = request.form.get("_csrf_token")
         expected = session.get("_csrf_token")
         if not csrf.validate(submitted, expected):
@@ -228,7 +230,7 @@ def register_auth_routes(app: Flask) -> None:
 
     @app.route("/whoami", methods=["GET"])
     @require_permission("chat.ask")
-    def whoami_get():
+    def whoami_get() -> Response:
         me = g.access_service.whoami(g.principal)
         return jsonify(me)
 
