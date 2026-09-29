@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from flask import (
     Flask,
+    Response,
     abort,
     g,
     redirect,
@@ -43,7 +44,7 @@ def _build_service() -> AccessService:
 def register_users_routes(app: Flask) -> None:
     @app.route("/users", methods=["GET"])
     @require_permission("principal.manage")
-    def users_list():
+    def users_list() -> str:
         service = _build_service()
         principals = service.list_principals(g.principal)
         views = [principal_to_view(p) for p in principals]
@@ -55,7 +56,7 @@ def register_users_routes(app: Flask) -> None:
 
     @app.route("/users/new", methods=["GET"])
     @require_permission("principal.manage")
-    def users_new_form():
+    def users_new_form() -> str:
         service = _build_service()
         roles = service.list_roles(g.principal)
         return render_template(
@@ -68,7 +69,7 @@ def register_users_routes(app: Flask) -> None:
 
     @app.route("/users/new", methods=["POST"])
     @require_permission("principal.manage")
-    def users_new_post():
+    def users_new_post() -> Response | tuple[str, int]:
         submitted = request.form.get("_csrf_token")
         expected = session.get("_csrf_token")
         if not csrf.validate(submitted, expected):
@@ -102,7 +103,7 @@ def register_users_routes(app: Flask) -> None:
 
     @app.route("/users/<name>", methods=["GET"])
     @require_permission("principal.manage")
-    def users_detail(name: str):
+    def users_detail(name: str) -> str:
         service = _build_service()
         try:
             p = service.get_principal(g.principal, name)
@@ -121,7 +122,7 @@ def register_users_routes(app: Flask) -> None:
         "/users/<name>/toggle-active", methods=["POST"],
     )
     @require_permission("principal.manage")
-    def users_toggle_active(name: str):
+    def users_toggle_active(name: str) -> Response | tuple[str, int]:
         submitted = request.form.get("_csrf_token")
         expected = session.get("_csrf_token")
         if not csrf.validate(submitted, expected):
@@ -146,7 +147,7 @@ def register_users_routes(app: Flask) -> None:
         "/users/<name>/set-password", methods=["POST"],
     )
     @require_permission("principal.manage")
-    def users_set_password(name: str):
+    def users_set_password(name: str) -> Response | tuple[str, int]:
         submitted = request.form.get("_csrf_token")
         expected = session.get("_csrf_token")
         if not csrf.validate(submitted, expected):
