@@ -11,6 +11,8 @@ Kein POST, kein CSRF, kein Formular.
 from __future__ import annotations
 
 from datetime import timedelta
+from typing import Any
+
 
 from flask import Flask, current_app, render_template
 
@@ -25,7 +27,7 @@ from core.config import (
 def _snapshot() -> dict:
     cfg = current_app.config
 
-    def _val(key, fallback="—"):
+    def _val(key: str, fallback: Any = "—") -> Any:
         v = cfg.get(key, None)
         if v is None or v == "":
             return fallback
@@ -59,7 +61,7 @@ def _snapshot() -> dict:
 def register_settings_routes(app: Flask) -> None:
     @app.route("/settings", methods=["GET"])
     @require_permission("role.manage")
-    def settings_view():
+    def settings_view() -> str:
         return render_template(
             "settings.html",
             page_title="Einstellungen",
