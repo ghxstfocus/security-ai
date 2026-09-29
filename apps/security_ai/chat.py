@@ -737,14 +737,13 @@ class ChatService:
             # A875/A866: nav_links nur bei "auff_ja" und mit
             # alert.view. Kein Log der RBAC-Pruefung.
             nav_links: list[dict] = []
-            if fact_kind == "auff_ja":
-                if self._checker.check(
-                    principal_name, "alert.view"
-                ):
-                    nav_links = [{
-                        "label": "Alle Alarme ansehen",
-                        "href": "/alerts",
-                    }]
+            if fact_kind == "auff_ja" and self._checker.check(
+                principal_name, "alert.view"
+            ):
+                nav_links = [{
+                    "label": "Alle Alarme ansehen",
+                    "href": "/alerts",
+                }]
             self._log(
                 "chat_answered",
                 principal=principal_name,

@@ -241,12 +241,11 @@ class Principal:
         require_utc_iso(self.created_at, "Principal.created_at")
         if not isinstance(self.is_active, bool):
             raise ValueError("Principal.is_active muss bool sein")
-        if self.password_hash is not None:
-            if not isinstance(self.password_hash, str) or \
-                    not self.password_hash:
-                raise ValueError(
-                    "Principal.password_hash muss String oder None sein"
-                )
+        if self.password_hash is not None and (not isinstance(self.password_hash, str) or \
+                    not self.password_hash):
+            raise ValueError(
+                "Principal.password_hash muss String oder None sein"
+            )
 
     @classmethod
     def from_row(cls, row: Mapping[str, Any]) -> Principal:

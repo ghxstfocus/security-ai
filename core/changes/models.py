@@ -172,11 +172,10 @@ class ChangeRequest:
                         "ChangeRequest: files_affected enthaelt "
                         "Nicht-String"
                     )
-        if self.risk_score is not None:
-            if not isinstance(self.risk_score, (int, float)):
-                raise ValueError(
-                    "ChangeRequest: risk_score muss Zahl sein"
-                )
+        if self.risk_score is not None and not isinstance(self.risk_score, (int, float)):
+            raise ValueError(
+                "ChangeRequest: risk_score muss Zahl sein"
+            )
 
     # ------------------------------------------------------------------ #
     # Serialisierung

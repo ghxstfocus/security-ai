@@ -143,12 +143,11 @@ def change_from_dict(d: Mapping[str, Any]) -> ChangeRequest:
 
     # files_affected
     files = d.get("files_affected")
-    if files is not None:
-        if not isinstance(files, list) or not all(
-                isinstance(x, str) for x in files):
-            raise ChangeParserError(
-                "files_affected muss Liste von Strings sein"
-            )
+    if files is not None and (not isinstance(files, list) or not all(
+            isinstance(x, str) for x in files)):
+        raise ChangeParserError(
+            "files_affected muss Liste von Strings sein"
+        )
 
     # risk_score
     rs = d.get("risk_score")
