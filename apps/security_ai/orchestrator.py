@@ -297,24 +297,21 @@ class SecurityAI:
             risk_category=risk_category,
             risk_score=risk_score,
         )
-        try:
-            self._audit.log(
-                agent="security_ai",
-                tool="orchestrator",
-                policy_result="ALLOWED",
-                permission_level=0,
-                execution_status="OK",
-                details={
-                    "kind": "change_created",
-                    "change_id": cr.change_id,
-                    "type": cr.type.value,
-                    "requested_by": cr.requested_by,
-                },
-            )
-        except Exception:
-            # Audit-Fehler nicht verschlucken: DB-Eintrag bleibt,
-            # Aufrufer soll es wissen.
-            raise
+        # Audit-Fehler propagieren (kein Schlucken): DB-Eintrag
+        # bleibt, Aufrufer soll es wissen.
+        self._audit.log(
+            agent="security_ai",
+            tool="orchestrator",
+            policy_result="ALLOWED",
+            permission_level=0,
+            execution_status="OK",
+            details={
+                "kind": "change_created",
+                "change_id": cr.change_id,
+                "type": cr.type.value,
+                "requested_by": cr.requested_by,
+            },
+        )
         return cr
 
     def _notify_approval(
