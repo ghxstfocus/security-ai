@@ -392,6 +392,12 @@ Vererbung ergaenzt.
 - Auto-Fix-Regeln pruefen, nicht blind anwenden:
   siehe WORKFLOW.md, Abschnitt "Auto-Fix-Regeln pruefen,
   nicht blind anwenden" (B010/TypeVar, Punkt 41).
+- Lint-Auflagen: zuerst pyproject.toml pruefen, welche
+  Regeln aktiv sind. Ohne explizite select-Liste laeuft
+  der ruff-Default-Satz (ruff 0.16.9 enthaelt BLE001
+  im Default). RUF100 ist ohne explizite select-Liste
+  nicht nutzbar (meldet jede # noqa als unused).
+  Siehe SECURITY_REVIEW_LOG Punkt 53.
 
 ---
 
