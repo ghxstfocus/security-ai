@@ -4,7 +4,7 @@
 > im Verlauf des Projekts getroffen wurden. Es ist die erste
 > Adresse bei Unklarheiten.
 >
-> Stand: Phase 3.3 abgeschlossen.
+> Stand: Phase 3.6.18c abgeschlossen, Zwischenbloecke bis Punkt 53 (HEAD 88628ec, 2026-09-29).
 
 ---
 

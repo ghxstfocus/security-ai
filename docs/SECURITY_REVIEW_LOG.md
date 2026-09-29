@@ -325,7 +325,7 @@ test_access_denied_errorhandler_403 abgedeckt.
 ## Chronologie
 
 Sortiert nach Commit-Zeit (aelteste zuerst, HEAD zuletzt).
-Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
+Letzte Aktualisierung: 2026-09-29 (HEAD 88628ec).
 
 - 3.6.4: AuditReaderService.
 - Venv-Umstellung.
