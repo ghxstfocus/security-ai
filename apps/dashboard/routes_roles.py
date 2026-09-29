@@ -23,6 +23,7 @@ import re
 
 from flask import (
     Flask,
+    Response,
     abort,
     g,
     redirect,
@@ -58,7 +59,7 @@ def _valid_role_name(name: str) -> bool:
 def register_roles_routes(app: Flask) -> None:
     @app.route("/roles", methods=["GET"])
     @require_permission("role.manage")
-    def roles_list():
+    def roles_list() -> str:
         service = _build_service()
         roles = service.list_roles(g.principal)
         views = [role_to_view(r) for r in roles]
@@ -70,7 +71,7 @@ def register_roles_routes(app: Flask) -> None:
 
     @app.route("/roles/<name>", methods=["GET"])
     @require_permission("role.manage")
-    def roles_detail(name: str):
+    def roles_detail(name: str) -> str:
         if not _valid_role_name(name):
             abort(404)
         service = _build_service()
@@ -106,7 +107,7 @@ def register_roles_routes(app: Flask) -> None:
         "/roles/<name>/assign-permission", methods=["POST"],
     )
     @require_permission("role.manage")
-    def roles_assign_permission(name: str):
+    def roles_assign_permission(name: str) -> Response | tuple[str, int]:
         if not _valid_role_name(name):
             abort(404)
         submitted = request.form.get("_csrf_token")
@@ -133,7 +134,7 @@ def register_roles_routes(app: Flask) -> None:
         "/roles/<name>/revoke-permission", methods=["POST"],
     )
     @require_permission("role.manage")
-    def roles_revoke_permission(name: str):
+    def roles_revoke_permission(name: str) -> Response | tuple[str, int]:
         if not _valid_role_name(name):
             abort(404)
         submitted = request.form.get("_csrf_token")
