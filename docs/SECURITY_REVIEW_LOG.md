@@ -1110,16 +1110,25 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
     PERF402 (1x): for-Schleife mit append -> extend.
     Kategorie 3 (produktiver Kern-Service).
 
-53. (offen) ruff-Config schaerfen.
-    pyproject.toml [tool.ruff] hat keine select-Liste.
-    RUF100 prueft gegen die (leere) explizite Liste
-    und meldet jede # noqa als unused, auch wenn die
-    Regel im Default aktiv ist (z.B. BLE001 in
-    ruff 0.16.9). Ohne explizite select-Liste ist
-    RUF100 nicht nutzbar.
-    Fix: select-Liste explizit setzen (BLE001,
-    TRY004, S110, DTZ001, B010, F401, RUF100, ...).
-    Eigener Block, Kategorie 2.
+53. (erledigt 2026-09-29, Doku) ruff-Config.
+    Bestandsaufnahme mit `ruff check --show-settings`:
+    ruff 0.16.9 Default-Satz ist breit (~200+ Regeln),
+    enthaelt BLE001, DTZ001, B010, S110, G201, RUF100.
+    `ruff check .` prueft alles, `ruff check . --statistics`
+    ist der reproduzierbare Stand.
+    `ruff check . --select RUF100` war ein forcierender
+    Aufruf (RUF100 gegen ALLE # noqa, auch wo die
+    Regel triggert), kein Config-Bug.
+    Konsequenz: kein pyproject-Eingriff, Config bleibt
+    unveraendert.
+
+53b. (offen) ruff-Regelschaerfung.
+     Kandidaten: PL (pylint), TRY (tryceratops),
+     ANN (annotations), S (bandit), T20 (print),
+     ARG (unused-arg).
+     Eigener Block, Kategorie 3.
+     Vorher: Bestandsaufnahme pro Regel-Gruppe.
+     Nicht heute.
 
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
@@ -1137,9 +1146,9 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Fehler oder fehlender Permission (L2).
   Ticket 3.6.7d abgeschlossen.
 
-Core-Stand 2026-09-29: HEAD 2766ed9, 1028 Tests,
-mypy 0 echte Typfehler, ruff 43 (A901 137 -> 43,
-Reste: BLE001 20, TRY004 17, S110 5, RUF100 1).
+Core-Stand 2026-09-29: HEAD 74f8714, 1028 Tests,
+mypy 0 echte Typfehler, ruff 0 (A901 137 -> 0,
+Default-Lauf). Punkt 53 dokumentiert.
 
 Bewusst offen (kein Bau heute):
 - Punkt 26: security_ai-Startpfad (naechster Block).
