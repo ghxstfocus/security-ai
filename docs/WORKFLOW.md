@@ -91,6 +91,12 @@ HR9. Reviewer-Blocks immer in einen Codeblock.
      Patch-Skript in `/tmp` schreiben, dort
      verifizieren, dann ausfuehren. Kein Heredoc in
      die interaktive Shell.
+     Anker-Messung Pflicht: bei jedem Patch, der
+     mehrzeilige Anker nutzt, den Anker IM Patch-
+     Skript ermitteln (lines.index, text.find,
+     Zeilennummer aus text.split), nicht im Chat
+     aus grep/wc ableiten. Bei mehrzeiligen Ankern
+     zeilenbasierter Schnitt statt String-Anker.
 
 HR10. Reviewer-Update nach jedem Block/Phase.
       Nach jedem abgeschlossenen Block (Phase,
@@ -527,6 +533,37 @@ hardcoded Kernel-Limit.
   (`ls -la`, `wc -l`, `tail -3`, `py_compile`).
   Wenn Datei fehlt oder zu kurz: Schritt wiederholen,
   nicht weitermachen.
+
+### Anker aus dem Chat abgeleitet statt im Skript gemessen
+
+Symptom: Patch-Skript laeuft mit assert count == 1,
+aber AssertionError: count=0. Der Anker sieht im
+Chat korrekt aus, ist im Skript aber zeichenweise
+anders (mehrzeilige Heredocs, Sonderzeichen wie Paragraf,
+TTY-Puffer-Effekte).
+
+Beispiele 2026-09-29:
+- Commit 3: Heredoc fragmentierte Skript-Text, sah wie
+  ein Assertion-Fehler aus. Nach Status-Block:
+  Patch war bereits erfolgreich durchgelaufen.
+- PHASES-Duplikat: vier Anlaeufe.
+  1. Heredoc: Anker still verstuemmelt, count=0.
+  2. Index-Patch v1: Endindex 1160 aus wc -l
+     abgeleitet, tatsaechlich Index 1162.
+  3. Diagnose: split(chr(10)) 1164 Elemente,
+     letzte Inhaltszeile Index 1162.
+  4. Erfolg: Skript misst Anker selbst.
+
+Regeln:
+- Anker im Patch-Skript selbst ermitteln
+  (lines.index, text.find, Zeilennummer aus
+  text.split im selben Skript).
+- Bei mehrzeiligen Ankern zeilenbasierter Schnitt
+  statt String-Anker.
+- Heredoc in die interaktive Shell nur bis ~1 KB,
+  auch wenn der Inhalt selbst klein aussieht.
+- Nach jedem Patch: git diff --stat und
+  git status --porcelain pruefen.
 
 ### `cat >` auf eine bestehende Datei
 
