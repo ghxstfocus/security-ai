@@ -774,7 +774,7 @@ class ChatServiceSanityRetryTests(_ChatBase):
         from datetime import datetime
 
         from apps.security_ai.chat import _answer_contradicts_context
-        from harness.context.models import ContextBundle, utc_now
+        from harness.context.models import ContextBundle
         now = datetime.now(UTC)
         ctx = ContextBundle(
             built_at=now,

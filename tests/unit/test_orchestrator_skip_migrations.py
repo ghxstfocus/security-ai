@@ -5,7 +5,6 @@ Default: apply_migrations laeuft (Bestandsverhalten).
 """
 from __future__ import annotations
 
-import sqlite3
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory

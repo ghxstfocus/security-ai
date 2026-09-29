@@ -5,7 +5,6 @@ Kein Netzwerk, kein echter process()-Aufruf.
 """
 from __future__ import annotations
 
-import json
 import sqlite3
 import unittest
 from datetime import UTC, datetime, timedelta
