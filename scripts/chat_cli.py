@@ -26,6 +26,7 @@ Konvention:
 from __future__ import annotations
 
 import argparse
+import sqlite3
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -35,7 +36,11 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from apps.security_ai.chat import ChatService, ChatServiceError
+from apps.security_ai.chat import (
+    ChatResponse,
+    ChatService,
+    ChatServiceError,
+)
 from core.access.checker import AccessChecker, AccessDeniedError
 from core.access.repository import (
     PermissionRepository,
@@ -117,7 +122,7 @@ def build_parser() -> argparse.ArgumentParser:
 # Hilfen
 # ---------------------------------------------------------------------- #
 
-def _print_response(resp) -> None:
+def _print_response(resp: ChatResponse) -> None:
     """
     Druckt die Antwort. Modell-Hinweis kommt aus
     _on_model_selected (vor dem LLM-Aufruf).
@@ -165,7 +170,7 @@ def _on_model_selected(model: str, reason: str) -> None:
 # Kontext-Anschluss (Phase 3.5.6)
 # ---------------------------------------------------------------------- #
 
-def _load_context(conn, audit_base_dir: str,
+def _load_context(conn: sqlite3.Connection, audit_base_dir: str,
                   since_hours: int = 24,
                   max_assessments: int = 50) -> dict:
     """
