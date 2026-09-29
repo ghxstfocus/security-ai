@@ -34,7 +34,9 @@ Response 200: genau 6 Schluessel (Auflage 91):
 """
 from __future__ import annotations
 
-from flask import Flask, g, jsonify, render_template, request
+from typing import Any
+
+from flask import Flask, Response, g, jsonify, render_template, request
 
 from apps.dashboard.decorators import require_permission
 from apps.security_ai.chat import (
@@ -59,7 +61,7 @@ def _build_chat_service() -> ChatService:
     )
 
 
-def _json_error(message: str, status: int, **headers):
+def _json_error(message: str, status: int, **headers: Any) -> Response:
     resp = jsonify({"error": message})
     resp.status_code = status
     for k, v in headers.items():
@@ -70,7 +72,7 @@ def _json_error(message: str, status: int, **headers):
 def register_chat_routes(app: Flask) -> None:
     @app.route("/chat", methods=["GET"])
     @require_permission("chat.ask")
-    def chat_page():
+    def chat_page() -> str:
         perms = g.access_checker.permissions_of(g.principal)
         return render_template(
             "chat.html",
@@ -80,7 +82,7 @@ def register_chat_routes(app: Flask) -> None:
 
     @app.route("/api/chat", methods=["POST"])
     @require_permission("chat.ask")
-    def chat_api():
+    def chat_api() -> Response:
         # 1. CSRF-Header (liest NICHTS aus dem Body)
         submitted = request.headers.get("X-CSRF-Token")
         from flask import session
