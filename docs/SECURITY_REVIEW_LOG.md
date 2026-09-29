@@ -1146,13 +1146,10 @@ Letzte Aktualisierung: 2026-09-27 (HEAD b4a21e4).
   Fehler oder fehlender Permission (L2).
   Ticket 3.6.7d abgeschlossen.
 
-Core-Stand 2026-09-29: HEAD 74f8714, 1028 Tests,
+Core-Stand 2026-09-29: HEAD 40491ef, 1028 Tests,
 mypy 0 echte Typfehler, ruff 0 (A901 137 -> 0,
 Default-Lauf). Punkt 53 dokumentiert.
 
 Bewusst offen (kein Bau heute):
-- Punkt 26: security_ai-Startpfad (naechster Block).
-- Punkt 36: DetectionEngine.list -> list_rules.
-- A900: mypy no-untyped-def (67 Stellen).
-- A901: ruff nicht-auto-fixbare Codes (C408, BLE001,
-  SIM117, TRY004, RUF015, S110, DTZ001, SIM102).
+- A900: mypy no-untyped-def (66 Stellen, gemessen
+  am 2026-09-29 auf HEAD 40491ef; vorher 67 geschaetzt).

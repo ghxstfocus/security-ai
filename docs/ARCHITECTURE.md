@@ -478,18 +478,34 @@ Szenario: Unbekanntes Gerät im Hauptnetz.
 
 ## 5. Deployment-Topologie
 
+### 5.1 Ist-Stand 2026-09-29
+
+    CT102 = 192.168.178.117, hostname security-ai
+      - einziger aktiver Container
+      - Dashboard (gunicorn 127.0.0.1:5000, nginx TLS)
+      - Fritz!Box-Watcher (systemd-Timer 60s)
+      - Event-Reader (systemd-Timer 30s)
+
+    CT101 = 192.168.178.116 (ruht, bleibt unberuehrt)
+
+Kein security-tools-LXC, kein security-db-LXC.
+host_scanner ist nicht implementiert (Phase 3.8, [ ]).
+Alle Aktionen laufen heute lokal in CT102.
+
+### 5.2 Ziel-Topologie (noch nicht gebaut)
+
     Proxmox-Host
-    ├── LXC 1: security-ai          (192.168.178.116)
+    ├── LXC 1: security-ai          (Hauptnetz, kein Scan)
     │   ├── apps/security_ai/
     │   ├── apps/dashboard/
     │   └── apps/admin_ai/          (später)
     │
-    ├── LXC 2: security-tools       (192.168.178.117)
+    ├── LXC 2: security-tools       (Hauptnetz, Scan erlaubt)
     │   ├── nmap
     │   ├── scapy
     │   └── isolierte Tool-Ausführung
     │
-    ├── LXC 3: security-db          (192.168.178.118)
+    ├── LXC 3: security-db          (internes Netz, nur DB)
     │   └── SQLite / PostgreSQL
     │
     └── Host selbst
@@ -528,4 +544,4 @@ Neue Komponenten müssen:
 - Testbar ohne externe Systeme
 
 ---
-Letzte Aktualisierung: 2026-09-20
+Letzte Aktualisierung: 2026-09-29

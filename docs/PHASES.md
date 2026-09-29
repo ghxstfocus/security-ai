@@ -345,12 +345,18 @@ Nach 3.6.8i (Optik, sobald Struktur + Daten stehen):
       (extern, addEventListener, kein onclick=, kein
       Inline-<script>, keine style="..."), CSP-konform.
 
-## Punkt 26 — security_ai-Startpfad  [ ]
+## Punkt 26 — security_ai-Startpfad  [x]
 
 Ziel: __main__.py, systemd-Unit (analog
 security-ai-dashboard), check_schema_version.
-Kategorie 3, eigener Block. Naechster Block
-(nach Core-Abschluss).
+Kategorie 3, eigener Block.
+
+Erledigt in Phase 3.8b (02f17c4, 468a14d): kein
+__main__.py, sondern tools/event_reader.py +
+deploy/systemd/security-ai-event-reader.{service,timer}.
+Der Reader liest data/events-YYYY-MM-DD.jsonl, ruft
+SecurityAI.process() pro Event, Cursor in event_cursor,
+Idempotenz via processed_events. Siehe Phase 3.8b.
 
 ## Phase 3.8a — Fritz!Box-Watcher  [x]
 
