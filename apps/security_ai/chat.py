@@ -393,9 +393,7 @@ def _answer_contradicts_context(
             return True
     has_confirmed = ("confirmed" in a) or ("bestaetigt" in a)
     has_sec_alert = ("security_alert" in a) or ("sicherheitsalarm" in a)
-    if not has_confirmed and not has_sec_alert:
-        return True
-    return False
+    return bool(not has_confirmed and not has_sec_alert)
 
 
 def _has_critical_assessments(context: ContextBundle) -> bool:
