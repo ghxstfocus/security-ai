@@ -47,6 +47,8 @@ from __future__ import annotations
 
 import re
 
+from typing import Any
+
 from core.access.checker import AccessChecker
 from core.changes.models import ChangeType
 from core.changes.repository import (
@@ -110,7 +112,7 @@ class ChangeService:
     def _require(self, actor: str, code: str) -> None:
         self._checker.require_permission(actor, code)
 
-    def _log(self, kind: str, **extra) -> None:
+    def _log(self, kind: str, **extra: Any) -> None:
         details = {"kind": kind}
         details.update(extra)
         self._audit.log(
