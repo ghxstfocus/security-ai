@@ -17,7 +17,7 @@ Design:
 from __future__ import annotations
 
 import re
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, time
 from typing import Any
 
 from core.access.checker import AccessChecker
@@ -65,7 +65,7 @@ class AuditReaderService:
                 f"Datum muss YYYY-MM-DD sein: {date_str!r}"
             )
         try:
-            datetime.strptime(date_str, "%Y-%m-%d")
+            date.fromisoformat(date_str)
         except ValueError as exc:
             raise AuditReaderServiceError(
                 f"Datum ungueltig: {date_str!r}"
@@ -73,7 +73,9 @@ class AuditReaderService:
         return date_str
 
     def _read_day_impl(self, date_str: str) -> list[dict[str, Any]]:
-        when = datetime.strptime(date_str, "%Y-%m-%d").replace(
+        when = datetime.combine(
+            date.fromisoformat(date_str),
+            time.min,
             tzinfo=UTC,
         )
         return [e.to_dict() for e in self._audit.read_day(when)]
@@ -96,11 +98,10 @@ class AuditReaderService:
             if not DATE_RE.match(date_str):
                 continue
             try:
-                datetime.strptime(date_str, "%Y-%m-%d")
+                date.fromisoformat(date_str)
             except ValueError:
                 continue
-            for e in self._read_day_impl(date_str):
-                result.append(e)
+            result.extend(self._read_day_impl(date_str))
         result.sort(
             key=lambda d: d.get("timestamp", ""),
             reverse=True,
