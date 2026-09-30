@@ -12,6 +12,7 @@ Konvention:
 """
 from __future__ import annotations
 
+import ipaddress
 import os
 import urllib.parse
 from pathlib import Path
@@ -23,6 +24,7 @@ DEFAULT_MODEL = "llama3.2:3b"
 DEFAULT_MODEL_LARGE = "qwen2.5:7b"
 DEFAULT_FRITZ_HOST = "fritz.box"
 DEFAULT_FRITZ_NETWORK_TYPE = "Hauptnetz"
+DEFAULT_GUEST_NETWORK_PREFIX = "192.168.189.0/24"
 
 _loaded_paths: set[str] = set()
 
@@ -183,6 +185,47 @@ def get_fritz_network_type() -> str:
     )
 
 
+def get_guest_network_prefix() -> str:
+    """Liest GUEST_NETWORK_PREFIX aus der Umgebung.
+
+    Default: "192.168.189.0/24" (CIDR).
+    """
+    return os.environ.get(
+        "GUEST_NETWORK_PREFIX", DEFAULT_GUEST_NETWORK_PREFIX,
+    )
+
+
+def resolve_network_type(ip: str | None) -> str:
+    """Leitet network_type aus einer IP ab (Punkt 67).
+
+    - IP im Gastnetz-Prefix -> "Gastnetz".
+    - Alles andere oder fehlende/ungueltige IP
+      -> "Hauptnetz" (Default).
+
+    Fail closed: bei ungueltigem GUEST_NETWORK_PREFIX
+    wird "Hauptnetz" zurueckgegeben (kein Crash).
+
+    Diese Funktion vergibt NICHT "Extern". Das ist
+    eine Detection-Kategorie (unknown_device), keine
+    Konfigurationsaussage.
+    """
+    if not ip:
+        return DEFAULT_FRITZ_NETWORK_TYPE
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return DEFAULT_FRITZ_NETWORK_TYPE
+    try:
+        guest = ipaddress.ip_network(
+            get_guest_network_prefix(), strict=False,
+        )
+    except ValueError:
+        return DEFAULT_FRITZ_NETWORK_TYPE
+    if addr in guest:
+        return "Gastnetz"
+    return DEFAULT_FRITZ_NETWORK_TYPE
+
+
 def get_fritz_credentials() -> tuple[str, str]:
     """
     Liest FRITZ_USERNAME und FRITZ_PASSWORD aus der Umgebung.
@@ -212,6 +255,7 @@ __all__ = [
     "DEFAULT_ENV_PATH",
     "DEFAULT_FRITZ_HOST",
     "DEFAULT_FRITZ_NETWORK_TYPE",
+    "DEFAULT_GUEST_NETWORK_PREFIX",
     "DEFAULT_MODEL",
     "DEFAULT_MODEL_LARGE",
     "DEFAULT_OLLAMA_BASE_URL",
@@ -220,11 +264,13 @@ __all__ = [
     "get_fritz_credentials",
     "get_fritz_host",
     "get_fritz_network_type",
+    "get_guest_network_prefix",
     "get_model_default",
     "get_model_large",
     "get_ollama_base_url",
     "get_secret_key",
     "load_env",
     "reset_cache",
+    "resolve_network_type",
     "validate_ollama_base_url",
 ]

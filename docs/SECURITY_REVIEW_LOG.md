@@ -1473,4 +1473,26 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     Zoom). Heute nur Sparklines auf / (T4).
     Eigener Block, eigenes Design.
 
+67. (erledigt, Kategorie 3, Datenpfad) network_type
+    pro Geraet aus IP ableiten.
+    - Befund 2026-10-01: alle 7 Geraete in devices
+      hatten network_type="Hauptnetz", obwohl
+      2 im Gastnetz aktiv waren (192.168.189.2,
+      192.168.189.4).
+    - Ursache: tools/fritzbox_watcher.py nutzte
+      get_fritz_network_type() (ein fester Wert
+      fuer alle Events).
+    - Auswirkung: Kachel "Gastnetz" immer 0,
+      Kachel "Hauptnetz" zaehlte Gastnetz-Geraete
+      mit.
+    - Fix: core/config.py::resolve_network_type(ip)
+      leitet aus GUEST_NETWORK_PREFIX (CIDR,
+      Default 192.168.189.0/24) ab. Watcher ruft
+      pro Host auf.
+    - Kein "Extern" aus dieser Funktion
+      (Detection-Kategorie, nicht Konfig).
+    - DB-Backfill: dem naechsten Watcher-Lauf
+      ueberlassen (upsert_seen ueberschreibt,
+      weil neuer Wert nicht None).
+
 Bewusst offen (kein Bau heute):

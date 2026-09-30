@@ -75,7 +75,7 @@ class DiffEmitTests(unittest.TestCase):
             _host("aa:aa:aa:aa:aa:02"),
             _host("aa:aa:aa:aa:aa:03"),
         ]
-        events = fw._diff_and_emit(state, hosts, "Hauptnetz")
+        events = fw._diff_and_emit(state, hosts)
         self.assertEqual(len(events), 3)
         for e in events:
             self.assertEqual(
@@ -89,7 +89,7 @@ class DiffEmitTests(unittest.TestCase):
                                 "name": "x", "active": True}},
         }
         hosts = [_host("aa:01", active=True)]
-        events = fw._diff_and_emit(state, hosts, "Hauptnetz")
+        events = fw._diff_and_emit(state, hosts)
         self.assertEqual(events, [])
 
     def test_offline(self) -> None:
@@ -99,7 +99,7 @@ class DiffEmitTests(unittest.TestCase):
                                 "name": "x", "active": True}},
         }
         hosts = [_host("aa:01", active=False)]
-        events = fw._diff_and_emit(state, hosts, "Hauptnetz")
+        events = fw._diff_and_emit(state, hosts)
         self.assertEqual(len(events), 1)
         self.assertEqual(
             events[0].event_type, EventType.DEVICE_OFFLINE.value
@@ -108,7 +108,7 @@ class DiffEmitTests(unittest.TestCase):
     def test_new_inactive(self) -> None:
         state = fw._empty_state()
         hosts = [_host("aa:01", active=False)]
-        events = fw._diff_and_emit(state, hosts, "Hauptnetz")
+        events = fw._diff_and_emit(state, hosts)
         self.assertEqual(events, [])
 
     def test_was_inactive_now_active(self) -> None:
@@ -118,7 +118,7 @@ class DiffEmitTests(unittest.TestCase):
                                 "name": "x", "active": False}},
         }
         hosts = [_host("aa:01", active=True)]
-        events = fw._diff_and_emit(state, hosts, "Hauptnetz")
+        events = fw._diff_and_emit(state, hosts)
         self.assertEqual(len(events), 1)
         self.assertEqual(
             events[0].event_type, EventType.DEVICE_PRESENCE.value
@@ -126,13 +126,13 @@ class DiffEmitTests(unittest.TestCase):
 
     def test_data_fields(self) -> None:
         state = fw._empty_state()
-        hosts = [_host("aa:01", ip="10.0.0.5",
+        hosts = [_host("aa:01", ip="192.168.189.5",
                        name="kamera", active=True)]
-        events = fw._diff_and_emit(state, hosts, "Gastnetz")
+        events = fw._diff_and_emit(state, hosts)
         d = events[0].data
         self.assertEqual(d["identifier"], "aa:01")
         self.assertEqual(d["mac"], "aa:01")
-        self.assertEqual(d["ip"], "10.0.0.5")
+        self.assertEqual(d["ip"], "192.168.189.5")
         self.assertEqual(d["entity_name"], "kamera")
         self.assertEqual(d["network_type"], "Gastnetz")
         self.assertNotIn("known", d)
@@ -147,7 +147,7 @@ class RunTests(unittest.TestCase):
             ),
             mock.patch.object(fw, "get_fritz_host",
                               return_value="fritz.box"),
-            mock.patch.object(fw, "get_fritz_network_type",
+            mock.patch.object(fw, "resolve_network_type",
                               return_value="Hauptnetz"),
         )
 

@@ -15,8 +15,10 @@ import pytest
 from core.config import (
     SECRET_KEY_MIN_BYTES,
     ConfigError,
+    get_guest_network_prefix,
     get_ollama_base_url,
     get_secret_key,
+    resolve_network_type,
     validate_ollama_base_url,
 )
 
@@ -146,3 +148,42 @@ def test_get_ollama_base_url_fail_closed(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setenv("OLLAMA_BASE_URL", "file:///etc/passwd")
     with pytest.raises(ConfigError):
         get_ollama_base_url()
+
+
+# ------------------------------------------------------------------ #
+# resolve_network_type (Punkt 67)
+# ------------------------------------------------------------------ #
+
+def test_resolve_gastnetz():
+    assert resolve_network_type("192.168.189.5") == "Gastnetz"
+
+def test_resolve_hauptnetz():
+    assert resolve_network_type("192.168.178.5") == "Hauptnetz"
+
+def test_resolve_none():
+    assert resolve_network_type(None) == "Hauptnetz"
+
+def test_resolve_leer():
+    assert resolve_network_type("") == "Hauptnetz"
+
+def test_resolve_ungueltige_ip():
+    assert resolve_network_type("nicht-eine-ip") == "Hauptnetz"
+
+def test_resolve_kein_extern():
+    assert resolve_network_type("8.8.8.8") != "Extern"
+
+def test_guest_prefix_default():
+    assert get_guest_network_prefix() == "192.168.189.0/24"
+
+def test_guest_prefix_env(monkeypatch):
+    monkeypatch.setenv(
+        "GUEST_NETWORK_PREFIX", "10.99.0.0/16",
+    )
+    assert get_guest_network_prefix() == "10.99.0.0/16"
+
+def test_resolve_mit_env_prefix(monkeypatch):
+    monkeypatch.setenv(
+        "GUEST_NETWORK_PREFIX", "10.99.0.0/16",
+    )
+    assert resolve_network_type("10.99.1.5") == "Gastnetz"
+    assert resolve_network_type("192.168.189.5") == "Hauptnetz"

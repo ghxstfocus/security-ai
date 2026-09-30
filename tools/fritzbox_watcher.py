@@ -43,7 +43,7 @@ from core.config import (
     ConfigError,
     get_fritz_credentials,
     get_fritz_host,
-    get_fritz_network_type,
+    resolve_network_type,
 )
 from core.events.event import Event, EventType, Severity, new_event
 from harness.audit.writer import AuditWriter
@@ -151,7 +151,6 @@ def _fetch_hosts(
 def _diff_and_emit(
     old_state: dict[str, Any],
     new_hosts: list[dict[str, Any]],
-    network_type: str,
 ) -> list[Event]:
     """
     Erzeugt Events aus Diff alter Zustand <-> neue Host-Liste.
@@ -193,7 +192,7 @@ def _diff_and_emit(
                 "ip": h["ip"],
                 "mac": mac,
                 "entity_name": h["name"],
-                "network_type": network_type,
+                "network_type": resolve_network_type(h["ip"]),
             },
         ))
     return events
@@ -268,7 +267,6 @@ def run(*, audit_base_dir: str | os.PathLike[str] = _DEFAULT_AUDIT_BASE_DIR) -> 
     try:
         user, password = get_fritz_credentials()
         host = get_fritz_host()
-        network_type = get_fritz_network_type()
     except ConfigError as exc:
         _log.error("credentials/config fehlen: %s", exc)
         return 2
@@ -281,7 +279,7 @@ def run(*, audit_base_dir: str | os.PathLike[str] = _DEFAULT_AUDIT_BASE_DIR) -> 
 
     try:
         old_state = _load_state()
-        events = _diff_and_emit(old_state, new_hosts, network_type)
+        events = _diff_and_emit(old_state, new_hosts)
         events_path = _events_path()
         written = _write_events(events, events_path)
         _save_state(_new_state(new_hosts))
