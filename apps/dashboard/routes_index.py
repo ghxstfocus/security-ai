@@ -87,7 +87,7 @@ def _count_changes() -> int | str:
 def register_index_routes(app: Flask) -> None:
     @app.route("/", methods=["GET"])
     @require_permission("device.read")
-    def index():
+    def index() -> str:
         return render_template(
             "index.html",
             page_title="Dashboard",
