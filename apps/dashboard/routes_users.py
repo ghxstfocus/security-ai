@@ -21,13 +21,13 @@ from flask import (
     Response,
     abort,
     g,
-    redirect,
     render_template,
     request,
     session,
 )
 
 from apps.dashboard import csrf
+from apps.dashboard._redirect import safe_redirect
 from apps.dashboard.decorators import require_permission
 from core.access.models import PrincipalKind, principal_to_view
 from core.access.repository import AccessNotFoundError
@@ -75,7 +75,11 @@ def register_users_routes(app: Flask) -> None:
         if not csrf.validate(submitted, expected):
             return ("Ungueltige Anfrage", 400)
         name = request.form.get("name")
+        if name is None:
+            return ("Ungueltige Anfrage", 400)
         role_name = request.form.get("role_name")
+        if role_name is None:
+            return ("Ungueltige Anfrage", 400)
         kind_raw = request.form.get("kind")
         is_active_raw = request.form.get("is_active")
         is_active = (is_active_raw == "on")
@@ -88,8 +92,8 @@ def register_users_routes(app: Flask) -> None:
         try:
             service.create_principal(
                 g.principal,
-                name=name or "",
-                role_name=role_name or "",
+                name=name,
+                role_name=role_name,
                 kind=kind,
                 is_active=is_active,
             )
@@ -99,7 +103,7 @@ def register_users_routes(app: Flask) -> None:
                 )
         except AccessServiceError:
             return ("Ungueltige Anfrage", 400)
-        return redirect("/users", 302)
+        return safe_redirect("/users", 302)
 
     @app.route("/users/<name>", methods=["GET"])
     @require_permission("principal.manage")
@@ -141,7 +145,7 @@ def register_users_routes(app: Flask) -> None:
             )
         except (AccessServiceError, AccessNotFoundError):
             abort(404)
-        return redirect("/users", 302)
+        return safe_redirect("/users", 302)
 
     @app.route(
         "/users/<name>/set-password", methods=["POST"],
@@ -164,7 +168,7 @@ def register_users_routes(app: Flask) -> None:
             return ("Ungueltige Anfrage", 400)
         except AccessNotFoundError:
             abort(404)
-        return redirect("/users", 302)
+        return safe_redirect("/users", 302)
 
 
 __all__ = ["register_users_routes"]
