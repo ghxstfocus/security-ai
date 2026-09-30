@@ -42,7 +42,7 @@ def _build_service() -> InventoryService:
 def register_inventory_routes(app: Flask) -> None:
     @app.route("/inventory", methods=["GET"])
     @require_permission("device.read")
-    def inventory_list():
+    def inventory_list() -> str:
         service = _build_service()
         devices = service.list_devices(g.principal)
         return render_template(
@@ -53,7 +53,7 @@ def register_inventory_routes(app: Flask) -> None:
 
     @app.route("/inventory/<identifier>", methods=["GET"])
     @require_permission("device.read")
-    def inventory_detail(identifier: str):
+    def inventory_detail(identifier: str) -> str:
         service = _build_service()
         try:
             device = service.get_device(g.principal, identifier)
