@@ -241,6 +241,9 @@ def create_app(
     from apps.dashboard.routes_search import register_search_routes
     register_search_routes(app)
 
+    from apps.dashboard.routes_state import register_state_routes
+    register_state_routes(app)
+
     from apps.dashboard.filters import (
         format_score,
         format_score_label,

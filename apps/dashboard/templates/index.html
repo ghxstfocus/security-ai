@@ -40,6 +40,23 @@
                       href="/changes") }}
         {% endif %}
     </div>
+    <div class="live-grid">
+        <section class="card">
+            <h2 class="card-title">Online jetzt</h2>
+            <ul id="live-devices" class="live-list">
+                <li class="live-empty">Lade...</li>
+            </ul>
+        </section>
+        <section class="card">
+            <h2 class="card-title">Letzte Alarme</h2>
+            <ul id="live-alerts" class="live-list">
+                <li class="live-empty">Lade...</li>
+            </ul>
+            <p class="live-timestamp">
+                Stand: <span id="live-timestamp">—</span>
+            </p>
+        </section>
+    </div>
     {% include "partials/timeline.html" %}
     {% include "partials/chat_widget.html" %}
 </div>
@@ -47,5 +64,7 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/chat.js') }}"
+        defer></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"
         defer></script>
 {% endblock %}

@@ -439,10 +439,18 @@ def test_index_cards_show_live_value_not_dash(
     """
     r = client.get("/")
     assert r.status_code == 200
+    # Nur den Kachel-Bereich pruefen: seit T1+T5 gibt
+    # es ausserhalb der Kacheln legitime em-dash-
+    # Platzhalter (live-timestamp).
+    start = r.data.find(b'<div class="stat-cards">')
+    assert start >= 0
+    end = r.data.find(b'</div>', start)
+    assert end > start
+    kacheln = r.data[start:end]
     # card-value-Block: nach dem Aufruf enthaelt jede
     # Kachel eine Zahl oder "—". Wir erwarten KEIN
     # em-dash fuer admin (leere DB = 0).
-    assert b"\xe2\x80\x94" not in r.data
+    assert b"\xe2\x80\x94" not in kacheln
 
 
 # ---------------------------------------------------------------------- #
