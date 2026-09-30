@@ -936,6 +936,14 @@ README repariert (Heredoc-Vorfall 5b5a727),
 Kernzahlen 950 Tests. PHASES 3.6.10/3.6.11
 abgehakt. Commits e0a6aa4, 4cc0a45, 8e79495.
 
+## A900 - no-untyped-def + Ruff-Fix  [x]
+
+mypy no-untyped-def 66 -> 2, ruff 2 -> 0.
+23 Commits (A900-1, A900-2a, A900-2b-1,
+A900-2b-2a/b/c, Ruff-I001-Fix).
+Details in docs/SECURITY_REVIEW_LOG.md.
+Offen: Punkt 60 (mypy orchestrator.py, 2 Stellen).
+
 ## Phase 5 — Admin AI  [ ]
 
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI

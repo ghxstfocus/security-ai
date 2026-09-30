@@ -198,7 +198,7 @@ sind projektspezifische Ergaenzungen dazu.
   Security-Checkliste fuer Phase 3.6 (Web-Dashboard)
 - docs/SECURITY_REVIEW_LOG.md — Sicherheits-
   Entscheidungen nach Thema + offene Punkte 1-11
-  (Stand 3.6.8)
+  (Stand A900 abgeschlossen, Punkt 60 offen)
 - docs/INCONSISTENCIES_FOUND.md — Ausgelagerte
   Inkonsistenzen (heute keine)
 - docs/WORKFLOW.md — generischer Prozess (Rollen,
@@ -271,7 +271,8 @@ Suchfelder), §14 (Frage-Klassifikation, Anzeige-Labels,
 since_hours), §16 (ProxyFix, Links im Chat, nav_links,
 JS-Ausnahme, server_name, default_server).
 
-Tests: 950 gruen (venv, pytest 9.1.1).
+Stand: 2026-09-30 | HEAD: 81a3607 |
+Tests: 1028 gruen (venv, pytest 9.1.1).
 Quelle der Wahrheit ist `pytest --collect-only -q`.
 
 ### Aufgabe jetzt

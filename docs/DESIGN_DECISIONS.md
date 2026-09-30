@@ -4,7 +4,10 @@
 > im Verlauf des Projekts getroffen wurden. Es ist die erste
 > Adresse bei Unklarheiten.
 >
-> Stand: Phase 3.6.18c abgeschlossen, Zwischenbloecke bis Punkt 53 (HEAD 88628ec, 2026-09-29).
+> Stand: A900 abgeschlossen (HEAD 81a3607, 2026-09-30),
+> Phase 3.6.18c + Zwischenbloecke bis Punkt 60.
+> Offen: Punkt 60 (mypy orchestrator.py),
+> Punkte 55-59 (Dashboard-Erweiterung vorgemerkt).
 
 ---
 
