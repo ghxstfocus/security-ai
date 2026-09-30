@@ -325,7 +325,7 @@ test_access_denied_errorhandler_403 abgedeckt.
 ## Chronologie
 
 Sortiert nach Commit-Zeit (aelteste zuerst, HEAD zuletzt).
-Letzte Aktualisierung: 2026-09-29 (HEAD 88628ec).
+Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
 
 - 3.6.4: AuditReaderService.
 - Venv-Umstellung.
@@ -1143,6 +1143,16 @@ Letzte Aktualisierung: 2026-09-29 (HEAD 88628ec).
       nachziehen oder als Ist-Stand-Absatz ergaenzen.
     - Kategorie 1, Doku-Nachtrag nach Messung.
 
+60. (offen, Kategorie 3, Kern-Service) mypy
+    no-untyped-def in apps/security_ai/orchestrator.py.
+    - Z. 266: Function is missing a return type annotation.
+    - Z. 318: Function is missing a type annotation for one
+      or more parameters.
+    - Vorbestehend, durch A900-Typisierung sichtbar
+      geworden (mypy folgt Import-Pfaden tiefer).
+    - Nicht durch A900 eingefuehrt.
+    - Eigener Block mit Bestandsaufnahme + Reviewer-GO.
+
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
   device_presence/offline. identifier=MAC.
@@ -1159,10 +1169,56 @@ Letzte Aktualisierung: 2026-09-29 (HEAD 88628ec).
   Fehler oder fehlender Permission (L2).
   Ticket 3.6.7d abgeschlossen.
 
-Core-Stand 2026-09-29: HEAD 40491ef, 1028 Tests,
-mypy 0 echte Typfehler, ruff 0 (A901 137 -> 0,
-Default-Lauf). Punkt 53 dokumentiert.
+Core-Stand 2026-09-30: HEAD 81a3607, 1028 Tests,
+mypy 2 no-untyped-def (orchestrator.py, Punkt 60),
+ruff 0 (nach Ruff-Fix, A901-Stand wiederhergestellt).
+A900 abgeschlossen (23 Commits, 66 -> 2).
+
+## A900 - no-untyped-def (Kategorie 2 + 3)
+
+Status: [x] abgeschlossen (HEAD 81a3607, 2026-09-30).
+Kurzfassung: mypy no-untyped-def 66 -> 2, ruff 2 -> 0,
+23 Commits, Tests durchgehend 1028 gruen.
+
+Aufschluesselung:
+
+A900-1 (Kategorie 3, 4 Commits, mypy 66 -> 55):
+  22ead01  search_service.py _search_with_synonyms
+  8fe36e4  chat.py generate/_call_llm/_format_*
+  27a182d  approval_service.py _entry_to_dict
+  67103c8  change_service.py _log **extra
+
+A900-2a (Kategorie 2, 3 Commits, mypy 55 -> 51):
+  40cfeb9  audit_reader.py _iter_jsonl_lines
+  3b8758d  changes_cli.py _audit **extra
+  6a1747c  chat_cli.py _print_response/_load_context
+
+A900-2b-1 (Kategorie 2, 2 Commits, mypy 51 -> 33):
+  e50e2c6  auth.py 8 Funktionen
+  68fcff6  app.py create_app + 7 Callbacks
+
+A900-2b-2a (Kategorie 2, 2 Commits, mypy 33 -> 23):
+  3180e4a  routes_users.py 6 Handler
+  9690b03  routes_roles.py 4 Handler
+
+A900-2b-2b (Kategorie 2, 3 Commits, mypy 23 -> 12):
+  be60390  routes_changes.py 4 Handler
+  5c9997b  routes_chat.py _json_error/chat_page/chat_api
+  48320bc  routes_approvals.py 3 Handler
+
+A900-2b-2c (Kategorie 2, 7 Commits, mypy 12 -> 2):
+  c4db157  routes_settings.py
+  c83b8d2  routes_inventory.py
+  b362603  routes_audit.py
+  b94a49c  routes_search.py
+  908062d  routes_index.py
+  88b9f0a  routes_alerts.py
+  e0de381  filters.py
+
+Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
+  12d9a28  routes_settings.py Import-Block
+  81a3607  change_service.py Import-Block
+
+Offen: Punkt 60 (mypy orchestrator.py, 2 Stellen).
 
 Bewusst offen (kein Bau heute):
-- A900: mypy no-untyped-def (66 Stellen, gemessen
-  am 2026-09-29 auf HEAD 40491ef; vorher 67 geschaetzt).
