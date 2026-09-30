@@ -17,7 +17,7 @@ Design:
 from __future__ import annotations
 
 import re
-from datetime import UTC, date, datetime, time
+from datetime import UTC, date, datetime, time, timedelta
 from typing import Any
 
 from core.access.checker import AccessChecker
@@ -29,6 +29,21 @@ from harness.audit.writer import AuditWriter
 
 AUDIT_ID_RE = re.compile(r"^AUD-\d{4}-\d{2}-\d{2}-[0-9a-f]{8}$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+# T4 (Auflage 1707): Kinds, die Aenderungen am Zustand
+# bezeichnen. Filter fuer "Logs mit Aenderungen".
+RECENT_CHANGE_KINDS = frozenset({
+    "change_created",
+    "change_approved",
+    "change_rejected",
+    "change_deployed",
+    "change_rolled_back",
+    "change_cancelled",
+    "approval_requested",
+    "approval_granted",
+    "approval_rejected",
+    "approval_expired",
+})
 
 
 class AuditReaderServiceError(ServiceError):
@@ -149,8 +164,61 @@ class AuditReaderService:
             max_entries=limit,
         )
 
+    def list_recent_by_kinds(
+        self,
+        actor: str,
+        kinds: set[str],
+        limit: int = 5,
+    ) -> list[dict[str, Any]]:
+        """Letzte Audit-Eintraege mit details.kind in kinds.
+
+        T4 (Auflage 1707). RBAC: audit.read.
+        Liest die heutigen und gestrigen JSONL-Zeilen,
+        filtert nach details.kind, liefert die letzten
+        limit Eintraege (neueste zuerst).
+
+        Rueckgabe-Format pro Eintrag:
+            {"audit_id": ..., "timestamp": ...,
+             "kind": ..., "details": {...}}
+        """
+        self._require(actor, "audit.read")
+        if (not isinstance(limit, int)
+                or isinstance(limit, bool)
+                or not (1 <= limit <= 100)):
+            raise AuditReaderServiceError(
+                "limit out of range (1..100)"
+            )
+        if not kinds:
+            return []
+        want = frozenset(kinds)
+        now = datetime.now(UTC)
+        today = now
+        yesterday = now - timedelta(days=1)
+        out: list[dict[str, Any]] = []
+        for when in (yesterday, today):
+            entries = self._audit.read_day(when)
+            for e in entries:
+                details = e.details or {}
+                kind = details.get("kind")
+                if kind in want:
+                    ts = e.timestamp
+                    out.append({
+                        "audit_id": e.audit_id,
+                        "timestamp": (
+                            ts.isoformat()
+                            if isinstance(ts, datetime)
+                            else str(ts)
+                        ),
+                        "kind": kind,
+                        "details": details,
+                    })
+        out.sort(key=lambda x: x.get("timestamp") or "",
+                 reverse=True)
+        return out[:limit]
+
 
 __all__ = [
+    "RECENT_CHANGE_KINDS",
     "AuditReaderOperationError",
     "AuditReaderService",
     "AuditReaderServiceError",

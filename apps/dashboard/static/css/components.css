@@ -50,6 +50,44 @@
     margin-bottom: 20px;
 }
 
+/* Sparklines (T4, Auflage 1709).
+   Kein style=-Attribut, kein inline-SVG-style. */
+.sparkline-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.sparkline-label {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    min-width: 28px;
+}
+
+.sparkline {
+    width: 60px;
+    height: 20px;
+    flex: 0 0 60px;
+}
+
+.sparkline polyline {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.sparkline-cpu { color: var(--accent-cyan); }
+.sparkline-ram { color: var(--accent-green); }
+
+.sparkline-value {
+    font-size: var(--font-sm);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
 /* Klickbare Kachel (T6, Auflage 1683).
    Der gesamte Card-Block ist ein Link. */
 .card-link {

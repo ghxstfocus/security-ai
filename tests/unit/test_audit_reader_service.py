@@ -326,3 +326,53 @@ def test_list_recent_assessments_reads_from_configured_base_dir(
         f"(bekam {len(out)} Eintraege)"
     )
     assert out[0]["event_id"] == "EVT-2026-09-22-cafebabe"
+
+
+# ------------------------------------------------------------------ #
+# list_recent_by_kinds (T4, Auflage 1711)
+# ------------------------------------------------------------------ #
+
+def test_list_recent_by_kinds_filters_kinds(
+    conn, audit: AuditWriter, svc: AuditReaderService,
+) -> None:
+    _create_principal(conn, "admin1", "admin")
+    audit.log(
+        agent="security_ai", tool="test",
+        policy_result="ALLOWED", permission_level=0,
+        execution_status="OK",
+        details={"kind": "change_created"},
+    )
+    audit.log(
+        agent="security_ai", tool="test",
+        policy_result="ALLOWED", permission_level=0,
+        execution_status="OK",
+        details={"kind": "tool_call"},
+    )
+    audit.log(
+        agent="security_ai", tool="test",
+        policy_result="ALLOWED", permission_level=0,
+        execution_status="OK",
+        details={"kind": "approval_requested"},
+    )
+    out = svc.list_recent_by_kinds(
+        "admin1", {"change_created", "approval_requested"},
+    )
+    kinds = {e["kind"] for e in out}
+    assert kinds == {"change_created", "approval_requested"}
+
+
+def test_list_recent_by_kinds_limit(
+    conn, audit: AuditWriter, svc: AuditReaderService,
+) -> None:
+    _create_principal(conn, "admin1", "admin")
+    for _ in range(5):
+        audit.log(
+            agent="security_ai", tool="test",
+            policy_result="ALLOWED", permission_level=0,
+            execution_status="OK",
+            details={"kind": "change_created"},
+        )
+    out = svc.list_recent_by_kinds(
+        "admin1", {"change_created"}, limit=3,
+    )
+    assert len(out) == 3

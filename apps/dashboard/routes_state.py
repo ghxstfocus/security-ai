@@ -32,6 +32,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+import psutil
 from flask import Flask, Response, g, jsonify
 
 from apps.dashboard.decorators import require_permission
@@ -39,7 +40,10 @@ from core.access.checker import AccessDeniedError
 from core.changes.repository import ChangeRepository
 from core.inventory.repository import DeviceRepository
 from core.inventory.whitelist import WhitelistRepository
-from core.services.audit_reader_service import AuditReaderService
+from core.services.audit_reader_service import (
+    RECENT_CHANGE_KINDS,
+    AuditReaderService,
+)
 from core.services.change_service import ChangeService
 from core.services.fritzbox_state_service import FritzboxStateService
 from core.services.inventory_service import InventoryService
@@ -102,6 +106,47 @@ def _section_changes() -> list | None:
         return None
 
 
+def _section_system() -> dict | None:
+    """System-Sektion (device.read). Fehlt bei AccessDeniedError.
+
+    T4 (Auflage 1708):
+    - cpu_percent(interval=0.1) misst 100 ms.
+    - virtual_memory().percent direkt.
+    """
+    try:
+        g.access_checker.require_permission(
+            g.principal, "device.read",
+        )
+        cpu = psutil.cpu_percent(interval=0.1)
+        vm = psutil.virtual_memory()
+        return {
+            "cpu_percent": float(cpu),
+            "ram_percent": float(vm.percent),
+            "ram_used_gb": round(vm.used / (1024 ** 3), 1),
+            "ram_total_gb": round(vm.total / (1024 ** 3), 1),
+            "available": True,
+        }
+    except AccessDeniedError:
+        return None
+
+
+def _section_recent_changes() -> list | None:
+    """Letzte Change-/Approval-Kinds (audit.read).
+
+    T4 (Auflage 1708). Fehlt bei AccessDeniedError.
+    """
+    try:
+        svc = AuditReaderService(
+            audit_writer=g.audit,
+            checker=g.access_checker,
+        )
+        return svc.list_recent_by_kinds(
+            g.principal, set(RECENT_CHANGE_KINDS), limit=5,
+        )
+    except AccessDeniedError:
+        return None
+
+
 def register_state_routes(app: Flask) -> None:
 
     @app.route("/api/dashboard/state", methods=["GET"])
@@ -110,6 +155,8 @@ def register_state_routes(app: Flask) -> None:
         devices = _section_devices()
         alerts = _section_alerts()
         changes = _section_changes()
+        system = _section_system()
+        recent_changes = _section_recent_changes()
         body: dict = {
             "timestamp": datetime.now(UTC).isoformat(),
         }
@@ -119,6 +166,10 @@ def register_state_routes(app: Flask) -> None:
             body["alerts"] = alerts
         if changes is not None:
             body["changes"] = changes
+        if system is not None:
+            body["system"] = system
+        if recent_changes is not None:
+            body["recent_changes"] = recent_changes
         resp = jsonify(body)
         resp.headers["Cache-Control"] = "no-store"
         return resp

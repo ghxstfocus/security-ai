@@ -89,3 +89,99 @@ def test_state_available_false_when_missing(app, admin_client):
     body = r.get_json()
     assert "available" in body["devices"]
     assert isinstance(body["devices"]["available"], bool)
+
+
+def test_state_system_section_with_permission(admin_client):
+    """T4: system-Sektion mit device.read vorhanden."""
+    r = admin_client.get("/api/dashboard/state")
+    assert r.status_code == 200
+    body = r.get_json()
+    assert "system" in body
+    sysd = body["system"]
+    assert "cpu_percent" in sysd
+    assert "ram_percent" in sysd
+    assert "ram_used_gb" in sysd
+    assert "ram_total_gb" in sysd
+    assert isinstance(sysd["cpu_percent"], (int, float))
+    assert isinstance(sysd["ram_percent"], (int, float))
+
+
+def test_state_recent_changes_section_with_permission(admin_client):
+    """T4: recent_changes-Sektion mit audit.read vorhanden."""
+    r = admin_client.get("/api/dashboard/state")
+    assert r.status_code == 200
+    body = r.get_json()
+    assert "recent_changes" in body
+    assert isinstance(body["recent_changes"], list)
+
+
+def test_state_recent_changes_absent_for_system_role(app):
+    """T4: system-Rolle hat kein audit.read -> Sektion fehlt."""
+    from core.access.models import PrincipalKind
+    from core.access.repository import (
+        PrincipalRepository,
+        RoleRepository,
+    )
+    from core.access.session_repo import SessionRepository
+    from core.inventory.repository import connect
+
+    conn = connect(app.config["DB_PATH"])
+    roles = RoleRepository(conn)
+    principals = PrincipalRepository(conn)
+    sys_role = roles.get_by_name("system")
+    principals.create(
+        name="sys1", role_id=sys_role.row_id,
+        kind=PrincipalKind.SYSTEM,
+    )
+    SessionRepository(conn).create("sid-sys1", "sys1")
+    conn.close()
+
+    c = app.test_client()
+    set_session_cookie(c, "sid-sys1")
+    r = c.get("/api/dashboard/state")
+    assert r.status_code == 200
+    body = r.get_json()
+    assert "devices" in body
+    assert "recent_changes" not in body
+    assert "alerts" not in body
+    assert "changes" not in body
+
+
+def test_state_system_absent_for_no_devread_role(app):
+    """T4: Rolle ohne device.read -> system fehlt."""
+    from datetime import UTC, datetime
+
+    from core.access.models import PrincipalKind
+    from core.access.repository import (
+        PrincipalRepository,
+        RoleRepository,
+    )
+    from core.access.session_repo import SessionRepository
+    from core.inventory.repository import connect
+
+    conn = connect(app.config["DB_PATH"])
+    roles = RoleRepository(conn)
+    conn.execute(
+        "INSERT INTO roles (name, description, created_at) "
+        "VALUES (?, ?, ?)",
+        (
+            "no_dev_read_t4",
+            "Test-Rolle ohne device.read",
+            datetime.now(UTC).isoformat(),
+        ),
+    )
+    conn.commit()
+    role = roles.get_by_name("no_dev_read_t4")
+    PrincipalRepository(conn).create(
+        name="nope_t4", role_id=role.row_id,
+        kind=PrincipalKind.HUMAN,
+    )
+    SessionRepository(conn).create("sid-nope_t4", "nope_t4")
+    conn.close()
+
+    c = app.test_client()
+    set_session_cookie(c, "sid-nope_t4")
+    r = c.get("/api/dashboard/state")
+    # /api/dashboard/state hat Grundpermission device.read:
+    # ohne die ist der ganze Endpoint 403.
+    assert r.status_code == 403

@@ -21,6 +21,8 @@
 (function () {
     var FAST_MS = 5000;
     var SLOW_MS = 30000;
+    var cpuHistory = [];
+    var ramHistory = [];
 
     function fetchState() {
         return fetch("/api/dashboard/state", {
@@ -72,6 +74,27 @@
         container.appendChild(li);
     }
 
+    function renderSparkline(svgEl, polyEl, values) {
+        if (!svgEl || !polyEl || !Array.isArray(values)
+                || values.length === 0) {
+            return;
+        }
+        var w = 60;
+        var h = 20;
+        var max = Math.max.apply(null, values);
+        var min = Math.min.apply(null, values);
+        var span = (max - min) || 1;
+        var n = values.length;
+        var step = n > 1 ? w / (n - 1) : w;
+        var pts = [];
+        for (var i = 0; i < n; i++) {
+            var x = (i * step).toFixed(2);
+            var y = (h - ((values[i] - min) / span) * h).toFixed(2);
+            pts.push(x + "," + y);
+        }
+        polyEl.setAttribute("points", pts.join(" "));
+    }
+
     function updateFast(state) {
         if (!state) {
             return;
@@ -100,6 +123,33 @@
         var ts = document.getElementById("live-timestamp");
         if (ts && state.timestamp) {
             ts.textContent = String(state.timestamp);
+        }
+        if (state.system) {
+            var cpuVal = document.getElementById("sparkline-cpu-value");
+            if (cpuVal && typeof state.system.cpu_percent === "number") {
+                cpuVal.textContent = (
+                    state.system.cpu_percent.toFixed(1) + " %"
+                );
+            }
+            var ramVal = document.getElementById("sparkline-ram-value");
+            if (ramVal && typeof state.system.ram_percent === "number") {
+                ramVal.textContent = (
+                    state.system.ram_percent.toFixed(1) + " % / "
+                    + state.system.ram_used_gb + " GB"
+                );
+            }
+            cpuHistory.push(state.system.cpu_percent || 0);
+            ramHistory.push(state.system.ram_percent || 0);
+            if (cpuHistory.length > 20) { cpuHistory.shift(); }
+            if (ramHistory.length > 20) { ramHistory.shift(); }
+            var cpuSvg = document.getElementById("sparkline-cpu");
+            var cpuPoly = cpuSvg
+                ? cpuSvg.querySelector("polyline") : null;
+            renderSparkline(cpuSvg, cpuPoly, cpuHistory);
+            var ramSvg = document.getElementById("sparkline-ram");
+            var ramPoly = ramSvg
+                ? ramSvg.querySelector("polyline") : null;
+            renderSparkline(ramSvg, ramPoly, ramHistory);
         }
     }
 

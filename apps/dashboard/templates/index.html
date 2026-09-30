@@ -56,6 +56,27 @@
                 Stand: <span id="live-timestamp">—</span>
             </p>
         </section>
+        <section class="card" data-card="system">
+            <h2 class="card-title">System</h2>
+            <div class="sparkline-block">
+                <span class="sparkline-label">CPU</span>
+                <svg class="sparkline sparkline-cpu"
+                     viewBox="0 0 60 20" preserveAspectRatio="none"
+                     aria-hidden="true">
+                    <polyline id="sparkline-cpu" points=""></polyline>
+                </svg>
+                <span id="sparkline-cpu-value" class="sparkline-value">—</span>
+            </div>
+            <div class="sparkline-block">
+                <span class="sparkline-label">RAM</span>
+                <svg class="sparkline sparkline-ram"
+                     viewBox="0 0 60 20" preserveAspectRatio="none"
+                     aria-hidden="true">
+                    <polyline id="sparkline-ram" points=""></polyline>
+                </svg>
+                <span id="sparkline-ram-value" class="sparkline-value">—</span>
+            </div>
+        </section>
     </div>
     {% include "partials/timeline.html" %}
     {% include "partials/chat_widget.html" %}
