@@ -89,6 +89,82 @@
     padding-left: 8px;
 }
 
+/* Live-Bereiche auf / (T1/T5, Struktur-Patch).
+   Klickbare Zeilen, kein style=-Attribut. */
+.live-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.live-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.live-empty {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    padding: 8px 0;
+}
+
+.live-device-link,
+.live-alert-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+.live-device-link:hover,
+.live-alert-link:hover {
+    background: var(--bg-hover);
+}
+
+.live-no-link {
+    cursor: default;
+}
+
+.live-device-name {
+    flex: 1 1 auto;
+    color: var(--text-primary);
+    font-size: var(--font-sm);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.live-device-ip {
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--font-sm);
+    flex: 0 0 auto;
+}
+
+.live-alert-ts {
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--font-sm);
+    flex: 0 0 auto;
+}
+
+.live-alert-rule {
+    flex: 1 1 auto;
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* Sparklines (T4, Auflage 1709).
    Kein style=-Attribut, kein inline-SVG-style. */
 .sparkline-block {

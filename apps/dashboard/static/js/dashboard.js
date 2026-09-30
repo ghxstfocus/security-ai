@@ -44,33 +44,76 @@
         }
     }
 
+    function netBadgeClass(net) {
+        if (net === "Gastnetz") { return "badge badge-yellow"; }
+        if (net === "Extern") { return "badge badge-red"; }
+        return "badge badge-cyan";
+    }
+
     function renderDeviceRow(container, dev) {
         var li = document.createElement("li");
         li.className = "live-device";
+        var a = document.createElement("a");
+        a.className = "live-device-link";
+        a.href = "/inventory/" + encodeURIComponent(
+            String(dev.identifier || "")
+        );
         var nameSpan = document.createElement("span");
         nameSpan.className = "live-device-name";
         nameSpan.textContent = String(
             dev.entity_name || dev.identifier || "?"
         );
+        var ipSpan = document.createElement("span");
+        ipSpan.className = "live-device-ip";
+        ipSpan.textContent = String(dev.last_ip || "");
         var netSpan = document.createElement("span");
-        netSpan.className = "live-device-net";
+        netSpan.className = netBadgeClass(
+            String(dev.network_type || "")
+        );
         netSpan.textContent = String(dev.network_type || "");
-        li.appendChild(nameSpan);
-        li.appendChild(netSpan);
+        a.appendChild(nameSpan);
+        a.appendChild(ipSpan);
+        a.appendChild(netSpan);
+        li.appendChild(a);
         container.appendChild(li);
+    }
+
+    function alertBadgeClass(cat) {
+        if (cat === "CONFIRMED" || cat === "SECURITY_ALERT") {
+            return "badge badge-red";
+        }
+        if (cat === "SUSPICION") { return "badge badge-yellow"; }
+        return "badge badge-cyan";
     }
 
     function renderAlertRow(container, entry) {
         var li = document.createElement("li");
         li.className = "live-alert";
+        var a = document.createElement("a");
+        a.className = "live-alert-link";
+        if (entry.can_link && entry.audit_id) {
+            a.href = "/audit/" + encodeURIComponent(
+                String(entry.audit_id)
+            );
+        } else {
+            a.href = "#";
+            a.className += " live-no-link";
+        }
         var tsSpan = document.createElement("span");
         tsSpan.className = "live-alert-ts";
         tsSpan.textContent = String(entry.timestamp || "");
+        var ruleSpan = document.createElement("span");
+        ruleSpan.className = "live-alert-rule";
+        ruleSpan.textContent = String(entry.rule_id || "");
         var catSpan = document.createElement("span");
-        catSpan.className = "live-alert-cat";
+        catSpan.className = alertBadgeClass(
+            String(entry.category || "")
+        );
         catSpan.textContent = String(entry.category || "");
-        li.appendChild(tsSpan);
-        li.appendChild(catSpan);
+        a.appendChild(tsSpan);
+        a.appendChild(catSpan);
+        a.appendChild(ruleSpan);
+        li.appendChild(a);
         container.appendChild(li);
     }
 

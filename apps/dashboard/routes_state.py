@@ -82,15 +82,33 @@ def _section_devices() -> dict | None:
 
 
 def _section_alerts() -> list | None:
-    """Alarme-Sektion (alert.view). Fehlt bei AccessDeniedError."""
+    """Alarme-Sektion (alert.view). Fehlt bei AccessDeniedError.
+
+    Liefert pro Eintrag zusaetzlich can_link=True, wenn
+    der Actor auch audit.read hat (Titel-Link auf
+    /audit/<audit_id>). Ohne diese Permission wird der
+    Link nicht gesetzt (RBAC pro Link, Punkt 33).
+    """
     try:
         svc = AuditReaderService(
             audit_writer=g.audit,
             checker=g.access_checker,
         )
-        return svc.list_recent_assessments(g.principal, limit=5)
+        entries = svc.list_recent_assessments(
+            g.principal, limit=5,
+        )
     except AccessDeniedError:
         return None
+    try:
+        g.access_checker.require_permission(
+            g.principal, "audit.read",
+        )
+        can_link = True
+    except AccessDeniedError:
+        can_link = False
+    return [
+        {**e, "can_link": can_link} for e in entries
+    ]
 
 
 def _section_changes() -> list | None:
