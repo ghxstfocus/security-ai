@@ -13,7 +13,6 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import Any
 
-
 from flask import Flask, current_app, render_template
 
 from apps.dashboard.decorators import require_permission
