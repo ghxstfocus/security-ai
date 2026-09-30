@@ -384,8 +384,9 @@ Nach jedem Patch, in dieser Reihenfolge:
 4. `pytest -q <datei>` — Lauf.
 5. `pytest -q` (Vollsuite) vor dem Commit, wenn Logik
    betroffen ist. Bei reiner Doku entfaellt das.
-   Bei Import- oder Signatur-Aenderung zusaetzlich:
-   `ruff check . --statistics`.
+   `ruff check .` vor jedem Commit, der .py-Dateien
+   aendert. Bei reinen Doku-Commits (.md, pyproject
+   ohne Regel-Aenderung) entfaellt es.
 6. `git status --porcelain` — keine versehentlichen
    Dateien, keine unerwarteten Aenderungen.
 7. `git diff --stat` — Umfang pruefen, bevor committet wird.
@@ -531,9 +532,32 @@ auftraten (A900-2b-2c, Auflage 1538, behoben in
 
 - **Regel:** Nach jedem Commit mit Import- oder
   Signatur-Aenderung im Verifikationsblock
-  `ruff check . --statistics` mitlaufen lassen.
+  `ruff check .` mitlaufen lassen.
   Sonst bleiben Import-Reihenfolge-Fehler
   unentdeckt und werden zur spaeteren Regression.
+
+### Code-Commit ohne ruff-Messung
+
+Symptom: Code wird committet, `ruff check .` laeuft
+nicht im selben Block. I001- oder andere
+Lint-Regressionen fallen erst beim naechsten Commit
+auf, wenn die Kette (mypy, Tests, Diff) den Fehler
+zufaellig sichtbar macht.
+
+Beispiele:
+- A900-2b-2c: zwei I001-Regressionen durch
+  Import-Nachtraege, erst in der Abschluss-Messung
+  entdeckt (behoben in 12d9a28 und 81a3607).
+- S310: noqa waere RUF100 gewesen, weil S310 nicht
+  im Default-Satz aktiv ist.
+- S608/S603: noqa waere RUF100, siehe SECURITY_REVIEW_LOG
+  Punkt 62.
+
+- **Regel:** Vor jedem Commit, der .py-Dateien
+  aendert, `ruff check .` ausfuehren. Bei reinen
+  Doku-Commits (.md, pyproject ohne Regel-Aenderung)
+  entfaellt es. Der Commit ist erst fertig, wenn
+  `ruff` clean ist.
 
 ### Heredoc ueber ~3 KB zerhackt
 
