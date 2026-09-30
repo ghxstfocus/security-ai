@@ -15,23 +15,29 @@
     <div class="stat-cards">
         {% if can_view_inventory %}
         {{ stat_card("Geraete", device_count, "cyan",
-                      data_card="devices") }}
+                      data_card="devices",
+                      href="/inventory") }}
         {{ stat_card("Hauptnetz", network_hauptnetz, "cyan",
-                      data_card="network-hauptnetz") }}
+                      data_card="network-hauptnetz",
+                      href="/inventory") }}
         {{ stat_card("Gastnetz", network_gastnetz, "cyan",
-                      data_card="network-gastnetz") }}
+                      data_card="network-gastnetz",
+                      href="/inventory") }}
         {% endif %}
         {% if can_view_alerts %}
         {{ stat_card("Alarme (24h)", alert_count, "red",
-                      data_card="alerts") }}
+                      data_card="alerts",
+                      href="/alerts") }}
         {% endif %}
         {% if can_view_approvals %}
         {{ stat_card("Offene Approvals", approval_count,
-                      "yellow", data_card="approvals") }}
+                      "yellow", data_card="approvals",
+                      href="/approvals") }}
         {% endif %}
         {% if can_view_changes %}
         {{ stat_card("Changes", change_count, "green",
-                      data_card="changes") }}
+                      data_card="changes",
+                      href="/changes") }}
         {% endif %}
     </div>
     {% include "partials/timeline.html" %}

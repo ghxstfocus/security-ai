@@ -5,9 +5,20 @@
   Kein |safe, kein style="...".
   accent default cyan.
 #}
-{% macro stat_card(label, value, accent="cyan", data_card=None) %}
-<div class="card card-accent-{{ accent }}"{% if data_card %} data-card="{{ data_card }}"{% endif %}>
+{% macro stat_card(label, value, accent="cyan",
+                     data_card=None, href=None) %}
+{% if href %}
+<a class="card card-accent-{{ accent }} card-link"
+   href="{{ href }}"
+   {%- if data_card %} data-card="{{ data_card }}"{% endif %}>
+    <div class="card-label">{{ label }}</div>
+    <div class="card-value">{{ value }}</div>
+</a>
+{% else %}
+<div class="card card-accent-{{ accent }}"
+     {%- if data_card %} data-card="{{ data_card }}"{% endif %}>
     <div class="card-label">{{ label }}</div>
     <div class="card-value">{{ value }}</div>
 </div>
+{% endif %}
 {% endmacro %}

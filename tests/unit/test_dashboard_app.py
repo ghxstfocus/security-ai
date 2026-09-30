@@ -517,3 +517,13 @@ def test_index_shows_network_cards(app, client):
     assert r.status_code == 200
     assert b'data-card="network-hauptnetz"' in r.data
     assert b'data-card="network-gastnetz"' in r.data
+
+def test_index_cards_are_links(app, client):
+    """T6 (Auflage 1683): Kacheln sind <a class="card-link">."""
+    r = client.get("/")
+    assert r.status_code == 200
+    assert b'class="card card-accent-cyan card-link"' in r.data
+    assert b'href="/inventory"' in r.data
+    assert b'href="/alerts"' in r.data
+    assert b'href="/approvals"' in r.data
+    assert b'href="/changes"' in r.data
