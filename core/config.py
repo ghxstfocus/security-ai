@@ -13,6 +13,7 @@ Konvention:
 from __future__ import annotations
 
 import os
+import urllib.parse
 from pathlib import Path
 
 DEFAULT_ENV_PATH = ".env"
@@ -96,8 +97,31 @@ def reset_cache() -> None:
 # Getter
 # ---------------------------------------------------------------------- #
 
+def validate_ollama_base_url(url: str) -> str:
+    """Prueft, ob die URL ein erlaubtes Ollama-Ziel ist.
+
+    Fail closed: bei ungueltigem Scheme oder
+    nicht-Loopback-Host wird ConfigError geworfen.
+    """
+    if not isinstance(url, str) or not url:
+        raise ConfigError("OLLAMA_BASE_URL darf nicht leer sein")
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise ConfigError(
+            f"OLLAMA_BASE_URL: Scheme {parsed.scheme!r} nicht erlaubt"
+        )
+    if parsed.hostname not in ("127.0.0.1", "localhost", "::1"):
+        raise ConfigError(
+            f"OLLAMA_BASE_URL: Host {parsed.hostname!r} nicht erlaubt "
+            "(nur Loopback)"
+        )
+    return url
+
+
 def get_ollama_base_url() -> str:
-    return os.environ.get("OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL)
+    return validate_ollama_base_url(
+        os.environ.get("OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL)
+    )
 
 
 def get_model_default() -> str:
@@ -202,4 +226,5 @@ __all__ = [
     "get_secret_key",
     "load_env",
     "reset_cache",
+    "validate_ollama_base_url",
 ]

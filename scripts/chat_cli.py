@@ -54,6 +54,7 @@ from core.config import (
     get_model_large,
     get_ollama_base_url,
     load_env,
+    validate_ollama_base_url,
 )
 from core.context.builder import build_chat_context
 from core.inventory.repository import (
@@ -233,6 +234,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         audit = AuditWriter(base_dir=args.audit_base_dir)
         base_url = args.base_url or get_ollama_base_url()
+        base_url = validate_ollama_base_url(base_url)
         llm = OllamaClient(base_url=base_url)
 
         principals = PrincipalRepository(conn)
