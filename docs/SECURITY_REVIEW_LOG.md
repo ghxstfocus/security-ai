@@ -1274,6 +1274,23 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
         nicht unterdrueckt ist (sonst ist jeder
         ruff-Lauf unlesbar).
 
+62. (offen, Kategorie 3, Sicherheits-Lint)
+    ruff -S Kandidaten verifizieren.
+    - Aus Punkt 61 Messergebnis (HEAD b86cc40).
+    - Drei Kandidaten:
+      - S608 core/changes/repository.py:313, 361
+        (SQL-Statement aus Konkatenation).
+        Kern-Service, Kategorie 3.
+      - S603 tools/nmap_scan.py:315
+        (subprocess ohne shell=False explizit).
+        Tool, Kategorie 2 oder 3.
+      - S314 tools/nmap_scan.py:222
+        (XML-Parser). Tool, Kategorie 2 oder 3.
+    - Pro Kandidat: Code lesen, entscheiden
+      (echter Fix, noqa mit Begruendung, oder
+      Umbau). Eigener Reviewer-Block.
+    - Kein Fix vor Verifikation.
+
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
   device_presence/offline. identifier=MAC.
