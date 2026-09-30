@@ -134,17 +134,27 @@ def register_chat_routes(app: Flask) -> None:
         ctx = build_chat_context(
             g.conn, current_app.config["AUDIT_BASE_DIR"],
         )
+        # ctx ist dict[str, object] (build_chat_context).
+        # Guards fuer die zwei Werte, die mypy als object
+        # sieht und die ChatService.ask typisiert erwartet
+        # (dict[str, Any] | None bzw. int). Fail closed.
+        snapshot_raw = ctx["inventory_snapshot"]
+        if not isinstance(snapshot_raw, dict):
+            return _json_error("Ungueltige Anfrage", 400)
+        since_raw = ctx["since_hours"]
+        if not isinstance(since_raw, int):
+            return _json_error("Ungueltige Anfrage", 400)
         service = _build_chat_service()
         try:
             resp = service.ask(
                 g.principal, q,
                 risk_assessments=ctx["risk_assessments"],
-                inventory_snapshot=ctx["inventory_snapshot"],
+                inventory_snapshot=snapshot_raw,
                 open_approvals=ctx["open_approvals"],
                 open_changes=ctx["open_changes"],
                 log_excerpts=ctx["log_excerpts"],
                 recent_events=ctx["recent_events"],
-                since_hours=ctx["since_hours"],
+                since_hours=since_raw,
                 detail=detail,
             )
         except LLMTimeout:
