@@ -198,7 +198,7 @@ sind projektspezifische Ergaenzungen dazu.
   Security-Checkliste fuer Phase 3.6 (Web-Dashboard)
 - docs/SECURITY_REVIEW_LOG.md — Sicherheits-
   Entscheidungen nach Thema + offene Punkte 1-11
-  (Stand B1 abgeschlossen, mypy 0)
+  (Stand Punkt 55 abgeschlossen, mypy 0)
 - docs/INCONSISTENCIES_FOUND.md — Ausgelagerte
   Inkonsistenzen (heute keine)
 - docs/WORKFLOW.md — generischer Prozess (Rollen,
@@ -246,7 +246,7 @@ Punkt 29 (Wert-Synonyme), Punkt 30 (Links im Chat),
 3.6.18a (category durchsuchbar), UI-Feinschliff
 (SVG, Spalten, Sidebar, Suche, Topbar-Dropdown),
 Diagnose 2026-09-27 (ruff/mypy eingerichtet).
-HEAD 2de4a40, Working Tree sauber.
+HEAD d607d82, Working Tree sauber.
 
 Core-Status: Core (Stufe 1-3.6.18) abgeschlossen.
 Orchestrator-Start (Punkt 26) und Watcher
@@ -264,15 +264,17 @@ Bewusst offen (kein Bau heute):
   - Echte Typfehler: 0.
 
 Offene Punkte 1-41 in docs/SECURITY_REVIEW_LOG.md.
-Chronologie bis 2de4a40 dokumentiert (sortiert nach
+Chronologie bis d607d82 dokumentiert (sortiert nach
 Commit-Zeit).
 DESIGN_DECISIONS: §11 (Kontext, Wert-Synonyme,
 Suchfelder), §14 (Frage-Klassifikation, Anzeige-Labels,
 since_hours), §16 (ProxyFix, Links im Chat, nav_links,
 JS-Ausnahme, server_name, default_server).
 
-Stand: 2026-09-30 | HEAD: 2de4a40 |
-Tests: 1040 gruen (venv, pytest 9.1.1).
+Stand: 2026-10-01 | HEAD: d607d82 |
+Tests: 1071 gruen (venv, pytest 9.1.1).
+Punkt 55 (Dashboard-Anzeige-Erweiterung)
+abgeschlossen.
 Quelle der Wahrheit ist `pytest --collect-only -q`.
 
 ### Aufgabe jetzt
