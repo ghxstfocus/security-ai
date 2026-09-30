@@ -58,7 +58,7 @@ def _details_formatted(entry: dict) -> str:
 def register_audit_routes(app: Flask) -> None:
     @app.route("/audit", methods=["GET"])
     @require_permission("audit.read")
-    def audit_list():
+    def audit_list() -> str | tuple[str, int]:
         date_arg = request.args.get("date")
         if date_arg is None:
             date_str = datetime.now(UTC).strftime(
@@ -80,7 +80,7 @@ def register_audit_routes(app: Flask) -> None:
 
     @app.route("/audit/<audit_id>", methods=["GET"])
     @require_permission("audit.read")
-    def audit_detail(audit_id: str):
+    def audit_detail(audit_id: str) -> str:
         service = _build_service()
         try:
             entry = service.find_by_audit_id(g.principal, audit_id)
