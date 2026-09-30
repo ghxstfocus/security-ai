@@ -81,6 +81,10 @@ def _parse_migration_version(filename: str) -> int | None:
     return int(m.group(1))
 
 
+class InventoryRepositoryError(RuntimeError):
+    """Basis fuer Inventory-Repository-Fehler."""
+
+
 class SchemaVersionError(RuntimeError):
     """Die DB-Schema-Version passt nicht zu den vorhandenen Migrationen."""
 
@@ -316,7 +320,10 @@ class DeviceRepository:
         self._conn.commit()
 
         result = self.get(identifier)
-        assert result is not None
+        if result is None:
+            raise InventoryRepositoryError(
+                f"Device {identifier!r} nach INSERT nicht gefunden"
+            )
         return result
 
     def mark_offline(
@@ -389,6 +396,7 @@ __all__ = [
     "DEFAULT_DB_PATH",
     "DEFAULT_MIGRATIONS_DIR",
     "DeviceRepository",
+    "InventoryRepositoryError",
     "SchemaVersionError",
     "apply_migrations",
     "check_schema_version",
