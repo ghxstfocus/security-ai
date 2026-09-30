@@ -10,6 +10,7 @@ Aufrufstellen.
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 
 from core.risk.models import CATEGORY_LABELS
 
@@ -58,7 +59,7 @@ def format_score_label(category: str | None) -> str:
     return _SCORE_LABELS.get(category, str(category))
 
 
-def format_score(value) -> str:
+def format_score(value: Any) -> str:
     """
     Score-Zahl -> "0.95" (Auflage 425).
 
