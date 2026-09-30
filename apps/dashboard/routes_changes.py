@@ -27,13 +27,13 @@ from flask import (
     Response,
     abort,
     g,
-    redirect,
     render_template,
     request,
     session,
 )
 
 from apps.dashboard import csrf
+from apps.dashboard._redirect import safe_redirect
 from apps.dashboard.decorators import require_permission
 from core.changes.repository import ChangeRepository
 from core.services.change_service import (
@@ -81,8 +81,14 @@ def register_changes_routes(app: Flask) -> None:
         if not csrf.validate(submitted, expected):
             return ("Ungueltige Anfrage", 400)
         title = request.form.get("title")
+        if title is None:
+            return ("Ungueltige Anfrage", 400)
         description = request.form.get("description")
+        if description is None:
+            return ("Ungueltige Anfrage", 400)
         ctype = request.form.get("type")
+        if ctype is None:
+            return ("Ungueltige Anfrage", 400)
         diff_or_patch = request.form.get("diff_or_patch")
         files_affected = request.form.get("files_affected")
         rollback_plan = request.form.get("rollback_plan")
@@ -101,7 +107,7 @@ def register_changes_routes(app: Flask) -> None:
             )
         except ChangeServiceError:
             return ("Ungueltige Anfrage", 400)
-        return redirect("/changes", 302)
+        return safe_redirect("/changes", 302)
 
     @app.route("/changes/<change_id>", methods=["GET"])
     @require_permission("change.view")
