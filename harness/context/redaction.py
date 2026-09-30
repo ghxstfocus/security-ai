@@ -29,7 +29,7 @@ from typing import Any
 
 MAX_FIELD_LEN = 2000
 
-_REDACTION_TOKEN = "[REDACTED]"
+_REDACTION_PLACEHOLDER = "[REDACTED]"
 
 # Steuerzeichen, die in Textfeldern nichts zu suchen haben.
 # \\t und \\n bleiben (mehrzeilige Logs sind erlaubt).
@@ -89,14 +89,14 @@ def redact_text(text: str, *, max_len: int = MAX_FIELD_LEN
         out = cleaned
 
     # Instruktions-Marker
-    substituted = _INJECTION_RE.sub(_REDACTION_TOKEN, out)
+    substituted = _INJECTION_RE.sub(_REDACTION_PLACEHOLDER, out)
     if substituted != out:
         redacted = True
         out = substituted
 
     # Laenge
     if len(out) > max_len:
-        out = out[:max_len] + _REDACTION_TOKEN
+        out = out[:max_len] + _REDACTION_PLACEHOLDER
         redacted = True
 
     return (out, redacted)
