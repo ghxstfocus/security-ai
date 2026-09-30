@@ -942,7 +942,30 @@ mypy no-untyped-def 66 -> 2, ruff 2 -> 0.
 23 Commits (A900-1, A900-2a, A900-2b-1,
 A900-2b-2a/b/c, Ruff-I001-Fix).
 Details in docs/SECURITY_REVIEW_LOG.md.
-Offen: Punkt 60 (mypy orchestrator.py, 2 Stellen).
+Punkt 60 erledigt in B1b-2 (d93cc68).
+
+## B1 - mypy-Aufraeumen  [x]
+
+mypy 37 -> 0 in 15 Dateien
+(arg-type, return-value, import-untyped,
+no-untyped-def, no-redef). ruff 0.
+Tests 1036 -> 1040.
+Punkt 60 erledigt (orchestrator.py).
+Punkt 63 erledigt (mypy 37, in B1d angelegt,
+in B1 behoben).
+Punkt 64 entfaellt (B4 war Fehlalarm).
+- B1d 404ba8e (Stubs + fritzconnection-Override,
+  Punkt 63 angelegt).
+- B1a 1e9adf0 (apps/dashboard/_redirect.py neu,
+  app.py Session-Guards + 3x safe_redirect,
+  4 neue Tests).
+- B1c entfaellt (durch B1d behoben).
+- B1b-1 530fd88, 98429bc, a975723, c8f4569,
+  9fd4d1d, 391f6ce (6 Dashboard-Routen,
+  Guards + safe_redirect).
+- B1b-2 d93cc68, d77fd23, 2de4a40 (Kern-Services:
+  orchestrator, chat, agent_loop).
+Details in docs/SECURITY_REVIEW_LOG.md.
 
 ## Phase 5 — Admin AI  [ ]
 
