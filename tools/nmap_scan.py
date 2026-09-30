@@ -6,7 +6,7 @@ Ruft nmap per subprocess auf, mit Sandbox:
   - Timeout 30s
   - Argument-Whitelist (-sT, -sV, -p, --top-ports, -oX, -Pn, -n)
   - Ziel-Whitelist via ipaddress (fail closed)
-  - XML-Ausgabe auf stdout (-oX -), Parsing mit xml.etree.ElementTree
+  - XML-Ausgabe auf stdout (-oX -), Parsing mit defusedxml.ElementTree
 
 Ziel-Whitelist (Defense in Depth, identisch zur Policy):
   localhost, 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
@@ -20,9 +20,10 @@ import ipaddress
 import shutil
 import socket
 import subprocess
-import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
 from typing import Any
+
+from defusedxml import ElementTree as ET
 
 from harness.permissions.levels import Level
 from harness.tool_registry.tool import Tool, ToolArgumentError, ToolError
