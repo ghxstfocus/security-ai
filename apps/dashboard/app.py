@@ -246,8 +246,10 @@ def create_app(
         format_score_label,
         format_source_label,
         format_ts,
+        network_label,
     )
     app.add_template_filter(format_ts, "format_ts")
+    app.add_template_filter(network_label, "network_label")
     app.add_template_filter(
         format_score_label, "format_score_label",
     )

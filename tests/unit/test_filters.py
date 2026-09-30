@@ -14,6 +14,7 @@ from apps.dashboard.filters import (
     format_score,
     format_score_label,
     format_ts,
+    network_label,
 )
 
 # ------------------------------------------------------------------ #
@@ -131,3 +132,28 @@ class FormatScoreTests(unittest.TestCase):
 
     def test_none(self):
         self.assertEqual(format_score(None), "")
+
+
+# ------------------------------------------------------------------ #
+# network_label (T2, Auflage 1681)
+# ------------------------------------------------------------------ #
+
+class NetworkLabelTests(unittest.TestCase):
+
+    def test_hauptnetz(self):
+        self.assertEqual(network_label("Hauptnetz"), "Hauptnetz")
+
+    def test_gastnetz(self):
+        self.assertEqual(network_label("Gastnetz"), "Gastnetz")
+
+    def test_extern(self):
+        self.assertEqual(
+            network_label("Extern"),
+            "Extern (nicht autorisiert)",
+        )
+
+    def test_unbekannt_fallback(self):
+        self.assertEqual(network_label("Sonstiges"), "Sonstiges")
+
+    def test_none(self):
+        self.assertEqual(network_label(None), "")

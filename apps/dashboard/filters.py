@@ -72,6 +72,28 @@ def format_score(value: Any) -> str:
         return "" if value is None else str(value)
 
 
+_NETWORK_LABELS = {
+    "Hauptnetz": "Hauptnetz",
+    "Gastnetz": "Gastnetz",
+    "Extern": "Extern (nicht autorisiert)",
+}
+
+
+def network_label(value: str | None) -> str:
+    """
+    network_type-Wert -> Anzeige-Label (T2, Auflage 1681).
+
+    Hauptnetz/Gastnetz bleiben unveraendert.
+    "Extern" wird zu "Extern (nicht autorisiert)"
+    (scope_guard-Kontext).
+    Unbekannte Werte -> Rohstring als Fallback.
+    None -> "".
+    """
+    if value is None:
+        return ""
+    return _NETWORK_LABELS.get(value, str(value))
+
+
 _SOURCE_LABELS = {
     "devices": "Geraete",
     "whitelisted_devices": "Freigegebene Geraete",

@@ -15,7 +15,7 @@
     <dt>Name</dt>
     <dd>{{ device.entity_name if device.entity_name else "—" }}</dd>
     <dt>Netz</dt>
-    <dd>{{ device.network_type if device.network_type else "—" }}</dd>
+    <dd>{{ device.network_type | network_label }}</dd>
     <dt>Typ</dt>
     <dd>{{ device.device_type }}</dd>
     <dt>Whitelist</dt>
