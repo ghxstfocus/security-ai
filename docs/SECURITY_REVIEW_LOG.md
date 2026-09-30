@@ -1294,31 +1294,38 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
 62. (offen, Kategorie 3, Sicherheits-Lint)
     ruff -S verbleibende Treffer verifizieren.
     - Aus Punkt 61 Messergebnis (HEAD b86cc40,
-      korrigiert am 2026-09-30).
+      korrigiert 2026-09-30).
     - Nach per-file-ignores tests/*:
-      10 Treffer aus 6 Regeln.
-    - Zu verifizieren:
-      - S608 core/changes/repository.py:313, 361
-        (SQL aus Konkatenation). Kern-Service.
-      - S603 tools/nmap_scan.py:315
-        (subprocess ohne shell=False explizit).
-      - S314 tools/nmap_scan.py:222
-        (XML-Parser).
+      Stand HEAD 2ab53dd: 6 Treffer aus 5 Regeln.
+    - Erledigt:
       - S101 core/inventory/repository.py:319
-        (assert in Produktivcode; bei python -O
-        entfernt). Kern-Service.
+        -> Commit 1, assert -> InventoryRepositoryError.
       - S101 core/inventory/whitelist.py:139
-        (assert in Produktivcode). Kern-Service.
+        -> Commit 2, analog.
       - S105 harness/context/redaction.py:32
-        (_REDACTION_TOKEN, vermutlich Fehlalarm,
-        Sentinel statt Secret).
-      - S310 harness/llm/client.py:101, 109, 184
-        (urllib http://127.0.0.1:11434, Loopback,
-        Scheme heute hart kodiert).
-    - Pro Kandidat: Code lesen, entscheiden
-      (echter Fix, noqa mit Begruendung, Umbau).
-      Eigener Reviewer-Block.
-    - Kein Fix vor Verifikation.
+        -> Commit 3, _REDACTION_TOKEN ->
+        _REDACTION_PLACEHOLDER.
+      - S314 tools/nmap_scan.py:222
+        -> Commit 4, defusedxml.
+    - Bewusst offen (mit Begruendung):
+      - S310 harness/llm/client.py:101, 109, 184:
+        Scheme-Check existiert im Konstruktor
+        (client.py:53-62). Loopback-Pruefung liegt
+        in core/config.py:validate_ollama_base_url
+        (neu, Fix 5, Commit 2ab53dd). Der Client
+        bleibt kontextfrei, Validierung ist
+        upstream. Kein noqa (S310 ist nicht im
+        Default-Satz, noqa waere RUF100).
+      - S608 core/changes/repository.py:313, 361:
+        sets aus festen Spaltennamen bzw.
+        _UPDATABLE_FIELDS-Whitelist. Werte als
+        ?-Parameter. noqa mit Begruendung
+        (Fix 6).
+      - S603 tools/nmap_scan.py:316:
+        subprocess.run mit shell=False explizit.
+        noqa mit Begruendung (Fix 6).
+    - Nach Fix 6: Status aktualisieren, Punkt 62
+      schliessen (Kategorie 1).
 
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
