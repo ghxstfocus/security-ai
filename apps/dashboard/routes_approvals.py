@@ -35,13 +35,13 @@ from flask import (
     Response,
     abort,
     g,
-    redirect,
     render_template,
     request,
     session,
 )
 
 from apps.dashboard import csrf
+from apps.dashboard._redirect import safe_redirect
 from apps.dashboard.decorators import require_permission
 from core.approval.repository import (
     ApprovalNotFoundError,
@@ -121,7 +121,7 @@ def register_approvals_routes(app: Flask) -> None:
             abort(409)
         except ApprovalServiceError:
             return ("Ungueltige Anfrage", 400)
-        return redirect("/approvals", 302)
+        return safe_redirect("/approvals", 302)
 
 
 __all__ = ["register_approvals_routes"]
