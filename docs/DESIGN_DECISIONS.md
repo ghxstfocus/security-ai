@@ -4,10 +4,10 @@
 > im Verlauf des Projekts getroffen wurden. Es ist die erste
 > Adresse bei Unklarheiten.
 >
-> Stand: A900 abgeschlossen (HEAD 81a3607, 2026-09-30),
-> Phase 3.6.18c + Zwischenbloecke bis Punkt 60.
-> Offen: Punkt 60 (mypy orchestrator.py),
-> Punkte 55-59 (Dashboard-Erweiterung vorgemerkt).
+> Stand: B1 abgeschlossen (HEAD 2de4a40, 2026-09-30),
+> mypy 37 -> 0, ruff 0, Tests 1040.
+> Phase 3.6.18c + Zwischenbloecke bis Punkt 63.
+> Offen: Punkte 55-59 (Dashboard-Erweiterung vorgemerkt).
 
 ---
 
