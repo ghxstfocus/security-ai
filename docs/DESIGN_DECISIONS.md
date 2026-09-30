@@ -1484,6 +1484,47 @@ Info-Leak (Login-Seite) zeigen. Der 443-default_server
 hat ein Zertifikat, weil TLS-Handshake vor HTTP-Routing
 stattfindet.
 
+## 17. Dashboard als administrative Oberflaeche
+
+Das Dashboard ist nicht nur Anzeige, sondern
+Steuerpult. Die Rollenverschiebung ist explizit.
+
+- UI ruft nur Services (bestehende Regel, 11).
+- CSP/CSRF/RBAC bleiben unveraendert (16).
+- Aktionen werden im Human-in-the-Loop-Schema
+  eingeordnet (AUTOMATIC / REVIEW /
+  APPROVAL_REQUIRED).
+- Kritische Aktionen laufen ausschliesslich als
+  Change Request. Kein direkter Ausfuehrungspfad
+  im UI.
+- Der Bestaetigungsdialog ist die einzige
+  Schnittstelle zwischen Bedienung und Wirkung.
+  Grund: der Mensch muss vor dem Anlegen die
+  Auswirkung und den Rollback sehen.
+- Kurze Wege in der Bedienung: Aktionen sitzen
+  auf der Detailseite und pro Zeile in Live-Listen,
+  nicht in Sammel-Reitern.
+- Change Request ist Pflicht bei Level 2+.
+
+## 18. Sidebar-Baumstruktur
+
+Die Sidebar wird Baum mit Bereichen und
+Untermenues:
+
+- Uebersicht
+- Inventar (Alle, Aktive, Hauptnetz, Gastnetz,
+  Detailseite)
+- Alarme (Aktuell, Verlauf, Detail)
+- Werkzeuge (Netzwerk-Diagnose, System, Datenbank,
+  Audit, Aktionen)
+- System-Status
+- Verwaltung (Benutzer, Rollen, Guardrails,
+  Betriebsparameter, Audit-Log, Einstellungen)
+
+- Untermenues per details/summary oder externem JS
+  (CSP-konform, kein Inline-Script).
+- Hamburger-Toggle aus 3.6.11 bleibt kompatibel.
+
 ## 22. Phase-3.6.8-Erweiterungen
 
 Siehe auch:
