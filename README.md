@@ -5,7 +5,7 @@
 > einer foederierten, KI-gestuetzten Sicherheitsarchitektur mit
 > strikter Human-in-the-Loop-Kontrolle.
 
-Stand: 2026-09-28 | HEAD: 811fafc | Tests: 950 gruen (venv, pytest 9.1.1)
+Stand: 2026-09-30 | HEAD: 715a38a | Tests: 1028 gruen (venv, pytest 9.1.1)
 
 ## Die Vision in einem Absatz
 
@@ -56,11 +56,13 @@ Die vollstaendige Vision: [PROJECT_VISION.md](PROJECT_VISION.md).
   Chat, Benutzer, Rollen, Audit, Einstellungen, Suche.
   Links im Chat (Objekt-Referenzen und Navigations-Hinweise).
 - **HTTPS hinter nginx** mit eigener CA, gunicorn (2 Worker).
-- **950 Tests, alle gruen.**
+- **1028 Tests, alle gruen.**
 
 ## Was gerade gebaut wird
 
-- Lint/Typen-Aufraeumen (ruff 435, mypy 87 — eigene Runde).
+- A900 abgeschlossen: mypy no-untyped-def
+  66 -> 2, ruff 2 -> 0. Offen: Punkt 60
+  (mypy orchestrator.py).
 - Punkt 11 (SSH-Zugang Windows -> CT102) — Betriebsakt.
 - Phasen 5-11 in Planung (siehe Was geplant ist).
 

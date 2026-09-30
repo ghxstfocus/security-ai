@@ -114,6 +114,19 @@ Change Requests verwalten. DB muss existieren (fail closed).
     .venv/bin/python3 scripts/changes_cli.py export <change_id> [--out DIR]
     .venv/bin/python3 scripts/changes_cli.py count
 
+## tools/ (Hintergrundprozesse, systemd-gesteuert)
+
+- tools/event_reader.py (Timer 30s) — liest
+  data/events-YYYY-MM-DD.jsonl, ruft
+  SecurityAI.process(), Cursor in event_cursor,
+  Idempotenz via processed_events.
+- tools/fritzbox_watcher.py (Timer 60s) — liest
+  Fritz!Box-Hosts via TR-064, schreibt
+  device_presence/device_offline nach
+  data/events-YYYY-MM-DD.jsonl.
+
+systemd-Units: siehe docs/DEPLOYMENT.md.
+
 ## Suche (Dashboard, GET /search?q=...)
 
 Durchsucht werden pro Quelle (LIKE '%q%',
