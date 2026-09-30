@@ -4,10 +4,14 @@
 > im Verlauf des Projekts getroffen wurden. Es ist die erste
 > Adresse bei Unklarheiten.
 >
-> Stand: B1 abgeschlossen (HEAD 2de4a40, 2026-09-30),
-> mypy 37 -> 0, ruff 0, Tests 1040.
-> Phase 3.6.18c + Zwischenbloecke bis Punkt 63.
-> Offen: Punkte 55-59 (Dashboard-Erweiterung vorgemerkt).
+> Stand: Punkt 55 abgeschlossen (HEAD d607d82,
+> 2026-10-01), mypy 0, ruff 0, Tests 1071.
+> Punkt 55 (Dashboard-Anzeige-Erweiterung, T1-T6 +
+> B5) erledigt.
+> Offen: Punkte 56-59 (Dashboard-Aktionen,
+> Guardrails, Werkzeuge-Werkbank,
+> Betriebsparameter), 65 (Extern-Kachel),
+> 66 (/system-Detailseite).
 
 ---
 
