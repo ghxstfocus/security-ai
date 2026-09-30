@@ -21,6 +21,8 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.5",
     "mypy>=1.10",
+    "types-PyYAML>=6.0",
+    "types-defusedxml>=0.7",
 ]
 fritzbox = [
     "fritzconnection>=1.13",
@@ -50,6 +52,10 @@ python_version = "3.11"
 warn_unused_ignores = true
 warn_redundant_casts = true
 disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["fritzconnection.*"]
+ignore_missing_imports = true
 
 [tool.setuptools.packages.find]
 include = [

@@ -1330,6 +1330,30 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
       bewusst offen mit Begruendung. Fix 6 (noqa)
       entfaellt: S608/S603/S310 sind nicht im
       Default-Satz, noqa waere RUF100.
+63. (offen, Kategorie 1 + 2 + 3, Typen)
+    mypy 37 Fehler in 15 Dateien (Stand HEAD
+    58b039e, 2026-09-30).
+    Handoff nannte 2 (Punkt 60). Gemessen 37.
+    - 15 arg-type: str | None ungeprueft an
+      Service. Fix: Route validiert None ->
+      400/redirect (fail closed am Rand).
+    - 12 return-value: redirect() liefert
+      werkzeug.Response vs. flask.Response.
+      Fix: cast(Response, redirect(...)) oder
+      Helper _redirect(url).
+    - 7 import-untyped: yaml, defusedxml,
+      fritzconnection. Fix: types-PyYAML,
+      types-defusedxml als dev-deps,
+      fritzconnection: ignore_missing_imports.
+    - 2 no-untyped-def: Punkt 60
+      (orchestrator.py).
+    - 1 no-redef: agent_loop/loop.py:451
+      (Bestandsaufnahme vor Fix).
+    Aufteilung: B1a (app.py, Kategorie 3),
+    B1b (Kern-Services, Kategorie 3),
+    B1c (Tools, Kategorie 2),
+    B1d (Stubs, Kategorie 1, dieser Block).
+
 
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
