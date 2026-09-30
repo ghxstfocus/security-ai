@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Protocol
@@ -971,7 +972,7 @@ def _ra_field(
     return _get_field(ra, name, default)
 
 
-def _format_categories(entries: list[Any]) -> str:
+def _format_categories(entries: Sequence[Any]) -> str:
     counts: dict[str, int] = {}
     for e in entries:
         cat = _ra_field(e, "category")
@@ -985,7 +986,7 @@ def _format_categories(entries: list[Any]) -> str:
     )
 
 
-def _format_rules(entries: list[Any]) -> str:
+def _format_rules(entries: Sequence[Any]) -> str:
     counts: dict[str, int] = {}
     for e in entries:
         r = _ra_field(e, "rule_id")
@@ -999,7 +1000,7 @@ def _format_rules(entries: list[Any]) -> str:
     )
 
 
-def _format_time_range(entries: list[Any]) -> str:
+def _format_time_range(entries: Sequence[Any]) -> str:
     ts = [
         _ra_field(e, "timestamp")
         for e in entries
@@ -1011,7 +1012,7 @@ def _format_time_range(entries: list[Any]) -> str:
 
 
 def _format_top_scores(
-    entries: list[Any], limit: int = 5,
+    entries: Sequence[Any], limit: int = 5,
 ) -> str:
     scores = []
     for e in entries:
