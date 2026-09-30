@@ -21,11 +21,12 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import json
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from core.changes.models import ChangeType
+from core.changes.models import ChangeRequest, ChangeType
 from core.changes.repository import (
     ChangeRepository,
 )
@@ -278,7 +279,7 @@ class SecurityAI:
         related_event_id: str | None = None,
         risk_category: str | None = None,
         risk_score: float | None = None,
-    ):
+    ) -> ChangeRequest:
         """
         Legt einen Change Request an (Status DRAFT).
         Schreibt Audit-Eintrag change_created.
@@ -319,7 +320,7 @@ class SecurityAI:
         self,
         loop_result: LoopResult,
         event: Event,
-        audit_fn,
+        audit_fn: Callable[..., None],
     ) -> None:
         """
         Benachrichtigt den Menschen ueber eine offene Approval.
