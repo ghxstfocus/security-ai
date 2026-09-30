@@ -384,6 +384,8 @@ Nach jedem Patch, in dieser Reihenfolge:
 4. `pytest -q <datei>` — Lauf.
 5. `pytest -q` (Vollsuite) vor dem Commit, wenn Logik
    betroffen ist. Bei reiner Doku entfaellt das.
+   Bei Import- oder Signatur-Aenderung zusaetzlich:
+   `ruff check . --statistics`.
 6. `git status --porcelain` — keine versehentlichen
    Dateien, keine unerwarteten Aenderungen.
 7. `git diff --stat` — Umfang pruefen, bevor committet wird.
@@ -516,6 +518,22 @@ System gestoert ist.
 - **Regel:** Format-Fehler -> 4xx (ServiceError).
   Betriebsfehler -> 5xx (OperationError). Nicht
   vermischen. Kein `except Exception: return 400`.
+
+### Import-Nachtrag ohne ruff-Nachmessung
+
+Beim Typisieren wurden Import-Zeilen ergaenzt
+(from typing import Any, Response, LLMResponse).
+Nach dem einzelnen Commit wurde nur mypy isoliert
+gemessen, nicht ruff. Zwei I001-Regressionen
+blieben unentdeckt, bis sie in der Abschluss-Messung
+auftraten (A900-2b-2c, Auflage 1538, behoben in
+12d9a28 und 81a3607).
+
+- **Regel:** Nach jedem Commit mit Import- oder
+  Signatur-Aenderung im Verifikationsblock
+  `ruff check . --statistics` mitlaufen lassen.
+  Sonst bleiben Import-Reihenfolge-Fehler
+  unentdeckt und werden zur spaeteren Regression.
 
 ### Heredoc ueber ~3 KB zerhackt
 
