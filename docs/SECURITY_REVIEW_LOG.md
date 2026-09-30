@@ -1143,6 +1143,85 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
       nachziehen oder als Ist-Stand-Absatz ergaenzen.
     - Kategorie 1, Doku-Nachtrag nach Messung.
 
+55. (offen, Kategorie 2 + 3, Dashboard) Anzeige-
+    Erweiterung Dashboard (Live).
+    - T1 Live-Geraeteuebersicht auf /: Kachel
+      "Geraete N" ersetzt durch Live-Info
+      "welche Geraete sind jetzt online" + letzte
+      5 Geraete, Namen, klickbar fuer Detailseite.
+    - T2 Geraetedetailseite Netzwerk-Zeile:
+      Hauptnetz / Gastnetz.
+    - T3 Gast/Haupt getrennt auf /.
+    - T4 Diagramme Systemstatus: RAM, CPU,
+      "letzte Logs mit Aenderungen".
+    - T5 Alarme-Seite: letzte 5 Alarme immer
+      sichtbar, neuer Alarm sofort ersichtlich.
+    - T6 Kacheln klickbar -> Filter-Seiten mit
+      mehr Anzeige (z. B. /inventory?filter=active,
+      /alerts?since=24h).
+    - Technologie Live offen (WS/SSE/Polling).
+    - Kein Code ohne Reviewer-Block (Kategorie 3).
+
+56. (offen, Kategorie 3, Dashboard-Aktionen)
+    Schreiboperationen auf Kern-Daten.
+    - A1 Detailseite: auf Whitelist setzen.
+    - A2 Detailseite: Geraet blockieren
+      (Zugang zu Netz UND Server verweigern).
+      Neues Harness-Tool (block_device),
+      Level 4, Approval-Pflicht, Rollback-Plan.
+    - A3 gestrichen (whoami).
+    - A4 Detailseite: Tracing-Link (whois +
+      traceroute), zwei neue Tools, Level 1,
+      scope_guard-pflichtig.
+    - A5 Detailseite: History-Button.
+    - A6 Uebersicht: Schnellblock bei Angriffen.
+    - Kurze Wege: Aktionen auf Detailseite und
+      pro Zeile in Live-Listen.
+    - Change Request Pflicht bei allem Level 2+.
+    - Bestaetigungsdialog ist die einzige
+      Schnittstelle zwischen Bedienung und Wirkung.
+    - Kategorie 3 pro Aktion.
+
+57. (offen, Kategorie 3, Guardrails-Reiter)
+    - G1 Guardrails-Liste mit Aktivierungsstatus.
+    - G2 Aktivieren/Deaktivieren via Change
+      Request (nicht direkt). Doppelte Bestaetigung
+      (UI-Anlage + Freigabe).
+    - G3 Feineinstellungen pro Guardrail.
+    - Voraussetzung: Change-Request-Applier fuer
+      Guardrail-Aenderungen (existiert heute nicht,
+      harness/versioning/applier.py ist Stub).
+    - Offene Klaerungen: Parameter-Modell,
+      Persistenz, Reload-Semantik, Permission
+      guardrail.manage.
+    - Kategorie 3.
+
+58. (offen, Kategorie 3, Werkzeuge-Werkbank)
+    Read-only-Werkbank im Dashboard mit Untermenues.
+    Drei Runden:
+    - Runde 1 (read-only, Level 0-1):
+      ping, traceroute, whois, dns_lookup,
+      port_check, system_status, service_status,
+      disk_usage, network_interfaces, audit_tail,
+      event_tail, device_history, scan_history.
+    - Runde 2 (Aktionen, Level 2-4):
+      block_device, unblock_device, whitelist_add,
+      whitelist_remove, firewall_rule_*.
+    - Runde 3 (sehr invasiv, nur mit Design):
+      fritz_*, proxmox_*, change_deploy.
+    - Aufrufweg: UI -> Service -> AgentLoop ->
+      Harness -> Tool. Kein direkter Tool-Aufruf.
+    - Kategorie 3 pro Runde.
+
+59. (offen, Kategorie 3, Betriebsparameter-Reiter)
+    Schwellenwerte justierbar machen.
+    - Rate-Limit (WINDOW_SECONDS, MAX_REQUESTS).
+    - Session-Timeout.
+    - Risk-Schwellen (heute in core/risk/rules.yaml).
+    - Login-Rate-Limit.
+    - Aenderungen via Change Request.
+    - Kategorie 3.
+
 60. (offen, Kategorie 3, Kern-Service) mypy
     no-untyped-def in apps/security_ai/orchestrator.py.
     - Z. 266: Function is missing a return type annotation.
