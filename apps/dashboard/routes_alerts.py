@@ -25,7 +25,7 @@ from core.services.audit_reader_service import AuditReaderService
 def register_alerts_routes(app: Flask) -> None:
     @app.route("/alerts", methods=["GET"])
     @require_permission("alert.view")
-    def alerts_list():
+    def alerts_list() -> str:
         service = AuditReaderService(
             audit_writer=g.audit,
             checker=g.access_checker,
