@@ -325,7 +325,7 @@ test_access_denied_errorhandler_403 abgedeckt.
 ## Chronologie
 
 Sortiert nach Commit-Zeit (aelteste zuerst, HEAD zuletzt).
-Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
+Letzte Aktualisierung: 2026-09-30 (HEAD 2de4a40).
 
 - 3.6.4: AuditReaderService.
 - Venv-Umstellung.
@@ -1222,7 +1222,7 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
     - Aenderungen via Change Request.
     - Kategorie 3.
 
-60. (offen, Kategorie 3, Kern-Service) mypy
+60. (erledigt, Kategorie 3, Kern-Service) mypy
     no-untyped-def in apps/security_ai/orchestrator.py.
     - Z. 266: Function is missing a return type annotation.
     - Z. 318: Function is missing a type annotation for one
@@ -1230,7 +1230,9 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
     - Vorbestehend, durch A900-Typisierung sichtbar
       geworden (mypy folgt Import-Pfaden tiefer).
     - Nicht durch A900 eingefuehrt.
-    - Eigener Block mit Bestandsaufnahme + Reviewer-GO.
+    - Erledigt in B1b-2 (Commit d93cc68, 2026-09-30):
+      create_change_request -> ChangeRequest;
+      _notify_approval audit_fn -> Callable[..., None].
 
 
 61. (offen, Kategorie 1 Messung + Kategorie 3
@@ -1330,7 +1332,7 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
       bewusst offen mit Begruendung. Fix 6 (noqa)
       entfaellt: S608/S603/S310 sind nicht im
       Default-Satz, noqa waere RUF100.
-63. (offen, Kategorie 1 + 2 + 3, Typen)
+63. (erledigt, Kategorie 1 + 2 + 3, Typen)
     mypy 37 Fehler in 15 Dateien (Stand HEAD
     58b039e, 2026-09-30).
     Handoff nannte 2 (Punkt 60). Gemessen 37.
@@ -1352,7 +1354,9 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
     Aufteilung: B1a (app.py, Kategorie 3),
     B1b (Kern-Services, Kategorie 3),
     B1c (Tools, Kategorie 2),
-    B1d (Stubs, Kategorie 1, dieser Block).
+    B1d (Stubs, Kategorie 1).
+    Erledigt in B1 (HEAD 2de4a40, 2026-09-30):
+    mypy 37 -> 0. B1c entfiel (durch B1d behoben).
 
 
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
@@ -1371,9 +1375,8 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
   Fehler oder fehlender Permission (L2).
   Ticket 3.6.7d abgeschlossen.
 
-Core-Stand 2026-09-30: HEAD 81a3607, 1028 Tests,
-mypy 2 no-untyped-def (orchestrator.py, Punkt 60),
-ruff 0 (nach Ruff-Fix, A901-Stand wiederhergestellt).
+Core-Stand 2026-09-30: HEAD 2de4a40, 1040 Tests,
+mypy 0, ruff 0 (B1 abgeschlossen, 15 Commits, 37 -> 0).
 A900 abgeschlossen (23 Commits, 66 -> 2).
 
 ## A900 - no-untyped-def (Kategorie 2 + 3)
@@ -1421,6 +1424,24 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
   12d9a28  routes_settings.py Import-Block
   81a3607  change_service.py Import-Block
 
-Offen: Punkt 60 (mypy orchestrator.py, 2 Stellen).
+- B1: mypy-Aufraeumen (2026-09-30, HEAD 2de4a40).
+  mypy 37 -> 0, ruff 0, Tests 1036 -> 1040.
+  - B1d (404ba8e): Stubs (types-PyYAML,
+    types-defusedxml) + fritzconnection-Override;
+    Punkt 63 angelegt.
+  - B1a (1e9adf0): apps/dashboard/_redirect.py neu
+    (safe_redirect); app.py Session-Guard +
+    request.endpoint-Guard + 3x safe_redirect;
+    4 neue Tests.
+  - B1c: entfaellt (durch B1d behoben).
+  - B1b-1 (530fd88, 98429bc, a975723, c8f4569,
+    9fd4d1d, 391f6ce): 6 Dashboard-Routen,
+    Guards + safe_redirect.
+  - B1b-2 (d93cc68, d77fd23, 2de4a40):
+    orchestrator.py Punkt 60,
+    chat.py Sequence[Any],
+    loop.py no-redef (policy_approval_request_id).
+  Punkt 60 erledigt. Punkt 63 erledigt.
+  Punkt 64 entfaellt (B4 war Fehlalarm).
 
 Bewusst offen (kein Bau heute):
