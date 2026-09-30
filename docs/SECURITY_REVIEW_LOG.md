@@ -1232,6 +1232,31 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
     - Nicht durch A900 eingefuehrt.
     - Eigener Block mit Bestandsaufnahme + Reviewer-GO.
 
+
+61. (offen, Kategorie 1 Messung + Kategorie 3
+    Fixes, Sicherheits-Lint) ruff -S
+    (flake8-bandit) Bestandsaufnahme.
+    - S ist heute nicht im Default-Lauf aktiv.
+    - Verhaeltnis zu 53b: 61 ist der Vorlauf fuer
+      die S-Gruppe aus 53b. Kein Ersatz, keine
+      Nachfolge. 53b bleibt Sammelpunkt fuer PL,
+      TRY, ANN, S, T20, ARG.
+    - Prueft: subprocess ohne shell=False,
+      eval/exec, hartkodierte Secrets, weak
+      crypto, unsichere Temp-Files, binding
+      auf 0.0.0.0, assert in Produktivcode.
+    - Ablauf:
+      1. Bestandsaufnahme (Kategorie 1):
+         ruff check . --select S --statistics
+         ruff check . --select S --output-format concise
+      2. Auswertung pro Treffer.
+      3. Fixes pro Gruppe (Kategorie 3, eigener
+         Reviewer-Block).
+    - Anlass: A900-2b-2c-Vorfall (zwei I001-
+      Regressionen durch Import-Nachtraege, erst
+      durch ruff-Nachmessung entdeckt). S ist die
+      naechste Messluecke.
+    - Kein Code in Schritt 1 (nur Messung).
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
   device_presence/offline. identifier=MAC.
