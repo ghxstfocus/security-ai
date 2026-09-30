@@ -1494,5 +1494,40 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     - DB-Backfill: dem naechsten Watcher-Lauf
       ueberlassen (upsert_seen ueberschreibt,
       weil neuer Wert nicht None).
+    - LIMITATION (2026-10-01 abends): der Watcher
+      erzeugt nur bei einem Diff (inaktiv -> aktiv
+      oder neu) ein device_seen-Event. Solange ein
+      Geraet ununterbrochen aktiv bleibt, laeuft
+      upsert_seen nicht und der DB-Wert bleibt alt.
+      Der Fix wirkt daher erst beim naechsten
+      Diff-Event. Live-Verifikation offen
+      (Handy kurz trennen, Watcher-Lauf 60s,
+      danach DB pruefen).
+      Siehe auch Punkt 68 (Watcher-Re-Presence).
+
+68. (offen, Kategorie 3, Watcher) Watcher-
+    Re-Presence.
+    - Der Fritz!Box-Watcher erzeugt heute nur bei
+      Diff (inaktiv -> aktiv / neu) ein
+      device_presence-Event.
+    - Solange ein Geraet ununterbrochen aktiv
+      bleibt, kein Event, kein upsert_seen,
+      keine Aktualisierung von entity_name,
+      network_type, last_ip in der DB.
+    - Folge: Config-Aenderungen (wie
+      resolve_network_type in Punkt 67) greifen
+      erst, wenn der Diff irgendwann ausloest.
+    - Fix-Vorschlag: zusaetzlich alle N Minuten
+      (z. B. 60) ein device_presence fuer aktive
+      Geraete emittieren. N als Konstante
+      konfigurierbar.
+    - Auswirkung: mehr Events in
+      data/events-YYYY-MM-DD.jsonl (Aufwand
+      pruefen), Orchestrator-Lauf alle 60s
+      bereits vorhanden.
+    - Verwandt: Punkt 49 (last_ip nur bei
+      Diff-Events).
+    - Eigener Block, Reviewer-GO vor Code.
+    - Kein Bau heute (Doku).
 
 Bewusst offen (kein Bau heute):
