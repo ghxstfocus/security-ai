@@ -967,6 +967,30 @@ Punkt 64 entfaellt (B4 war Fehlalarm).
   orchestrator, chat, agent_loop).
 Details in docs/SECURITY_REVIEW_LOG.md.
 
+## Punkt 55 - Dashboard-Anzeige-Erweiterung  [x]
+
+7 Commits (e0b60f8, 876e7c7, 397a551, 3e2d354,
+2d3223c, 36ef968, d607d82).
+- e0b60f8 Layout-Fix .dashboard-grid + .stat-cards.
+- 876e7c7 T2 Netz-Label (network_label()).
+- 397a551 T3 Gast/Haupt (InventoryService.
+  count_by_network, SQL GROUP BY).
+- 3e2d354 T6 Kacheln klickbar (stat_card mit
+  href-Parameter, <a class="card-link">).
+- 2d3223c T1+T5 Live-Geraete + Live-Alarme
+  (FritzboxStateService, GET /api/dashboard/state,
+  dashboard.js Polling 5s/30s).
+- 36ef968 T4 System-Sparklines + Logs mit
+  Aenderungen (AuditReaderService.
+  list_recent_by_kinds, eigenes SVG-Rendering,
+  psutil).
+- d607d82 B5 Verwaltung als details/summary.
+Tests: 1040 -> 1071.
+Live-Technologie: Polling (kein WS/SSE).
+Neue Punkte 65 (Extern-Kachel), 66 (/system-
+Detailseite).
+Details in docs/SECURITY_REVIEW_LOG.md.
+
 ## Phase 5 — Admin AI  [ ]
 
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI
