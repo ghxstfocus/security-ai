@@ -50,6 +50,45 @@
     margin-bottom: 20px;
 }
 
+/* Sidebar-Gruppe (B5, Auflage 1717).
+   details/summary als einklappbarer Bereich. */
+.sidebar-group {
+    margin: 0;
+}
+
+.sidebar-group-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    cursor: pointer;
+    list-style: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-group-summary::-webkit-details-marker {
+    display: none;
+}
+
+.sidebar-group-summary:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.sidebar-group[open] > .sidebar-group-summary {
+    color: var(--text-primary);
+}
+
+.sidebar-group-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-left: 8px;
+}
+
 /* Sparklines (T4, Auflage 1709).
    Kein style=-Attribut, kein inline-SVG-style. */
 .sparkline-block {

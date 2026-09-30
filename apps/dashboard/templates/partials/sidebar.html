@@ -58,33 +58,46 @@
         </a>
         {% endif %}
         <div class="sidebar-divider"></div>
-        {% if can_view_users %}
-        <a data-nav="users"
-           class="sidebar-link{% if request.path == '/users' %} active{% endif %}"
-           href="/users">
-            <span>Benutzer</span>
-        </a>
-        {% endif %}
-        {% if can_view_roles %}
-        <a data-nav="roles"
-           class="sidebar-link{% if request.path == '/roles' %} active{% endif %}"
-           href="/roles">
-            <span>Rollen</span>
-        </a>
-        {% endif %}
-        {% if can_view_audit %}
-        <a data-nav="audit"
-           class="sidebar-link{% if request.path == '/audit' %} active{% endif %}"
-           href="/audit">
-            <span>Protokoll</span>
-        </a>
-        {% endif %}
-        {% if can_view_settings %}
-        <a data-nav="settings"
-           class="sidebar-link{% if request.path == '/settings' %} active{% endif %}"
-           href="/settings">
-            <span>Einstellungen</span>
-        </a>
+        {% if can_view_users or can_view_roles or can_view_audit or can_view_settings %}
+        <details class="sidebar-group"
+                 {% if request.path.startswith('/users')
+                       or request.path.startswith('/roles')
+                       or request.path.startswith('/audit')
+                       or request.path.startswith('/settings') %}open{% endif %}>
+            <summary class="sidebar-group-summary">
+                <span>Verwaltung</span>
+            </summary>
+            <div class="sidebar-group-content">
+                {% if can_view_users %}
+                <a data-nav="users"
+                   class="sidebar-link{% if request.path == '/users' %} active{% endif %}"
+                   href="/users">
+                    <span>Benutzer</span>
+                </a>
+                {% endif %}
+                {% if can_view_roles %}
+                <a data-nav="roles"
+                   class="sidebar-link{% if request.path == '/roles' %} active{% endif %}"
+                   href="/roles">
+                    <span>Rollen</span>
+                </a>
+                {% endif %}
+                {% if can_view_audit %}
+                <a data-nav="audit"
+                   class="sidebar-link{% if request.path == '/audit' %} active{% endif %}"
+                   href="/audit">
+                    <span>Protokoll</span>
+                </a>
+                {% endif %}
+                {% if can_view_settings %}
+                <a data-nav="settings"
+                   class="sidebar-link{% if request.path == '/settings' %} active{% endif %}"
+                   href="/settings">
+                    <span>Einstellungen</span>
+                </a>
+                {% endif %}
+            </div>
+        </details>
         {% endif %}
     </nav>
 </aside>

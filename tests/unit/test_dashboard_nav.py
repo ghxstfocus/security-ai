@@ -265,3 +265,41 @@ def test_user_menu_js_nicht_im_login(tmp_path):
     r = c.get("/login")
     assert r.status_code == 200
     assert b"js/user_menu.js" not in r.data
+
+
+
+# --- B5 (Auflage 1719): Verwaltung als details/summary --------------- #
+
+def test_sidebar_has_verwaltung_group(tmp_path):
+    c = _admin(tmp_path)
+    r = c.get("/")
+    assert r.status_code == 200
+    assert b'<details class="sidebar-group"' in r.data
+    assert b'<summary class="sidebar-group-summary">' in r.data
+    assert b"Verwaltung" in r.data
+
+
+def test_sidebar_verwaltung_contains_4_links(tmp_path):
+    c = _admin(tmp_path)
+    r = c.get("/")
+    assert r.status_code == 200
+    for href in (b'href="/users"', b'href="/roles"',
+                 b'href="/audit"', b'href="/settings"'):
+        assert href in r.data
+
+
+def test_sidebar_top_level_links_flat(tmp_path):
+    c = _admin(tmp_path)
+    r = c.get("/")
+    assert b'href="/inventory"' in r.data
+    assert b'href="/alerts"' in r.data
+    assert b'href="/approvals"' in r.data
+    assert b'href="/changes"' in r.data
+    assert b'href="/chat"' in r.data
+
+
+def test_sidebar_details_no_inline_style(tmp_path):
+    c = _admin(tmp_path)
+    r = c.get("/")
+    assert b'style="' not in r.data
+    assert b"onclick=" not in r.data
