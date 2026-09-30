@@ -1257,6 +1257,23 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
       durch ruff-Nachmessung entdeckt). S ist die
       naechste Messluecke.
     - Kein Code in Schritt 1 (nur Messung).
+    - Messergebnis 2026-09-30 (HEAD b86cc40):
+      896 Treffer gesamt, 8 Regeln.
+      - 869 S101 (assert in tests/): Fehlalarm.
+      - 25 S105/S106/S108 (Test-Fixtures):
+        Fehlalarm, muss pro Datei geprueft werden.
+      - 3 echte Kandidaten (Kategorie 3):
+        - S608 core/changes/repository.py:313, 361
+        - S603 tools/nmap_scan.py:315
+        - S314 tools/nmap_scan.py:222
+      - Naechster Schritt: (c) Tests-Rauschen
+        stumm schalten, dann (b) Kandidaten
+        verifizieren.
+      - S wird NICHT in den Default-Satz
+        aufgenommen, solange das Rauschen
+        nicht unterdrueckt ist (sonst ist jeder
+        ruff-Lauf unlesbar).
+
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
   device_presence/offline. identifier=MAC.
