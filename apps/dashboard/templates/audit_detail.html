@@ -9,9 +9,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<p><a href="/audit">Zurueck zur Liste</a></p>
-<h1>{{ entry.audit_id }}</h1>
-<dl>
+<div class="page-header">
+    <h1>{{ entry.audit_id }}</h1>
+    <a class="back-link" href="/audit">Zurueck zur Liste</a>
+</div>
+<div class="detail-grid">
+<section class="card detail-card">
+<h2 class="card-title">Eigenschaften</h2>
+<dl class="detail-list">
     <dt>Zeitpunkt</dt>
     <dd>{{ entry.timestamp }}</dd>
     <dt>Agent</dt>
@@ -41,11 +46,14 @@
         {% endif %}
     </dd>
 </dl>
-
-<h2>Details</h2>
+</section>
+<section class="card detail-card">
+<h2 class="card-title">Details</h2>
 {% if details_formatted %}
 <pre>{{ details_formatted }}</pre>
 {% else %}
 <p>Keine Details.</p>
 {% endif %}
+</section>
+</div>
 {% endblock %}

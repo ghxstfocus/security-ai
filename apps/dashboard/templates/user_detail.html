@@ -10,9 +10,14 @@
 {% from "_helpers.html" import csrf_field %}
 
 {% block content %}
-<p><a href="/users">Zurueck zur Liste</a></p>
-<h1>{{ entry.name }}</h1>
-<dl>
+<div class="page-header">
+    <h1>{{ entry.name }}</h1>
+    <a class="back-link" href="/users">Zurueck zur Liste</a>
+</div>
+<div class="detail-grid">
+<section class="card detail-card">
+<h2 class="card-title">Eigenschaften</h2>
+<dl class="detail-list">
     <dt>Kind</dt>
     <dd>{{ entry.kind }}</dd>
     <dt>Rolle-ID</dt>
@@ -30,8 +35,10 @@
     <dt>Erstellt</dt>
     <dd>{{ entry.created_at }}</dd>
 </dl>
-
-<h2>Status aendern</h2>
+</section>
+<section class="card detail-card">
+<h2 class="card-title">Aktionen</h2>
+<h3>Status aendern</h3>
 <form method="post" action="/users/{{ entry.name }}/toggle-active">
     {{ csrf_field(csrf_token) }}
     <button type="submit" class="btn btn-ghost">
@@ -53,4 +60,6 @@
         Passwort setzen
     </button>
 </form>
+</section>
+</div>
 {% endblock %}

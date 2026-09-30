@@ -8,15 +8,22 @@
 {% from "_helpers.html" import csrf_field %}
 
 {% block content %}
-<p><a href="/roles">Zurueck zur Liste</a></p>
-<h1>{{ role.name }}</h1>
-<dl>
+<div class="page-header">
+    <h1>{{ role.name }}</h1>
+    <a class="back-link" href="/roles">Zurueck zur Liste</a>
+</div>
+<div class="detail-grid">
+<section class="card detail-card">
+<h2 class="card-title">Eigenschaften</h2>
+<dl class="detail-list">
     <dt>Beschreibung</dt>
     <dd>{{ role.description if role.description else "—" }}</dd>
     <dt>Erstellt</dt>
     <dd>{{ role.created_at if role.created_at else "—" }}</dd>
 </dl>
-
+</section>
+<section class="card detail-card">
+<h2 class="card-title">Permissions</h2>
 {% if warn_self %}
 <p>Achtung: Diese Rolle ist Ihre eigene. Ein
    Entzug von role.manage oder principal.manage
@@ -24,7 +31,7 @@
    Verwaltungsrechte.</p>
 {% endif %}
 
-<h2>Zugewiesene Permissions</h2>
+<h3>Zugewiesen</h3>
 {% if role.permissions %}
 <table class="table">
     <thead>
@@ -56,7 +63,7 @@
 <p>Keine Permissions zugewiesen.</p>
 {% endif %}
 
-<h2>Permission zuweisen</h2>
+<h3>Permission zuweisen</h3>
 {% if all_permissions %}
 <form method="post"
       action="/roles/{{ role.name }}/assign-permission">
@@ -77,5 +84,6 @@
 {% else %}
 <p>Keine Permissions vorhanden (Migrationen pruefen).</p>
 {% endif %}
-
+</section>
+</div>
 {% endblock %}

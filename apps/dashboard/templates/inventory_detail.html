@@ -9,9 +9,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<p><a href="/inventory">Zurueck zur Liste</a></p>
-<h1>{{ device.identifier }}</h1>
-<dl>
+<div class="page-header">
+    <h1>{{ device.identifier }}</h1>
+    <a class="back-link" href="/inventory">Zurueck zur Liste</a>
+</div>
+<div class="detail-grid">
+<section class="card detail-card">
+<h2 class="card-title">Eigenschaften</h2>
+<dl class="detail-list">
     <dt>Name</dt>
     <dd>{{ device.entity_name if device.entity_name else "—" }}</dd>
     <dt>Netz</dt>
@@ -29,8 +34,9 @@
     <dt>Notizen</dt>
     <dd>{{ device.notes if device.notes else "—" }}</dd>
 </dl>
-
-<h2>Verlauf</h2>
+</section>
+<section class="card detail-card">
+<h2 class="card-title">Verlauf</h2>
 {% if device.history %}
 <table class="table">
     <thead>
@@ -53,4 +59,6 @@
 {% else %}
 <p>Kein Verlauf vorhanden.</p>
 {% endif %}
+</section>
+</div>
 {% endblock %}

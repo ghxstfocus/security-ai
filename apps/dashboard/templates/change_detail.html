@@ -8,9 +8,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<p><a href="/changes">Zurueck zur Liste</a></p>
-<h1>{{ entry.change_id }}</h1>
-<dl>
+<div class="page-header">
+    <h1>{{ entry.change_id }}</h1>
+    <a class="back-link" href="/changes">Zurueck zur Liste</a>
+</div>
+<div class="detail-grid single">
+<section class="card detail-card">
+<h2 class="card-title">Eigenschaften</h2>
+<dl class="detail-list">
     <dt>Titel</dt>
     <dd>{{ entry.title }}</dd>
     <dt>Typ</dt>
@@ -58,4 +63,6 @@
     <dd><pre>{{ entry.diff_or_patch }}</pre></dd>
     {% endif %}
 </dl>
+</section>
+</div>
 {% endblock %}

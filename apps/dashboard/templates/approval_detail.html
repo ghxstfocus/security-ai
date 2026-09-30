@@ -9,9 +9,14 @@
 {% from "_helpers.html" import csrf_field %}
 
 {% block content %}
-<p><a href="/approvals">Zurueck zur Liste</a></p>
-<h1>{{ entry.request_id }}</h1>
-<dl>
+<div class="page-header">
+    <h1>{{ entry.request_id }}</h1>
+    <a class="back-link" href="/approvals">Zurueck zur Liste</a>
+</div>
+<div class="detail-grid">
+<section class="card detail-card">
+<h2 class="card-title">Eigenschaften</h2>
+<dl class="detail-list">
     <dt>Tool</dt>
     <dd>{{ entry.tool_name }}</dd>
     <dt>Angefragt von</dt>
@@ -41,12 +46,16 @@
     <dt>Erstellt</dt>
     <dd>{{ entry.created_at }}</dd>
 </dl>
-
-<h2>Argumente</h2>
+</section>
+<section class="card detail-card">
+<h2 class="card-title">Argumente</h2>
 <pre>{{ entry.args_preview }}</pre>
+</section>
+</div>
 
 {% if entry.status == "pending" %}
-<h2>Entscheiden</h2>
+<section class="card detail-card">
+<h2 class="card-title">Entscheiden</h2>
 
 <form method="post"
       action="/approvals/{{ entry.request_id }}/decide">
@@ -71,5 +80,6 @@
         Ablehnen
     </button>
 </form>
+</section>
 {% endif %}
 {% endblock %}
