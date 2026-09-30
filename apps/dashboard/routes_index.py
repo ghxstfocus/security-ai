@@ -76,6 +76,26 @@ def _count_approvals() -> int | str:
     ).list_pending(g.principal))
 
 
+def _count_network(net: str) -> int | str:
+    """Kachel-Wert "Anzahl Geraete im Netz net".
+
+    Nicht ueber _safe_count, weil count_by_network
+    direkt eine Zahl liefert (nicht eine Liste).
+    _safe_count wuerde len(int) aufrufen -> TypeError.
+    """
+    try:
+        return InventoryService(
+            device_repo=DeviceRepository(g.conn),
+            whitelist_repo=WhitelistRepository(g.conn),
+            checker=g.access_checker,
+        ).count_by_network(g.principal).get(net, 0)
+    except AccessDeniedError:
+        return _FALLBACK
+    except Exception:  # noqa: BLE001 - Anzeige fail open
+        log.error("Kachel: Service-Fehler")
+        return _FALLBACK
+
+
 def _count_changes() -> int | str:
     return _safe_count(lambda: ChangeService(
         repo=ChangeRepository(g.conn),
@@ -92,6 +112,8 @@ def register_index_routes(app: Flask) -> None:
             "index.html",
             page_title="Dashboard",
             device_count=_count_devices(),
+            network_hauptnetz=_count_network("Hauptnetz"),
+            network_gastnetz=_count_network("Gastnetz"),
             alert_count=_count_alerts(),
             approval_count=_count_approvals(),
             change_count=_count_changes(),

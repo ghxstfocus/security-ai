@@ -16,6 +16,10 @@
         {% if can_view_inventory %}
         {{ stat_card("Geraete", device_count, "cyan",
                       data_card="devices") }}
+        {{ stat_card("Hauptnetz", network_hauptnetz, "cyan",
+                      data_card="network-hauptnetz") }}
+        {{ stat_card("Gastnetz", network_gastnetz, "cyan",
+                      data_card="network-gastnetz") }}
         {% endif %}
         {% if can_view_alerts %}
         {{ stat_card("Alarme (24h)", alert_count, "red",

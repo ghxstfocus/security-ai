@@ -240,6 +240,28 @@ class DeviceRepository:
         ).fetchall()
         return [Device.from_row(r) for r in rows]
 
+    def count_by_network(self) -> dict[str, int]:
+        """Geraete-Anzahl pro network_type (T3, Auflage 1689).
+
+        Rueckgabe: alle drei bekannten Keys, 0 bei fehlend.
+        Unbekannte network_type-Werte werden nicht gezaehlt.
+        """
+        out: dict[str, int] = {
+            "Hauptnetz": 0,
+            "Gastnetz": 0,
+            "Extern": 0,
+        }
+        rows = self._conn.execute(
+            "SELECT network_type, COUNT(*) AS n "
+            "FROM devices "
+            "WHERE network_type IN "
+            "('Hauptnetz', 'Gastnetz', 'Extern') "
+            "GROUP BY network_type"
+        ).fetchall()
+        for r in rows:
+            out[r["network_type"]] = int(r["n"])
+        return out
+
     def history(self, identifier: str, limit: int = 100) -> list[dict[str, Any]]:
         row = self._conn.execute(
             "SELECT id FROM devices WHERE identifier = ?",

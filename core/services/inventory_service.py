@@ -85,6 +85,15 @@ class InventoryService:
             out.append(entry)
         return out
 
+    def count_by_network(self, actor: str) -> dict[str, int]:
+        """Geraete-Anzahl pro network_type (T3, Auflage 1688).
+
+        RBAC: device.read.
+        Rueckgabe: alle drei bekannten Keys, 0 bei fehlend.
+        """
+        self._require(actor, "device.read")
+        return self._devices.count_by_network()
+
     def get_device(self, actor: str, identifier: str) -> dict | None:
         """
         Ein Geraet samt History. RBAC: device.read.

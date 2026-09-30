@@ -509,3 +509,11 @@ def test_before_session_timeout_redirects(app):
     r = c.get("/")
     assert r.status_code == 302
     assert "/login" in r.headers["Location"]
+
+def test_index_shows_network_cards(app, client):
+    """T3 (Auflage 1692): / enthaelt Hauptnetz- und
+    Gastnetz-Kachel mit data_card."""
+    r = client.get("/")
+    assert r.status_code == 200
+    assert b'data-card="network-hauptnetz"' in r.data
+    assert b'data-card="network-gastnetz"' in r.data
