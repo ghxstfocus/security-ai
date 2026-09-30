@@ -1291,7 +1291,7 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
         = 3 S-Kandidaten aus dem Erstbericht
         plus 6 zusaetzliche = 9 Kandidaten.
 
-62. (offen, Kategorie 3, Sicherheits-Lint)
+62. (abgeschlossen, Kategorie 3, Sicherheits-Lint)
     ruff -S verbleibende Treffer verifizieren.
     - Aus Punkt 61 Messergebnis (HEAD b86cc40,
       korrigiert 2026-09-30).
@@ -1319,13 +1319,17 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
       - S608 core/changes/repository.py:313, 361:
         sets aus festen Spaltennamen bzw.
         _UPDATABLE_FIELDS-Whitelist. Werte als
-        ?-Parameter. noqa mit Begruendung
-        (Fix 6).
+        ?-Parameter. Kein noqa (S608 nicht im
+        Default-Satz, waere RUF100).
       - S603 tools/nmap_scan.py:316:
         subprocess.run mit shell=False explizit.
-        noqa mit Begruendung (Fix 6).
-    - Nach Fix 6: Status aktualisieren, Punkt 62
-      schliessen (Kategorie 1).
+        Kein noqa (S603 nicht im Default-Satz,
+        waere RUF100).
+    - Abgeschlossen am 2026-09-30 (HEAD b86cc82).
+      S-Treffer im Projekt: 6 aus 5 Regeln, alle
+      bewusst offen mit Begruendung. Fix 6 (noqa)
+      entfaellt: S608/S603/S310 sind nicht im
+      Default-Satz, noqa waere RUF100.
 
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
   22ad6d5, 8eb9772, 50daee8). Producer fuer
