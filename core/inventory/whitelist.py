@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-from core.inventory.repository import DeviceRepository
+from core.inventory.repository import DeviceRepository, InventoryRepositoryError
 
 
 @dataclass(frozen=True)
@@ -136,7 +136,10 @@ class WhitelistRepository:
         )
 
         entry = self.get(identifier)
-        assert entry is not None
+        if entry is None:
+            raise InventoryRepositoryError(
+                f"Whitelist-Eintrag {identifier!r} nach INSERT nicht gefunden"
+            )
         return entry
 
     def remove(
