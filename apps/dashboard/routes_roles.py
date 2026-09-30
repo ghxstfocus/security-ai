@@ -26,13 +26,13 @@ from flask import (
     Response,
     abort,
     g,
-    redirect,
     render_template,
     request,
     session,
 )
 
 from apps.dashboard import csrf
+from apps.dashboard._redirect import safe_redirect
 from apps.dashboard.decorators import require_permission
 from core.access.models import (
     permission_to_view,
@@ -128,7 +128,7 @@ def register_roles_routes(app: Flask) -> None:
             abort(404)
         except AccessNotFoundError:
             abort(404)
-        return redirect(f"/roles/{name}", 302)
+        return safe_redirect(f"/roles/{name}", 302)
 
     @app.route(
         "/roles/<name>/revoke-permission", methods=["POST"],
@@ -155,7 +155,7 @@ def register_roles_routes(app: Flask) -> None:
             abort(404)
         except AccessNotFoundError:
             abort(404)
-        return redirect(f"/roles/{name}", 302)
+        return safe_redirect(f"/roles/{name}", 302)
 
 
 __all__ = ["register_roles_routes"]
