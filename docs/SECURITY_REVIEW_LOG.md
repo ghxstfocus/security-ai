@@ -1274,21 +1274,50 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 81a3607).
         nicht unterdrueckt ist (sonst ist jeder
         ruff-Lauf unlesbar).
 
+    - Korrektur 2026-09-30 (HEAD 35e25a4):
+      Die urspruengliche Klassifikation war
+      ungenau.
+      - S101: nicht alle in tests/. Zwei
+        Fundstellen in core/inventory/:
+        - core/inventory/repository.py:319
+        - core/inventory/whitelist.py:139
+      - S105: eine Fundstelle nicht in tests/:
+        - harness/context/redaction.py:32
+      - S310 (nicht im Bericht erwaehnt):
+        3 Fundstellen in harness/llm/client.py.
+      - Nach den korrigierten Zahlen:
+        896 Treffer minus 867 S101 (in tests/)
+        minus 24 S105/S106/S108 (in tests/)
+        = 3 S-Kandidaten aus dem Erstbericht
+        plus 6 zusaetzliche = 9 Kandidaten.
+
 62. (offen, Kategorie 3, Sicherheits-Lint)
-    ruff -S Kandidaten verifizieren.
-    - Aus Punkt 61 Messergebnis (HEAD b86cc40).
-    - Drei Kandidaten:
+    ruff -S verbleibende Treffer verifizieren.
+    - Aus Punkt 61 Messergebnis (HEAD b86cc40,
+      korrigiert am 2026-09-30).
+    - Nach per-file-ignores tests/*:
+      10 Treffer aus 6 Regeln.
+    - Zu verifizieren:
       - S608 core/changes/repository.py:313, 361
-        (SQL-Statement aus Konkatenation).
-        Kern-Service, Kategorie 3.
+        (SQL aus Konkatenation). Kern-Service.
       - S603 tools/nmap_scan.py:315
         (subprocess ohne shell=False explizit).
-        Tool, Kategorie 2 oder 3.
       - S314 tools/nmap_scan.py:222
-        (XML-Parser). Tool, Kategorie 2 oder 3.
+        (XML-Parser).
+      - S101 core/inventory/repository.py:319
+        (assert in Produktivcode; bei python -O
+        entfernt). Kern-Service.
+      - S101 core/inventory/whitelist.py:139
+        (assert in Produktivcode). Kern-Service.
+      - S105 harness/context/redaction.py:32
+        (_REDACTION_TOKEN, vermutlich Fehlalarm,
+        Sentinel statt Secret).
+      - S310 harness/llm/client.py:101, 109, 184
+        (urllib http://127.0.0.1:11434, Loopback,
+        Scheme heute hart kodiert).
     - Pro Kandidat: Code lesen, entscheiden
-      (echter Fix, noqa mit Begruendung, oder
-      Umbau). Eigener Reviewer-Block.
+      (echter Fix, noqa mit Begruendung, Umbau).
+      Eigener Reviewer-Block.
     - Kein Fix vor Verifikation.
 
 - Phase 3.8a: Fritz!Box-Watcher (e4d032e, e7a669e,
