@@ -448,7 +448,7 @@ class AgentLoop:
                 )
 
             if decision.decision is Decision.APPROVAL_REQUIRED:
-                approval_request_id: str | None = None
+                policy_approval_request_id: str | None = None
                 if self.approval_queue is not None:
                     try:
                         req = self.approval_queue.enqueue(
@@ -458,7 +458,7 @@ class AgentLoop:
                             reason=decision.reason,
                             event_id=event.event_id,
                         )
-                        approval_request_id = req.request_id
+                        policy_approval_request_id = req.request_id
                     except ApprovalEnqueueError as exc:
                         self.audit.log(
                             agent="security_ai",
@@ -486,14 +486,14 @@ class AgentLoop:
                         "reason": decision.reason,
                         "policy_decision": decision.decision.value,
                         "failed_predicates": list(decision.failed_predicates),
-                        "approval_request_id": approval_request_id,
+                        "approval_request_id": policy_approval_request_id,
                     },
                     network_id=self.network_id,
                 )
                 return StepResult(
                     tool=tool.name,
                     status="APPROVAL_REQUIRED",
-                    output={"approval_request_id": approval_request_id},
+                    output={"approval_request_id": policy_approval_request_id},
                     error=f"POLICY: {decision.reason}",
                     duration_ms=int((time.monotonic() - started) * 1000),
                 )
