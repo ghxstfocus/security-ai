@@ -648,6 +648,69 @@ verloren.
 
 - **Regel:** `assert` ist Pflicht. Bei
   `count != 1`: STOPP, `cat`, Anker korrigieren.
+
+### Reviewer-Freitext in die Shell gepastet
+
+Auflagen-Wortlaut oder Begleittext aus dem
+Reviewer-Chat wird direkt in die Shell gepastet,
+nicht nur der Codeblock. Metazeichen (Backticks,
+Hochkommas, `$`, Klammern) werden als Shell-Syntax
+interpretiert.
+
+Symptome:
+- `command not found`-Ketten.
+- Phantom-Dateien wie `main`, `200.`,
+  `"Extern (nicht autorisiert)?"`.
+- `HTTP 400 URL must be absolute`-Ausgaben, wenn
+  eine URL als Kommando interpretiert wird.
+
+- **Regel:** Nur den Codeblock kopieren, nicht den
+  Begleittext. Nach jedem Paste `git status
+  --porcelain` pruefen. Phantom-Dateien sofort
+  entfernen.
+
+### Rueckgabe-Typ beim Helper-Aufruf pruefen
+
+Ein Helper wird mit einer Funktion aufgerufen,
+die etwas anderes liefert als erwartet.
+Python ist dynamisch, kein Compiler-Fehler.
+
+Beispiel (T3, 2026-09-30): ein Helper
+`_safe_count(fn)` erwartet, dass `fn()` eine
+Sequenz liefert (`len()` wird intern aufgerufen).
+Eine Aggregat-Methode (`count_by_network()`)
+liefert direkt einen `int`. Zur Laufzeit:
+`len(int)` -> `TypeError`. Der Fehler wird vom
+Exception-Handler geschluckt und als
+Fallback-Wert angezeigt (Kachel "—").
+
+- **Regel:** Vor jedem Helper-Aufruf pruefen:
+  Was liefert der Aufruf, was erwartet der Helper.
+  Wenn der Helper `len()` nutzt, darf die Funktion
+  keine Zahl liefern.
+- **Regel:** Nach jedem neuen Helper-Aufruf die
+  erwartete Ausgabe testen, nicht nur die
+  Fehlerbehandlung.
+
+### Heredoc-Escape bei mehrzeiligen Patches
+
+Bei Heredoc-Patches mit `\n` im Text oder
+Skripten > ~100 Zeilen zerhackt der TTY-Puffer
+die Eingabe. Symptome:
+- Patch-Skript laeuft nur teilweise.
+- Literales `\n` landet in der Zieldatei
+  (`SyntaxError: unexpected character after
+  line continuation character`).
+- `p.write_text` wird nicht erreicht, obwohl
+  vorherige `print`-Ausgaben erscheinen.
+
+- **Regel:** Patch-Skripte > ~100 Zeilen
+  schrittweise mit `>>` an eine `/tmp`-Datei
+  anhaengen. Nach jedem Teil: `wc -l`.
+  Bei `\n` im Text: `chr(10)` statt `"\n"`,
+  oder mehrzeilige Strings mit echten
+  Zeilenumbruechen.
+
 ## Sprache und Format
 
 - Keine Umlaute in Code-Bloecken (oe/ue/ae/ss).
