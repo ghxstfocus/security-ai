@@ -39,7 +39,7 @@ def _build_service() -> SearchService:
 def register_search_routes(app: Flask) -> None:
     @app.route("/search", methods=["GET"])
     @require_permission("search.run")
-    def search_view():
+    def search_view() -> str | tuple[str, int]:
         q_raw = request.args.get("q", "")
         service = _build_service()
         try:
