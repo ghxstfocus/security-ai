@@ -1505,6 +1505,47 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       danach DB pruefen).
       Siehe auch Punkt 68 (Watcher-Re-Presence).
 
+67a. (offen, Kategorie 3, Watcher) entity_name-
+     Ueberschreibung bei MAC-Fallback.
+     - Befund 2026-10-01 abends: ein device_seen-
+       Event fuer 82:E1:00:82:16:96 kam mit
+       entity_name = "PC-82-E1-00-82-16-96"
+       (MAC-Fallback der Fritz!Box) statt
+       "S25-von-A".
+     - upsert_seen ueberschreibt entity_name,
+       weil der neue Wert nicht None ist.
+     - Folge: der vom Nutzer vergebene Name geht
+       in der DB verloren.
+     - Fix-Vorschlag: Watcher soll MAC-Fallback-
+       Namen ("PC-<MAC>") nicht als entity_name
+       emittieren. Alternative: upsert_seen
+       schreibt entity_name nur, wenn der neue
+       Wert nicht dem Muster "PC-<MAC>" entspricht
+       (fragil, weil Muster sich aendern kann).
+       Besser: Watcher entscheidet, was ein echter
+       Name ist.
+     - Eigener Block, Reviewer-GO vor Code.
+
+67b. (offen, Kategorie 3, Watcher/Datenpfad)
+     empty-IP wird als "" gespeichert.
+     - Befund 2026-10-01 abends: dasselbe
+       device_seen-Event kam mit ip = ""
+       (Fritz!Box liefert beim Zustandswechsel
+       manchmal keine IP).
+     - upsert_seen ueberschreibt last_ip nur,
+       wenn der neue Wert nicht None ist.
+       "" ist nicht None, also wird last_ip
+       mit "" ueberschrieben.
+     - Folge: in der DB steht last_ip="" statt
+       der letzten gueltigen IP.
+     - Fix-Vorschlag: Watcher emittiert ip=None,
+       wenn die Fritz!Box keinen Wert liefert
+       (statt ""). Dann greift upsert_seen
+       korrekt.
+     - Verwandt: 67 (IP-Ableitung), 68
+       (Re-Presence).
+     - Eigener Block, Reviewer-GO vor Code.
+
 68. (offen, Kategorie 3, Watcher) Watcher-
     Re-Presence.
     - Der Fritz!Box-Watcher erzeugt heute nur bei
