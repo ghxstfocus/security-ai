@@ -43,15 +43,33 @@
     <div class="live-grid">
         <section class="card">
             <h2 class="card-title">Jetzt online</h2>
-            <ul id="live-devices" class="live-list">
-                <li class="live-empty">Lade...</li>
-            </ul>
+            <table class="table live-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>IP</th>
+                        <th>Netz</th>
+                    </tr>
+                </thead>
+                <tbody id="live-devices">
+                    <tr><td class="live-empty" colspan="3">Lade...</td></tr>
+                </tbody>
+            </table>
         </section>
         <section class="card">
             <h2 class="card-title">Letzte Alarme</h2>
-            <ul id="live-alerts" class="live-list">
-                <li class="live-empty">Lade...</li>
-            </ul>
+            <table class="table live-table">
+                <thead>
+                    <tr>
+                        <th>Zeit</th>
+                        <th>Bewertung</th>
+                        <th>Regel</th>
+                    </tr>
+                </thead>
+                <tbody id="live-alerts">
+                    <tr><td class="live-empty" colspan="3">Lade...</td></tr>
+                </tbody>
+            </table>
             <p class="live-timestamp">
                 Stand: <span id="live-timestamp">—</span>
             </p>

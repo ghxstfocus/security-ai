@@ -51,31 +51,36 @@
     }
 
     function renderDeviceRow(container, dev) {
-        var li = document.createElement("li");
-        li.className = "live-device";
-        var a = document.createElement("a");
-        a.className = "live-device-link";
-        a.href = "/inventory/" + encodeURIComponent(
+        var tr = document.createElement("tr");
+        tr.className = "live-device";
+
+        var tdName = document.createElement("td");
+        var aName = document.createElement("a");
+        aName.className = "live-device-link";
+        aName.href = "/inventory/" + encodeURIComponent(
             String(dev.identifier || "")
         );
-        var nameSpan = document.createElement("span");
-        nameSpan.className = "live-device-name";
-        nameSpan.textContent = String(
-            dev.entity_name || dev.identifier || "?"
+        aName.textContent = String(
+            dev.entity_name || "—"
         );
-        var ipSpan = document.createElement("span");
-        ipSpan.className = "live-device-ip";
-        ipSpan.textContent = String(dev.last_ip || "");
+        tdName.appendChild(aName);
+
+        var tdIp = document.createElement("td");
+        tdIp.className = "live-device-ip";
+        tdIp.textContent = String(dev.last_ip || "—");
+
+        var tdNet = document.createElement("td");
         var netSpan = document.createElement("span");
         netSpan.className = netBadgeClass(
             String(dev.network_type || "")
         );
-        netSpan.textContent = String(dev.network_type || "");
-        a.appendChild(nameSpan);
-        a.appendChild(ipSpan);
-        a.appendChild(netSpan);
-        li.appendChild(a);
-        container.appendChild(li);
+        netSpan.textContent = String(dev.network_type || "—");
+        tdNet.appendChild(netSpan);
+
+        tr.appendChild(tdName);
+        tr.appendChild(tdIp);
+        tr.appendChild(tdNet);
+        container.appendChild(tr);
     }
 
     function alertBadgeClass(cat) {
@@ -87,34 +92,39 @@
     }
 
     function renderAlertRow(container, entry) {
-        var li = document.createElement("li");
-        li.className = "live-alert";
-        var a = document.createElement("a");
-        a.className = "live-alert-link";
+        var tr = document.createElement("tr");
+        tr.className = "live-alert";
+
+        var tdTs = document.createElement("td");
+        tdTs.className = "live-alert-ts";
         if (entry.can_link && entry.audit_id) {
-            a.href = "/audit/" + encodeURIComponent(
+            var aTs = document.createElement("a");
+            aTs.className = "live-alert-link";
+            aTs.href = "/audit/" + encodeURIComponent(
                 String(entry.audit_id)
             );
+            aTs.textContent = String(entry.timestamp || "—");
+            tdTs.appendChild(aTs);
         } else {
-            a.href = "#";
-            a.className += " live-no-link";
+            tdTs.textContent = String(entry.timestamp || "—");
         }
-        var tsSpan = document.createElement("span");
-        tsSpan.className = "live-alert-ts";
-        tsSpan.textContent = String(entry.timestamp || "");
-        var ruleSpan = document.createElement("span");
-        ruleSpan.className = "live-alert-rule";
-        ruleSpan.textContent = String(entry.rule_id || "");
+
+        var tdCat = document.createElement("td");
         var catSpan = document.createElement("span");
         catSpan.className = alertBadgeClass(
             String(entry.category || "")
         );
-        catSpan.textContent = String(entry.category || "");
-        a.appendChild(tsSpan);
-        a.appendChild(catSpan);
-        a.appendChild(ruleSpan);
-        li.appendChild(a);
-        container.appendChild(li);
+        catSpan.textContent = String(entry.category || "—");
+        tdCat.appendChild(catSpan);
+
+        var tdRule = document.createElement("td");
+        tdRule.className = "live-alert-rule";
+        tdRule.textContent = String(entry.rule_id || "—");
+
+        tr.appendChild(tdTs);
+        tr.appendChild(tdCat);
+        tr.appendChild(tdRule);
+        container.appendChild(tr);
     }
 
     function renderSparkline(svgEl, polyEl, values) {
