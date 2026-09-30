@@ -325,7 +325,7 @@ test_access_denied_errorhandler_403 abgedeckt.
 ## Chronologie
 
 Sortiert nach Commit-Zeit (aelteste zuerst, HEAD zuletzt).
-Letzte Aktualisierung: 2026-09-30 (HEAD 2de4a40).
+Letzte Aktualisierung: 2026-10-01 (HEAD d607d82).
 
 - 3.6.4: AuditReaderService.
 - Venv-Umstellung.
@@ -1143,7 +1143,7 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 2de4a40).
       nachziehen oder als Ist-Stand-Absatz ergaenzen.
     - Kategorie 1, Doku-Nachtrag nach Messung.
 
-55. (offen, Kategorie 2 + 3, Dashboard) Anzeige-
+55. (erledigt, Kategorie 2 + 3, Dashboard) Anzeige-
     Erweiterung Dashboard (Live).
     - T1 Live-Geraeteuebersicht auf /: Kachel
       "Geraete N" ersetzt durch Live-Info
@@ -1161,6 +1161,24 @@ Letzte Aktualisierung: 2026-09-30 (HEAD 2de4a40).
       /alerts?since=24h).
     - Technologie Live offen (WS/SSE/Polling).
     - Kein Code ohne Reviewer-Block (Kategorie 3).
+    Erledigt in Punkt-55-Block (7 Commits,
+    2026-09-30 bis 2026-10-01, HEAD d607d82):
+    - e0b60f8 Layout-Fix .dashboard-grid/
+      .stat-cards.
+    - 876e7c7 T2 Netz-Label (network_label()).
+    - 397a551 T3 Gast/Haupt (count_by_network,
+      SQL GROUP BY).
+    - 3e2d354 T6 Kacheln klickbar (<a>-Wrapper,
+      .card-link).
+    - 2d3223c T1+T5 Live-Geraete + Live-Alarme
+      (FritzboxStateService, /api/dashboard/state,
+      dashboard.js Polling 5s/30s).
+    - 36ef968 T4 System-Sparklines + Logs mit
+      Aenderungen (list_recent_by_kinds,
+      eigenes SVG-Rendering).
+    - d607d82 B5 Verwaltung details/summary.
+    Tests: 1040 -> 1071.
+    Live-Technologie: Polling (kein WS/SSE).
 
 56. (offen, Kategorie 3, Dashboard-Aktionen)
     Schreiboperationen auf Kern-Daten.
@@ -1443,5 +1461,16 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     loop.py no-redef (policy_approval_request_id).
   Punkt 60 erledigt. Punkt 63 erledigt.
   Punkt 64 entfaellt (B4 war Fehlalarm).
+
+65. (offen, Kategorie 2, Dashboard) Extern-Kachel
+    auf /. InventoryService.count_by_network
+    liefert "Extern" bereits (T3), Kachel fehlt.
+    Nach Punkt 55 vorgemerkt. Eigener kleiner
+    Block.
+
+66. (offen, Kategorie 3, Dashboard) Route /system
+    mit vollem Diagramm (Verlauf mit Achsen,
+    Zoom). Heute nur Sparklines auf / (T4).
+    Eigener Block, eigenes Design.
 
 Bewusst offen (kein Bau heute):
