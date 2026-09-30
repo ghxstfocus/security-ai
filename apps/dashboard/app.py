@@ -17,9 +17,10 @@ import pwd
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from flask import Flask, Response, g, redirect, request
+from flask import Flask, Response, g, request
 from werkzeug.exceptions import HTTPException
 
+from apps.dashboard._redirect import safe_redirect
 from apps.dashboard.decorators import (
     SESSION_COOKIE_NAME,
     is_public_path,
@@ -110,6 +111,8 @@ def create_app(
         g.audit = app.extensions["audit_writer"]
         if is_public_path(request.path):
             return None
+        if request.endpoint is None:
+            return ("Zugriff verweigert", 403)
         view_fn = app.view_functions.get(request.endpoint)
         if view_fn is None or not hasattr(
             view_fn, "_required_permission",
@@ -127,10 +130,12 @@ def create_app(
             )
             return ("Zugriff verweigert", 403)
         session_id = request.cookies.get(SESSION_COOKIE_NAME)
+        if session_id is None:
+            return safe_redirect("/login?next=" + request.path)
         sr = SessionRepository(g.conn)
-        s = sr.get(session_id) if session_id else None
+        s = sr.get(session_id)
         if s is None or not s.is_active:
-            return redirect("/login?next=" + request.path)
+            return safe_redirect("/login?next=" + request.path)
         now = datetime.now(UTC)
         try:
             last = datetime.fromisoformat(s.last_seen_at)
@@ -146,7 +151,7 @@ def create_app(
                     "principal": s.principal_name,
                 },
             )
-            return redirect("/login")
+            return safe_redirect("/login")
         if (now - last).total_seconds() > IDLE_TIMEOUT_SECONDS:
             sr.revoke(session_id, now=now)
             g.audit.log(
@@ -159,7 +164,7 @@ def create_app(
                     "principal": s.principal_name,
                 },
             )
-            return redirect("/login")
+            return safe_redirect("/login")
         sr.touch(
             session_id,
             ip=request.remote_addr,

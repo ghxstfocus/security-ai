@@ -29,9 +29,11 @@ from apps.dashboard.decorators import (
     PUBLIC_PATHS,
     require_permission,
 )
+from core.access.session_repo import SessionRepository
 from core.inventory.repository import (
     DEFAULT_MIGRATIONS_DIR,
     SchemaVersionError,
+    connect,
 )
 from tests.unit._helpers import (
     build_dashboard_app,
@@ -441,3 +443,69 @@ def test_index_cards_show_live_value_not_dash(
     # Kachel eine Zahl oder "—". Wir erwarten KEIN
     # em-dash fuer admin (leere DB = 0).
     assert b"\xe2\x80\x94" not in r.data
+
+
+# ---------------------------------------------------------------------- #
+# B1a: Session-Guards + safe_redirect (Kategorie 3)
+# ---------------------------------------------------------------------- #
+
+def test_safe_redirect_returns_302_and_location():
+    """safe_redirect() liefert 302 + Location.
+
+    Der cast() im Helper ist ein Typ-Hint fuer mypy,
+    aendert aber zur Laufzeit nichts: redirect()
+    liefert weiterhin werkzeug.Response, das
+    Flask als Response akzeptiert. Der Test prueft
+    die Laufzeit-Garantie, nicht die mypy-Sicht.
+    """
+    from apps.dashboard._redirect import safe_redirect
+
+    r = safe_redirect("/login")
+    assert r.status_code == 302
+    assert r.headers["Location"] == "/login"
+
+
+def test_safe_redirect_custom_code():
+    from apps.dashboard._redirect import safe_redirect
+
+    r = safe_redirect("/x", code=303)
+    assert r.status_code == 303
+    assert r.headers["Location"] == "/x"
+
+
+def test_before_inactive_session_redirects(app):
+    """Session mit revoked_at -> Redirect auf /login."""
+    from datetime import UTC, datetime
+
+    conn = connect(app.config["DB_PATH"])
+    sr = SessionRepository(conn)
+    sr.revoke("sid-1", now=datetime.now(UTC))
+    conn.close()
+
+    c = app.test_client()
+    set_session_cookie(c, "sid-1")
+    r = c.get("/")
+    assert r.status_code == 302
+    assert "/login" in r.headers["Location"]
+
+
+def test_before_session_timeout_redirects(app):
+    """Idle-Timeout: last_seen_at > IDLE_TIMEOUT_SECONDS
+    -> Redirect auf /login."""
+    from datetime import UTC, datetime, timedelta
+
+    from apps.dashboard.app import IDLE_TIMEOUT_SECONDS
+
+    conn = connect(app.config["DB_PATH"])
+    sr = SessionRepository(conn)
+    stale = datetime.now(UTC) - timedelta(
+        seconds=IDLE_TIMEOUT_SECONDS + 60,
+    )
+    sr.touch("sid-1", now=stale)
+    conn.close()
+
+    c = app.test_client()
+    set_session_cookie(c, "sid-1")
+    r = c.get("/")
+    assert r.status_code == 302
+    assert "/login" in r.headers["Location"]
