@@ -17,13 +17,13 @@ from flask import (
     Response,
     g,
     jsonify,
-    redirect,
     render_template,
     request,
     session,
 )
 
 from apps.dashboard import csrf
+from apps.dashboard._redirect import safe_redirect
 from apps.dashboard.decorators import (
     SESSION_COOKIE_NAME,
     require_permission,
@@ -203,7 +203,7 @@ def register_auth_routes(app: Flask) -> None:
         _audit("login_success", "ALLOWED", "OK", p.name)
         # 11-12. Cookie + Redirect
         next_path = _safe_next(request.form.get("next"))
-        resp = redirect(next_path, 302)
+        resp = safe_redirect(next_path, 302)
         resp.set_cookie(
             SESSION_COOKIE_NAME, new_id,
             max_age=IDLE_TIMEOUT_SECONDS, path="/",
@@ -224,7 +224,7 @@ def register_auth_routes(app: Flask) -> None:
             sr.revoke(sid)
             _audit("logout", "ALLOWED", "OK",
                    getattr(g, "principal", None))
-        resp = redirect("/login", 302)
+        resp = safe_redirect("/login", 302)
         resp.delete_cookie(SESSION_COOKIE_NAME, path="/")
         return resp
 
