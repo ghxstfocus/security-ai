@@ -150,6 +150,25 @@ Siehe docs/DEPLOYMENT.md Abschnitt 3c.
 - Kein Secret-Handling (nur Anzeige von Status).
 - Kein direkter Systemzugriff (kein Shell, kein subprocess).
 
+### §N-Ausnahme: Services-Status (Punkt 66, Auflage 1753)
+
+Das Dashboard zeigt den Status der drei eigenen
+security-ai-Units (security-ai-dashboard.service,
+security-ai-event-reader.service,
+security-ai-fritzbox-watcher.service).
+
+Die Ausnahme ist eng gefasst:
+- Nur die drei fest definierten Units (Argument-Whitelist
+  in core/services/system_status_service.py::UNIT_WHITELIST).
+- subprocess.run mit shell=False, Argumentliste,
+  timeout=2, check=False.
+- Kein Shell-String, kein ';', kein '|'.
+- RBAC device.read vor dem Aufruf.
+- Fail closed: Fehler -> Status 'unbekannt', kein 500.
+
+Alle anderen subprocess-Anwendungen bleiben verboten.
+Weitere Ausnahmen brauchen einen eigenen Reviewer-Block.
+
 ## O. Reihenfolge der Umsetzung
 
 1. Login-Route + Session + CSRF + Audit.

@@ -1598,4 +1598,15 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     - Eigener Block, Reviewer-GO vor Code.
     - Kein Bau heute (Doku).
 
+69. (erledigt in 8a0e8d2) §N-Ausnahme Services-Status.
+    Das Dashboard zeigt auf /system den Status der drei
+    security-ai-Units via subprocess.run systemctl
+    is-active. Erste bewusste §N-Ausnahme.
+    Eng gefasst (UNIT_WHITELIST, shell=False, timeout=2,
+    check=False, RBAC device.read, fail closed ->
+    'unbekannt').
+    Dokumentiert in docs/WEB_SECURITY_CHECKLIST.md §N
+    und docs/DESIGN_DECISIONS.md §17.
+    Kategorie 3 (Reviewer-GO Variante 1).
+
 Bewusst offen (kein Bau heute):

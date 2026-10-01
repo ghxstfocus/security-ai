@@ -1510,6 +1510,14 @@ Steuerpult. Die Rollenverschiebung ist explizit.
   nicht in Sammel-Reitern.
 - Change Request ist Pflicht bei Level 2+.
 
+Ausnahme: Services-Status auf /system (Punkt 66).
+Der SystemStatusService ruft systemctl is-active fuer
+die drei eigenen security-ai-Units direkt auf
+(subprocess.run, shell=False, timeout=2). Das ist die
+einzige subprocess-Anwendung aus einem UI-nahen Pfad.
+Die Ausnahme ist in WEB_SECURITY_CHECKLIST §N
+dokumentiert und eng gefasst.
+
 ## 18. Sidebar-Baumstruktur
 
 Die Sidebar wird Baum mit Bereichen und
