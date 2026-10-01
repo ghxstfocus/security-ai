@@ -4,7 +4,7 @@
 > im Verlauf des Projekts getroffen wurden. Es ist die erste
 > Adresse bei Unklarheiten.
 >
-> Stand: Punkt 55 abgeschlossen (HEAD 5faa9aa,
+> Stand: Punkt 65 abgeschlossen (HEAD 974527d,
 > 2026-10-01), mypy 0, ruff 0, Tests 1080.
 > Punkt 55 (Dashboard-Anzeige-Erweiterung, T1-T6 +
 > B5) erledigt.

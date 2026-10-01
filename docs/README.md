@@ -25,7 +25,7 @@ Index der Detail-Dokumentation.
 - [SECURITY.md](SECURITY.md) — Threat Model, Guardrails, Audit.
 - [SECURITY_REVIEW_LOG.md](SECURITY_REVIEW_LOG.md) —
   Sicherheits-Entscheidungen nach Thema + offene
-  Punkte 1-66 (Stand Punkt 55 abgeschlossen).
+  Punkte 1-68 (Stand Punkt 65 abgeschlossen).
 - [INCONSISTENCIES_FOUND.md](INCONSISTENCIES_FOUND.md) —
   Ausgelagerte Inkonsistenzen (heute leer).
 - [PERMISSIONS.md](PERMISSIONS.md) — Tool-Level 0-5 und RBAC.
