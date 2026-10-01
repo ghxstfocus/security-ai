@@ -5,6 +5,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 
 from core.detection.rule_base import RuleContext, RuleState
+from core.detection.rules.mac_change import MacChangeRule
 from core.detection.rules.network_change import NetworkChangeRule
 from core.detection.rules.port_scan import PortScanRule
 from core.detection.rules.unknown_device import UnknownDeviceRule
@@ -224,6 +225,111 @@ class NetworkChangeTests(unittest.TestCase):
     def test_falscher_event_typ_skip(self):
         e = new_event("fritzbox", EventType.DEVICE_OFFLINE.value, Severity.INFO,
                       {"identifier": "aa:05", "network_type": "Hauptnetz"})
+        self.assertFalse(self.rule.matches(e))
+        self.assertEqual(self.rule.evaluate(e, _ctx(state=self.state)), [])
+
+
+class MacChangeTests(unittest.TestCase):
+    """Tests fuer die mac_change-Regel (Punkt 71, Alarm-Paket A2)."""
+
+    def setUp(self):
+        self.rule = MacChangeRule()
+        self.state = RuleState(maxlen=200)
+        self.base = datetime.now(UTC)
+
+    def _presence(self, *, identifier, entity_name, ts,
+                  network_type="Hauptnetz"):
+        return Event(
+            event_id=new_event_id(),
+            timestamp=ts,
+            source="fritzbox",
+            event_type=EventType.DEVICE_PRESENCE.value,
+            severity=Severity.INFO,
+            data={
+                "identifier": identifier,
+                "mac": identifier,
+                "entity_name": entity_name,
+                "network_type": network_type,
+            },
+            network_id="homelab-default",
+        )
+
+    def test_erstes_auftreten_kein_output(self):
+        out = self.rule.evaluate(
+            self._presence(identifier="aa:01", entity_name="S25-von-A",
+                           ts=self.base),
+            _ctx(now=self.base, state=self.state),
+        )
+        self.assertEqual(out, [])
+
+    def test_gleicher_entity_andere_mac_output(self):
+        self.rule.evaluate(
+            self._presence(identifier="aa:01", entity_name="S25-von-A",
+                           ts=self.base),
+            _ctx(now=self.base, state=self.state),
+        )
+        t2 = self.base + timedelta(seconds=10)
+        out = self.rule.evaluate(
+            self._presence(identifier="aa:02", entity_name="S25-von-A", ts=t2),
+            _ctx(now=t2, state=self.state),
+        )
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out[0].event_type, EventType.MAC_CHANGE.value)
+        self.assertEqual(out[0].data["mac"], "aa:02")
+        self.assertIn("aa:01", out[0].data["known_macs"])
+
+    def test_gleicher_entity_gleiche_mac_kein_output(self):
+        self.rule.evaluate(
+            self._presence(identifier="aa:01", entity_name="S25-von-A",
+                           ts=self.base),
+            _ctx(now=self.base, state=self.state),
+        )
+        t2 = self.base + timedelta(seconds=10)
+        out = self.rule.evaluate(
+            self._presence(identifier="aa:01", entity_name="S25-von-A", ts=t2),
+            _ctx(now=t2, state=self.state),
+        )
+        self.assertEqual(out, [])
+
+    def test_entity_none_kein_output(self):
+        out = self.rule.evaluate(
+            self._presence(identifier="aa:01", entity_name=None,
+                           ts=self.base),
+            _ctx(now=self.base, state=self.state),
+        )
+        self.assertEqual(out, [])
+
+    def test_entity_sentinel_kein_output(self):
+        out = self.rule.evaluate(
+            self._presence(identifier="aa:01", entity_name="__FALLBACK__",
+                           ts=self.base),
+            _ctx(now=self.base, state=self.state),
+        )
+        self.assertEqual(out, [])
+
+    def test_cooldown_greift(self):
+        self.rule.evaluate(
+            self._presence(identifier="aa:01", entity_name="S25-von-A",
+                           ts=self.base),
+            _ctx(now=self.base, state=self.state),
+        )
+        t2 = self.base + timedelta(seconds=10)
+        first = self.rule.evaluate(
+            self._presence(identifier="aa:02", entity_name="S25-von-A", ts=t2),
+            _ctx(now=t2, state=self.state),
+        )
+        self.assertEqual(len(first), 1)
+        t3 = self.base + timedelta(seconds=20)
+        second = self.rule.evaluate(
+            self._presence(identifier="aa:03", entity_name="S25-von-A", ts=t3),
+            _ctx(now=t3, state=self.state),
+        )
+        self.assertEqual(second, [])
+
+    def test_falscher_event_typ_skip(self):
+        e = new_event("fritzbox", EventType.DEVICE_OFFLINE.value, Severity.INFO,
+                      {"identifier": "aa:05", "mac": "aa:05",
+                       "entity_name": "S25-von-A"})
         self.assertFalse(self.rule.matches(e))
         self.assertEqual(self.rule.evaluate(e, _ctx(state=self.state)), [])
 

@@ -84,3 +84,14 @@ rules:
       - when: hauptnetz
         add: 0.2
         reason: "Wechsel ins Hauptnetz"
+
+  # ------------------------------------------------------------------ #
+  # mac_change (Punkt 71, Alarm-Paket A2)
+  # ------------------------------------------------------------------ #
+  mac_change:
+    rule_id: mac_change
+    base: 0.4
+    modifiers:
+      - when: hauptnetz
+        add: 0.2
+        reason: "MAC-Wechsel im Hauptnetz"

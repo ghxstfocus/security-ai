@@ -45,6 +45,7 @@ class EventType(str, Enum):
     DEVICE_OFFLINE = "device_offline"
     UNKNOWN_DEVICE = "unknown_device"
     NETWORK_CHANGE = "network_change"
+    MAC_CHANGE = "mac_change"
 
     # Netzwerk
     PORT_SCAN = "port_scan"

@@ -27,3 +27,9 @@ network_change:
   alert_cooldown_seconds: 300
   alarm_when_to_hauptnetz: true
   alarm_when_to_gastnetz: false
+
+mac_change:
+  enabled: true
+  severity: WARNING
+  alarm_cooldown_seconds: 600
+  alarm_window_seconds: 600
