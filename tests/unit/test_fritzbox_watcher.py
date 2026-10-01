@@ -294,3 +294,55 @@ class FetchHostsIpNormalizationTests(unittest.TestCase):
         ])
         self.assertEqual(len(hosts), 1)
         self.assertIsNone(hosts[0]["ip"])
+
+
+class RePresenceTests(unittest.TestCase):
+    """_diff_and_emit: Re-Presence bei name/ip-Diff (Punkt 68)."""
+
+    def _state_with(self, mac: str, name: str, ip: str,
+                    active: bool = True) -> dict:
+        return {
+            "version": fw._STATE_FORMAT_VERSION,
+            "hosts": {mac: {"name": name, "ip": ip, "active": active}},
+        }
+
+    def _hosts(self, mac: str, name: str, ip: str,
+               active: bool = True) -> list:
+        return [_host(mac, ip=ip, name=name, active=active)]
+
+    def test_name_changed_emits_event(self) -> None:
+        old = self._state_with("aa:10", "kamera", "10.0.0.1")
+        hosts = self._hosts("aa:10", "kamera-neu", "10.0.0.1")
+        events = fw._diff_and_emit(old, hosts)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0].event_type,
+                         EventType.DEVICE_PRESENCE.value)
+
+    def test_ip_changed_emits_event(self) -> None:
+        old = self._state_with("aa:11", "kamera", "10.0.0.1")
+        hosts = self._hosts("aa:11", "kamera", "10.0.0.2")
+        events = fw._diff_and_emit(old, hosts)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0].event_type,
+                         EventType.DEVICE_PRESENCE.value)
+
+    def test_no_change_no_event(self) -> None:
+        old = self._state_with("aa:12", "kamera", "10.0.0.1")
+        hosts = self._hosts("aa:12", "kamera", "10.0.0.1")
+        events = fw._diff_and_emit(old, hosts)
+        self.assertEqual(len(events), 0)
+
+    def test_old_without_name_field_emits_event(self) -> None:
+        old = {
+            "version": fw._STATE_FORMAT_VERSION,
+            "hosts": {"aa:13": {"ip": "10.0.0.1", "active": True}},
+        }
+        hosts = self._hosts("aa:13", "kamera", "10.0.0.1")
+        events = fw._diff_and_emit(old, hosts)
+        self.assertEqual(len(events), 1)
+
+    def test_sentinel_vs_sentinel_no_event(self) -> None:
+        old = self._state_with("aa:14", fw._FALLBACK_SENTINEL, "10.0.0.1")
+        hosts = self._hosts("aa:14", fw._FALLBACK_SENTINEL, "10.0.0.1")
+        events = fw._diff_and_emit(old, hosts)
+        self.assertEqual(len(events), 0)

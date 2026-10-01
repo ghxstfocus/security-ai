@@ -180,10 +180,18 @@ def _diff_and_emit(
 
     - neu + aktiv             -> DEVICE_PRESENCE.
     - neu + inaktiv           -> nichts.
-    - war aktiv, jetzt aktiv  -> nichts.
+    - war aktiv, jetzt aktiv  -> nichts (ausser name/ip-Diff).
     - war aktiv, jetzt inaktiv-> DEVICE_OFFLINE.
     - war inaktiv, jetzt aktiv-> DEVICE_PRESENCE.
     - war inaktiv, jetzt inak -> nichts.
+
+    Re-Presence (Punkt 68, Auflage 1778/1779):
+    Wenn active unveraendert bleibt, aber name oder ip
+    sich geaendert haben (Vergleich gegen old_state,
+    normalisierte Werte), wird ebenfalls
+    DEVICE_PRESENCE emittiert. Grund: Config-
+    Aenderungen (Netz-Label, IP) greifen sonst erst
+    beim naechsten echten Zustandswechsel.
     """
     events: list[Event] = []
     old_hosts = old_state.get("hosts") or {}
@@ -202,6 +210,14 @@ def _diff_and_emit(
                 event_type = EventType.DEVICE_OFFLINE.value
             elif (not was_active) and is_active:
                 event_type = EventType.DEVICE_PRESENCE.value
+            elif is_active:
+                # Re-Presence (Punkt 68): active unveraendert,
+                # aber name oder ip haben sich geaendert.
+                old_name = was.get("name") if isinstance(was, dict) else None
+                old_ip = was.get("ip") if isinstance(was, dict) else None
+                if (old_name != h.get("name")
+                        or old_ip != h.get("ip")):
+                    event_type = EventType.DEVICE_PRESENCE.value
 
         if event_type is None:
             continue
