@@ -1027,21 +1027,23 @@ Letzte Aktualisierung: 2026-10-01 (HEAD 974527d).
     offener Punkt. Der Watcher kapselt bool(status)
     defensiv.
 
-45. (offen) Verwaiste .env.example-Variablen
-    (Namen ohne Code-Nutzung). Liste:
-    ADMIN_AI_API_KEY, ADMIN_AI_MODEL, ADMIN_AI_PROVIDER,
-    BIND_HOST, DASHBOARD_PASSWORD, DASHBOARD_PORT,
-    DASHBOARD_USER, GUEST_NETWORK_PREFIX,
-    NETWORK_WATCH_ENABLED,
-    PORTSCAN_THRESHOLD_IPS, PORTSCAN_THRESHOLD_IPS_WINDOW,
-    PORTSCAN_THRESHOLD_PORTS, PORTSCAN_THRESHOLD_WINDOW,
-    PROXMOX_TOKEN_ID, PROXMOX_TOKEN_SECRET, PROXMOX_URL,
-    PROXMOX_VERIFY_SSL, SNIFF_IFACE, WEBHOOK_PORT,
-    WEBHOOK_TOKEN.
-    Kein Loeschen ohne Nutzer-Entscheidung. Viele
-    legitim fuer spaetere Phasen (PROXMOX_* Phase >5,
-    TELEGRAM_* heute genutzt, SNIFF_IFACE/PORTSCAN_*
-    Phase 3.8b, ADMIN_AI_* Phase 5).
+45. (erledigt, Commits 1143fb9 + folgender) Verwaiste
+    .env.example-Variablen.
+    Entfernt (ueberholt, kein Code-Pfad):
+    BIND_HOST, DASHBOARD_PORT, WEBHOOK_PORT,
+    DASHBOARD_USER, DASHBOARD_PASSWORD.
+    Behalten mit Gruppenkommentar "Nicht implementiert -
+    Vorlage": PROXMOX_* (Phase 3.7, optional),
+    NETWORK_WATCH_ENABLED / SNIFF_IFACE / PORTSCAN_*
+    (Phase 3.8), ADMIN_AI_* (Phase 5), WEBHOOK_TOKEN
+    (kein Listener heute).
+    Doku-Drift in docs/DEPLOYMENT.md mitbereinigt:
+    DASHBOARD_PASSWORD und WEBHOOK_TOKEN aus der
+    "Werte setzen"-Liste entfernt, FRITZ_ADDRESS ->
+    FRITZ_HOST, FRITZ_USER -> FRITZ_USERNAME,
+    PROXMOX_* mit Hinweis "Vorlage, nicht implementiert".
+    Messung vor dem Patch (Auflage 1734): alle 17
+    Variablen ohne Code-Zugriff, nur Doku-Treffer.
     Kategorie 1 (Doku).
 
 46. (erledigt in 4a03310) Event-Datei-Modus 640.

@@ -72,13 +72,11 @@ Voraussetzung: `pyproject.toml` enthaelt einen
 Werte setzen:
 
 - SECRET_KEY — zufaelliger String (openssl rand -hex 32)
-- DASHBOARD_PASSWORD — starkes Passwort
-- WEBHOOK_TOKEN — zufaelliger Token (openssl rand -hex 32)
 - TELEGRAM_BOT_TOKEN — von BotFather
 - TELEGRAM_CHAT_ID — eigene Chat-ID
-- FRITZ_ADDRESS — 192.168.178.1
-- FRITZ_USER / FRITZ_PASSWORD — falls gesetzt
-- PROXMOX_URL / PROXMOX_TOKEN_* — fuer Proxmox-Zugriff
+- FRITZ_HOST — 192.168.178.1
+- FRITZ_USERNAME / FRITZ_PASSWORD — falls gesetzt
+- PROXMOX_URL / PROXMOX_TOKEN_* — Vorlage, nicht implementiert
 
 Dateirechte:
 
