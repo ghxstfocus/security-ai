@@ -40,3 +40,10 @@ device_flapping:
   alarm_window_seconds: 900
   alarm_max_changes: 6
   alert_cooldown_seconds: 900
+
+unknown_device_persistent:
+  enabled: true
+  severity: WARNING
+  alarm_network: "Hauptnetz"
+  alarm_after_seconds: 3600
+  alert_cooldown_seconds: 3600

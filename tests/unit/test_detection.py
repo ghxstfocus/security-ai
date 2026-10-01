@@ -10,6 +10,9 @@ from core.detection.rules.mac_change import MacChangeRule
 from core.detection.rules.network_change import NetworkChangeRule
 from core.detection.rules.port_scan import PortScanRule
 from core.detection.rules.unknown_device import UnknownDeviceRule
+from core.detection.rules.unknown_device_persistent import (
+    UnknownDevicePersistentRule,
+)
 from core.events.event import (
     Event,
     EventType,
@@ -407,6 +410,101 @@ class DeviceFlappingTests(unittest.TestCase):
     def test_erstes_auftreten_kein_output(self):
         out = self._run_changes(1, reason="first_seen")
         self.assertEqual(out, [])
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+class UnknownDevicePersistentTests(unittest.TestCase):
+    """Punkt 74: unknown_device_persistent."""
+
+    def setUp(self):
+        self.rule = UnknownDevicePersistentRule()
+        self.state = RuleState(maxlen=200)
+        self.base = datetime.now(UTC)
+
+    def _ctx(self, now, snapshot=None):
+        return RuleContext(
+            now=now,
+            network_id="homelab-default",
+            config={},
+            state=self.state,
+            snapshot=snapshot,
+        )
+
+    def _presence(self, *, identifier="aa:01", network_type="Hauptnetz",
+                  known=False, ts=None):
+        return Event(
+            event_id=new_event_id(),
+            timestamp=ts or self.base,
+            source="fritzbox",
+            event_type=EventType.DEVICE_PRESENCE.value,
+            severity=Severity.INFO,
+            data={
+                "identifier": identifier,
+                "mac": identifier,
+                "entity_name": "kamera",
+                "network_type": network_type,
+                "known": known,
+            },
+            network_id="homelab-default",
+        )
+
+    def test_known_kein_output(self):
+        snap = {"first_seen": {"aa:01": self.base - timedelta(hours=2)}}
+        out = self.rule.evaluate(
+            self._presence(known=True), self._ctx(self.base, snap),
+        )
+        self.assertEqual(out, [])
+
+    def test_unknown_unter_schwelle_kein_output(self):
+        snap = {"first_seen": {"aa:01": self.base - timedelta(minutes=5)}}
+        out = self.rule.evaluate(
+            self._presence(), self._ctx(self.base, snap),
+        )
+        self.assertEqual(out, [])
+
+    def test_unknown_ueber_schwelle_output(self):
+        snap = {"first_seen": {"aa:01": self.base - timedelta(hours=2)}}
+        out = self.rule.evaluate(
+            self._presence(), self._ctx(self.base, snap),
+        )
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out[0].event_type,
+                         EventType.UNKNOWN_DEVICE_PERSISTENT.value)
+        self.assertGreaterEqual(out[0].data["unknown_seconds"], 3600)
+
+    def test_falsches_netz_kein_output(self):
+        snap = {"first_seen": {"aa:01": self.base - timedelta(hours=2)}}
+        out = self.rule.evaluate(
+            self._presence(network_type="Gastnetz"),
+            self._ctx(self.base, snap),
+        )
+        self.assertEqual(out, [])
+
+    def test_ohne_snapshot_kein_output(self):
+        out = self.rule.evaluate(
+            self._presence(), self._ctx(self.base, None),
+        )
+        self.assertEqual(out, [])
+
+    def test_cooldown_greift(self):
+        snap = {"first_seen": {"aa:01": self.base - timedelta(hours=2)}}
+        first = self.rule.evaluate(
+            self._presence(), self._ctx(self.base, snap),
+        )
+        self.assertEqual(len(first), 1)
+        second = self.rule.evaluate(
+            self._presence(), self._ctx(self.base + timedelta(minutes=10), snap),
+        )
+        self.assertEqual(second, [])
+
+    def test_falscher_event_typ_skip(self):
+        e = new_event("fritzbox", EventType.DEVICE_OFFLINE.value, Severity.INFO,
+                      {"identifier": "aa:01", "network_type": "Hauptnetz",
+                       "known": False})
+        self.assertFalse(self.rule.matches(e))
 
 
 if __name__ == "__main__":

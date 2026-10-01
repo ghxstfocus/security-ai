@@ -102,12 +102,18 @@ class RuleContext:
     - state:       Ringpuffer pro Regel (thread-sicher)
     - history:     optionaler Zugriff auf vergangene Events
                    Signatur: history(event_type: str, limit: int) -> list[Event]
+    - snapshot:    optionaler Inventory-Snapshot (Punkt 74):
+                   {"devices": set, "whitelist": set,
+                    "first_seen": {identifier: datetime}}
+                   Fail-safe: None, wenn nicht uebergeben.
+                   Regeln, die Snapshot brauchen, pruefen auf None.
     """
     now: datetime
     network_id: str
     config: dict[str, Any] = field(default_factory=dict)
     state: RuleState = field(default_factory=RuleState)
     history: Callable[[str, int], list[Event]] | None = None
+    snapshot: dict[str, Any] | None = None
 
     def lookup(self, event_type: str, limit: int = 100) -> list[Event]:
         """

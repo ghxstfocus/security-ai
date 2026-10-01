@@ -43,7 +43,7 @@ class KnownInjectionTests(unittest.TestCase):
         }
         captured = {}
 
-        def fake_process(ev, configs=None, now=None):
+        def fake_process(ev, configs=None, now=None, snapshot=None):
             captured["event"] = ev
             return []
 
@@ -89,7 +89,7 @@ class KnownInjectionTests(unittest.TestCase):
         pre = {"devices": set(), "whitelist": set(), "first_seen": {}}
         captured = {}
 
-        def fake_process(ev, configs=None, now=None):
+        def fake_process(ev, configs=None, now=None, snapshot=None):
             captured["event"] = ev
             return []
 
@@ -129,6 +129,46 @@ class UnknownDeviceFireAfterKnownFalseTests(unittest.TestCase):
         self.assertEqual(len(out), 1)
         self.assertEqual(out[0].event_type,
                          EventType.UNKNOWN_DEVICE.value)
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+class SnapshotPassedTests(unittest.TestCase):
+    """Punkt 74: pre_snapshot wird an Detection uebergeben."""
+
+    def test_snapshot_wird_uebergeben(self):
+        from datetime import UTC
+        from datetime import datetime as _dt
+
+        from core.events.event import Event, EventType, Severity, new_event_id
+        orch = SecurityAI(skip_migrations=True)
+        captured = {}
+
+        def fake_process(ev, configs=None, now=None, snapshot=None):
+            captured["snapshot"] = snapshot
+            return []
+
+        pre = {"devices": set(), "whitelist": set(), "first_seen": {}}
+        with mock.patch.object(orch, "_load_inventory_snapshot",
+                               return_value=pre), \
+                mock.patch.object(orch, "_update_inventory",
+                                  return_value=True), \
+                mock.patch.object(orch._detection, "process",
+                                  side_effect=fake_process), \
+                mock.patch.object(orch._audit, "log", return_value=None):
+            e = Event(
+                event_id=new_event_id(),
+                timestamp=_dt.now(UTC),
+                source="fritzbox",
+                event_type=EventType.DEVICE_PRESENCE.value,
+                severity=Severity.INFO,
+                data={"identifier": "aa:01", "network_type": "Hauptnetz"},
+                network_id="homelab-default",
+            )
+            orch.process(e)
+        self.assertEqual(captured.get("snapshot"), pre)
 
 
 if __name__ == "__main__":

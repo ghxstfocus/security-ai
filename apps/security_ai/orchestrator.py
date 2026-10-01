@@ -619,6 +619,7 @@ class SecurityAI:
             event,
             configs=self._detection_config,
             now=event.timestamp,
+            snapshot=pre_snapshot,
         )
         for r in reports:
             if r.skipped:

@@ -47,6 +47,7 @@ class EventType(str, Enum):
     NETWORK_CHANGE = "network_change"
     MAC_CHANGE = "mac_change"
     DEVICE_FLAPPING = "device_flapping"
+    UNKNOWN_DEVICE_PERSISTENT = "unknown_device_persistent"
 
     # Netzwerk
     PORT_SCAN = "port_scan"

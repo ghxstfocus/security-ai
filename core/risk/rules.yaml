@@ -109,3 +109,17 @@ rules:
       - when: nachts
         add: 0.1
         reason: "nachts (22-05)"
+
+  # ------------------------------------------------------------------ #
+  # unknown_device_persistent (Punkt 74)
+  # ------------------------------------------------------------------ #
+  unknown_device_persistent:
+    rule_id: unknown_device_persistent
+    base: 0.6
+    modifiers:
+      - when: hauptnetz
+        add: 0.2
+        reason: "seit mehr als alarm_after_seconds unbekannt"
+      - when: nachts
+        add: 0.1
+        reason: "nachts (22-05)"

@@ -176,6 +176,7 @@ class DetectionEngine:
         configs: dict[str, dict[str, Any]] | None = None,
         history: Any = None,
         now: datetime | None = None,
+        snapshot: dict[str, Any] | None = None,
     ) -> list[RuleRunReport]:
         """
         Wendet alle zustaendigen Regeln auf ein Event an.
@@ -204,6 +205,7 @@ class DetectionEngine:
                 config=dict(configs.get(rule.id, {})),
                 state=self._states[rule.id],
                 history=history,
+                snapshot=snapshot,
             )
             try:
                 alerts = rule.evaluate(event, ctx)
