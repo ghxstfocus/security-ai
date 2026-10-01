@@ -1621,4 +1621,37 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     und docs/DESIGN_DECISIONS.md §17.
     Kategorie 3 (Reviewer-GO Variante 1).
 
+70. (erledigt in 95df3ae, Kategorie 3, Detection)
+    Alarm-Paket A1: Netz-Wechsel-Alarm.
+    - Neuer EventType NETWORK_CHANGE in
+      core/events/event.py.
+    - Neue Regel core/detection/rules/network_change.py:
+      triggert auf device_presence, Zustand pro
+      identifier (MAC) im RuleContext.state.
+    - Config-Block in detection/rules.yaml:
+      alarm_when_to_hauptnetz=true,
+      alarm_when_to_gastnetz=false,
+      alert_cooldown_seconds=300.
+    - Risk-Block in core/risk/rules.yaml:
+      base 0.3, Modifier hauptnetz +0.2
+      -> 0.5 = SUSPICION.
+    - Erstes Auftreten: kein Output, State befuellen.
+    - Tests +6 in tests/unit/test_detection.py
+      (NetworkChangeTests).
+    - Live-Verifikation: network_change wird vom
+      Package-Loader gefunden; Gast->Haupt-Wechsel
+      loest NETWORK_CHANGE-Event aus, erstes Auftreten
+      nicht.
+    - Kein Watcher-Change: network_type ist aus IP
+      abgeleitet (Punkt 67), IP-Aenderung erzeugt
+      bereits device_presence (Punkt 68).
+    - Reviewer-Auflagen 1785-1793 (GO mit Klaerungen
+      F1-F9).
+    - Nachtrag Test-Anpassung: DiffEmitTests::
+      test_unchanged hatte old_state.name="x" vs.
+      _host-Default "kamera". Seit Punkt 68
+      (Re-Presence prueft name) korrekt als Diff
+      erkannt. Test auf konsistenten Zustand
+      korrigiert.
+
 Bewusst offen (kein Bau heute):
