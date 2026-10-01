@@ -10,10 +10,24 @@ nichts tut und im Fehlerfall AccessDeniedError wirft.
 """
 from __future__ import annotations
 
+import sqlite3
 import unittest
+from unittest.mock import MagicMock
 
 from core.access.checker import AccessDeniedError
+from core.inventory.repository import (
+    DeviceRepository,
+    apply_migrations,
+)
+from core.inventory.whitelist import WhitelistRepository
 from core.services.inventory_service import InventoryService
+
+
+def _fresh_conn():
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    apply_migrations(conn)
+    return conn
 
 
 class _StubDeviceRepo:
@@ -80,6 +94,77 @@ class CountByNetworkTests(unittest.TestCase):
         svc = self._service(checker=_DenyChecker())
         with self.assertRaises(AccessDeniedError):
             svc.count_by_network("viewer-no-perm")
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+class WhitelistServiceTests(unittest.TestCase):
+    """Punkt 56a: add_to_whitelist / remove_from_whitelist."""
+
+    def setUp(self):
+        self.conn = _fresh_conn()
+        self.device_repo = DeviceRepository(self.conn)
+        self.whitelist_repo = WhitelistRepository(self.conn)
+        self.checker = MagicMock()
+        self.checker.require_permission = MagicMock(return_value=None)
+        self.audit = MagicMock()
+        self.service = InventoryService(
+            device_repo=self.device_repo,
+            whitelist_repo=self.whitelist_repo,
+            checker=self.checker,
+            audit_writer=self.audit,
+        )
+
+    def _deny(self):
+        self.checker.require_permission = MagicMock(
+            side_effect=AccessDeniedError("denied")
+        )
+
+    def test_add_to_whitelist_rbac_denied(self):
+        self._deny()
+        with self.assertRaises(AccessDeniedError):
+            self.service.add_to_whitelist("viewer1", "aa:01")
+
+    def test_add_to_whitelist_ok(self):
+        out = self.service.add_to_whitelist("admin1", "aa:01")
+        self.assertEqual(out["identifier"], "aa:01")
+
+    def test_add_idempotent(self):
+        self.service.add_to_whitelist("admin1", "aa:01")
+        self.service.add_to_whitelist("admin1", "aa:01")
+        self.assertEqual(self.whitelist_repo.count(), 1)
+
+    def test_remove_from_whitelist_ok(self):
+        self.service.add_to_whitelist("admin1", "aa:02")
+        out = self.service.remove_from_whitelist("admin1", "aa:02")
+        self.assertTrue(out["removed"])
+        self.assertEqual(self.whitelist_repo.count(), 0)
+
+    def test_remove_unknown_kein_error(self):
+        out = self.service.remove_from_whitelist("admin1", "aa:99")
+        self.assertFalse(out["removed"])
+
+    def test_audit_called_on_add(self):
+        self.service.add_to_whitelist("admin1", "aa:03")
+        self.audit.log.assert_called()
+        kinds = [
+            c.kwargs.get("details", {}).get("kind")
+            for c in self.audit.log.call_args_list
+        ]
+        self.assertIn("whitelist_added", kinds)
+
+    def test_audit_called_on_remove(self):
+        self.service.add_to_whitelist("admin1", "aa:04")
+        self.audit.log.reset_mock()
+        self.service.remove_from_whitelist("admin1", "aa:04")
+        self.audit.log.assert_called()
+        kinds = [
+            c.kwargs.get("details", {}).get("kind")
+            for c in self.audit.log.call_args_list
+        ]
+        self.assertIn("whitelist_removed", kinds)
 
 
 if __name__ == "__main__":

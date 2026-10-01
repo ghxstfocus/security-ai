@@ -23,6 +23,7 @@ from core.inventory.repository import (
     DeviceRepository,
     connect,
 )
+from core.inventory.whitelist import WhitelistRepository
 from tests.unit._helpers import (
     build_dashboard_app,
     create_role_client,
@@ -241,3 +242,96 @@ def test_inventory_detail_shows_dash_for_missing_ip(app):
     assert r.status_code == 200
     # em-dash (UTF-8: e2 80 94) als Platzhalter.
     assert b"\xe2\x80\x94" in r.data
+
+
+# --- Punkt 56a: Whitelist-Pflege (Route-Tests) ------------------------ #
+
+def _client_with_csrf(app, role_name):
+    """Client + aktuelles CSRF-Token (analog approvals)."""
+    c = create_role_client(app, role_name)
+    r = c.get("/inventory")
+    # Token aus dem HTML: value="<token>"
+    import re
+    m = re.search(
+        rb'data-csrf-token="([^"]+)"',
+        r.get_data() or b"",
+    )
+    token = m.group(1).decode() if m else ""
+    return c, token
+
+
+def _is_whitelisted(app, identifier):
+    conn = connect(app.config["DB_PATH"])
+    try:
+        return WhitelistRepository(conn).is_whitelisted(identifier)
+    finally:
+        conn.close()
+
+
+def test_whitelist_add_route_requires_login(app):
+    """Ohne Session: Redirect auf Login."""
+    c = app.test_client()
+    r = c.post("/inventory/aa:01/whitelist/add")
+    assert r.status_code in (302, 303, 401)
+
+
+def test_whitelist_add_route_rbac(app):
+    """Viewer hat kein whitelist.manage -> 403."""
+    _seed_device(app, "aa:01")
+    c = create_role_client(app, "viewer")
+    r = c.post("/inventory/aa:01/whitelist/add")
+    assert r.status_code == 403
+
+
+def test_whitelist_add_route_csrf(app):
+    """Ohne CSRF-Token -> 400."""
+    _seed_device(app, "aa:01")
+    c = create_role_client(app, "admin")
+    r = c.post(
+        "/inventory/aa:01/whitelist/add",
+        data={},
+    )
+    assert r.status_code == 400
+
+
+def test_whitelist_add_route_ok(app):
+    """Admin mit CSRF: Eintrag landet in der DB, Redirect 302."""
+    _seed_device(app, "aa:01")
+    c, tok = _client_with_csrf(app, "admin")
+    r = c.post(
+        "/inventory/aa:01/whitelist/add",
+        data={"_csrf_token": tok},
+    )
+    assert r.status_code == 302
+    assert _is_whitelisted(app, "aa:01")
+
+
+def test_whitelist_remove_confirm_route(app):
+    """GET-Bestaetigungsseite rendert."""
+    _seed_device(app, "aa:01")
+    c, tok = _client_with_csrf(app, "admin")
+    c.post(
+        "/inventory/aa:01/whitelist/add",
+        data={"_csrf_token": tok},
+    )
+    r = c.get("/inventory/aa:01/whitelist/remove")
+    assert r.status_code == 200
+    assert b"Bestaetigung" in r.get_data()
+
+
+def test_whitelist_remove_requires_confirm(app):
+    """POST ohne CSRF -> 400, Eintrag bleibt."""
+    _seed_device(app, "aa:01")
+    c, tok = _client_with_csrf(app, "admin")
+    c.post(
+        "/inventory/aa:01/whitelist/add",
+        data={"_csrf_token": tok},
+    )
+    r = c.post("/inventory/aa:01/whitelist/remove", data={})
+    assert r.status_code == 400
+    assert _is_whitelisted(app, "aa:01")
+
+
+if __name__ == "__main__":
+    import unittest
+    unittest.main()

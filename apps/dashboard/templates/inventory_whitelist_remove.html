@@ -1,0 +1,32 @@
+{#
+  inventory_whitelist_remove.html — Bestaetigung Austragen.
+
+  Kategorie 3 (Template, CSP).
+  Kein style=, kein on*=, kein inline <script>, kein |safe.
+  CSRF-Feld im Formular.
+#}
+{% extends "base.html" %}
+{% from "_helpers.html" import csrf_field %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Whitelist entfernen</h1>
+    <a class="back-link"
+       href="/inventory/{{ device.identifier }}">Zurueck</a>
+</div>
+<section class="card">
+<h2 class="card-title">Bestaetigung</h2>
+<p>
+    Soll das Geraet
+    <strong>{{ device.entity_name if device.entity_name else device.identifier }}</strong>
+    von der Whitelist entfernt werden?
+</p>
+<form method="post"
+      action="/inventory/{{ device.identifier }}/whitelist/remove">
+    {{ csrf_field(csrf_token) }}
+    <button type="submit" class="btn">Austragen</button>
+    <a class="back-link"
+       href="/inventory/{{ device.identifier }}">Abbrechen</a>
+</form>
+</section>
+{% endblock %}

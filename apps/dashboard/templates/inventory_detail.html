@@ -7,6 +7,7 @@
   history()-Rueckgabe ist list[dict] -> Subscript-Notation.
 #}
 {% extends "base.html" %}
+{% from "_helpers.html" import csrf_field %}
 
 {% block content %}
 <div class="page-header">
@@ -34,6 +35,23 @@
     <dt>Notizen</dt>
     <dd>{{ device.notes if device.notes else "—" }}</dd>
 </dl>
+</section>
+<section class="card detail-card">
+<h2 class="card-title">Whitelist</h2>
+{% if device.whitelisted %}
+<p>Dieses Geraet ist auf der Whitelist.</p>
+<a class="btn"
+   href="/inventory/{{ device.identifier }}/whitelist/remove">
+    Austragen
+</a>
+{% else %}
+<form method="post"
+      action="/inventory/{{ device.identifier }}/whitelist/add">
+    {{ csrf_field(csrf_token) }}
+    <p>Dieses Geraet ist nicht auf der Whitelist.</p>
+    <button type="submit" class="btn">Eintragen</button>
+</form>
+{% endif %}
 </section>
 <section class="card detail-card">
 <h2 class="card-title">Verlauf</h2>
