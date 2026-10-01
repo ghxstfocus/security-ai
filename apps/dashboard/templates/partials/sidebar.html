@@ -20,6 +20,13 @@
             <span>Dashboard</span>
         </a>
         {% endif %}
+        {% if can_view_system %}
+        <a data-nav="system"
+           class="sidebar-link{% if request.path == '/system' %} active{% endif %}"
+           href="/system">
+            <span>System</span>
+        </a>
+        {% endif %}
         {% if can_view_inventory %}
         <a data-nav="inventory"
            class="sidebar-link{% if request.path == '/inventory' %} active{% endif %}"

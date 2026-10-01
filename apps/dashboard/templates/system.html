@@ -1,0 +1,107 @@
+{#
+  system.html — System-Detailseite (Punkt 66).
+
+  Kategorie 3 (Template, CSP).
+  Karten-Layout, konsistent zu inventory_detail.html
+  und index.html.
+
+  Kein style=, kein <style>, kein onclick, kein
+  inline-script, kein |safe.
+  Scripts extern per {% block scripts %}.
+#}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>System</h1>
+    <a class="back-link" href="/">Zurueck zum Dashboard</a>
+</div>
+
+<div class="system-grid">
+    <section class="card system-card" data-card="cpu">
+        <h2 class="card-title">CPU</h2>
+        <div class="sparkline-block">
+            <span class="sparkline-label">%</span>
+            <svg class="sparkline sparkline-cpu"
+                 viewBox="0 0 60 20" preserveAspectRatio="none"
+                 aria-hidden="true">
+                <polyline id="system-cpu-line" points=""></polyline>
+            </svg>
+            <span id="system-cpu-value" class="sparkline-value">—</span>
+        </div>
+        <p class="system-meta">
+            Kerne: <span id="system-cpu-count">—</span>
+        </p>
+    </section>
+
+    <section class="card system-card" data-card="ram">
+        <h2 class="card-title">RAM</h2>
+        <div class="sparkline-block">
+            <span class="sparkline-label">%</span>
+            <svg class="sparkline sparkline-ram"
+                 viewBox="0 0 60 20" preserveAspectRatio="none"
+                 aria-hidden="true">
+                <polyline id="system-ram-line" points=""></polyline>
+            </svg>
+            <span id="system-ram-value" class="sparkline-value">—</span>
+        </div>
+        <p class="system-meta">
+            <span id="system-ram-detail">—</span>
+        </p>
+    </section>
+
+    <section class="card system-card" data-card="disk">
+        <h2 class="card-title">Disk /</h2>
+        <p class="system-meta">
+            Belegt: <span id="system-disk-percent">—</span> %
+        </p>
+        <p class="system-meta">
+            <span id="system-disk-detail">—</span>
+        </p>
+    </section>
+
+    <section class="card system-card" data-card="load">
+        <h2 class="card-title">Load</h2>
+        <p class="system-meta">
+            1 min: <span id="system-load-1">—</span>
+        </p>
+        <p class="system-meta">
+            5 min: <span id="system-load-5">—</span>
+        </p>
+        <p class="system-meta">
+            15 min: <span id="system-load-15">—</span>
+        </p>
+    </section>
+
+    <section class="card system-card" data-card="uptime">
+        <h2 class="card-title">Uptime</h2>
+        <p class="system-meta">
+            <span id="system-uptime">—</span>
+        </p>
+    </section>
+
+    <section class="card system-card" data-card="services">
+        <h2 class="card-title">Services</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Unit</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="system-services">
+                <tr><td colspan="2">Lade...</td></tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<p class="live-timestamp">
+    Stand: <span id="system-timestamp">—</span>
+</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/system.js') }}"
+        defer></script>
+{% endblock %}

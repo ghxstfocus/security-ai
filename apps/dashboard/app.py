@@ -244,6 +244,9 @@ def create_app(
     from apps.dashboard.routes_state import register_state_routes
     register_state_routes(app)
 
+    from apps.dashboard.routes_system import register_system_routes
+    register_system_routes(app)
+
     from apps.dashboard.filters import (
         format_score,
         format_score_label,
@@ -270,6 +273,7 @@ def create_app(
         principal = getattr(g, "principal", None)
         flags = {
             "can_view_dashboard": "device.read",
+            "can_view_system": "device.read",
             "can_view_inventory": "device.read",
             "can_view_alerts": "alert.view",
             "can_view_approvals": "approval.view",

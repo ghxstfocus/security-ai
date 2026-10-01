@@ -252,6 +252,25 @@
     font-family: var(--font-mono);
 }
 
+/* System-Detailseite (Punkt 66). */
+.system-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
+
+.system-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.system-meta {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin: 0;
+}
+
 /* Klickbare Kachel (T6, Auflage 1683).
    Der gesamte Card-Block ist ein Link. */
 .card-link {
