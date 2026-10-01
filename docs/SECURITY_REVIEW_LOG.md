@@ -985,11 +985,17 @@ Letzte Aktualisierung: 2026-10-01 (HEAD 5faa9aa).
     nmap-Patch, kein Schema-Wechsel.
     Kategorie 3.
 
-43. (Beobachtungsstand 2026-09-28) MAC-Randomisierung.
-    Aktueller Stand: 1 von 6 Geraeten randomisiert
-    (MAC-Lokal-Bit), 1 von 10 Events. Kein
-    Hostname-Konflikt (0 Kandidaten mit >1 MAC),
-    kein doppeltes Geraet im Inventory.
+43. (Beobachtungsstand 2026-10-01) MAC-Randomisierung.
+    ERNEUTER BEFUND 2026-10-01: derselbe Hostname
+    "S25-von-A" erscheint mit drei MACs im Inventory:
+    - E2:A3:48:2B:07:4C (Hauptnetz, aktiv)
+    - 82:E1:00:82:16:96 (Gastnetz, aktiv)
+    - 6A:32:F0:D4:FE:D2 (inaktiv, letzte IP
+      192.168.178.50)
+    Grund: das Handy vergibt pro Netz-Assoziation
+    eine neue MAC (Private WLAN-Adresse).
+    Vorheriger Stand (2026-09-28): 1 von 6 Geraeten
+    randomisiert, kein Hostname-Konflikt.
     Kein Handlungsbedarf heute.
     Beobachten:
     - Waechst die Zahl randomisierter MACs?
@@ -1004,6 +1010,15 @@ Letzte Aktualisierung: 2026-10-01 (HEAD 5faa9aa).
     Nutzer-Option (A1274): randomisierte MAC in die
     Whitelist aufnehmen, wenn das Geraet vertraut ist.
     Kategorie 1 (Doku), kein Bau.
+    EMPFEHLUNG 2026-10-01: an den betroffenen Geraeten
+    die MAC-Randomisierung fuer das jeweilige WLAN
+    deaktivieren (iOS: "Private WLAN-Adresse: Aus";
+    Android: "Zufaellige MAC: Aus"). Damit hat jedes
+    Geraet pro Netz eine stabile MAC. Kein Code-Aufwand,
+    behebt die Mehrfach-Eintraege an der Wurzel.
+    Wenn weiterhin mehrere MACs pro Geraet gewuenscht
+    sind: eigener Kategorie-3-Block
+    (Hostname-basierte Identitaet oder Alias-Tabelle).
 
 44. (entfallen, A1125/A1126) Fritz!Box-Host-Status.
     Der status-Key in get_hosts_info ist bool
