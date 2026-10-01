@@ -307,8 +307,11 @@ class DeviceRepository:
 
         Schreibt immer einen History-Eintrag (event_type default
         "device_seen"). entity_name/network_type/last_ip werden
-        nur ueberschrieben, wenn sie nicht None sind — so verliert
-        ein Update nichts.
+        nur ueberschrieben, wenn sie einen Wert tragen — so
+        verliert ein Update nichts.
+
+        last_ip: None und "" gelten beide als "keine IP".
+        Auflage 1757, Punkt 67b.
         """
         ts = (timestamp or datetime.now(UTC)).isoformat()
         data_json = json.dumps(data or {}, ensure_ascii=False, sort_keys=True)
@@ -326,7 +329,7 @@ class DeviceRepository:
             device_id = existing.id
             new_name = entity_name if entity_name is not None else existing.entity_name
             new_net = network_type if network_type is not None else existing.network_type
-            new_ip = ip if ip is not None else existing.last_ip
+            new_ip = ip if ip else existing.last_ip
             self._conn.execute(
                 "UPDATE devices SET entity_name = ?, network_type = ?, "
                 "last_seen = ?, last_ip = ? WHERE id = ?",

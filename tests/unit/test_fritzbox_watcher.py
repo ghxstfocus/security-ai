@@ -252,3 +252,45 @@ class WriteEventsModeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FetchHostsIpNormalizationTests(unittest.TestCase):
+    """_fetch_hosts: leere IP wird zu None (Punkt 67b, Auflage 1756)."""
+
+    def _run_fetch(self, rohdaten: list) -> list:
+        class FakeConn:
+            def __init__(self, **kw: object) -> None:
+                pass
+
+        class FakeHosts:
+            def __init__(self, fc: object) -> None:
+                pass
+
+            def get_hosts_info(self) -> list:
+                return rohdaten
+
+        with mock.patch.object(fw, "FritzConnection", FakeConn), \
+                mock.patch.object(fw, "FritzHosts", FakeHosts):
+            return fw._fetch_hosts("fritz.box", "user", "pw")
+
+    def test_empty_ip_becomes_none(self) -> None:
+        hosts = self._run_fetch([
+            {"mac": "aa:01", "ip": "", "name": "ohne-ip", "status": True},
+        ])
+        self.assertEqual(len(hosts), 1)
+        self.assertIsNone(hosts[0]["ip"])
+
+    def test_valid_ip_stays(self) -> None:
+        hosts = self._run_fetch([
+            {"mac": "aa:02", "ip": "192.168.178.5", "name": "mit-ip",
+             "status": True},
+        ])
+        self.assertEqual(len(hosts), 1)
+        self.assertEqual(hosts[0]["ip"], "192.168.178.5")
+
+    def test_missing_ip_key_becomes_none(self) -> None:
+        hosts = self._run_fetch([
+            {"mac": "aa:03", "name": "kein-ip-key", "status": True},
+        ])
+        self.assertEqual(len(hosts), 1)
+        self.assertIsNone(hosts[0]["ip"])

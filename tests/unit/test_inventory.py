@@ -90,6 +90,18 @@ class DeviceRepositoryTests(unittest.TestCase):
         self.assertEqual(d.entity_name, "Neu")
         self.assertEqual(d.network_type, "Hauptnetz")  # bleibt
 
+    def test_upsert_seen_empty_ip_does_not_overwrite(self):
+        """ip='' ueberschreibt last_ip nicht (Auflage 1757/1759)."""
+        self.repo.upsert_seen("192.168.178.87", ip="192.168.178.87")
+        d = self.repo.upsert_seen("192.168.178.87", ip="")
+        self.assertEqual(d.last_ip, "192.168.178.87")
+
+    def test_upsert_seen_none_ip_does_not_overwrite(self):
+        """ip=None ueberschreibt last_ip nicht."""
+        self.repo.upsert_seen("192.168.178.88", ip="192.168.178.88")
+        d = self.repo.upsert_seen("192.168.178.88", ip=None)
+        self.assertEqual(d.last_ip, "192.168.178.88")
+
     def test_mark_offline(self):
         self.repo.upsert_seen("192.168.178.87", network_type="Hauptnetz")
         self.assertTrue(self.repo.mark_offline("192.168.178.87"))

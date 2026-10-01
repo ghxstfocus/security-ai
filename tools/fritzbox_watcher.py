@@ -133,7 +133,7 @@ def _fetch_hosts(
             )
             continue
         out.append({
-            "ip": h.get("ip") or "",
+            "ip": h.get("ip") or None,
             "mac": mac,
             "name": h.get("name") or "",
             # status ist bool (NewActive) laut fritzconnection-
