@@ -1532,26 +1532,35 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       danach DB pruefen).
       Siehe auch Punkt 68 (Watcher-Re-Presence).
 
-67a. (offen, Kategorie 3, Watcher) entity_name-
-     Ueberschreibung bei MAC-Fallback.
-     - Befund 2026-10-01 abends: ein device_seen-
-       Event fuer 82:E1:00:82:16:96 kam mit
-       entity_name = "PC-82-E1-00-82-16-96"
-       (MAC-Fallback der Fritz!Box) statt
-       "S25-von-A".
-     - upsert_seen ueberschreibt entity_name,
-       weil der neue Wert nicht None ist.
-     - Folge: der vom Nutzer vergebene Name geht
-       in der DB verloren.
-     - Fix-Vorschlag: Watcher soll MAC-Fallback-
-       Namen ("PC-<MAC>") nicht als entity_name
-       emittieren. Alternative: upsert_seen
-       schreibt entity_name nur, wenn der neue
-       Wert nicht dem Muster "PC-<MAC>" entspricht
-       (fragil, weil Muster sich aendern kann).
-       Besser: Watcher entscheidet, was ein echter
-       Name ist.
-     - Eigener Block, Reviewer-GO vor Code.
+67a. (erledigt in 4bd5906, Kategorie 3, Watcher)
+     entity_name-Ueberschreibung bei Fallback-Namen.
+     Umfang erweitert auf zwei Muster: PC-<MAC>
+     und PC-<IP>.
+     Fix: Watcher erkennt Fallback-Namen
+     (_is_fallback_name), liefert den Sentinel
+     `__FALLBACK__` im Event data["entity_name"].
+     Repository (upsert_seen) behandelt den
+     Sentinel in INSERT und UPDATE als "kein
+     echter Name" -> entity_name = None.
+     Ein echter Name ueberschreibt einen alten
+     Fallback; ein Fallback ueberschreibt einen
+     alten Fallback mit None.
+     Tests: 14 neue (Watcher + Repository + Kombi).
+     F2-Klaerung (Nachtrag 2026-10-01): State
+     wird normalisiert (Sentinel bei Fallback-
+     Namen). Der Reviewer hatte urspruenglich
+     "State roh" vorgesehen; auf Basis der Live-
+     Verifikation revidiert. Grund: State ist
+     Diff-Basis, nicht Roh-Spiegel der Fritz!Box.
+     Eine Roh-Form haette zwei Namen pro Host
+     gebraucht (Sentinel + Roh) ohne Mehrwert.
+     Der relevante Diff ("Fallback -> echter
+     Name") bleibt sichtbar. Code unveraendert
+     (_new_state schreibt h["name"] direkt, was
+     den Sentinel enthaelt).
+     Doku: DESIGN_DECISIONS §5 (Event-Transport)
+     um Hinweis zum State-Schema ergaenzt.
+     Auflagen 1764-1777.
 
 67b. (offen, Kategorie 3, Watcher/Datenpfad)
      empty-IP wird als "" gespeichert.

@@ -460,6 +460,18 @@ Der Watcher-Zustand (letzter Host-Stand) liegt dagegen
 in data/fritzbox_state.json (Datei, nicht DB). Grund:
 klein, kein Query-Bedarf, single Prozess.
 
+Der State traegt normalisierte Werte: Fallback-
+Namen der Fritz!Box (PC-<MAC>, PC-<IP>) werden
+als Sentinel `__FALLBACK__` gespeichert, nicht
+in der Rohform. Grund: der State ist die Diff-
+Basis des Watchers (Was hat der Watcher beim
+letzten Lauf gesehen?), kein Roh-Spiegel der
+Fritz!Box. Der relevante Diff fuer spaetere
+Events ist "Fallback -> echter Name"; ein
+Fallback-zu-Fallback-Wechsel ist praktisch
+ausgeschlossen (MAC stabil). Punkt 67a,
+Auflagen 1773-1774.
+
 Audit: ein watcher_run-Eintrag pro Lauf mit Events,
 kein Audit bei 0 Events und kein Audit bei Fehler-Exit.
 
