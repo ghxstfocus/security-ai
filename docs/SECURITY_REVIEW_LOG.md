@@ -1703,4 +1703,30 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       A1/A2 (WLAN-Aussetzer). Schwellwert 6
       statt 4 (Reviewer-Korrektur F4).
 
+73. (offen, Kategorie 3, Detection)
+    UnknownDeviceRule ist tot - known wird nie gesetzt.
+    - Befund 2026-10-01: UnknownDeviceRule.evaluate
+      prueft `event.data.get("known") is not False`.
+      `known` wird nirgends gesetzt. Weder der
+      Fritz!Box-Watcher noch der Orchestrator
+      erzeugen das Feld. Konsequenz: die Regel
+      liefert immer [] zurueck, hat nie ausgeloest.
+    - Zusatzbefund: whitelisted_devices ist leer
+      (Count 0). Selbst mit korrekt gesetztem
+      `known` waeren alle Geraete "unbekannt".
+    - Entscheidung (Nutzer, 2026-10-01):
+      Whitelist-basiert. "Bekannt" = identifier
+      in whitelisted_devices. Whitelist-Pflege
+      ueber das Dashboard (Punkt 56a).
+    - Ablauf:
+      1. 56a bauen (Whitelist-Pflege im Dashboard).
+      2. Whitelist befuellen (Nutzer-Aktion).
+      3. unknown_device wird wirksam (known muss
+         dafuer gesetzt werden - offene Frage,
+         wer das tut: Watcher oder Orchestrator).
+      4. A4 (Zeit-Eskalation, Punkt 74) aufsatteln.
+    - Verwandt: Punkt 56 (Dashboard-Aktionen),
+      Punkt 73a (known-Definition, neu).
+    - Erst Design (56a), dann Code.
+
 Bewusst offen (kein Bau heute):
