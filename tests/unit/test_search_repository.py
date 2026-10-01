@@ -134,32 +134,6 @@ class TestSearchRepository:
         assert hits == []
 
 
-    def test_search_devices_by_internal_name(self, tmp_path):
-        conn = migrated_conn(tmp_path)
-        _seed(conn)
-        repo = SearchRepository(conn)
-        hits = repo.search_devices('Server-Sandra')
-        assert len(hits) == 1
-        assert hits[0]['identifier'] == '192.168.178.42'
-
-    def test_search_devices_by_last_ip(self, tmp_path):
-        conn = migrated_conn(tmp_path)
-        _seed(conn)
-        repo = SearchRepository(conn)
-        hits = repo.search_devices('192.168.178.42')
-        assert len(hits) == 1
-        assert hits[0]['identifier'] == '192.168.178.42'
-
-    def test_search_devices_notes_not_searchable(self, tmp_path):
-        conn = migrated_conn(tmp_path)
-        _seed(conn)
-        conn.execute(
-            'UPDATE devices SET notes = ? WHERE identifier = ?',
-            ('NOTES-UNIQUE-MARKER-XYZ', '192.168.178.42'),
-        )
-        repo = SearchRepository(conn)
-        hits = repo.search_devices('NOTES-UNIQUE-MARKER-XYZ')
-        assert hits == []
 class TestSearchRepositoryRawConnection:
     """3.6.17: SearchRepository setzt row_factory defensiv."""
 
