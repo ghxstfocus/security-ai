@@ -29,6 +29,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import sys
 import tempfile
 import time
@@ -38,6 +39,24 @@ from typing import Any
 
 from fritzconnection import FritzConnection
 from fritzconnection.lib.fritzhosts import FritzHosts
+
+# --- Fallback-Erkennung fuer Fritz!Box-Namen (Punkt 67a).
+# Zwei Muster:
+#   MAC-Format: PC-XX-XX-XX-XX-XX-XX (Bindestriche).
+#   IP-Format:  PC-N-N-N-N (Bindestriche).
+_FALLBACK_RE_MAC = re.compile(r"^PC-([0-9A-F]{2}-){5}[0-9A-F]{2}$")
+_FALLBACK_RE_IP = re.compile(r"^PC-(\d{1,3}-){3}\d{1,3}$")
+_FALLBACK_SENTINEL = "__FALLBACK__"
+
+
+def _is_fallback_name(name: str) -> bool:
+    """True, wenn der Fritz!Box-Name ein Fallback ist (Punkt 67a)."""
+    if not name:
+        return False
+    return bool(
+        _FALLBACK_RE_MAC.match(name)
+        or _FALLBACK_RE_IP.match(name)
+    )
 
 from core.config import (
     ConfigError,
@@ -135,7 +154,11 @@ def _fetch_hosts(
         out.append({
             "ip": h.get("ip") or None,
             "mac": mac,
-            "name": h.get("name") or "",
+            "name": (
+                _FALLBACK_SENTINEL
+                if _is_fallback_name(h.get("name") or "")
+                else (h.get("name") or "")
+            ),
             # status ist bool (NewActive) laut fritzconnection-
             # Doku/Code. A1123-A1126 erfuellt. Defensive
             # bool()-Kapselung: toleriert auch 0/1/None.

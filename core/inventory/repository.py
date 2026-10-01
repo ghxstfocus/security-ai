@@ -25,6 +25,11 @@ from core.inventory.device import Device
 # Einstellungen dazukommen (Log-Level, Telegram,
 # Netzwerk-Scope, Scan-Schwellen).
 DEFAULT_DB_PATH = Path("data/inventory.db")
+
+# Sentinel-Wert aus dem Fritz!Box-Watcher (Punkt 67a, Auflage 1765).
+# Bedeutung: der neue entity_name ist ein Fallback, kein echter Name.
+# Das Repository setzt dann entity_name auf None statt zu ueberschreiben.
+_FALLBACK_SENTINEL = "__FALLBACK__"
 DEFAULT_MIGRATIONS_DIR = Path("data/migrations")
 
 logger = logging.getLogger(__name__)
@@ -312,22 +317,34 @@ class DeviceRepository:
 
         last_ip: None und "" gelten beide als "keine IP".
         Auflage 1757, Punkt 67b.
+
+        entity_name: _FALLBACK_SENTINEL bedeutet "kein
+        echter Name" und wird als None gespeichert
+        (INSERT und UPDATE, Auflage 1771, Punkt 67a).
         """
         ts = (timestamp or datetime.now(UTC)).isoformat()
         data_json = json.dumps(data or {}, ensure_ascii=False, sort_keys=True)
 
         existing = self.get(identifier)
         if existing is None:
+            insert_name = (
+                None if entity_name == _FALLBACK_SENTINEL else entity_name
+            )
             cur = self._conn.execute(
                 "INSERT INTO devices "
                 "(identifier, entity_name, network_type, first_seen, last_seen, notes, last_ip) "
                 "VALUES (?, ?, ?, ?, ?, NULL, ?)",
-                (identifier, entity_name, network_type, ts, ts, ip),
+                (identifier, insert_name, network_type, ts, ts, ip),
             )
             device_id = cur.lastrowid
         else:
             device_id = existing.id
-            new_name = entity_name if entity_name is not None else existing.entity_name
+            if entity_name == _FALLBACK_SENTINEL:
+                new_name = None
+            elif entity_name is not None:
+                new_name = entity_name
+            else:
+                new_name = existing.entity_name
             new_net = network_type if network_type is not None else existing.network_type
             new_ip = ip if ip else existing.last_ip
             self._conn.execute(
