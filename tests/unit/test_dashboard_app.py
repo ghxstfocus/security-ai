@@ -535,3 +535,10 @@ def test_index_cards_are_links(app, client):
     assert b'href="/alerts"' in r.data
     assert b'href="/approvals"' in r.data
     assert b'href="/changes"' in r.data
+
+
+def test_index_shows_extern_card(app, client):
+    """Punkt 65: Extern-Kachel im HTML."""
+    r = client.get("/")
+    assert r.status_code == 200
+    assert b'data-card="network-extern"' in r.data

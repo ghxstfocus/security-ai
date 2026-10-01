@@ -23,6 +23,9 @@
         {{ stat_card("Gastnetz", network_gastnetz, "cyan",
                       data_card="network-gastnetz",
                       href="/inventory") }}
+        {{ stat_card("Extern", network_extern, "red",
+                      data_card="network-extern",
+                      href="/inventory") }}
         {% endif %}
         {% if can_view_alerts %}
         {{ stat_card("Alarme (24h)", alert_count, "red",

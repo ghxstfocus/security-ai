@@ -1477,11 +1477,21 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
   Punkt 60 erledigt. Punkt 63 erledigt.
   Punkt 64 entfaellt (B4 war Fehlalarm).
 
-65. (offen, Kategorie 2, Dashboard) Extern-Kachel
-    auf /. InventoryService.count_by_network
-    liefert "Extern" bereits (T3), Kachel fehlt.
-    Nach Punkt 55 vorgemerkt. Eigener kleiner
-    Block.
+65. (erledigt, Kategorie 2, Dashboard) Extern-Kachel
+    auf /.
+    - routes_index.py: network_extern=_count_network(
+      "Extern") an das Template durchgereicht.
+    - index.html: stat_card("Extern", network_extern,
+      "red", data_card="network-extern",
+      href="/inventory").
+    - Test: test_index_shows_extern_card.
+    - Kachel zeigt heute 0, bis ein Geraet als
+      "Extern" auftaucht. Der Watcher vergibt heute
+      nur Hauptnetz/Gastnetz (resolve_network_type).
+      "Extern" wird erst mit einem Host-Scanner
+      (Phase 3.8) erwartet, der Traffic ausserhalb
+      der Fritzbox-internen Netze sieht.
+    - Kategorie 2, kein Reviewer-Block.
 
 66. (offen, Kategorie 3, Dashboard) Route /system
     mit vollem Diagramm (Verlauf mit Achsen,

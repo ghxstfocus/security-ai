@@ -114,6 +114,7 @@ def register_index_routes(app: Flask) -> None:
             device_count=_count_devices(),
             network_hauptnetz=_count_network("Hauptnetz"),
             network_gastnetz=_count_network("Gastnetz"),
+            network_extern=_count_network("Extern"),
             alert_count=_count_alerts(),
             approval_count=_count_approvals(),
             change_count=_count_changes(),
