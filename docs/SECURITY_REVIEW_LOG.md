@@ -1582,30 +1582,36 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
        (Re-Presence).
      - Eigener Block, Reviewer-GO vor Code.
 
-68. (offen, Kategorie 3, Watcher) Watcher-
-    Re-Presence.
-    - Der Fritz!Box-Watcher erzeugt heute nur bei
-      Diff (inaktiv -> aktiv / neu) ein
-      device_presence-Event.
-    - Solange ein Geraet ununterbrochen aktiv
-      bleibt, kein Event, kein upsert_seen,
-      keine Aktualisierung von entity_name,
-      network_type, last_ip in der DB.
-    - Folge: Config-Aenderungen (wie
-      resolve_network_type in Punkt 67) greifen
-      erst, wenn der Diff irgendwann ausloest.
-    - Fix-Vorschlag: zusaetzlich alle N Minuten
-      (z. B. 60) ein device_presence fuer aktive
-      Geraete emittieren. N als Konstante
-      konfigurierbar.
-    - Auswirkung: mehr Events in
-      data/events-YYYY-MM-DD.jsonl (Aufwand
-      pruefen), Orchestrator-Lauf alle 60s
-      bereits vorhanden.
-    - Verwandt: Punkt 49 (last_ip nur bei
-      Diff-Events).
-    - Eigener Block, Reviewer-GO vor Code.
-    - Kein Bau heute (Doku).
+68. (erledigt in 9d28be3, Kategorie 3, Watcher)
+    Re-Presence bei name/ip-Diff.
+    - Der Fritz!Box-Watcher erzeugt zusaetzlich ein
+      device_presence-Event, wenn active unveraendert
+      bleibt, aber name oder ip abweichen.
+    - Vergleich gegen old_state["hosts"][mac] mit
+      normalisierten Werten (Sentinel bei Fallback).
+    - Begruendung: Config-Aenderungen (Netz-Label,
+      IP) greifen sonst erst beim naechsten echten
+      Zustandswechsel. Verwandt: Punkt 49.
+    - Variante (b) aus dem Reviewer-Block: nur echte
+      Aenderungen erzeugen Events, kein periodisches
+      Rauschen.
+    - Tests +5 (test_fritzbox_watcher.py,
+      RePresenceTests).
+    - Live-Verifikation: Rest-Bestand
+      BC:24:11:28:06:BF | PC-192-168-178-117
+      wird durch (b) NICHT bereinigt, weil der
+      State-zu-Sentinel-Uebergang bereits vor dem
+      Fix passiert ist. Deshalb Betriebsakt (d).
+
+    Betriebsakt 2026-10-01 (Backfill Fallback-Namen):
+    - UPDATE devices SET entity_name = NULL
+      WHERE entity_name LIKE 'PC-%'.
+    - Betroffen: 2 Zeilen.
+        BC:24:11:28:06:BF (PC-192-168-178-117).
+        C0:7A:D6:76:0D:EB (PC-192-168-189-5).
+    - Danach: keine PC-%-Namen mehr in der DB.
+    - Kategorie 1 (Betriebsakt, Doku).
+    - Kein Code-Bezug ausser dem Watcher-Event-Pfad.
 
 69. (erledigt in 8a0e8d2) §N-Ausnahme Services-Status.
     Das Dashboard zeigt auf /system den Status der drei
