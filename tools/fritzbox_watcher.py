@@ -202,14 +202,18 @@ def _diff_and_emit(
         was_active = bool(was["active"]) if was else None
 
         event_type: str | None = None
+        reason: str | None = None
         if was_active is None:
             if is_active:
                 event_type = EventType.DEVICE_PRESENCE.value
+                reason = "first_seen"
         else:
             if was_active and not is_active:
                 event_type = EventType.DEVICE_OFFLINE.value
+                reason = "state_change"
             elif (not was_active) and is_active:
                 event_type = EventType.DEVICE_PRESENCE.value
+                reason = "state_change"
             elif is_active:
                 # Re-Presence (Punkt 68): active unveraendert,
                 # aber name oder ip haben sich geaendert.
@@ -218,6 +222,7 @@ def _diff_and_emit(
                 if (old_name != h.get("name")
                         or old_ip != h.get("ip")):
                     event_type = EventType.DEVICE_PRESENCE.value
+                    reason = "re_presence"
 
         if event_type is None:
             continue
@@ -232,6 +237,7 @@ def _diff_and_emit(
                 "mac": mac,
                 "entity_name": h["name"],
                 "network_type": resolve_network_type(h["ip"]),
+                "reason": reason,
             },
         ))
     return events

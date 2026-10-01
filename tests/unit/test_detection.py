@@ -5,6 +5,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 
 from core.detection.rule_base import RuleContext, RuleState
+from core.detection.rules.device_flapping import DeviceFlappingRule
 from core.detection.rules.mac_change import MacChangeRule
 from core.detection.rules.network_change import NetworkChangeRule
 from core.detection.rules.port_scan import PortScanRule
@@ -332,6 +333,80 @@ class MacChangeTests(unittest.TestCase):
                        "entity_name": "S25-von-A"})
         self.assertFalse(self.rule.matches(e))
         self.assertEqual(self.rule.evaluate(e, _ctx(state=self.state)), [])
+
+
+class DeviceFlappingTests(unittest.TestCase):
+    """Tests fuer die device_flapping-Regel (Punkt 72, A3)."""
+
+    def setUp(self):
+        self.rule = DeviceFlappingRule()
+        self.state = RuleState(maxlen=200)
+        self.base = datetime.now(UTC)
+
+    def _change(self, *, identifier, ts, event_type=None, reason="state_change"):
+        if event_type is None:
+            event_type = EventType.DEVICE_PRESENCE.value
+        return Event(
+            event_id=new_event_id(),
+            timestamp=ts,
+            source="fritzbox",
+            event_type=event_type,
+            severity=Severity.INFO,
+            data={
+                "identifier": identifier,
+                "mac": identifier,
+                "entity_name": "kamera",
+                "network_type": "Hauptnetz",
+                "reason": reason,
+            },
+            network_id="homelab-default",
+        )
+
+    def _run_changes(self, n, step_s=60, reason="state_change",
+                     offset_s=0, event_type=None):
+        out = []
+        for i in range(n):
+            ts = self.base + timedelta(seconds=offset_s + i * step_s)
+            out.extend(self.rule.evaluate(
+                self._change(identifier="aa:01", ts=ts,
+                             reason=reason, event_type=event_type),
+                _ctx(now=ts, state=self.state),
+            ))
+        return out
+
+    def test_unter_schwelle_kein_output(self):
+        out = self._run_changes(3)
+        self.assertEqual(out, [])
+
+    def test_ueber_schwelle_output(self):
+        out = self._run_changes(7)
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out[0].event_type, EventType.DEVICE_FLAPPING.value)
+        self.assertGreaterEqual(out[0].data["changes_in_window"], 6)
+
+    def test_ausserhalb_fenster_kein_output(self):
+        out = self._run_changes(7, step_s=1200)
+        self.assertEqual(out, [])
+
+    def test_re_presence_zaehlt_nicht(self):
+        out = self._run_changes(7, reason="re_presence")
+        self.assertEqual(out, [])
+
+    def test_cooldown_greift(self):
+        """Zweiter Flattern-Vorfall innerhalb des Cooldowns -> kein Event.
+
+        Erster Alarm bei base+300s (6. Wechsel). Cooldown 900s.
+        Zweiter Lauf mit offset_s=400: alle Wechsel liegen im
+        Cooldown-Fenster [base+300s, base+1200s).
+        """
+        first = self._run_changes(7)
+        self.assertEqual(len(first), 1)
+        second = self._run_changes(7, offset_s=400)
+        self.assertEqual(second, [])
+
+    def test_erstes_auftreten_kein_output(self):
+        out = self._run_changes(1, reason="first_seen")
+        self.assertEqual(out, [])
 
 
 if __name__ == "__main__":

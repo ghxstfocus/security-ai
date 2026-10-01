@@ -33,3 +33,10 @@ mac_change:
   severity: WARNING
   alarm_cooldown_seconds: 600
   alarm_window_seconds: 600
+
+device_flapping:
+  enabled: true
+  severity: WARNING
+  alarm_window_seconds: 900
+  alarm_max_changes: 6
+  alert_cooldown_seconds: 900

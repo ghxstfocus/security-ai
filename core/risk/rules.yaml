@@ -95,3 +95,17 @@ rules:
       - when: hauptnetz
         add: 0.2
         reason: "MAC-Wechsel im Hauptnetz"
+
+  # ------------------------------------------------------------------ #
+  # device_flapping (Punkt 72, Alarm-Paket A3)
+  # ------------------------------------------------------------------ #
+  device_flapping:
+    rule_id: device_flapping
+    base: 0.3
+    modifiers:
+      - when: hauptnetz
+        add: 0.2
+        reason: "Flattern im Hauptnetz"
+      - when: nachts
+        add: 0.1
+        reason: "nachts (22-05)"
