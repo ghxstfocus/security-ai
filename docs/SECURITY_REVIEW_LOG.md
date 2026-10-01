@@ -1678,4 +1678,54 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     - Reviewer-Auflagen 1795-1803 (GO mit
       Klaerungen F1-F9).
 
+72. (erledigt in 7dad172, Kategorie 3, Detection)
+    Alarm-Paket A3: Geraet-Flattern.
+    - Neuer EventType DEVICE_FLAPPING.
+    - tools/fritzbox_watcher.py: data["reason"] bei
+      jedem device_presence/offline-Event:
+      "first_seen", "state_change", "re_presence".
+      Notwendig, damit die Regel Re-Presence von
+      echten Zustandswechseln unterscheiden kann.
+    - Neue Regel core/detection/rules/device_flapping.py:
+      triggert auf device_presence + device_offline,
+      filtert reason != "state_change".
+      Ringpuffer pro identifier, Fenster 900s,
+      Schwelle 6, Cooldown 900s.
+    - Config-Block detection/rules.yaml.
+    - Risk-Block core/risk/rules.yaml:
+      base 0.3, hauptnetz +0.2, nachts +0.1
+      -> max 0.6 = SECURITY_ALERT.
+    - Tests +6 (DeviceFlappingTests).
+    - Live-Verifikation: 7 Wechsel -> 1 Event.
+    - Reviewer-Auflagen 1805-1814 (GO mit
+      Klaerungen F1-F9).
+    - Hinweis: A3 produziert mehr Fehlalarme als
+      A1/A2 (WLAN-Aussetzer). Schwellwert 6
+      statt 4 (Reviewer-Korrektur F4).
+
+72. (erledigt in 7dad172, Kategorie 3, Detection)
+    Alarm-Paket A3: Geraet-Flattern.
+    - Neuer EventType DEVICE_FLAPPING.
+    - tools/fritzbox_watcher.py: data["reason"] bei
+      jedem device_presence/offline-Event:
+      "first_seen", "state_change", "re_presence".
+      Notwendig, damit die Regel Re-Presence von
+      echten Zustandswechseln unterscheiden kann.
+    - Neue Regel core/detection/rules/device_flapping.py:
+      triggert auf device_presence + device_offline,
+      filtert reason != "state_change".
+      Ringpuffer pro identifier, Fenster 900s,
+      Schwelle 6, Cooldown 900s.
+    - Config-Block detection/rules.yaml.
+    - Risk-Block core/risk/rules.yaml:
+      base 0.3, hauptnetz +0.2, nachts +0.1
+      -> max 0.6 = SECURITY_ALERT.
+    - Tests +6 (DeviceFlappingTests).
+    - Live-Verifikation: 7 Wechsel -> 1 Event.
+    - Reviewer-Auflagen 1805-1814 (GO mit
+      Klaerungen F1-F9).
+    - Hinweis: A3 produziert mehr Fehlalarme als
+      A1/A2 (WLAN-Aussetzer). Schwellwert 6
+      statt 4 (Reviewer-Korrektur F4).
+
 Bewusst offen (kein Bau heute):
