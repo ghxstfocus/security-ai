@@ -4,14 +4,17 @@
 > im Verlauf des Projekts getroffen wurden. Es ist die erste
 > Adresse bei Unklarheiten.
 >
-> Stand: Punkt 65 abgeschlossen (HEAD 974527d,
-> 2026-10-01), mypy 0, ruff 0, Tests 1080.
-> Punkt 55 (Dashboard-Anzeige-Erweiterung, T1-T6 +
-> B5) erledigt.
-> Offen: Punkte 56-59 (Dashboard-Aktionen,
-> Guardrails, Werkzeuge-Werkbank,
-> Betriebsparameter), 65 (Extern-Kachel),
-> 66 (/system-Detailseite).
+> Stand: Watcher-Runde abgeschlossen (HEAD be063c8,
+> 2026-10-01), mypy 0, ruff 0, Tests 1111.
+> Punkt 55 (Dashboard-Anzeige-Erweiterung) erledigt.
+> Punkt 65 (Extern-Kachel) erledigt.
+> Punkt 66 (/system-Detailseite + Services-Status)
+> erledigt.
+> Punkt 67a (Fallback-Namen), 67b (empty-IP),
+> 68 (Re-Presence) erledigt.
+> Offen: Punkte 56 (Dashboard-Aktionen),
+> 57 (Guardrails), 58 (Werkzeuge-Werkbank),
+> 34, 43, 49, 53b, 54.
 
 ---
 

@@ -325,7 +325,7 @@ test_access_denied_errorhandler_403 abgedeckt.
 ## Chronologie
 
 Sortiert nach Commit-Zeit (aelteste zuerst, HEAD zuletzt).
-Letzte Aktualisierung: 2026-10-01 (HEAD 974527d).
+Letzte Aktualisierung: 2026-10-01 (HEAD be063c8).
 
 - 3.6.4: AuditReaderService.
 - Venv-Umstellung.
@@ -1562,25 +1562,22 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
      um Hinweis zum State-Schema ergaenzt.
      Auflagen 1764-1777.
 
-67b. (offen, Kategorie 3, Watcher/Datenpfad)
-     empty-IP wird als "" gespeichert.
-     - Befund 2026-10-01 abends: dasselbe
-       device_seen-Event kam mit ip = ""
-       (Fritz!Box liefert beim Zustandswechsel
-       manchmal keine IP).
-     - upsert_seen ueberschreibt last_ip nur,
-       wenn der neue Wert nicht None ist.
-       "" ist nicht None, also wird last_ip
-       mit "" ueberschrieben.
-     - Folge: in der DB steht last_ip="" statt
-       der letzten gueltigen IP.
-     - Fix-Vorschlag: Watcher emittiert ip=None,
-       wenn die Fritz!Box keinen Wert liefert
-       (statt ""). Dann greift upsert_seen
-       korrekt.
-     - Verwandt: 67 (IP-Ableitung), 68
-       (Re-Presence).
-     - Eigener Block, Reviewer-GO vor Code.
+67b. (erledigt in cb73cbd, Kategorie 3, Watcher/Datenpfad)
+     empty-IP -> None.
+     Fix:
+     - Watcher: _fetch_hosts liefert None statt "".
+     - Repository: upsert_seen nutzt `ip if ip else ...`
+       (None und "" gelten als "keine IP").
+     - Docstring ergaenzt.
+     - Tests: 3 in test_fritzbox_watcher.py
+       (empty_ip, valid_ip, missing_ip_key),
+       2 in test_inventory.py
+       (empty_ip_does_not_overwrite,
+        none_ip_does_not_overwrite).
+     - Live-Verifikation: data/fritzbox_state.json
+       "ip": "" -> 0, "ip": null -> 1.
+       data/inventory.db last_ip = '' -> 0.
+     - Verwandt: 67 (IP-Ableitung), 68 (Re-Presence).
 
 68. (erledigt in 9d28be3, Kategorie 3, Watcher)
     Re-Presence bei name/ip-Diff.

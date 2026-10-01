@@ -244,7 +244,7 @@ Punkt 29 (Wert-Synonyme), Punkt 30 (Links im Chat),
 3.6.18a (category durchsuchbar), UI-Feinschliff
 (SVG, Spalten, Sidebar, Suche, Topbar-Dropdown),
 Diagnose 2026-09-27 (ruff/mypy eingerichtet).
-HEAD 974527d, Working Tree sauber.
+HEAD be063c8, Working Tree sauber.
 
 Core-Status: Core (Stufe 1-3.6.18) abgeschlossen.
 Orchestrator-Start (Punkt 26) und Watcher
@@ -269,8 +269,8 @@ Suchfelder), §14 (Frage-Klassifikation, Anzeige-Labels,
 since_hours), §16 (ProxyFix, Links im Chat, nav_links,
 JS-Ausnahme, server_name, default_server).
 
-Stand: 2026-10-01 | HEAD: 974527d |
-Tests: 1080 gruen (venv, pytest 9.1.1).
+Stand: 2026-10-01 | HEAD: be063c8 |
+Tests: 1111 gruen (venv, pytest 9.1.1).
 Punkt 55 (Dashboard-Anzeige-Erweiterung)
 abgeschlossen.
 Quelle der Wahrheit ist `pytest --collect-only -q`.
