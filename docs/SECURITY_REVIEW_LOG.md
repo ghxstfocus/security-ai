@@ -1703,8 +1703,16 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       A1/A2 (WLAN-Aussetzer). Schwellwert 6
       statt 4 (Reviewer-Korrektur F4).
 
-73. (offen, Kategorie 3, Detection)
+73. (erledigt in 04f4a37, Kategorie 3, Detection)
     UnknownDeviceRule ist tot - known wird nie gesetzt.
+    Fix: Punkt 73a (Auflagen 1840-1848): der Orchestrator
+    setzt known im process() aus der Whitelist. Whitelist
+    ist die einzige Quelle der Wahrheit (DESIGN_DECISIONS
+    §6). Event-Wert wird hart ueberschrieben.
+    Live-Beleg 2026-10-01T17:13:47: device_presence fuer
+    C0:7A:D6:76:0D:EB (Hauptnetz, nicht whitelisted) ->
+    detection_result unknown_device alerts=1,
+    risk_assessment score=0.7 SECURITY_ALERT, loop_result.
     - Befund 2026-10-01: UnknownDeviceRule.evaluate
       prueft `event.data.get("known") is not False`.
       `known` wird nirgends gesetzt. Weder der
@@ -1728,5 +1736,36 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     - Verwandt: Punkt 56 (Dashboard-Aktionen),
       Punkt 73a (known-Definition, neu).
     - Erst Design (56a), dann Code.
+
+75. (erledigt in b11e958 + 9a9775c, Kategorie 3, Inventory)
+    internal_name + IP-Suche.
+    - Migration 0014: devices.internal_name TEXT.
+    - Device-Dataclass + Repository + Service
+      (set_internal_name, RBAC device.write, Audit).
+    - Whitelist-Fallback-Kette: internal_name or
+      entity_name or identifier.
+    - Route POST /inventory/<id>/internal_name (CSRF).
+    - Templates: Detailseite + Liste.
+    - Suche erweitert: internal_name + last_ip
+      (Auflage 530, notes ausgeschlossen).
+    - Chat-Kontext: named_devices.
+    - Tests +19.
+    - Nachbesserung 9a9775c: Duplikat in test_search_
+      repository.py entfernt (F811).
+
+76. (offen, Kategorie 1, Betriebsakt) Telegram-Kanal
+    konfigurieren.
+    - Befund 2026-10-01 (nach Punkt 73a): der loop_result
+      enthaelt einen telegram_alert-Aufruf mit
+      execution_status=ERR.
+    - Ursache: .env hat keine TELEGRAM_BOT_TOKEN und
+      keine TELEGRAM_CHAT_ID (grep leer, Count 0).
+    - Auswirkung: alle Alarme der Alarm-Runde A1-A3
+      (Punkte 70-72) sind stumm geblieben, obwohl die
+      Detection-Kette laeuft.
+    - Fix: Token + Chat-ID in .env setzen, Service
+      neu starten, Test-Alarm senden, Erfolg im
+      Audit-Log pruefen (execution_status=OK).
+    - Betriebsakt (kein Code).
 
 Bewusst offen (kein Bau heute):
