@@ -73,3 +73,14 @@ rules:
       - when: is_whitelisted
         add: -0.2
         reason: "Quelle steht auf der Whitelist"
+
+  # ------------------------------------------------------------------ #
+  # network_change (Punkt 70, Alarm-Paket A1)
+  # ------------------------------------------------------------------ #
+  network_change:
+    rule_id: network_change
+    base: 0.3
+    modifiers:
+      - when: hauptnetz
+        add: 0.2
+        reason: "Wechsel ins Hauptnetz"

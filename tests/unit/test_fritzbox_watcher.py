@@ -83,10 +83,16 @@ class DiffEmitTests(unittest.TestCase):
             )
 
     def test_unchanged(self) -> None:
+        """Unveraenderter Zustand (name, ip, active gleich) -> kein Event.
+
+        Punkt 68: seit Re-Presence prueft _diff_and_emit auch
+        name und ip. Der Test muss den old_state daher mit
+        denselben Werten bauen, die _host liefert.
+        """
         state = {
             "version": fw._STATE_FORMAT_VERSION,
             "hosts": {"aa:01": {"ip": "10.0.0.1",
-                                "name": "x", "active": True}},
+                                "name": "kamera", "active": True}},
         }
         hosts = [_host("aa:01", active=True)]
         events = fw._diff_and_emit(state, hosts)

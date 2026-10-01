@@ -5,6 +5,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 
 from core.detection.rule_base import RuleContext, RuleState
+from core.detection.rules.network_change import NetworkChangeRule
 from core.detection.rules.port_scan import PortScanRule
 from core.detection.rules.unknown_device import UnknownDeviceRule
 from core.events.event import (
@@ -113,6 +114,116 @@ class PortScanTests(unittest.TestCase):
     def test_falscher_event_typ_skip(self):
         e = new_event("fritzbox", EventType.DEVICE_PRESENCE.value, Severity.INFO,
                       {"identifier": "x", "network_type": "Hauptnetz", "known": False})
+        self.assertFalse(self.rule.matches(e))
+        self.assertEqual(self.rule.evaluate(e, _ctx(state=self.state)), [])
+
+
+class NetworkChangeTests(unittest.TestCase):
+    """Tests fuer die network_change-Regel (Punkt 70, Alarm-Paket A1)."""
+
+    def setUp(self):
+        self.rule = NetworkChangeRule()
+        self.state = RuleState(maxlen=200)
+        self.base = datetime.now(UTC)
+
+    def _presence(self, *, identifier, network_type, ts):
+        return Event(
+            event_id=new_event_id(),
+            timestamp=ts,
+            source="fritzbox",
+            event_type=EventType.DEVICE_PRESENCE.value,
+            severity=Severity.INFO,
+            data={
+                "identifier": identifier,
+                "entity_name": "S25-von-A",
+                "network_type": network_type,
+            },
+            network_id="homelab-default",
+        )
+
+    def test_erstes_auftreten_kein_output(self):
+        out = self.rule.evaluate(
+            self._presence(identifier="aa:01", network_type="Hauptnetz",
+                           ts=self.base),
+            _ctx(now=self.base, state=self.state),
+        )
+        self.assertEqual(out, [])
+        self.assertEqual(self.state.get("net:aa:01"), ["Hauptnetz"])
+
+    def test_gleicher_netztyp_kein_output(self):
+        self.rule.evaluate(
+            self._presence(identifier="aa:01", network_type="Hauptnetz",
+                           ts=self.base),
+            _ctx(now=self.base, state=self.state),
+        )
+        out = self.rule.evaluate(
+            self._presence(identifier="aa:01", network_type="Hauptnetz",
+                           ts=self.base + timedelta(seconds=10)),
+            _ctx(now=self.base + timedelta(seconds=10), state=self.state),
+        )
+        self.assertEqual(out, [])
+
+    def test_gastnetz_zu_hauptnetz_output(self):
+        self.rule.evaluate(
+            self._presence(identifier="aa:02", network_type="Gastnetz",
+                           ts=self.base),
+            _ctx(now=self.base, state=self.state),
+        )
+        out = self.rule.evaluate(
+            self._presence(identifier="aa:02", network_type="Hauptnetz",
+                           ts=self.base + timedelta(seconds=10)),
+            _ctx(now=self.base + timedelta(seconds=10), state=self.state),
+        )
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out[0].event_type, EventType.NETWORK_CHANGE.value)
+        self.assertEqual(out[0].data["previous_network_type"], "Gastnetz")
+        self.assertEqual(out[0].data["network_type"], "Hauptnetz")
+
+    def test_hauptnetz_zu_gastnetz_kein_output(self):
+        self.rule.evaluate(
+            self._presence(identifier="aa:03", network_type="Hauptnetz",
+                           ts=self.base),
+            _ctx(now=self.base, state=self.state),
+        )
+        out = self.rule.evaluate(
+            self._presence(identifier="aa:03", network_type="Gastnetz",
+                           ts=self.base + timedelta(seconds=10)),
+            _ctx(now=self.base + timedelta(seconds=10), state=self.state),
+        )
+        self.assertEqual(out, [])
+
+    def test_cooldown_greift(self):
+        self.rule.evaluate(
+            self._presence(identifier="aa:04", network_type="Gastnetz",
+                           ts=self.base),
+            _ctx(now=self.base, state=self.state),
+        )
+        first = self.rule.evaluate(
+            self._presence(identifier="aa:04", network_type="Hauptnetz",
+                           ts=self.base + timedelta(seconds=10)),
+            _ctx(now=self.base + timedelta(seconds=10), state=self.state),
+        )
+        self.assertEqual(len(first), 1)
+        self.rule.evaluate(
+            self._presence(identifier="aa:04", network_type="Gastnetz",
+                           ts=self.base + timedelta(seconds=20)),
+            _ctx(now=self.base + timedelta(seconds=20), state=self.state),
+        )
+        self.rule.evaluate(
+            self._presence(identifier="aa:04", network_type="Gastnetz",
+                           ts=self.base + timedelta(seconds=25)),
+            _ctx(now=self.base + timedelta(seconds=25), state=self.state),
+        )
+        third = self.rule.evaluate(
+            self._presence(identifier="aa:04", network_type="Hauptnetz",
+                           ts=self.base + timedelta(seconds=30)),
+            _ctx(now=self.base + timedelta(seconds=30), state=self.state),
+        )
+        self.assertEqual(third, [])
+
+    def test_falscher_event_typ_skip(self):
+        e = new_event("fritzbox", EventType.DEVICE_OFFLINE.value, Severity.INFO,
+                      {"identifier": "aa:05", "network_type": "Hauptnetz"})
         self.assertFalse(self.rule.matches(e))
         self.assertEqual(self.rule.evaluate(e, _ctx(state=self.state)), [])
 

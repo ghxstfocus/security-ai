@@ -20,3 +20,10 @@ port_scan:
   same_port_window_seconds: 30
   alert_cooldown_seconds: 300
   trust_whitelisted_sources: false
+
+network_change:
+  enabled: true
+  severity: WARNING
+  alert_cooldown_seconds: 300
+  alarm_when_to_hauptnetz: true
+  alarm_when_to_gastnetz: false
