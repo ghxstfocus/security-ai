@@ -1654,4 +1654,28 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       erkannt. Test auf konsistenten Zustand
       korrigiert.
 
+71. (erledigt in 9584180, Kategorie 3, Detection)
+    Alarm-Paket A2: MAC-Wechsel bei gleichem Namen.
+    - Neuer EventType MAC_CHANGE in
+      core/events/event.py.
+    - Neue Regel core/detection/rules/mac_change.py:
+      Fingerprint entity_name (case-fold, strip),
+      Sentinel/None ignoriert.
+      Ringpuffer pro entity_name (Fenster 600s),
+      Cooldown pro entity_name (600s).
+    - Config-Block detection/rules.yaml.
+    - Risk-Block core/risk/rules.yaml:
+      base 0.4, Modifier hauptnetz +0.2
+      -> 0.6 = SECURITY_ALERT.
+    - Tests +7 (MacChangeTests).
+    - Live-Verifikation: erste MAC 0 Events,
+      andere MAC mit gleichem Namen 1 Event,
+      known_macs korrekt.
+    - Hintergrund Punkt 43 (MAC-Randomisierung):
+      "S25-von-A" erscheint mit vier MACs.
+      A2 erkennt das als Alarm. Die Loesung
+      (DHCP-Reservierung) bleibt Netzwerk-seitig.
+    - Reviewer-Auflagen 1795-1803 (GO mit
+      Klaerungen F1-F9).
+
 Bewusst offen (kein Bau heute):
