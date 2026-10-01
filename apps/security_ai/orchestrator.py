@@ -578,6 +578,18 @@ class SecurityAI:
         # 0) Pre-Snapshot
         pre_snapshot = self._load_inventory_snapshot()
 
+        # 0b) known setzen (Punkt 73a):
+        # identifier in pre_snapshot[whitelist] -> known=True.
+        # Fail closed: identifier fehlt oder Snapshot leer
+        # -> known=False.
+        identifier_for_known = event.data.get("identifier")
+        if (identifier_for_known
+                and identifier_for_known in pre_snapshot["whitelist"]):
+            known = True
+        else:
+            known = False
+        event = with_data(event, {"known": known})
+
         # 1) Inventory-Update
         updated = False
         try:

@@ -527,11 +527,15 @@ class OrchestratorLoopTests(unittest.TestCase):
             network_type="Hauptnetz",
             timestamp=ts,
         )
+        # Punkt 73a: Geraet auch auf die Whitelist, damit der
+        # Orchestrator known=True setzt (Whitelist-Wahrheit).
+        self.ai.whitelist.add(
+            "192.168.178.10", "Bekannt", added_by="test",
+        )
         # dann device_presence mit known=True
         e = _event(EventType.DEVICE_PRESENCE.value, ts=ts, data={
             "identifier": "192.168.178.10",
             "network_type": "Hauptnetz",
-            "known": True,
         })
         result = self.ai.process(e)
         self.assertEqual(result.loop_results, [])
