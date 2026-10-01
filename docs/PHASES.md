@@ -1173,3 +1173,21 @@ Insbesondere:
 - Punkt 7/8: DESIGN_DECISIONS § 2/§ 11 (in diesem
   Doku-Audit nachgetragen).
 - Punkt 10/11: HTTPS und SSH-Zugang.
+
+## Alarm-Paket A1-A3 (Punkte 70-72)  [x]
+
+Drei neue Detection-Regeln, live verifiziert.
+
+- Punkt 70 (95df3ae, ade308c): Netz-Wechsel.
+  Neue Regel core/detection/rules/network_change.py,
+  EventType NETWORK_CHANGE.
+- Punkt 71 (9584180, 4aca3b5): MAC-Wechsel bei
+  gleichem Namen. Neue Regel mac_change.py,
+  EventType MAC_CHANGE.
+- Punkt 72 (7dad172, 25726e4): Geraet-Flattern.
+  Neue Regel device_flapping.py, EventType
+  DEVICE_FLAPPING. Watcher erweitert um
+  data["reason"] (first_seen/state_change/re_presence).
+- Tests: 1111 -> 1130.
+- A4 (unbekanntes Geraet > X Minuten) bleibt
+  Merkposten.

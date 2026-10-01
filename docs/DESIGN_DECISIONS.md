@@ -4,14 +4,13 @@
 > im Verlauf des Projekts getroffen wurden. Es ist die erste
 > Adresse bei Unklarheiten.
 >
-> Stand: Watcher-Runde abgeschlossen (HEAD be063c8,
-> 2026-10-01), mypy 0, ruff 0, Tests 1111.
-> Punkt 55 (Dashboard-Anzeige-Erweiterung) erledigt.
-> Punkt 65 (Extern-Kachel) erledigt.
-> Punkt 66 (/system-Detailseite + Services-Status)
-> erledigt.
-> Punkt 67a (Fallback-Namen), 67b (empty-IP),
-> 68 (Re-Presence) erledigt.
+> Stand: Alarm-Runde A1-A3 abgeschlossen
+> (HEAD 25726e4, 2026-10-01), mypy 0, ruff 0,
+> Tests 1130.
+> Punkt 55, 65, 66 erledigt.
+> Punkte 67a, 67b, 68 (Watcher) erledigt.
+> Punkte 70 (Netz-Wechsel), 71 (MAC-Wechsel),
+> 72 (Geraet-Flattern) erledigt.
 > Offen: Punkte 56 (Dashboard-Aktionen),
 > 57 (Guardrails), 58 (Werkzeuge-Werkbank),
 > 34, 43, 49, 53b, 54.
