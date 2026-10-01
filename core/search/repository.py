@@ -63,19 +63,25 @@ class SearchRepository:
         return out
 
     # ------------------------------------------------------------------ #
-    # devices: identifier, entity_name
+    # devices: identifier, entity_name, internal_name, last_ip
     # ------------------------------------------------------------------ #
     def search_devices(
         self, q: str, limit: int = DEFAULT_LIMIT,
     ) -> list[dict[str, Any]]:
         cur = self._conn.execute(
-            "SELECT identifier, entity_name "
+            "SELECT identifier, entity_name, internal_name, last_ip "
             "FROM devices "
             "WHERE LOWER(identifier) LIKE LOWER(?) ESCAPE '\\' "
             "   OR LOWER(COALESCE(entity_name, '')) LIKE LOWER(?) ESCAPE '\\' "
+            "   OR LOWER(COALESCE(internal_name, '')) LIKE LOWER(?) ESCAPE '\\' "
+            "   OR LOWER(COALESCE(last_ip, '')) LIKE LOWER(?) ESCAPE '\\' "
             "ORDER BY last_seen DESC "
             "LIMIT ?",
-            (_pattern(q), _pattern(q), limit),
+            (
+                _pattern(q), _pattern(q),
+                _pattern(q), _pattern(q),
+                limit,
+            ),
         )
         return self._rows_to_dicts(cur)
 

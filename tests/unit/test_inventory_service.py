@@ -20,7 +20,10 @@ from core.inventory.repository import (
     apply_migrations,
 )
 from core.inventory.whitelist import WhitelistRepository
-from core.services.inventory_service import InventoryService
+from core.services.inventory_service import (
+    InventoryService,
+    InventoryServiceError,
+)
 
 
 def _fresh_conn():
@@ -165,6 +168,63 @@ class WhitelistServiceTests(unittest.TestCase):
             for c in self.audit.log.call_args_list
         ]
         self.assertIn("whitelist_removed", kinds)
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+class SetInternalNameTests(unittest.TestCase):
+    """Punkt 75: set_internal_name."""
+
+    def setUp(self):
+        self.conn = _fresh_conn()
+        self.device_repo = DeviceRepository(self.conn)
+        self.whitelist_repo = WhitelistRepository(self.conn)
+        self.checker = MagicMock()
+        self.checker.require_permission = MagicMock(return_value=None)
+        self.audit = MagicMock()
+        self.service = InventoryService(
+            device_repo=self.device_repo,
+            whitelist_repo=self.whitelist_repo,
+            checker=self.checker,
+            audit_writer=self.audit,
+        )
+
+    def test_set_internal_name_rbac_denied(self):
+        self.checker.require_permission = MagicMock(
+            side_effect=AccessDeniedError("denied")
+        )
+        with self.assertRaises(AccessDeniedError):
+            self.service.set_internal_name("viewer1", "aa:01", "Name")
+
+    def test_set_internal_name_ok(self):
+        self.device_repo.upsert_seen("aa:01")
+        out = self.service.set_internal_name(
+            "admin1", "aa:01", "Server-Sandra",
+        )
+        self.assertEqual(out["internal_name"], "Server-Sandra")
+
+    def test_set_internal_name_too_long(self):
+        self.device_repo.upsert_seen("aa:02")
+        with self.assertRaises(InventoryServiceError):
+            self.service.set_internal_name("admin1", "aa:02", "x" * 81)
+
+    def test_set_internal_name_empty_to_none(self):
+        self.device_repo.upsert_seen("aa:03")
+        self.service.set_internal_name("admin1", "aa:03", "Erst")
+        out = self.service.set_internal_name("admin1", "aa:03", "   ")
+        self.assertIsNone(out["internal_name"])
+
+    def test_set_internal_name_audit_called(self):
+        self.device_repo.upsert_seen("aa:04")
+        self.service.set_internal_name("admin1", "aa:04", "Kamera")
+        self.audit.log.assert_called()
+        kinds = [
+            c.kwargs.get("details", {}).get("kind")
+            for c in self.audit.log.call_args_list
+        ]
+        self.assertIn("internal_name_set", kinds)
 
 
 if __name__ == "__main__":

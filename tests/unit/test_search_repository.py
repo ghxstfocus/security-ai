@@ -13,10 +13,11 @@ from tests.unit._helpers import migrated_conn
 def _seed(conn):
     conn.execute(
         "INSERT INTO devices (identifier, entity_name, "
-        "network_type, first_seen, last_seen) "
-        "VALUES (?, ?, ?, ?, ?)",
+        "network_type, first_seen, last_seen, internal_name, last_ip) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
         ("192.168.178.42", "kamera", "Hauptnetz",
-         "2026-09-26T10:00:00+00:00", "2026-09-26T10:00:00+00:00"),
+         "2026-09-26T10:00:00+00:00", "2026-09-26T10:00:00+00:00",
+         "Server-Sandra", "192.168.178.42"),
     )
     conn.execute(
         "INSERT INTO whitelisted_devices (timestamp, identifier, "
@@ -105,6 +106,60 @@ class TestSearchRepository:
     def test_escape_like_ordre(self):
         assert escape_like("a%b_c\\d") == "a\\%b\\_c\\\\d"
 
+    def test_search_devices_by_internal_name(self, tmp_path):
+        conn = migrated_conn(tmp_path)
+        _seed(conn)
+        repo = SearchRepository(conn)
+        hits = repo.search_devices('Server-Sandra')
+        assert len(hits) == 1
+        assert hits[0]['identifier'] == '192.168.178.42'
+
+    def test_search_devices_by_last_ip(self, tmp_path):
+        conn = migrated_conn(tmp_path)
+        _seed(conn)
+        repo = SearchRepository(conn)
+        hits = repo.search_devices('192.168.178.42')
+        assert len(hits) == 1
+        assert hits[0]['identifier'] == '192.168.178.42'
+
+    def test_search_devices_notes_not_searchable(self, tmp_path):
+        conn = migrated_conn(tmp_path)
+        _seed(conn)
+        conn.execute(
+            'UPDATE devices SET notes = ? WHERE identifier = ?',
+            ('NOTES-UNIQUE-MARKER-XYZ', '192.168.178.42'),
+        )
+        repo = SearchRepository(conn)
+        hits = repo.search_devices('NOTES-UNIQUE-MARKER-XYZ')
+        assert hits == []
+
+
+    def test_search_devices_by_internal_name(self, tmp_path):
+        conn = migrated_conn(tmp_path)
+        _seed(conn)
+        repo = SearchRepository(conn)
+        hits = repo.search_devices('Server-Sandra')
+        assert len(hits) == 1
+        assert hits[0]['identifier'] == '192.168.178.42'
+
+    def test_search_devices_by_last_ip(self, tmp_path):
+        conn = migrated_conn(tmp_path)
+        _seed(conn)
+        repo = SearchRepository(conn)
+        hits = repo.search_devices('192.168.178.42')
+        assert len(hits) == 1
+        assert hits[0]['identifier'] == '192.168.178.42'
+
+    def test_search_devices_notes_not_searchable(self, tmp_path):
+        conn = migrated_conn(tmp_path)
+        _seed(conn)
+        conn.execute(
+            'UPDATE devices SET notes = ? WHERE identifier = ?',
+            ('NOTES-UNIQUE-MARKER-XYZ', '192.168.178.42'),
+        )
+        repo = SearchRepository(conn)
+        hits = repo.search_devices('NOTES-UNIQUE-MARKER-XYZ')
+        assert hits == []
 class TestSearchRepositoryRawConnection:
     """3.6.17: SearchRepository setzt row_factory defensiv."""
 
@@ -121,7 +176,9 @@ class TestSearchRepositoryRawConnection:
             "network_type TEXT, "
             "first_seen TEXT NOT NULL, "
             "last_seen TEXT NOT NULL, "
-            "notes TEXT)"
+            "notes TEXT, "
+            "internal_name TEXT, "
+            "last_ip TEXT)"
         )
         conn.execute(
             "INSERT INTO devices (identifier, entity_name, "

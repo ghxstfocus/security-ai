@@ -102,6 +102,27 @@ class DeviceRepositoryTests(unittest.TestCase):
         d = self.repo.upsert_seen("192.168.178.88", ip=None)
         self.assertEqual(d.last_ip, "192.168.178.88")
 
+    def test_from_row_with_internal_name(self):
+        """from_row liest internal_name (Punkt 75)."""
+        self.repo.set_internal_name("192.168.178.99", "Test-Server")
+        d = self.repo.get("192.168.178.99")
+        if d is None:
+            # Geraet existiert nicht, wir legen es an und setzen danach.
+            self.repo.upsert_seen("192.168.178.99")
+            self.repo.set_internal_name("192.168.178.99", "Test-Server")
+            d = self.repo.get("192.168.178.99")
+        self.assertIsNotNone(d)
+        self.assertEqual(d.internal_name, "Test-Server")
+
+    def test_set_internal_name_none_deletes(self):
+        """set_internal_name(None) loescht den Wert."""
+        self.repo.upsert_seen("192.168.178.100")
+        self.repo.set_internal_name("192.168.178.100", "Kamera")
+        self.repo.set_internal_name("192.168.178.100", None)
+        d = self.repo.get("192.168.178.100")
+        self.assertIsNotNone(d)
+        self.assertIsNone(d.internal_name)
+
     def test_upsert_seen_fallback_sentinel_resets_entity_name(self):
         """Sentinel ueberschreibt alten Fallback-Namen mit None (67a)."""
         from core.inventory.repository import _FALLBACK_SENTINEL

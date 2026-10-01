@@ -229,7 +229,8 @@ class DeviceRepository:
     def get(self, identifier: str) -> Device | None:
         row = self._conn.execute(
             "SELECT id, identifier, entity_name, network_type, "
-            "       first_seen, last_seen, notes, last_ip "
+            "       first_seen, last_seen, notes, last_ip, "
+            "       internal_name "
             "FROM devices WHERE identifier = ?",
             (identifier,),
         ).fetchone()
@@ -240,7 +241,8 @@ class DeviceRepository:
     def list_all(self) -> list[Device]:
         rows = self._conn.execute(
             "SELECT id, identifier, entity_name, network_type, "
-            "       first_seen, last_seen, notes, last_ip "
+            "       first_seen, last_seen, notes, last_ip, "
+            "       internal_name "
             "FROM devices ORDER BY last_seen DESC"
         ).fetchall()
         return [Device.from_row(r) for r in rows]
@@ -321,6 +323,11 @@ class DeviceRepository:
         entity_name: _FALLBACK_SENTINEL bedeutet "kein
         echter Name" und wird als None gespeichert
         (INSERT und UPDATE, Auflage 1771, Punkt 67a).
+
+        internal_name ist Nutzer-Eigentum (Punkt 75) und
+        wird von upsert_seen NICHT angefasst (weder INSERT
+        noch UPDATE). Watcher-Events duerfen den Namen
+        nicht ueberschreiben.
         """
         ts = (timestamp or datetime.now(UTC)).isoformat()
         data_json = json.dumps(data or {}, ensure_ascii=False, sort_keys=True)
@@ -398,6 +405,20 @@ class DeviceRepository:
         )
         self._conn.commit()
         return True
+
+    def set_internal_name(
+        self, identifier: str, name: str | None,
+    ) -> None:
+        """Setzt internal_name (Punkt 75). None loescht den Wert.
+
+        Nur der Nutzerpfad. upsert_seen fasst das Feld nicht an.
+        """
+        self._conn.execute(
+            "UPDATE devices SET internal_name = ? "
+            "WHERE identifier = ?",
+            (name, identifier),
+        )
+        self._conn.commit()
 
     def record_history(
         self,

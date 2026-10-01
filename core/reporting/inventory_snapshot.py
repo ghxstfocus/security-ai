@@ -12,6 +12,10 @@ Felder:
     devices_offline   Devices mit last_seen aelter als offline_hours
     recently_added    identifiers, first_seen in recent_hours
     recently_offline  identifiers, last_seen aelter als offline_hours
+    named_devices     list[dict] mit identifier, name,
+                      whitelisted, network_type (Punkt 75).
+                      name = internal_name or entity_name
+                      or identifier.
 """
 
 from __future__ import annotations
@@ -86,12 +90,28 @@ def build_inventory_snapshot(
     devices_offline = 0
     recently_added: list[str] = []
     recently_offline: list[str] = []
+    named_devices: list[dict[str, Any]] = []
+    wl_pre = {x for x in whitelist_ids if isinstance(x, str) and x}
 
     for d in devices:
         ident = _get(d, "identifier")
         if not isinstance(ident, str) or not ident:
             continue
         device_count += 1
+        internal = _get(d, "internal_name")
+        entity = _get(d, "entity_name")
+        if isinstance(internal, str) and internal:
+            display = internal
+        elif isinstance(entity, str) and entity:
+            display = entity
+        else:
+            display = ident
+        named_devices.append({
+            "identifier": ident,
+            "name": display,
+            "whitelisted": ident in wl_pre,
+            "network_type": _get(d, "network_type"),
+        })
 
         first_seen = _parse_ts(_get(d, "first_seen"))
         last_seen = _parse_ts(_get(d, "last_seen"))
@@ -115,6 +135,7 @@ def build_inventory_snapshot(
         "devices_offline": devices_offline,
         "recently_added": sorted(set(recently_added)),
         "recently_offline": sorted(set(recently_offline)),
+        "named_devices": named_devices,
     }
 
 

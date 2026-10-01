@@ -335,3 +335,65 @@ def test_whitelist_remove_requires_confirm(app):
 if __name__ == "__main__":
     import unittest
     unittest.main()
+
+
+# --- Punkt 75: internal_name (Route-Tests) ---------------------------- #
+
+def _get_internal_name(app, identifier):
+    conn = connect(app.config["DB_PATH"])
+    try:
+        d = DeviceRepository(conn).get(identifier)
+        return d.internal_name if d is not None else None
+    finally:
+        conn.close()
+
+
+def test_internal_name_route_requires_login(app):
+    c = app.test_client()
+    r = c.post("/inventory/aa:01/internal_name", data={})
+    assert r.status_code in (302, 303, 401)
+
+
+def test_internal_name_route_rbac(app):
+    _seed_device(app, "aa:01")
+    c = create_role_client(app, "viewer")
+    r = c.post(
+        "/inventory/aa:01/internal_name",
+        data={"internal_name": "X"},
+    )
+    assert r.status_code == 403
+
+
+def test_internal_name_route_csrf(app):
+    _seed_device(app, "aa:01")
+    c = create_role_client(app, "admin")
+    r = c.post("/inventory/aa:01/internal_name", data={})
+    assert r.status_code == 400
+
+
+def test_internal_name_route_ok(app):
+    _seed_device(app, "aa:01")
+    c, tok = _client_with_csrf(app, "admin")
+    r = c.post(
+        "/inventory/aa:01/internal_name",
+        data={"_csrf_token": tok, "internal_name": "Server-Sandra"},
+    )
+    assert r.status_code == 302
+    assert _get_internal_name(app, "aa:01") == "Server-Sandra"
+
+
+def test_internal_name_visible_on_detail(app):
+    _seed_device(app, "aa:01")
+    c, tok = _client_with_csrf(app, "admin")
+    c.post(
+        "/inventory/aa:01/internal_name",
+        data={"_csrf_token": tok, "internal_name": "Server-Sandra"},
+    )
+    r = c.get("/inventory/aa:01")
+    assert r.status_code == 200
+    assert b"Server-Sandra" in r.get_data()
+
+
+if __name__ == "__main__":
+    import unittest
+    unittest.main()

@@ -26,7 +26,7 @@
             <td>
                 <a href="/inventory/{{ d.identifier }}">{{ d.identifier }}</a>
             </td>
-            <td>{{ d.entity_name if d.entity_name else "—" }}</td>
+            <td>{{ d.internal_name if d.internal_name else (d.entity_name if d.entity_name else "—") }}</td>
             <td>{{ d.network_type | network_label }}</td>
             <td>
                 {% if d.whitelisted %}ja{% else %}nein{% endif %}

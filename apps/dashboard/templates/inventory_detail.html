@@ -18,8 +18,10 @@
 <section class="card detail-card">
 <h2 class="card-title">Eigenschaften</h2>
 <dl class="detail-list">
-    <dt>Name</dt>
+    <dt>Name (Fritz!Box)</dt>
     <dd>{{ device.entity_name if device.entity_name else "—" }}</dd>
+    <dt>Interner Name</dt>
+    <dd>{{ device.internal_name if device.internal_name else "—" }}</dd>
     <dt>Netz</dt>
     <dd>{{ device.network_type | network_label }}</dd>
     <dt>Typ</dt>
@@ -35,6 +37,18 @@
     <dt>Notizen</dt>
     <dd>{{ device.notes if device.notes else "—" }}</dd>
 </dl>
+</section>
+<section class="card detail-card">
+<h2 class="card-title">Interner Name</h2>
+<form method="post"
+      action="/inventory/{{ device.identifier }}/internal_name">
+    {{ csrf_field(csrf_token) }}
+    <label for="internal_name">Name (max 80 Zeichen):</label>
+    <input class="form-input" type="text" id="internal_name"
+           name="internal_name" maxlength="80"
+           value="{{ device.internal_name if device.internal_name else '' }}">
+    <button type="submit" class="btn">Speichern</button>
+</form>
 </section>
 <section class="card detail-card">
 <h2 class="card-title">Whitelist</h2>

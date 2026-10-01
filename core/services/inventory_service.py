@@ -11,6 +11,9 @@ Design:
   RBAC whitelist.manage, Audit-Pflicht.
   audit_writer ist im Konstruktor optional, aber bei
   schreibenden Methoden Pflicht (fail closed).
+- Schreiben (Internal-Name, Punkt 75):
+  RBAC device.write, Audit-Pflicht.
+  internal_name ist Nutzer-Eigentum, nicht Watcher-Feld.
 - Input-Validierung (Regex + ".."-Block), sonst
   InventoryServiceError. Fail closed.
 - history(identifier, limit=100) wird erst NACH der Validierung
@@ -30,6 +33,7 @@ IDENTIFIER_RE = re.compile(
     r"^[A-Za-z0-9](?:[A-Za-z0-9._:-]{0,253}[A-Za-z0-9])?$"
 )
 HISTORY_LIMIT = 100
+INTERNAL_NAME_MAX = 80
 
 
 class InventoryServiceError(ServiceError):
@@ -152,10 +156,16 @@ class InventoryService:
         self._require(actor, "whitelist.manage")
         ident = self._validate_identifier(identifier)
         device = self._devices.get(ident)
-        entity_name = (
-            device.entity_name if device and device.entity_name
-            else ident
-        )
+        # Fallback-Kette (Punkt 75): internal_name or
+        # entity_name or identifier.
+        if device is not None:
+            entity_name = (
+                device.internal_name
+                or device.entity_name
+                or ident
+            )
+        else:
+            entity_name = ident
         try:
             entry = self._whitelist.add(
                 ident,
@@ -198,10 +208,65 @@ class InventoryService:
         )
         return {"identifier": ident, "removed": bool(removed)}
 
+    def set_internal_name(
+        self,
+        actor: str,
+        identifier: str,
+        name: str | None,
+    ) -> dict:
+        """Setzt oder loescht den internen Namen (Punkt 75).
+
+        RBAC: device.write.
+        Audit: internal_name_set.
+        Validierung: max 80 Zeichen, strip.
+        Leerer String oder None -> None (loeschen).
+        """
+        self._require(actor, "device.write")
+        ident = self._validate_identifier(identifier)
+
+        if name is None:
+            clean: str | None = None
+        elif not isinstance(name, str):
+            raise InventoryServiceError("name muss String sein")
+        else:
+            stripped = name.strip()
+            if not stripped:
+                clean = None
+            else:
+                if len(stripped) > INTERNAL_NAME_MAX:
+                    raise InventoryServiceError(
+                        f"name zu lang (max {INTERNAL_NAME_MAX})"
+                    )
+                clean = stripped
+
+        device = self._devices.get(ident)
+        if device is None:
+            raise InventoryServiceError("Geraet unbekannt")
+
+        try:
+            self._devices.set_internal_name(ident, clean)
+        except Exception as exc:
+            raise InventoryOperationError(
+                f"internal_name setzen fehlgeschlagen: {exc}"
+            ) from exc
+
+        self._log(
+            "internal_name_set",
+            identifier=ident,
+            internal_name=clean,
+            actor=actor,
+        )
+        result = self._devices.get(ident)
+        return result.to_dict() if result is not None else {
+            "identifier": ident,
+            "internal_name": clean,
+        }
+
 
 __all__ = [
     "HISTORY_LIMIT",
     "IDENTIFIER_RE",
+    "INTERNAL_NAME_MAX",
     "InventoryOperationError",
     "InventoryService",
     "InventoryServiceError",

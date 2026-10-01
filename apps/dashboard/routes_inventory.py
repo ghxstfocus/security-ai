@@ -11,6 +11,8 @@ Kategorie 3 (Route, RBAC, Template).
                                               whitelist.manage (Bestaetigung)
 - POST /inventory/<identifier>/whitelist/remove
                                               whitelist.manage (Ausfuehrung)
+- POST /inventory/<identifier>/internal_name
+                                              device.write
 
 Fehler (Auflage 491, Variante D):
 - InventoryServiceError (Format, identifier ungueltig)
@@ -136,6 +138,26 @@ def register_inventory_routes(app: Flask) -> None:
         service = _build_service()
         try:
             service.remove_from_whitelist(g.principal, identifier)
+        except InventoryServiceError:
+            abort(404)
+        return safe_redirect(url_for(
+            "inventory_detail", identifier=identifier,
+        ))
+
+    @app.route(
+        "/inventory/<identifier>/internal_name",
+        methods=["POST"],
+    )
+    @require_permission("device.write")
+    def inventory_internal_name(identifier: str) -> Response | tuple[str, int]:
+        submitted = request.form.get("_csrf_token")
+        expected = session.get("_csrf_token")
+        if not csrf.validate(submitted, expected):
+            return ("Ungueltige Anfrage", 400)
+        name = request.form.get("internal_name")
+        service = _build_service()
+        try:
+            service.set_internal_name(g.principal, identifier, name)
         except InventoryServiceError:
             abort(404)
         return safe_redirect(url_for(
