@@ -1870,6 +1870,17 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       umgestellt (Alarm-Pfad).
     - _build_approval_test_registry unveraendert.
     - Auflagen 1899-1915.
+    - Live verifiziert 2026-10-02:
+      * 15:16:32 UTC notify_ntfy OK (event_id
+        EVT-2026-10-02-dab2ed5f, S25-von-A
+        device_offline).
+      * 15:18:32 UTC notify_ntfy OK (event_id
+        EVT-2026-10-02-f039b187, S25-von-A
+        device_presence).
+      * Ausloesende Regeln: unknown_device,
+        unknown_device_persistent (Detection-
+        Verhalten, nicht Punkt 81).
+      * Handy-Empfang bestaetigt.
 
 82. (erledigt in 6d9c1c1, Kategorie 1, Doku)
     Orchestrator-Docstring "5 Tools" -> "6 Tools".
@@ -1887,5 +1898,35 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     - ruff 122 / mypy no-untyped-def 67 sind
       veraltet (heute 0/0, A900+B1 abgeschlossen).
     - Eigener Doku-Block nach Punkt 81.
+
+84. (offen, Kategorie 1, Doku) Heredoc-Zerhackung.
+    Wiederholt in der Session 2026-10-02: Heredoc
+    > ~3 KB in die interaktive Shell zerhackt
+    (fuenfmal). TTY-Puffer N_TTY_BUF_SIZE (4096
+    Byte), kein Shell-Bug. WORKFLOW-Anti-Pattern.
+    - Praevention: Patch-Skripte > ~3 KB per
+      stueckweises Anhaengen mit >> an die
+      /tmp-Datei, oder python3 - <<'PY' inline.
+    - Nach jedem cat >: wc -l, py_compile,
+      tail -3 zur Vollstaendigkeitspruefung.
+    - Bereits in WORKFLOW dokumentiert (Heredoc-
+      Anti-Pattern), aber Praevention wird in der
+      Praxis noch zu oft ignoriert.
+    - Kein Code-Bezug, reiner Prozess-Hinweis.
+
+85. (verworfen) Detection-Tuning Handy-WLAN.
+    Angedacht, aber Nutzer-Entscheidung: S25-von-A
+    ist bewusst nicht whitelisted (Test-Geraet).
+    Alarme sind gewollt. Kein Punkt 85.
+
+86. (Doku, Kategorie 1) S25-von-A ist Test-Geraet.
+    - Bewusst nicht in whitelisted_devices.
+    - MAC stabil (Randomisierung am Handy aus).
+    - Alarme durch unknown_device und
+      unknown_device_persistent sind gewollt.
+      Sie dienen als Detection-Test.
+    - Kein Handlungsbedarf bei jedem Netz-Austritt/
+      -Eintritt des Geraets.
+    - Zukuenftige Sessions: nicht als Bug melden.
 
 Bewusst offen (kein Bau heute):
