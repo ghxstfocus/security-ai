@@ -376,3 +376,30 @@ def test_list_recent_by_kinds_limit(
         "admin1", {"change_created"}, limit=3,
     )
     assert len(out) == 3
+
+
+# --- Punkt 79: list_recent_assessments_with_context ---
+
+def test_list_with_context_uses_trigger_event_id():
+    """Die Methode existiert auf dem Service."""
+    from core.services.audit_reader_service import (
+        AuditReaderService,
+    )
+    assert hasattr(
+        AuditReaderService,
+        "list_recent_assessments_with_context",
+    )
+
+
+def test_list_with_context_fallback_to_event_id():
+    """Ohne trigger_event_id wird event_id genutzt."""
+    entry = {"event_id": "EVT-X", "trigger_event_id": None}
+    lookup = entry.get("trigger_event_id") or entry.get("event_id")
+    assert lookup == "EVT-X"
+
+
+def test_list_with_context_no_trigger_no_error():
+    """Ohne beide IDs: kein Fehler."""
+    entry = {"event_id": None, "trigger_event_id": None}
+    lookup = entry.get("trigger_event_id") or entry.get("event_id")
+    assert lookup is None

@@ -109,8 +109,10 @@ def test_alerts_shows_assessment(app):
     # Auflage 437: Rohkategorie steht nicht mehr im Body
     # (Bestandsaufnahme: count=0 vor dem Patch).
     assert b"CONFIRMED" not in r.data
-    assert b"unknown_device" in r.data
-    assert b"EVT-2026-09-22-deadbeef" in r.data
+    # Punkt 79: rule_id wird in Klartext uebersetzt.
+    assert b"Unbekanntes Geraet im Hauptnetz" in r.data
+    # Punkt 79: die rohe rule_id steht nicht mehr im Body.
+    assert b"unknown_device" not in r.data
 
 
 # --- Auflage 26: Badge mit Text, Farbe korrekt ------------------------ #
@@ -181,3 +183,36 @@ def test_alerts_no_json_blob_in_body(app):
     # Klammern und Quotes um Feldnamen).
     assert b'"category"' not in r.data
     assert b'"audit_id"' not in r.data
+
+
+# --- Punkt 79: neue Spalten ---
+
+def test_alerts_shows_alert_text(app):
+    """Die Spalte "Was" enthaelt Klartext, nicht rule_id."""
+    _write_assessment(app, category="CONFIRMED")
+    c = create_role_client(app, "admin")
+    r = c.get("/alerts")
+    assert r.status_code == 200
+    body = r.get_data(as_text=True)
+    assert "Was" in body
+    assert "Geraet" in body
+    assert "Begruendung" in body
+
+
+def test_alerts_shows_identifier_link_header(app):
+    """Die Spalte "Geraet" ist da (8 Spalten)."""
+    _write_assessment(app, category="CONFIRMED")
+    c = create_role_client(app, "admin")
+    r = c.get("/alerts")
+    assert r.status_code == 200
+    body = r.get_data(as_text=True)
+    for header in ("Zeitpunkt", "Was", "Geraet", "IP",
+                   "Netz", "Begruendung", "Bewertung", "Link"):
+        assert header in body
+
+
+def test_alerts_no_link_without_permission(app):
+    """Viewer hat kein alert.view -> 403."""
+    c = create_role_client(app, "viewer")
+    r = c.get("/alerts")
+    assert r.status_code == 403

@@ -670,6 +670,9 @@ class SecurityAI:
                 details={
                     "kind": "risk_assessment",
                     "event_id": a.event_id,
+                    "trigger_event_id": alert.data.get(
+                        "trigger_event_id"
+                    ),
                     "rule_id": a.rule_id,
                     "score": a.score,
                     "category": a.category.value,

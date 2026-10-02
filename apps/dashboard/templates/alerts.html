@@ -4,12 +4,17 @@
   Kategorie 3 (Template, CSP).
   Kein |safe, kein style="...", kein inline <script>,
   kein on*=, kein tojson.
-  Badge-Klassen hartkodiert (if/elif, kein dynamisches
-  class=). Badge-Text ist das Anzeige-Label zum
-  RiskCategory-Wert (Info/Hinweis/Warnung/Alarm/Kritisch),
-  kein Rohwert. Farbe allein reicht nicht (Auflage 26).
-  Score-Zahl wird separat unter dem Badge gezeigt
-  (3.6.14, Variante B).
+
+  Punkt 79: acht Spalten mit Kontext.
+  - Zeitpunkt
+  - Was (Klartext aus alert_text)
+  - Geraet (internal_name or entity_name or identifier,
+    Link zu /inventory/<id> nur wenn can_view_inventory)
+  - IP (display_ip, Fallback "-")
+  - Netz (network_type, Fallback "-")
+  - Begruendung (reasons, sonst "-")
+  - Bewertung (Badge + Score)
+  - Link (auf /audit/<audit_id>, nur wenn can_view_audit)
 #}
 {% extends "base.html" %}
 
@@ -20,15 +25,41 @@
     <thead>
         <tr>
             <th>Zeitpunkt</th>
+            <th>Was</th>
+            <th>Geraet</th>
+            <th>IP</th>
+            <th>Netz</th>
+            <th>Begruendung</th>
             <th>Bewertung</th>
-            <th>Regel</th>
-            <th>Ereignis-ID</th>
+            <th>Link</th>
         </tr>
     </thead>
     <tbody>
         {% for a in assessments %}
         <tr>
             <td>{{ a.timestamp|format_ts }}</td>
+            <td>{{ a.alert_text }}</td>
+            <td>
+                {% if a.identifier %}
+                    {% set disp = a.internal_name or a.entity_name or a.identifier %}
+                    {% if can_view_inventory %}
+                    <a href="/inventory/{{ a.identifier }}">{{ disp }}</a>
+                    {% else %}
+                    {{ disp }}
+                    {% endif %}
+                {% else %}
+                —
+                {% endif %}
+            </td>
+            <td>{{ a.display_ip }}</td>
+            <td>{{ a.network_type if a.network_type else "—" }}</td>
+            <td>
+                {% if a.reasons %}
+                    {{ a.reasons|join(", ") }}
+                {% else %}
+                —
+                {% endif %}
+            </td>
             <td>
                 {% if a.category == "SECURITY_ALERT" %}
                 <span class="badge badge-red">{{ a.category|format_score_label }}</span>
@@ -46,8 +77,13 @@
                 <br>
                 {{ a.score|format_score }}
             </td>
-            <td>{{ a.rule_id }}</td>
-            <td>{{ a.event_id }}</td>
+            <td>
+                {% if can_view_audit and a.audit_id %}
+                <a href="/audit/{{ a.audit_id }}">Detail</a>
+                {% else %}
+                —
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>

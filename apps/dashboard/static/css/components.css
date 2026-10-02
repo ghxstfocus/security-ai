@@ -433,6 +433,27 @@
         word-break: break-word;
         overflow-wrap: anywhere;
     }
+
+    /* alerts (Punkt 79, 8 Spalten):
+       <700px sichtbar: Zeitpunkt (1), Was (2), Geraet (3),
+       Bewertung (7). Ausblenden: IP (4), Netz (5),
+       Begruendung (6), Link (8). */
+    table.table-alerts th:nth-child(4),
+    table.table-alerts td:nth-child(4),
+    table.table-alerts th:nth-child(5),
+    table.table-alerts td:nth-child(5),
+    table.table-alerts th:nth-child(6),
+    table.table-alerts td:nth-child(6),
+    table.table-alerts th:nth-child(8),
+    table.table-alerts td:nth-child(8) { display: none; }
+    table.table-alerts th:nth-child(1),
+    table.table-alerts td:nth-child(1),
+    table.table-alerts th:nth-child(2),
+    table.table-alerts td:nth-child(2),
+    table.table-alerts th:nth-child(3),
+    table.table-alerts td:nth-child(3),
+    table.table-alerts th:nth-child(7),
+    table.table-alerts td:nth-child(7) { display: table-cell; }
 }
 
 /* Punkt 19 (Auflagen 614-622): Pro-Tabelle-Klassen
@@ -443,16 +464,26 @@
    (identische Spezifitaet 0,2,1, File-Reihenfolge
    entscheidet). Kein !important. */
 @media (max-width: 500px) {
-    /* alerts: Zeitpunkt + Bewertung sichtbar.
-       Regel + Event-ID sind Detail. */
+    /* alerts (Punkt 79, 8 Spalten):
+       <500px sichtbar: Zeitpunkt (1), Was (2), Bewertung (7).
+       Ausblenden: Geraet (3), IP (4), Netz (5),
+       Begruendung (6), Link (8). */
     table.table-alerts th:nth-child(3),
     table.table-alerts td:nth-child(3),
     table.table-alerts th:nth-child(4),
-    table.table-alerts td:nth-child(4) { display: none; }
+    table.table-alerts td:nth-child(4),
+    table.table-alerts th:nth-child(5),
+    table.table-alerts td:nth-child(5),
+    table.table-alerts th:nth-child(6),
+    table.table-alerts td:nth-child(6),
+    table.table-alerts th:nth-child(8),
+    table.table-alerts td:nth-child(8) { display: none; }
     table.table-alerts th:nth-child(1),
     table.table-alerts td:nth-child(1),
     table.table-alerts th:nth-child(2),
-    table.table-alerts td:nth-child(2) { display: table-cell; }
+    table.table-alerts td:nth-child(2),
+    table.table-alerts th:nth-child(7),
+    table.table-alerts td:nth-child(7) { display: table-cell; }
 
     /* approvals: Request-ID + Status sichtbar.
        Status ist die Entscheidung. */

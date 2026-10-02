@@ -19,6 +19,7 @@ from __future__ import annotations
 from flask import Flask, g, render_template
 
 from apps.dashboard.decorators import require_permission
+from core.inventory.repository import DeviceRepository
 from core.services.audit_reader_service import AuditReaderService
 
 
@@ -29,8 +30,11 @@ def register_alerts_routes(app: Flask) -> None:
         service = AuditReaderService(
             audit_writer=g.audit,
             checker=g.access_checker,
+            device_repo=DeviceRepository(g.conn),
         )
-        assessments = service.list_recent_assessments(g.principal)
+        assessments = service.list_recent_assessments_with_context(
+            g.principal,
+        )
         return render_template(
             "alerts.html",
             page_title="Alarme",

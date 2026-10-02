@@ -154,6 +154,62 @@ def read_risk_assessments(
     return result[:max_entries]
 
 
+def read_risk_assessments_full(
+    base_dir: str | Path = DEFAULT_AUDIT_DIR,
+    *,
+    since_hours: int = 24,
+    max_entries: int = 50,
+    now: datetime | None = None,
+) -> list[dict[str, Any]]:
+    """
+    Wie read_risk_assessments, zusaetzlich base, modifiers,
+    reasons (Punkt 79). Fuer die Alarme-Seite mit Klartext-
+    Begruendung.
+    """
+    if since_hours < 0:
+        raise ValueError("since_hours muss >= 0 sein")
+    if max_entries <= 0:
+        return []
+
+    now_dt = now or datetime.now(UTC)
+    since = now_dt - timedelta(hours=since_hours)
+
+    entries, _skipped = _iter_entries(
+        Path(base_dir), since=since, now=now_dt,
+    )
+
+    result: list[dict[str, Any]] = []
+    for obj in entries:
+        details = obj.get("details")
+        if not isinstance(details, dict):
+            continue
+        if details.get("kind") != "risk_assessment":
+            continue
+        mods = details.get("modifiers")
+        reasons = details.get("reasons")
+        result.append({
+            "audit_id": obj.get("audit_id"),
+            "timestamp": obj.get("timestamp"),
+            "event_id": details.get("event_id"),
+            "trigger_event_id": details.get("trigger_event_id"),
+            "category": details.get("category"),
+            "score": details.get("score"),
+            "rule_id": details.get("rule_id"),
+            "tool": obj.get("tool"),
+            "base": details.get("base"),
+            "modifiers": mods if isinstance(mods, list) else [],
+            "reasons": (
+                reasons if isinstance(reasons, list) else []
+            ),
+        })
+
+    result.sort(
+        key=lambda e: e.get("timestamp") or "",
+        reverse=True,
+    )
+    return result[:max_entries]
+
+
 def count_by_category(
     entries: list[dict[str, Any]],
 ) -> dict[str, int]:
@@ -172,4 +228,5 @@ __all__ = [
     "AuditJsonlError",
     "count_by_category",
     "read_risk_assessments",
+    "read_risk_assessments_full",
 ]
