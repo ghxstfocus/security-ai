@@ -1,0 +1,19 @@
+# Sandbox-Profil: no_network_except_ntfy
+#
+# Status: aktiv (Punkt 77).
+# Verwendet von: tools/notify_ntfy.py
+#
+# Erlaubt:
+#   - Ausgehende HTTP/HTTPS-Verbindungen zum ntfy-Server
+#     (URL kommt aus NTFY_URL, typischerweise Tailscale-IP
+#     des Proxmox-Hosts)
+#
+# Verboten:
+#   - Jede andere Netzwerkverbindung
+#   - Shell
+#   - Dateisystem-Schreibzugriff
+name: no_network_except_ntfy
+timeout_seconds: 5
+network: ntfy_only
+allowed_hosts: []   # zur Laufzeit aus NTFY_URL abgeleitet
+shell: false

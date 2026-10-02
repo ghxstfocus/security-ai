@@ -1737,6 +1737,18 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       Punkt 73a (known-Definition, neu).
     - Erst Design (56a), dann Code.
 
+74. (erledigt in c6c3691, Kategorie 3, Detection)
+    unknown_device_persistent (A4).
+    - RuleContext.snapshot (generisches Feld) +
+      Engine + Orchestrator (pre_snapshot).
+    - EventType UNKNOWN_DEVICE_PERSISTENT.
+    - Regel unknown_device_persistent:
+      Snapshot-first_seen, Schwellwert 3600 s,
+      Cooldown 3600 s, fail-safe ohne Snapshot.
+    - Config detection + risk (base 0.6, max 0.9).
+    - Tests +8.
+    - Manuell verifiziert (2h -> 1 Event).
+
 75. (erledigt in b11e958 + 9a9775c, Kategorie 3, Inventory)
     internal_name + IP-Suche.
     - Migration 0014: devices.internal_name TEXT.
@@ -1767,5 +1779,29 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       neu starten, Test-Alarm senden, Erfolg im
       Audit-Log pruefen (execution_status=OK).
     - Betriebsakt (kein Code).
+
+77. (offen, Kategorie 1 + 3, Betrieb + Code) ntfy
+    als eigenes Benachrichtigungssystem.
+    - ntfy self-hosted auf Proxmox-Host (nicht CT102).
+    - Bind: Tailscale-IP des Hosts, Port 2586.
+      Kein 0.0.0.0, kein LAN.
+    - systemd-Unit mit Restart=always
+      (Default on-failure greift nicht bei
+       sauberem Exit).
+    - Auth: deny-all, enable-signup false,
+      Publish-Token (CT102) + Read-Token (Handy).
+    - Topic: langer zufaelliger String (32 Zeichen).
+    - Config-Vorlage in docs/NTFY.md.
+    - Tool tools/notify_ntfy.py (Level 1, HTTP POST),
+      Sandbox-Profil no_network_except_ntfy.
+    - .env-Erweiterung: NTFY_URL, NTFY_TOPIC, NTFY_TOKEN.
+    - Fallback bei ntfy-Fehler: Audit-Eintrag
+      (execution_status=ERR). Telegram bleibt optional.
+    - Aufteilung: Betriebsakt (Host, Nutzer) +
+      Code (CT102, Bau-Chat).
+    - Android-Push: F-Droid-Variante nutzt WebSocket,
+      Play-Store-Variante geht ueber FCM (Google).
+    - Kategorie 3 fuer den Code-Anteil,
+      Kategorie 1 fuer den Betriebsakt.
 
 Bewusst offen (kein Bau heute):

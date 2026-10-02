@@ -37,6 +37,7 @@ class ToolArgumentError(ToolError):
 KNOWN_SANDBOX_PROFILES = frozenset({
     "read_only",
     "no_network_except_telegram",
+    "no_network_except_ntfy",
     "nmap_local",
     "local_filesystem",
 })

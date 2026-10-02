@@ -59,6 +59,7 @@ from harness.tool_registry.registry import ToolRegistry
 from tools.get_devices import GET_DEVICES_TOOL
 from tools.nmap_scan import NMAP_SCAN_TOOL
 from tools.read_logs import READ_LOGS_TOOL
+from tools.notify_ntfy import NOTIFY_NTFY_TOOL
 from tools.telegram_alert import (
     TELEGRAM_ALERT_TOOL,
     telegram_alert_run,
@@ -137,6 +138,7 @@ def _build_default_registry() -> ToolRegistry:
     reg.register(GET_DEVICES_TOOL)
     reg.register(WHITELIST_CHECK_TOOL)
     reg.register(TELEGRAM_ALERT_TOOL)
+    reg.register(NOTIFY_NTFY_TOOL)
     return reg
 
 

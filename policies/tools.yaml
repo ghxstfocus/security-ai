@@ -51,6 +51,12 @@ tools:
     conditions: []
     reason: "Benachrichtigung"
 
+  notify_ntfy:
+    allowed: true
+    level: 1
+    conditions: []
+    reason: "Benachrichtigung via ntfy"
+
   nmap_scan:
     allowed: true
     level: 1
