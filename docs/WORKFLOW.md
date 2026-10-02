@@ -559,6 +559,37 @@ Beispiele:
   entfaellt es. Der Commit ist erst fertig, wenn
   `ruff` clean ist.
 
+### ruff-Ausgabe vollstaendig lesen
+
+Symptom: `ruff check .` wird ausgefuehrt, aber die
+Ausgabe ist im Terminal oder Paste abgeschnitten.
+Es wird "ruff clean" angenommen, obwohl die
+tatsaechliche Meldung mehrere Fehler auflistet.
+Die Fehler fallen erst beim naechsten Commit auf
+und muessen in einem separaten Nachbesserungs-Commit
+korrigiert werden.
+
+Ein abgeschnittener Paste oder ein "Found N errors"
+ohne die zugehoerigen Zeilen ist **keine Messung**.
+Die Ausgabe muss vollstaendig gelesen werden, bevor
+der Commit laeuft.
+
+- **Regel:** Vor dem Commit die ruff-Ausgabe
+  vollstaendig lesen. Wenn die Ausgabe aus
+  Platzgruenden abgeschnitten ist, mit
+  `ruff check . --output-format concise`
+  erneut ausfuehren. Diese Form liefert eine
+  Zeile pro Fehler und bleibt auch bei vielen
+  Treffern lesbar. Alternativ:
+  `ruff check . --statistics` fuer eine
+  Zusammenfassung nach Regel-Code.
+
+- **Regel:** `ruff check .` nicht als letzter
+  Schritt einer `&&`-Kette unmittelbar vor
+  `git commit` verketten. Besser: ruff als
+  eigener Verifikations-Block, Ausgabe lesen,
+  dann der Commit in einem separaten Block.
+
 ### Heredoc ueber ~3 KB zerhackt
 
 `cat > datei <<'EOF'` mit mehr als ~3 KB Inhalt
