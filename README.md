@@ -1,152 +1,90 @@
-# Security AI
+# Homelab Security AI
 
-> Ein modulares, defensives Security- und Admin-System fuer
-> autorisierte IT- und Gebaeudeumgebungen. Referenz-Implementierung
-> einer foederierten, KI-gestuetzten Sicherheitsarchitektur mit
-> strikter Human-in-the-Loop-Kontrolle.
+Ein lokales Security-System fuer das eigene
+Homelab. Deterministische Detection, RBAC,
+Audit, Human-in-the-Loop. Kein Cloud-Zwang.
+Kein LLM in den Entscheidungen.
 
-Stand: 2026-10-02 | HEAD: 93f6a7f | Tests: 1192 gruen (venv, pytest 9.1.1)
+## Warum es das gibt
 
-## Die Vision in einem Absatz
+KI ist dann wertvoll, wenn sie dort eingesetzt
+wird, wo sie hilft: Erklaerungen, Zusammen-
+fassungen, Chat. Sie ist dann gefaehrlich, wenn
+sie Entscheidungen trifft, die schnell,
+nachvollziehbar und sicher sein muessen.
 
-Drei KI-Ebenen. Klar getrennt. Die **Security Master AI**
-(Cloud) verwaltet mehrere Kunden-Installationen. Die **Security AI**
-(lokal beim Kunden) ist der zentrale Kontrollpunkt — die
-einzige Schnittstelle zu allen Bridges (HR, Buchhaltung, CRM,
-Tickets, M365, LLMs). Die **Kunden-Mitarbeiter-KI** assistiert
-dem Endnutzer in natuerlicher Sprache.
+Dieses Projekt zieht die Linie bewusst:
+Deterministische Detection, Risk und Policy
+ueberall dort, wo Sicherheit zaehlt. Das LLM
+nur dort, wo es erklaert.
 
-Der Mensch entscheidet. Die KI schlaegt vor, erklaert und
-korreliert. Jede Aktion ist auditierbar und umkehrbar.
-Vom lokalen Security-Tool ueber foederierte Netzwerke bis zur
-Enterprise-Plattform — mit Human-in-the-Loop, lueckenlosem
-Audit und DSGVO-konform.
+Der Core ist das BIOS des Systems: basal,
+deterministisch, immer da. Er entscheidet
+nicht, er liefert Zustand. Er ist auch die
+Bridge zu allen Geraeten und Diensten und
+der Anker, an dem jede Aktion haengt.
 
-Die vollstaendige Vision: [PROJECT_VISION.md](PROJECT_VISION.md).
+Der Mensch bleibt die letzte Instanz.
 
-## Was das System heute kann
+## Wie es aussieht
 
-- **Netzwerk-Ueberwachung:** Erkennt unbekannte Geraete,
-  Gast-WLAN-Aktivitaet, Port-Scans und Web-Reconnaissance.
-- **Geraete-Inventar:** Weiss, welche Geraete erlaubt sind und
-  welche nicht. SQLite-basiert, mit Historie.
-- **Detection Engine:** Deterministische Regeln
-  (unknown_device, unknown_device_persistent, network_change,
-  mac_change, device_flapping, port_scan). Kein LLM.
-- **Risk Engine:** Deterministische Bewertung. Score aus Basis
-  plus Modifikatoren. Nachvollziehbar.
-- **ntfy-Alarme:** Self-hosted Push-Kanal (Tailnet) auf
-  Proxmox-Host, F-Droid-App auf Android. Telegram bleibt
-  optional als Fallback (Punkt 76).
-- **RBAC:** Drei unabhaengige Skalen (Raum, Tool, Daten) mit
-  feinkoernigen Permissions.
-- **Lokale KI (Ollama):** llama3.2:3b fuer schnelle Erklaerungen,
-  qwen2.5:7b fuer tiefe Fragen (Auto-Switch). Keine Cloud,
-  keine Datenabfluesse.
-- **Chat mit der Security AI:** Fragen in natuerlicher Sprache
-  ("Gab es heute Nacht Auffaelligkeiten?"). Fact-Pfad
-  deterministisch (Labels statt Rohkategorien, dynamischer
-  Zeitraum), Interpretations-Pfad mit Auto-Switch und
-  Sanity-Check.
-- **Approval Queue:** Level-4-Aktionen warten auf
-  Human-Approval.
-- **Change Requests:** Aenderungen mit Diff, Rollback, Tests.
-- **Audit-Log:** Append-only JSONL. Jede Aktion unveraenderlich
-  protokolliert.
-- **Web-Dashboard:** Flask-basiert, RBAC, CSP-konform.
-  Seiten: Dashboard, Inventar, Alarme, Approvals, Changes,
-  Chat, Benutzer, Rollen, Audit, Einstellungen, Suche.
-  Links im Chat (Objekt-Referenzen und Navigations-Hinweise).
-- **HTTPS hinter nginx** mit eigener CA, gunicorn (2 Worker).
-- **1191 Tests, alle gruen.**
+    +-------------------------------------------+
+    |  Mensch (letzte Instanz)                  |
+    +-------------------------------------------+
+                  |               ^
+                  v               |
+    +-------------------------------------------+
+    |  Admin AI (Cloud)   |   Kunden-KI (Cloud) |
+    |  Sicherheit         |   Mitarbeiter       |
+    |  asynchron, Vorschlaege, Change Requests  |
+    +-------------------------------------------+
+                  |               ^
+                  v               |
+    +-------------------------------------------+
+    |  CORE (lokal, deterministisch, 24/7)      |
+    |  Watcher, Detektoren, Services, Audit     |
+    +-------------------------------------------+
+                  |               ^
+                  v               |
+    +-------------------------------------------+
+    |  Geraete, Netz, Systeme, externe Dienste  |
+    +-------------------------------------------+
 
-## Was gerade gebaut wird
+## Was der Core heute kann
 
-- Alarm-Runde (Punkte 70-74) abgeschlossen:
-  unknown_device_persistent (Zeit-Eskalation),
-  network_change, mac_change, device_flapping,
-  known aus Whitelist.
-- Punkte 75 (internal_name + IP-Suche),
-  77 (ntfy-Benachrichtigungssystem),
-  79 + 79a (Alarme-Seite Klartext + Links),
-  56a (Whitelist-Pflege) abgeschlossen.
-- Lizenz AGPL-3.0-or-later durchgaengig
-  (LICENSE, pyproject, Copyright-Header in
-  205 .py-Dateien).
-- Offen: 80 (Alarme-Filter + Pagination),
-  57 (Guardrails), 58 (Werkzeuge-Werkbank),
-  76 (Telegram, optional).
-- Phasen 5-11 in Planung (siehe Was geplant ist).
+- Netzwerk-Ueberwachung ueber die Fritz!Box.
+- Deterministische Detection mit sechs Regeln.
+- Risk Engine, nachvollziehbar und reproduzierbar.
+- Alarme per ntfy (self-hosted, Tailscale).
+- RBAC: Rollen, Permissions, Sessions.
+- Web-Dashboard mit RBAC und strikter CSP.
+- Lokaler Chat (Ollama), optional und langsam.
+- Approval Queue und Change Requests.
+- Append-only Audit.
+- Ueber 1000 Tests, alle gruen.
 
-## Was geplant ist
+## Was es nicht tut
 
-- **Stufe 3:** Foederation — mehrere Netzwerke, zentrale
-  Security Master AI.
-- **Stufe 4:** Enterprise — Bridges zu HR, Buchhaltung, CRM,
-  Tickets, M365, LLMs. Kunden-Mitarbeiter-KI. DSGVO-Konformitaet.
-- **Stufe 5:** Physische Sicherheit — RFID, Zutritt, Raum-Level.
-- **Stufe 6:** Ganzheitliche Korrelation — digital + physisch.
+- Keine autonomen Firewall-Aenderungen.
+- Kein Auto-Block ohne Freigabe.
+- Kein Cloud-Zwang.
+- Kein LLM in Entscheidungen.
+- Kein Selbst-Update ohne Change Request.
 
-## Architektur (Rollensicht)
+## Was kommen soll
 
-Vier Rollen, ein zentraler Core:
+- Host-Scanner (Phase 3.8).
+- Admin AI (Cloud, optional).
+- Kunden-KI (Mitarbeiter-Aufgaben).
+- Data Connectors (HR, CRM, Tickets).
+- Physische Sicherheit (Phase 10).
+- Ganzheitliche Korrelation (Phase 11).
 
-    +---------------------------------------------------------+
-    |  MENSCH (letzte Instanz)                                |
-    |  Entscheidet bei Risiko >= 2. Whitelist-Pflege.         |
-    +---------------------------------------------------------+
-                              ^
-                              |
-    +--------------------------+------------------------------+
-    |  ADMIN AI (Cloud, Sicherheit)                           |
-    |  KUNDEN-KI (Cloud, Mitarbeiter-Aufgaben)                |
-    |  Intelligenz-Schicht. Asynchron.                        |
-    |  Vorschlaege, Change Requests. Kein Direktzugriff.      |
-    +--------------------------+------------------------------+
-                              ^
-                              |
-    +--------------------------v------------------------------+
-    |  CORE (BIOS, Bridge, Anker)                             |
-    |  Deterministisch, 24/7, kein LLM.                      |
-    |  Watcher, Detektoren, Risk, RBAC, Audit, Approval.      |
-    |  Einzige Schnittstelle zu allen Geraeten und Diensten.  |
-    +--------------------------+------------------------------+
-                              |
-    +--------------------------v------------------------------+
-    |  GERAETE, NETZ, EXTERNE DIENSTE                         |
-    |  Datenquellen und Aussenwelt.                           |
-    +---------------------------------------------------------+
+## Wo man liest
 
-Drei Blickwinkel auf dieselbe Architektur:
-- Technische Schichten: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (5-1).
-- Rollen im Betrieb: diese Sicht (Mensch, Cloud, Core, Geraete).
-- Test-Ebenen: [docs/DESIGN_DECISIONS.md](docs/DESIGN_DECISIONS.md) (1-5).
+- docs/DEPLOYMENT.md - Installation und Betrieb.
+- docs/ARCHITECTURE.md - technische Schichten.
+- PROJECT_VISION.md - die grosse Vision.
+- docs/SECURITY.md - Threat Model und Guardrails.
+- docs/PHASES.md - Phasenstand und Ausblick.
 
-## Sicherheit
-
-- **Whitelist** ist manuell und Mensch-only.
-- **Capabilities** werden im Security-Container entzogen.
-- **Guardrails** sind Code, nicht Prompt.
-- **Audit-Logs** sind append-only, unveraenderlich.
-- **Keine Shell-Ausfuehrung** durch das Modell.
-- **Prompt-Injection** wird im Policy-Layer geblockt.
-- **Human-in-the-Loop** ist Pflicht bei Risiko >= 2.
-- **DSGVO-Konformitaet** ist Pflicht.
-
-Details: [docs/SECURITY.md](docs/SECURITY.md)
-
-## Dokumentation
-
-- [Projekt-Vision](PROJECT_VISION.md) — die grosse Vision
-- [Architektur](docs/ARCHITECTURE.md) — 4-Ebenen-Modell
-- [Sicherheit](docs/SECURITY.md) — Threat Model, Guardrails
-- [Berechtigungen](docs/PERMISSIONS.md) — Level 0-5
-- [Protokoll](docs/PROTOCOL.md) — Foederation (MCP)
-- [Deployment](docs/DEPLOYMENT.md) — Proxmox-Setup
-- [Design-Entscheidungen](docs/DESIGN_DECISIONS.md) — 40+ Entscheidungen
-- [ntfy-Betrieb](docs/NTFY.md) — Push-Kanal auf Proxmox-Host
-- [Phasen](docs/PHASES.md) — Skalierungspfad
-- [Werkzeuge](docs/WERKZEUGE.md) — Skripte und CLIs
-- [Web-Security-Checkliste](docs/WEB_SECURITY_CHECKLIST.md) — verbindliche Checkliste
-- [Security-Review-Log](docs/SECURITY_REVIEW_LOG.md) — Entscheidungen und offene Punkte
-- [Workflow](docs/WORKFLOW.md) — Prozess, Hard-Rules
