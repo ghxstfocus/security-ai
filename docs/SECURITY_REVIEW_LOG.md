@@ -1822,4 +1822,33 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     - Offen: Rotation der im Chat sichtbaren Token
       (Read + Publish) als eigene Mini-Aufgabe.
 
+79. (erledigt in 02010cb + 9dec780, Kategorie 3 + 2, UI)
+    Alarme-Seite Klartext + Kontext + Links.
+    - Spalten (nach 79a): Zeitpunkt | Was | Geraet |
+      IP | Begruendung | Bewertung | Link.
+    - Was: Klartext aus alert_explain (kein LLM).
+    - Geraet: internal_name or entity_name or
+      identifier, verlinkt auf /inventory/<id>,
+      Netz (network_type) klein darunter (79a).
+    - IP: display_ip aus Event (Fallback DB-last_ip).
+    - Event-Lookup: details.trigger_event_id im
+      risk_assessment-Audit (orchestrator, Auflage
+      1880). Alert-IDs wurden nicht in events.jsonl
+      persistiert.
+    - Sichtpruefung 2026-10-02: neue Zeilen vollstaendig;
+      alte Zeilen (vor trigger_event_id-Fix) zeigen
+      '—'. Layout-Effekt 'S25-von-A' umbruch in 79a
+      behoben (min-width 12ch).
+    - Netz-Spalte entfaellt in 79a (Redundanz).
+
+80. (offen, Kategorie 3, UI) Alarme-Seite Filter +
+    Pagination.
+    - Filter: Zeitraum (24h default, 7d, 30d),
+      Kategorie, Geraet, Netz,
+      Suche (Klartext oder identifier).
+    - Pagination: heute max 100 ohne Blaettern.
+      Erste 20 + naechste.
+    - RBAC alert.view.
+    - Eigener Block.
+
 Bewusst offen (kein Bau heute):
