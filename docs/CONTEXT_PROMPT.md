@@ -269,10 +269,12 @@ Suchfelder), §14 (Frage-Klassifikation, Anzeige-Labels,
 since_hours), §16 (ProxyFix, Links im Chat, nav_links,
 JS-Ausnahme, server_name, default_server).
 
-Stand: 2026-10-02 | HEAD: 03cb7bb |
+Stand: 2026-10-02 | HEAD: 413540e |
 Tests: 1191 gruen (venv, pytest 9.1.1).
-Punkt 79 (Alarme-Seite Klartext + Kontext + Links)
-abgeschlossen. Punkt 80 (Filter + Pagination) offen.
+Punkte 79 + 79a (Alarme-Seite Klartext + Kontext +
+Links) abgeschlossen. Lizenz (AGPL-3.0-or-later)
+in pyproject + 205 .py-Headern. Punkt 80
+(Filter + Pagination) offen.
 Quelle der Wahrheit ist `pytest --collect-only -q`.
 
 ### Aufgabe jetzt

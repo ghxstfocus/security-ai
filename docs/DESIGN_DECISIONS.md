@@ -4,7 +4,7 @@
 > im Verlauf des Projekts getroffen wurden. Es ist die erste
 > Adresse bei Unklarheiten.
 >
-> Stand: 2026-10-02 (HEAD 03cb7bb),
+> Stand: 2026-10-02 (HEAD 413540e),
 > mypy 0, ruff 0, Tests 1191.
 > Erledigt: Punkte 55, 56a, 65, 66, 67 (a/b),
 > 68, 70, 71, 72, 73, 73a, 74, 75, 77, 79, 79a.

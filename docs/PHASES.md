@@ -1191,3 +1191,97 @@ Drei neue Detection-Regeln, live verifiziert.
 - Tests: 1111 -> 1130.
 - A4 (unbekanntes Geraet > X Minuten) bleibt
   Merkposten.
+
+## Punkt 74 (A4) — unknown_device_persistent  [x]
+
+Zusaetzliche Regel: unbekanntes Geraet im Hauptnetz
+laenger als alarm_after_seconds (Default 3600 s).
+Baut auf Punkt 73a (known aus Whitelist).
+
+- RuleContext.snapshot (generisches Feld).
+- Engine process() nimmt snapshot an.
+- Orchestrator uebergibt pre_snapshot.
+- EventType UNKNOWN_DEVICE_PERSISTENT.
+- Config detection + risk (base 0.6, max 0.9).
+- Tests +8.
+
+Commit c6c3691.
+
+## Punkt 75 — internal_name + IP-Suche  [x]
+
+Nutzervergebener Name pro Geraet, unabhaengig vom
+Fritz!Box-Namen. IP in der Suche.
+
+- Migration 0014 (devices.internal_name TEXT).
+- Device + Repository + InventoryService.set_internal_name
+  (RBAC device.write, Audit).
+- Whitelist-Fallback-Kette.
+- Route POST /inventory/<id>/internal_name (CSRF).
+- Templates + Suche + Chat-Kontext (named_devices).
+- Tests +19 (Netto).
+
+Commits b11e958 + 9a9775c.
+
+## Punkt 77 — ntfy als Benachrichtigungssystem  [x]
+
+Self-hosted Push-Kanal auf Proxmox-Host, Tool in
+CT102, Empfang per F-Droid-App.
+
+- tools/notify_ntfy.py (Level 1, HTTP POST).
+- Sandbox-Profil no_network_except_ntfy.
+- Registry + policies/tools.yaml.
+- .env-Erweiterung: NTFY_URL, NTFY_TOPIC, NTFY_TOKEN.
+- docs/NTFY.md (Installationsanleitung).
+- Betriebsakt auf Host (ntfy 2.11.0, systemd-Unit
+  Restart=always, Bind Tailscale, deny-all).
+- App (F-Droid) empfaengt Push, Prio-Mapping
+  live verifiziert.
+- Tests +5.
+
+Commits f3c6f5f + e013e5e + 3db1aa5 (Betrieb).
+
+## Punkt 79 + 79a — Alarme-Seite Klartext + Kontext + Links  [x]
+
+21 Alarme ohne verwertbare Info. Neuer Aufbau.
+
+- alert_explain.py: Klartext pro Regel (kein LLM).
+- read_risk_assessments_full + trigger_event_id
+  im risk_assessment-Audit (orchestrator).
+- AuditReaderService.list_recent_assessments_with_context:
+  Event-Lookup per trigger_event_id, join mit
+  DeviceRepository.
+- Route /alerts nutzt neue Methode.
+- Template: 7 Spalten (Zeitpunkt | Was | Geraet |
+  IP | Begruendung | Bewertung | Link).
+- Netz in Geraet integriert (79a).
+- CSS responsive.
+- Tests +6.
+
+Commits 02010cb + 9dec780 + 747fa08.
+
+## Lizenz AGPL-3.0-or-later  [x]
+
+- LICENSE (AGPL-3.0).
+- pyproject.toml license-Feld (klassische
+  text-Variante, weil setuptools 66.1.1 kein
+  PEP 639 unterstuetzt).
+- Copyright-Header in 205 .py-Dateien.
+
+Commits f323ff5 + efc4936 + 413540e.
+
+## WORKFLOW-Nachtrag "ruff-Ausgabe vollstaendig lesen"  [x]
+
+Anti-Pattern-Abschnitt ergaenzt, projektunabhaengig.
+- ruff-Ausgabe vor dem Commit vollstaendig lesen.
+- Bei abgeschnittener Ausgabe --output-format concise
+  oder --statistics.
+- ruff nicht als letzter Schritt einer &&-Kette
+  vor git commit.
+
+Commit 03cb7bb.
+
+## Doku-Kopf-Nachzug  [x]
+
+Kopfzeilen in neun Dateien auf HEAD 413540e / 1191.
+Commit-Kopf 1855483 (Zwischenstand) + aktueller
+Nachzug.
