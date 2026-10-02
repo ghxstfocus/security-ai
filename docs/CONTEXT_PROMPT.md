@@ -269,8 +269,12 @@ Suchfelder), §14 (Frage-Klassifikation, Anzeige-Labels,
 since_hours), §16 (ProxyFix, Links im Chat, nav_links,
 JS-Ausnahme, server_name, default_server).
 
-Stand: 2026-10-02 | HEAD: 6d9c1c1 |
+Stand: 2026-10-02 | HEAD: 93f6a7f |
 Tests: 1192 gruen (venv, pytest 9.1.1).
+Drei Blickwinkel auf dieselbe Architektur:
+- Technische Schichten 5-1 (docs/ARCHITECTURE.md).
+- Rollen im Betrieb (PROJECT_VISION.md, README.md).
+- Test-Ebenen 1-5 (docs/DESIGN_DECISIONS.md).
 Punkte 79 + 79a (Alarme-Seite Klartext + Kontext +
 Links) abgeschlossen. Punkt 81 (Alarm-Kanal auf
 notify_ntfy) abgeschlossen. Punkt 82 (Docstring

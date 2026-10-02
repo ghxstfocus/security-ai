@@ -993,6 +993,9 @@ Details in docs/SECURITY_REVIEW_LOG.md.
 
 ## Phase 5 — Admin AI  [ ]
 
+**Baut auf:** Core (Phase 1-4). Nutzt die
+Change-Request-Mechanik aus Phase 4.3.
+
 Optional, Cloud-basiert, ueber MCP. Setzt lokale KI
 (Phase 3.5) voraus. Foederation ueber core/protocol/.
 
@@ -1025,6 +1028,10 @@ Skizze:
 
 ## Phase 7 — Data Connectors  [ ]
 
+**Baut auf:** Core als Bridge (Phase 1-4).
+Jeder Connector laeuft ueber Core-Services und
+AgentLoop, nie direkt.
+
 Ziel: Anbindung an Firmensysteme (HR, Buchhaltung,
 CRM, Tickets, M365) als Adapter unter der Security AI.
 
@@ -1049,6 +1056,9 @@ Skizze:
 
 ## Phase 8 — LLM-Bridges  [ ]
 
+**Baut auf:** Phase 5 (Admin AI) + Phase 7
+(Data Connectors). Daten zuerst, dann Intelligenz.
+
 Ziel: Cloud-KI-Anbindung (Anthropic, OpenAI,
 Azure OpenAI, DeepSeek) ueber offizielle Protokolle
 (MCP).
@@ -1067,6 +1077,11 @@ Skizze:
 - Opt-in pro Installation. Kein Cloud-Zwang.
 
 ## Phase 9 — Kunden-Mitarbeiter-KI  [ ]
+
+**Baut auf:** Phase 5 (Admin AI) + Phase 7
+(Data Connectors) + Phase 8 (LLM-Bridges).
+Gemeinsamer Ausfuehrungspfad: Vorschlag ->
+Bestaetigung -> Core -> Applier -> Audit.
 
 Ziel: Die KI fuer die Mitarbeiter des Kunden.
 Schnittstelle zwischen Mensch und Daten, mit
@@ -1089,6 +1104,9 @@ Skizze:
 
 ## Phase 10 — Physische Sicherheit  [ ]
 
+**Baut auf:** Core (Inventory, RBAC, Detection,
+Events aus Phase 1-4).
+
 Ziel: Zutritt, Tueren, Sensoren als eigene Schicht.
 Personen als Entitaeten mit Raum-Level, Tool-Level,
 Daten-Level.
@@ -1110,6 +1128,10 @@ Skizze:
   Freigabe, keine Bewegungsprofile.
 
 ## Phase 11 — Ganzheitliche Korrelation  [ ]
+
+**Baut auf:** Phase 10 (physisch) + Core
+(Phase 1-4) + Phase 5 (Admin AI fuer Korrelation
+ueber Standorte).
 
 Ziel: Digitale und physische Sicherheit korrelieren.
 Zusammenhaenge erkennen, die einzelne Systeme nicht
@@ -1305,3 +1327,19 @@ Commit 03cb7bb.
 Kopfzeilen in neun Dateien auf HEAD 413540e / 1191.
 Commit-Kopf 1855483 (Zwischenstand) + aktueller
 Nachzug.
+
+## Ausblick naechste Runde
+
+Themen fuer naechste Bloecke. Keine Punkte-Nummern
+87-101 im Detail hier, die kommen als eigener Block.
+
+- Host-Scanner (Phase 3.8).
+- Endpoint-Watcher.
+- Sofort-Massnahmen-Kategorie.
+- ChangeApplier-Implementierung.
+- Chat als Aktions-Schnittstelle.
+- Token-Mechanik.
+- Anbindungs-Registry.
+- Cloud-AI-Anbindung.
+- Kunden-KI-Basis.
+- LLM-Rolle klaeren.

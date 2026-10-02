@@ -5,7 +5,7 @@
 > einer foederierten, KI-gestuetzten Sicherheitsarchitektur mit
 > strikter Human-in-the-Loop-Kontrolle.
 
-Stand: 2026-10-02 | HEAD: ebce249 | Tests: 1191 gruen (venv, pytest 9.1.1)
+Stand: 2026-10-02 | HEAD: 93f6a7f | Tests: 1192 gruen (venv, pytest 9.1.1)
 
 ## Die Vision in einem Absatz
 
@@ -87,34 +87,40 @@ Die vollstaendige Vision: [PROJECT_VISION.md](PROJECT_VISION.md).
 - **Stufe 5:** Physische Sicherheit — RFID, Zutritt, Raum-Level.
 - **Stufe 6:** Ganzheitliche Korrelation — digital + physisch.
 
-## Architektur (Kurzfassung)
+## Architektur (Rollensicht)
 
-Drei KI-Ebenen, ein zentraler Hub:
+Vier Rollen, ein zentraler Core:
 
     +---------------------------------------------------------+
-    |  SECURITY MASTER AI (Cloud)                             |
-    |  Verwaltet mehrere Kunden-Installationen.               |
-    |  Nichts mit Endkunden-Mitarbeitern zu tun.              |
-    +-------------------------+-------------------------------+
-                              |
-    +-------------------------v-------------------------------+
-    |  SECURITY AI (lokal, Kunde)                             |
-    |  = KONTROLLSCHICHT                                      |
-    |  = SCHNITTSTELLE zu ALLEN Bridges                       |
-    |  Detection, Risk, RBAC, Guardrails, Audit, Approval.    |
-    +-------------------------+-------------------------------+
-                              |
-    +-------------------------v-------------------------------+
-    |  BRIDGES                                                |
-    |  HR, Buchhaltung, CRM, Tickets, M365, LLMs.             |
-    |  Lesen im Default, Schreiben nur mit Approval.          |
-    +-------------------------+-------------------------------+
-                              |
-    +-------------------------v-------------------------------+
-    |  KUNDEN-MITARBEITER-KI                                  |
-    |  Assistent fuer Endnutzer.                              |
-    |  Nur was Security AI freigibt.                          |
+    |  MENSCH (letzte Instanz)                                |
+    |  Entscheidet bei Risiko >= 2. Whitelist-Pflege.         |
     +---------------------------------------------------------+
+                              ^
+                              |
+    +--------------------------+------------------------------+
+    |  ADMIN AI (Cloud, Sicherheit)                           |
+    |  KUNDEN-KI (Cloud, Mitarbeiter-Aufgaben)                |
+    |  Intelligenz-Schicht. Asynchron.                        |
+    |  Vorschlaege, Change Requests. Kein Direktzugriff.      |
+    +--------------------------+------------------------------+
+                              ^
+                              |
+    +--------------------------v------------------------------+
+    |  CORE (BIOS, Bridge, Anker)                             |
+    |  Deterministisch, 24/7, kein LLM.                      |
+    |  Watcher, Detektoren, Risk, RBAC, Audit, Approval.      |
+    |  Einzige Schnittstelle zu allen Geraeten und Diensten.  |
+    +--------------------------+------------------------------+
+                              |
+    +--------------------------v------------------------------+
+    |  GERAETE, NETZ, EXTERNE DIENSTE                         |
+    |  Datenquellen und Aussenwelt.                           |
+    +---------------------------------------------------------+
+
+Drei Blickwinkel auf dieselbe Architektur:
+- Technische Schichten: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (5-1).
+- Rollen im Betrieb: diese Sicht (Mensch, Cloud, Core, Geraete).
+- Test-Ebenen: [docs/DESIGN_DECISIONS.md](docs/DESIGN_DECISIONS.md) (1-5).
 
 ## Sicherheit
 

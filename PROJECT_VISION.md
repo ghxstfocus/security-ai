@@ -93,7 +93,36 @@ laeuft durch sie. Nichts an ihr vorbei.
     |  HR, Buchhaltung, CRM, Ticketsystem, M365, LLM-Provider         |
     +=================================================================+
 
-## 2. Die drei KI-Ebenen — im Detail
+## 2.0 Drei Blickwinkel auf dieselbe Architektur
+
+Dieses Dokument spricht in drei Blickwinkeln. Sie
+beschreiben dieselbe Architektur, nicht drei Modelle.
+
+### Technische Schichten (5-1)
+
+Ebene 5 Tools & Infrastruktur, 4 Security AI (Core),
+3 Builder Harness, 2 Admin AI, 1 Human Admin.
+Details: docs/ARCHITECTURE.md.
+
+### Rollen im Betrieb (dieses Dokument)
+
+Vier Rollen:
+- Mensch (letzte Instanz, oben).
+- Admin AI (Cloud, Sicherheit) und Kunden-KI
+  (Cloud, Mitarbeiter-Aufgaben) — zwei Cloud-Rollen
+  mit verschiedenem Zweck, gleicher Ausfuehrungspfad.
+- Core (BIOS, Bridge, Anker, lokal). Der Core heisst
+  in dieser Rolle auch 'das BIOS'. Analog wie ein BIOS
+  im Rechner ist er basal, deterministisch, immer da.
+  Er entscheidet nicht, er liefert Zustand.
+- Geraete, Netz, externe Dienste (Aussenwelt, unten).
+
+### Test-Ebenen (1-5)
+
+Score-Regeln, Kategorie-Mapping, Kette, Approval,
+Change Requests. Details: docs/DESIGN_DECISIONS.md.
+
+## 2. Die drei KI-Ebenen — im Detail (Rollen im Betrieb)
 
 ### 2.1 Security Master AI (Ebene 1 — IT Firma, Cloud)
 
