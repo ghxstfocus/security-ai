@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests Punkt 67a: Fallback-Namen im Watcher + Repository (Kat 3)."""
 from __future__ import annotations
 

@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Tests fuer scripts/init_db.py und den Auto-Bootstrap in
 scripts/chat_cli.py.

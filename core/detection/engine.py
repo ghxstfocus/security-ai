@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Detection Engine — laedt Regeln und wendet sie auf Events an.
 

@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests fuer tools/fritzbox_watcher.py (A1119).
 
 Fritz!Box-Client gemockt (monkeypatch auf _fetch_hosts

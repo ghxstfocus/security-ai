@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests fuer tools/event_reader.py (A1212).
 
 Fritz!Box-Zugriffe und SecurityAI werden gemockt.

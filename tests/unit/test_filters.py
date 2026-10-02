@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests fuer apps/dashboard/filters.py (3.6.14).
 
 Auflagen 418 (testbar ohne Rendering), 423 (Datumsformat,

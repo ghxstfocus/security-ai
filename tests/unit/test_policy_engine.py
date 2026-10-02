@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests fuer die Policy Engine: Models, Pruefer, evaluate()."""
 from __future__ import annotations
 

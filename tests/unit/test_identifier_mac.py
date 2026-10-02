@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """MAC als identifier-Wert (Punkt 42, Phase 3.8a).
 
 Keine Schema-Aenderung. identifier bleibt TEXT.

@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Punkt 16: gunicorn-Einstieg und ProxyFix (A647).
 

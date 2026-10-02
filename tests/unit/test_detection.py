@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests fuer die Detection-Regeln unknown_device und port_scan."""
 from __future__ import annotations
 

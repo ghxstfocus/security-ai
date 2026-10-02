@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Flask-App-Factory fuer das Web-Dashboard (Phase 3.6).
 

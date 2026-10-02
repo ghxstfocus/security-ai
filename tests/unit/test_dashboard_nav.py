@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests fuer 3.6.11 Hamburger-Navigation (Auflagen 357-360)."""
 
 from datetime import UTC

@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """HTTP-Redirect-Helper (CSP-neutral, Response-Typ).
 
 Grund (Auflage 1657, B1a):

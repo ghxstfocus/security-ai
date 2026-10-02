@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests fuer Punkt 73a: known-Anreicherung im Orchestrator."""
 from __future__ import annotations
 

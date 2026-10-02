@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Integrationstest: Event durch die DetectionEngine, beide Regeln geladen,
 Configs aus detection/rules.yaml durchgereicht.

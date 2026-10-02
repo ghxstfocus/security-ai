@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Tests fuer die Fehlerklassen-Hierarchie im ChatService (3.6.15c).
 

@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests fuer Migration 0012 (devices.last_ip).
 
 ALTER TABLE ADD COLUMN. Spalte ist nullable.

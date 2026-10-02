@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Alexander Nohl
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests fuer Audit-Rechte (3.6.15b, Fix 13 + Fix 14).
 
 Auflagen 462-473:
