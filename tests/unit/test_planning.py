@@ -12,6 +12,7 @@ from __future__ import annotations
 import unittest
 from datetime import UTC, datetime
 
+from apps.security_ai.orchestrator import _build_default_registry
 from apps.security_ai.planning import SecurityPlanModel
 from core.events.event import Event, Severity, new_event_id
 
@@ -42,7 +43,7 @@ class SecurityPlanModelTests(unittest.TestCase):
         })
         plan = self.model.plan(e, {})
         self.assertEqual(len(plan.steps), 1)
-        self.assertEqual(plan.steps[0].tool, "telegram_alert")
+        self.assertEqual(plan.steps[0].tool, "notify_ntfy")
         self.assertEqual(plan.steps[0].args["severity"], "WARNING")
 
     def test_confirmed_erzeugt_plan(self):
@@ -161,6 +162,21 @@ class SecurityPlanModelTests(unittest.TestCase):
         })
         plan = self.model.plan(e, {})
         self.assertIn("CRITICAL", plan.summary)
+
+    # --- Punkt 81: Alarm-Kanal ist notify_ntfy ---
+
+    def test_plan_uses_notify_ntfy_in_registry(self):
+        e = _event("unknown_device", {
+            "identifier": "192.168.178.77",
+            "risk_category": "SECURITY_ALERT",
+            "risk_score": 0.7,
+        })
+        plan = self.model.plan(e, {})
+        self.assertEqual(len(plan.steps), 1)
+        self.assertEqual(plan.steps[0].tool, "notify_ntfy")
+
+        registry = _build_default_registry()
+        self.assertIn("notify_ntfy", registry.list_names())
 
 
 if __name__ == "__main__":

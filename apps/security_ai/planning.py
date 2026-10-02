@@ -11,11 +11,14 @@ Wird vom AgentLoop ueber model.plan(event, context) aufgerufen.
 
 Regeln:
   risk_category in {SECURITY_ALERT, CONFIRMED}:
-    - kind == "brute_force"  -> telegram_alert CRITICAL
-    - kind == "network_scan" -> telegram_alert CRITICAL
-    - sonst                  -> telegram_alert WARNING
+    - kind == "brute_force"  -> notify_ntfy CRITICAL
+    - kind == "network_scan" -> notify_ntfy CRITICAL
+    - sonst                  -> notify_ntfy WARNING
   sonst:
     - kein Plan
+
+  Alarm-Kanal (Punkt 81): ntfy ist primaerer Kanal.
+  Telegram bleibt optional (Punkt 76).
 """
 from __future__ import annotations
 
@@ -43,7 +46,7 @@ class SecurityPlanModel(BaseModel):
     Regelbasiertes Planungsmodell.
 
     Liest event.data["risk_category"] und event.event_type, baut
-    daraus 0..1 PlanStep(s) fuer telegram_alert.
+    daraus 0..1 PlanStep(s) fuer notify_ntfy.
     """
 
     def plan(self, event: Event, context: dict[str, Any]) -> Plan:
@@ -56,7 +59,7 @@ class SecurityPlanModel(BaseModel):
         message = _build_message(event)
 
         step = PlanStep(
-            tool="telegram_alert",
+            tool="notify_ntfy",
             args={
                 "title": title,
                 "message": message,
@@ -75,7 +78,7 @@ class SecurityPlanModel(BaseModel):
 # ---------------------------------------------------------------------- #
 
 def _category_to_severity(category: str, event: Event) -> str:
-    """Liefert die telegram-severity aus der Risk-Category."""
+    """Liefert die Alert-severity aus der Risk-Category."""
     sev = _CATEGORY_TO_SEVERITY.get(category, "WARNING")
     kind = event.data.get("kind")
     if kind in _CRITICAL_KINDS:

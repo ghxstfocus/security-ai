@@ -423,24 +423,24 @@ class OrchestratorAuditTests(unittest.TestCase):
 
 def _build_test_registry(mock_calls: list) -> ToolRegistry:
     """
-    Baut eine Test-Registry mit einem Mock-Tool 'telegram_alert'.
+    Baut eine Test-Registry mit einem Mock-Tool 'notify_ntfy'.
 
     Der Mock sammelt seine Aufrufe in mock_calls.
     """
-    def _mock_telegram(title, message, severity="INFO"):
+    def _mock_notify(title, message, severity="INFO"):
         mock_calls.append({
             "title": title, "message": message, "severity": severity,
         })
         return {"ok": True, "message_id": len(mock_calls),
-                "source": "mock_telegram"}
+                "source": "mock_notify"}
 
     reg = ToolRegistry()
     reg.register(Tool(
-        name="telegram_alert",
+        name="notify_ntfy",
         level=Level.SECURITY_ACTION,
-        func=_mock_telegram,
-        description="Mock telegram_alert",
-        sandbox_profile="no_network_except_telegram",
+        func=_mock_notify,
+        description="Mock notify_ntfy",
+        sandbox_profile="no_network_except_ntfy",
         allowed_args=frozenset({"title", "message", "severity"}),
     ))
     return reg
@@ -516,7 +516,7 @@ class OrchestratorLoopTests(unittest.TestCase):
         self.assertIn("loop_result", kinds)
         self.assertIn("tool_call", kinds)
         tc = next(x for x in entries if x["details"]["kind"] == "tool_call")
-        self.assertEqual(tc["details"]["tool"], "telegram_alert")
+        self.assertEqual(tc["details"]["tool"], "notify_ntfy")
         self.assertEqual(tc["details"]["level"], int(Level.SECURITY_ACTION))
 
     # --- Test 1b: bekanntes Geraet -> kein Loop ---
