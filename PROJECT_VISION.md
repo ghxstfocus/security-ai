@@ -290,7 +290,7 @@ Endnutzer-Mitarbeiter direkt sprechen.
 ## 3. Die Bridges — die Cloud-Anbindungen
 
 Die Bridges sind **Adapter zu Cloud-Systemen**. Sie
-laufen **unter** der Security AI. Sie werden von ihr
+laufen **unter** dem Core. Sie werden von ihm
 **kontrolliert** und **auditiert**.
 
 **Was eine Bridge ist:**
@@ -322,7 +322,7 @@ laufen **unter** der Security AI. Sie werden von ihr
 
 **Was eine Bridge NICHT darf:**
 
-- Direkt auf Daten zugreifen (nur ueber Security AI).
+- Direkt auf Daten zugreifen (nur ueber den Core).
 - Ohne Audit arbeiten.
 - Ohne Policy-Check laufen.
 - Ohne Sandbox laufen.
@@ -340,24 +340,24 @@ Bridges parallel zum Core entstehen.
 
 **Der Datenfluss:**
 
-    Security AI (prueft)
+    Core (prueft)
       -> Bridge (verbindet)
         -> Externes System (liefert Daten)
       <- Bridge (mappt)
-    <- Security AI (auditiert, antwortet)
+    <- Core (auditiert, antwortet)
 
-## 4. Wie die drei Ebenen zusammenspielen
+## 4. Wie die Rollen zusammenspielen
 
 ### Beispiel 1 — Kunden-Mitarbeiter fragt
 
     Mitarbeiter (Buchhaltung):
       "Zeig mir Urlaub von Mueller."
 
-    Kunden-Mitarbeiter-KI:
+    Kunden-KI:
       - Versteht die Frage
-      - Leitet an Security AI weiter
+      - Leitet an Core weiter
 
-    Security AI:
+    Core:
       - Prueft RBAC: Rolle "buchhaltung" -> darf HR lesen?
       - Prueft Daten-Level: Urlaub = Level 2
       - Ergebnis: JA
@@ -367,7 +367,7 @@ Bridges parallel zum Core entstehen.
       - Audit-Eintrag
       - Antwort an Mitarbeiter-KI
 
-    Kunden-Mitarbeiter-KI:
+    Kunden-KI:
       "Mueller hat 12 Tage uebrig."
 
 ### Beispiel 2 — Kunden-Mitarbeiter weist an
@@ -375,11 +375,11 @@ Bridges parallel zum Core entstehen.
     Mitarbeiter (Buchhaltung):
       "Trage ihm Urlaub vom 01.10. bis 05.10. ein."
 
-    Kunden-Mitarbeiter-KI:
+    Kunden-KI:
       - Versteht: Schreibaktion
-      - Leitet an Security AI weiter
+      - Leitet an Core weiter
 
-    Security AI:
+    Core:
       - Prueft RBAC: Rolle "buchhaltung" -> darf schreiben?
       - Ergebnis: JA (mit Approval)
       - Erstellt Change Request
@@ -391,7 +391,7 @@ Bridges parallel zum Core entstehen.
       - Prueft Datum, Person
       - Gibt frei
 
-    Security AI:
+    Core:
       - Ruft HR-Bridge auf
       - Bridge schreibt: "Urlaub 01.10.-05.10. fuer Mueller"
       - Audit-Eintrag
@@ -402,11 +402,11 @@ Bridges parallel zum Core entstehen.
     Mitarbeiter:
       "Wie viele Urlaubstage habe ich?"
 
-    Kunden-Mitarbeiter-KI:
+    Kunden-KI:
       - Versteht: eigene Daten
-      - Leitet an Security AI weiter
+      - Leitet an Core weiter
 
-    Security AI:
+    Core:
       - Prueft Principal: max.mustermann
       - Sonderfall "self": nur eigene Daten
       - Ergebnis: JA
@@ -418,10 +418,10 @@ Bridges parallel zum Core entstehen.
     IT Firma (Admin):
       "Zeig mir alle Kunden mit kritischen Events."
 
-    Security Master AI:
+    Admin AI:
       - Versteht: Aggregat ueber alle Kunden
-      - Fragt jede Security AI: "Kritische Events?"
-      - Security AI: prueft, antwortet aggregiert
+      - Fragt jede Installation: "Kritische Events?"
+      - Installation: prueft, antwortet aggregiert
       - Antwort: "3 Kunden mit kritischen Events."
       - KEIN Zugriff auf einzelne Personen.
 
@@ -465,8 +465,8 @@ Unternehmensumgebungen skaliert werden kann.
 3. **Determinismus wo moeglich, KI nur wo noetig.**
    Detection ist regelbasiert. Das LLM erklaert, plant
    und schlaegt vor — es bewertet nicht.
-4. **Autarkie.** Jede lokale Security AI funktioniert
-   ohne die Security Master AI.
+4. **Autarkie.** Jeder lokale Core funktioniert
+   ohne die Admin AI.
 5. **Eine Quelle der Wahrheit.** Policies, Whitelist,
    Events — je genau ein Ort.
 6. **Append-only Audit.** Jede Aktion unveraenderlich
@@ -479,15 +479,15 @@ Unternehmensumgebungen skaliert werden kann.
    Gebaeude eigenstaendig.
 10. **Physisch-digital vereint.**
 11. **DSGVO-Konformitaet ist Pflicht.**
-12. **Ein zentraler Hub.** Die Security AI ist die
+12. **Ein zentraler Hub.** Der Core ist die
     einzige Schnittstelle zu allen Bridges. Nichts
     laeuft an ihr vorbei.
 
 ## 8. Skalierungspfad
 
 ### Stufe 1 — Netzwerk Homelab (heute)
-Ein Netzwerk. Eine Security AI. Keine Security
-Master AI. Keine Kunden-Mitarbeiter-KI.
+Ein Netzwerk. Ein Core. Keine Admin
+AI. Keine Kunden-KI.
 Status (2026-09-26): [x] implementiert (Commit f986ba2).
 
 ### Stufe 2 — Erweiterung (Monate)
@@ -500,22 +500,22 @@ Status (2026-09-26): [x] implementiert (Commit f986ba2).
 
 ### Stufe 3 — Foederation (spaeter)
 Mehrere isolierte Netzwerke. Zentrale Security
-Master AI (Cloud). MCP-Protokoll.
+AI (Cloud). MCP-Protokoll.
 Pro Netzwerk eigene Credentials, eigene Policies.
 
 ### Stufe 4 — Enterprise (Zukunft)
 Drei Themen, die zusammengehoeren:
 
 **Enterprise-Bridges.**
-Die Security AI wird zur zentralen Schnittstelle
+Der Core wird zur zentralen Schnittstelle
 fuer alle Cloud-Systeme des Kunden (HR, Buchhaltung,
 CRM, Tickets, M365, LLMs). Jede Bridge ist ein
-Adapter. Nichts laeuft an der Security AI vorbei.
+Adapter. Nichts laeuft am Core vorbei.
 
-**Kunden-Mitarbeiter-KI.**
+**Kunden-KI.**
 Die KI fuer die Mitarbeiter des Kunden. Jeder
 Mitarbeiter fragt in natuerlicher Sprache. Die KI
-liest Daten ueber die Security AI, schlaegt
+liest Daten ueber den Core, schlaegt
 Schreibaktionen vor, der Mensch gibt frei. Jeder
 sieht nur seine Rolle-relevanten Daten.
 
@@ -574,7 +574,7 @@ Zugriffskontrolle.
 
 ## 10. MCP-Kopplung an externe LLMs
 
-Die Security Master AI und die Security AI sprechen
+Die Admin AI und der Core sprechen
 ueber **MCP** mit externen LLMs. Erlaubt:
 
 - Wahl des Modells pro Aufgabe
@@ -633,7 +633,7 @@ Versuche: Telegram (C).
 - Prompt-Injection wird im Policy-Layer geblockt.
 - Human-in-the-Loop ist Pflicht bei Risiko >= 2.
 - DSGVO-Konformitaet ist Pflicht.
-- Ein zentraler Hub: Die Security AI ist die einzige
+- Ein zentraler Hub: Der Core ist die einzige
   Schnittstelle zu allen Bridges.
 
 ## 14. Nicht-Ziele
