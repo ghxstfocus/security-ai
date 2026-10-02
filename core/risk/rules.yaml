@@ -117,9 +117,11 @@ rules:
     rule_id: unknown_device_persistent
     base: 0.6
     modifiers:
+      # reason-Text synchron zu detection/rules.yaml
+      # alarm_after_seconds halten (Punkt 87).
       - when: hauptnetz
         add: 0.2
-        reason: "seit mehr als alarm_after_seconds unbekannt"
+        reason: "Hauptnetz"
       - when: nachts
         add: 0.1
         reason: "nachts (22-05)"

@@ -1929,4 +1929,28 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       -Eintritt des Geraets.
     - Zukuenftige Sessions: nicht als Bug melden.
 
+87. (offen bis Commit, Kategorie 1, Doku)
+    Reason-Text unknown_device_persistent.
+    - Vor Fix: reason in core/risk/rules.yaml
+      war "seit mehr als alarm_after_seconds
+      unbekannt". Der Variablenname landete
+      als Klartext in risk_assessment.details.
+      reasons und damit in der UI (Was-Spalte,
+      Begruendung-Spalte auf /alerts).
+    - Nach Fix: reason = "Hauptnetz". Kurz,
+      ergaenzend zur alert_text-Aussage
+      aus alert_explain.py ("Unbekanntes Geraet
+      seit ueber einer Stunde im Hauptnetz").
+    - Aera-Markierung: bestehende Audit-Eintraege
+      (append-only) bleiben mit dem alten Text.
+      Nur neue risk_assessment-Eintraege tragen
+      den korrigierten Text.
+    - Bestandsaufnahme (Auflage 1967): nur
+      Zeile 122 in core/risk/rules.yaml war
+      betroffen. Keine weiteren Reasons mit
+      Variablennamen.
+    - Detection-Seite liest alarm_after_seconds
+      weiterhin aus detection/rules.yaml
+      (Zeile 48, Wert 3600). Keine Aenderung.
+
 Bewusst offen (kein Bau heute):
