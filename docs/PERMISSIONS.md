@@ -288,7 +288,7 @@ Jeder Tool-Aufruf wird auditiert mit:
 | Was passiert bei Level 2-3?          | Review vor Ausfuehrung   |
 
 ---
-Letzte Aktualisierung: 2026-09-20
+Letzte Aktualisierung: 2026-10-02
 
 ## 13. RBAC — zweite Berechtigungsebene (Phase 3.5)
 

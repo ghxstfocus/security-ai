@@ -817,4 +817,4 @@ Nach dem Deployment:
 5. Erste Change Requests generieren lassen.
 
 ---
-Letzte Aktualisierung: 2026-09-23
+Letzte Aktualisierung: 2026-10-02

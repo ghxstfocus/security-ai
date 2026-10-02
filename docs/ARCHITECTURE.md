@@ -544,4 +544,4 @@ Neue Komponenten müssen:
 - Testbar ohne externe Systeme
 
 ---
-Letzte Aktualisierung: 2026-09-29
+Letzte Aktualisierung: 2026-10-02

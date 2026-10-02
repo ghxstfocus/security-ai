@@ -165,4 +165,4 @@ Erweiterungen müssen:
 - Protokoll-Client: core/protocol/
 
 ---
-Letzte Aktualisierung: 2026-09-20
+Letzte Aktualisierung: 2026-10-02

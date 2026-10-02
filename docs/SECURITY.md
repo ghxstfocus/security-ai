@@ -345,4 +345,4 @@ Vor jedem Deployment:
 - [ ] Backups funktionieren
 
 ---
-Letzte Aktualisierung: 2026-09-29
+Letzte Aktualisierung: 2026-10-02

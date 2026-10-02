@@ -5,7 +5,7 @@
 > einer foederierten, KI-gestuetzten Sicherheitsarchitektur mit
 > strikter Human-in-the-Loop-Kontrolle.
 
-Stand: 2026-09-30 | HEAD: 715a38a | Tests: 1028 gruen (venv, pytest 9.1.1)
+Stand: 2026-10-02 | HEAD: 03cb7bb | Tests: 1191 gruen (venv, pytest 9.1.1)
 
 ## Die Vision in einem Absatz
 

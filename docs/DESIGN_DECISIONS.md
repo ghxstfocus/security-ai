@@ -4,15 +4,13 @@
 > im Verlauf des Projekts getroffen wurden. Es ist die erste
 > Adresse bei Unklarheiten.
 >
-> Stand: Alarm-Runde A1-A3 abgeschlossen
-> (HEAD 25726e4, 2026-10-01), mypy 0, ruff 0,
-> Tests 1130.
-> Punkt 55, 65, 66 erledigt.
-> Punkte 67a, 67b, 68 (Watcher) erledigt.
-> Punkte 70 (Netz-Wechsel), 71 (MAC-Wechsel),
-> 72 (Geraet-Flattern) erledigt.
-> Offen: Punkte 56 (Dashboard-Aktionen),
+> Stand: 2026-10-02 (HEAD 03cb7bb),
+> mypy 0, ruff 0, Tests 1191.
+> Erledigt: Punkte 55, 56a, 65, 66, 67 (a/b),
+> 68, 70, 71, 72, 73, 73a, 74, 75, 77, 79, 79a.
+> Offen: 56 (Dashboard-Aktionen),
 > 57 (Guardrails), 58 (Werkzeuge-Werkbank),
+> 76 (Telegram, optional), 80 (Alarme-Filter),
 > 34, 43, 49, 53b, 54.
 
 ---

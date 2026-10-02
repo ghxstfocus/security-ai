@@ -269,10 +269,10 @@ Suchfelder), §14 (Frage-Klassifikation, Anzeige-Labels,
 since_hours), §16 (ProxyFix, Links im Chat, nav_links,
 JS-Ausnahme, server_name, default_server).
 
-Stand: 2026-10-01 | HEAD: 25726e4 |
-Tests: 1130 gruen (venv, pytest 9.1.1).
-Punkt 55 (Dashboard-Anzeige-Erweiterung)
-abgeschlossen.
+Stand: 2026-10-02 | HEAD: 03cb7bb |
+Tests: 1191 gruen (venv, pytest 9.1.1).
+Punkt 79 (Alarme-Seite Klartext + Kontext + Links)
+abgeschlossen. Punkt 80 (Filter + Pagination) offen.
 Quelle der Wahrheit ist `pytest --collect-only -q`.
 
 ### Aufgabe jetzt
