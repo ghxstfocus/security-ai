@@ -5,7 +5,7 @@
 > einer foederierten, KI-gestuetzten Sicherheitsarchitektur mit
 > strikter Human-in-the-Loop-Kontrolle.
 
-Stand: 2026-10-02 | HEAD: 413540e | Tests: 1191 gruen (venv, pytest 9.1.1)
+Stand: 2026-10-02 | HEAD: ebce249 | Tests: 1191 gruen (venv, pytest 9.1.1)
 
 ## Die Vision in einem Absatz
 
@@ -30,12 +30,14 @@ Die vollstaendige Vision: [PROJECT_VISION.md](PROJECT_VISION.md).
   Gast-WLAN-Aktivitaet, Port-Scans und Web-Reconnaissance.
 - **Geraete-Inventar:** Weiss, welche Geraete erlaubt sind und
   welche nicht. SQLite-basiert, mit Historie.
-- **Detection Engine:** Deterministische Regeln (unknown_device,
-  port_scan, http_recon). Kein LLM.
+- **Detection Engine:** Deterministische Regeln
+  (unknown_device, unknown_device_persistent, network_change,
+  mac_change, device_flapping, port_scan). Kein LLM.
 - **Risk Engine:** Deterministische Bewertung. Score aus Basis
   plus Modifikatoren. Nachvollziehbar.
-- **Telegram-Alarme:** Sofort-Benachrichtigung bei
-  Sicherheitsvorfaellen.
+- **ntfy-Alarme:** Self-hosted Push-Kanal (Tailnet) auf
+  Proxmox-Host, F-Droid-App auf Android. Telegram bleibt
+  optional als Fallback (Punkt 76).
 - **RBAC:** Drei unabhaengige Skalen (Raum, Tool, Daten) mit
   feinkoernigen Permissions.
 - **Lokale KI (Ollama):** llama3.2:3b fuer schnelle Erklaerungen,
@@ -56,14 +58,24 @@ Die vollstaendige Vision: [PROJECT_VISION.md](PROJECT_VISION.md).
   Chat, Benutzer, Rollen, Audit, Einstellungen, Suche.
   Links im Chat (Objekt-Referenzen und Navigations-Hinweise).
 - **HTTPS hinter nginx** mit eigener CA, gunicorn (2 Worker).
-- **1028 Tests, alle gruen.**
+- **1191 Tests, alle gruen.**
 
 ## Was gerade gebaut wird
 
-- A900 abgeschlossen: mypy no-untyped-def
-  66 -> 2, ruff 2 -> 0. Offen: Punkt 60
-  (mypy orchestrator.py).
-- Punkt 11 (SSH-Zugang Windows -> CT102) — Betriebsakt.
+- Alarm-Runde (Punkte 70-74) abgeschlossen:
+  unknown_device_persistent (Zeit-Eskalation),
+  network_change, mac_change, device_flapping,
+  known aus Whitelist.
+- Punkte 75 (internal_name + IP-Suche),
+  77 (ntfy-Benachrichtigungssystem),
+  79 + 79a (Alarme-Seite Klartext + Links),
+  56a (Whitelist-Pflege) abgeschlossen.
+- Lizenz AGPL-3.0-or-later durchgaengig
+  (LICENSE, pyproject, Copyright-Header in
+  205 .py-Dateien).
+- Offen: 80 (Alarme-Filter + Pagination),
+  57 (Guardrails), 58 (Werkzeuge-Werkbank),
+  76 (Telegram, optional).
 - Phasen 5-11 in Planung (siehe Was geplant ist).
 
 ## Was geplant ist
@@ -126,6 +138,7 @@ Details: [docs/SECURITY.md](docs/SECURITY.md)
 - [Protokoll](docs/PROTOCOL.md) — Foederation (MCP)
 - [Deployment](docs/DEPLOYMENT.md) — Proxmox-Setup
 - [Design-Entscheidungen](docs/DESIGN_DECISIONS.md) — 40+ Entscheidungen
+- [ntfy-Betrieb](docs/NTFY.md) — Push-Kanal auf Proxmox-Host
 - [Phasen](docs/PHASES.md) — Skalierungspfad
 - [Werkzeuge](docs/WERKZEUGE.md) — Skripte und CLIs
 - [Web-Security-Checkliste](docs/WEB_SECURITY_CHECKLIST.md) — verbindliche Checkliste
