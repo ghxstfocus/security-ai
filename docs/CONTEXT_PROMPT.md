@@ -269,12 +269,14 @@ Suchfelder), §14 (Frage-Klassifikation, Anzeige-Labels,
 since_hours), §16 (ProxyFix, Links im Chat, nav_links,
 JS-Ausnahme, server_name, default_server).
 
-Stand: 2026-10-02 | HEAD: 413540e |
-Tests: 1191 gruen (venv, pytest 9.1.1).
+Stand: 2026-10-02 | HEAD: 6d9c1c1 |
+Tests: 1192 gruen (venv, pytest 9.1.1).
 Punkte 79 + 79a (Alarme-Seite Klartext + Kontext +
-Links) abgeschlossen. Lizenz (AGPL-3.0-or-later)
-in pyproject + 205 .py-Headern. Punkt 80
-(Filter + Pagination) offen.
+Links) abgeschlossen. Punkt 81 (Alarm-Kanal auf
+notify_ntfy) abgeschlossen. Punkt 82 (Docstring
+5->6 Tools) mit erledigt. Punkt 80 (Filter +
+Pagination) offen. Punkt 83 (CONTEXT_PROMPT
+Aktuelle-Phase-Block veraltet) neu offen.
 Quelle der Wahrheit ist `pytest --collect-only -q`.
 
 ### Aufgabe jetzt

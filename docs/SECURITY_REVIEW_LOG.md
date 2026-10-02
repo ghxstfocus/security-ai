@@ -325,8 +325,10 @@ test_access_denied_errorhandler_403 abgedeckt.
 ## Chronologie
 
 Sortiert nach Commit-Zeit (aelteste zuerst, HEAD zuletzt).
-Letzte Aktualisierung: 2026-10-02 (HEAD 413540e).
+Letzte Aktualisierung: 2026-10-02 (HEAD 6d9c1c1).
 
+Punkt 81: Alarm-Kanal auf notify_ntfy (6d9c1c1).
+Punkt 82: Orchestrator-Docstring 5->6 Tools (6d9c1c1).
 - 3.6.4: AuditReaderService.
 - Venv-Umstellung.
 - 3.6.5: Flask-App-Factory + RBAC-Middleware.
@@ -1850,5 +1852,40 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       Erste 20 + naechste.
     - RBAC alert.view.
     - Eigener Block.
+
+81. (erledigt in 6d9c1c1, Kategorie 3, Alarm-Pfad)
+    Alarm-Kanal auf notify_ntfy umgestellt.
+    - planning.py: PlanStep tool="notify_ntfy"
+      (statt telegram_alert).
+    - ntfy ist primaerer Kanal (self-hosted,
+      Tailscale).
+    - Telegram bleibt fuer Paragraph 9
+      Approval-Benachrichtigung (orchestrator.
+      _notify_approval ruft telegram_alert_run
+      direkt).
+    - Guard-Test test_plan_uses_notify_ntfy_in_registry
+      sichert Tool-Existenz in der Registry.
+    - tests/integration/test_orchestrator.py:
+      _build_test_registry auf notify_ntfy
+      umgestellt (Alarm-Pfad).
+    - _build_approval_test_registry unveraendert.
+    - Auflagen 1899-1915.
+
+82. (erledigt in 6d9c1c1, Kategorie 1, Doku)
+    Orchestrator-Docstring "5 Tools" -> "6 Tools".
+    - Registry enthaelt: nmap_scan, read_logs,
+      get_devices, whitelist_check, telegram_alert,
+      notify_ntfy.
+    - Kein Code-Verhalten betroffen.
+
+83. (offen, Kategorie 1, Doku)
+    CONTEXT_PROMPT.md Aktuelle-Phase-Block veraltet.
+    - Zeile 247 nennt HEAD 25726e4 (veraltet).
+    - Punkt 26 (security_ai-Startpfad) ist laengst
+      erledigt (02f17c4/468a14d, Phase 3.8b), wird
+      aber noch als "naechster Block" gefuehrt.
+    - ruff 122 / mypy no-untyped-def 67 sind
+      veraltet (heute 0/0, A900+B1 abgeschlossen).
+    - Eigener Doku-Block nach Punkt 81.
 
 Bewusst offen (kein Bau heute):

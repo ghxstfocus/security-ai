@@ -1259,6 +1259,26 @@ Commits f3c6f5f + e013e5e + 3db1aa5 (Betrieb).
 
 Commits 02010cb + 9dec780 + 747fa08.
 
+## Punkt 81 — Alarm-Kanal auf ntfy  [x]
+
+Alarm-Pfad nutzt notify_ntfy statt telegram_alert.
+ntfy ist primaerer Kanal (self-hosted, Tailscale).
+Telegram bleibt fuer Approval-Benachrichtigung
+(Paragraph 9) und als optionaler Fallback
+(Punkt 76).
+
+- planning.py: PlanStep tool="notify_ntfy".
+- Guard-Test test_plan_uses_notify_ntfy_in_registry.
+- tests/integration/test_orchestrator.py:
+  _build_test_registry auf notify_ntfy umgestellt.
+- _build_approval_test_registry unveraendert.
+- Punkt 82 (Docstring 5->6 Tools) mit erledigt.
+- Punkt 83 (CONTEXT_PROMPT Aktuelle-Phase-Block
+  veraltet) neu offen.
+- Tests 1191 -> 1192.
+
+Commit 6d9c1c1.
+
 ## Lizenz AGPL-3.0-or-later  [x]
 
 - LICENSE (AGPL-3.0).
