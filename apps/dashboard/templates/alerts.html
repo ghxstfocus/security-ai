@@ -5,13 +5,13 @@
   Kein |safe, kein style="...", kein inline <script>,
   kein on*=, kein tojson.
 
-  Punkt 79: acht Spalten mit Kontext.
+  Punkt 79 / 79a: sieben Spalten mit Kontext.
   - Zeitpunkt
   - Was (Klartext aus alert_text)
   - Geraet (internal_name or entity_name or identifier,
-    Link zu /inventory/<id> nur wenn can_view_inventory)
+    Link zu /inventory/<id> nur wenn can_view_inventory;
+    Netz als zweite Zeile darunter)
   - IP (display_ip, Fallback "-")
-  - Netz (network_type, Fallback "-")
   - Begruendung (reasons, sonst "-")
   - Bewertung (Badge + Score)
   - Link (auf /audit/<audit_id>, nur wenn can_view_audit)
@@ -28,7 +28,6 @@
             <th>Was</th>
             <th>Geraet</th>
             <th>IP</th>
-            <th>Netz</th>
             <th>Begruendung</th>
             <th>Bewertung</th>
             <th>Link</th>
@@ -39,20 +38,23 @@
         <tr>
             <td>{{ a.timestamp|format_ts }}</td>
             <td>{{ a.alert_text }}</td>
-            <td>
+            <td class="alert-device">
                 {% if a.identifier %}
                     {% set disp = a.internal_name or a.entity_name or a.identifier %}
                     {% if can_view_inventory %}
-                    <a href="/inventory/{{ a.identifier }}">{{ disp }}</a>
+                    <a class="alert-device-identifier"
+                       href="/inventory/{{ a.identifier }}">{{ disp }}</a>
                     {% else %}
-                    {{ disp }}
+                    <span class="alert-device-identifier">{{ disp }}</span>
+                    {% endif %}
+                    {% if a.network_type %}
+                    <span class="alert-device-network">{{ a.network_type }}</span>
                     {% endif %}
                 {% else %}
                 —
                 {% endif %}
             </td>
             <td>{{ a.display_ip }}</td>
-            <td>{{ a.network_type if a.network_type else "—" }}</td>
             <td>
                 {% if a.reasons %}
                     {{ a.reasons|join(", ") }}

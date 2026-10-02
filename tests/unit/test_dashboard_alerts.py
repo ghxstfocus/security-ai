@@ -206,9 +206,12 @@ def test_alerts_shows_identifier_link_header(app):
     r = c.get("/alerts")
     assert r.status_code == 200
     body = r.get_data(as_text=True)
+    # Punkt 79a: sieben Spalten, Netz in Geraet integriert.
     for header in ("Zeitpunkt", "Was", "Geraet", "IP",
-                   "Netz", "Begruendung", "Bewertung", "Link"):
+                   "Begruendung", "Bewertung", "Link"):
         assert header in body
+    # Netz ist keine eigene Spalte mehr.
+    assert "<th>Netz</th>" not in body
 
 
 def test_alerts_no_link_without_permission(app):
