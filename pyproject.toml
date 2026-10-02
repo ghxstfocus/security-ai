@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Modulares, defensives Security- und Admin-System für autorisierte IT-Umgebungen"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "Proprietary" }
+license = { text = "AGPL-3.0-or-later" }
 authors = [{ name = "Ghxst" }]
 
 dependencies = [
