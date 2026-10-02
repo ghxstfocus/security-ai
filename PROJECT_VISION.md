@@ -7,29 +7,44 @@
 
 ## 1. Das grosse Bild
 
-Drei KI-Ebenen. Klar getrennt. Jede mit eigener Rolle.
-Die Security AI ist der zentrale Kontrollpunkt. Alles
-laeuft durch sie. Nichts an ihr vorbei.
+Ein Security-System, das lokal beim Betreiber laeuft.
+Vier Rollen, klar getrennt.
+
+Der **Core** ist der harte Kern. Er laeuft lokal,
+deterministisch, 24/7. Er entscheidet nicht - er
+liefert Zustand und fuehrt aus, was der Mensch
+freigegeben hat.
+
+Die **Admin AI** ist die Sicherheits-KI in der Cloud
+(optional). Sie korreliert Events ueber mehrere
+Installationen, schlaegt Changes vor. Sie fuehrt nichts
+selbst aus.
+
+Die **Kunden-KI** ist die KI fuer die Mitarbeiter
+des Kunden (Cloud, optional). Sie assistiert in
+natuerlicher Sprache, alles laeuft durch den Core.
+
+Der **Mensch** ist die letzte Instanz. Jede
+kritische Aktion braucht seine Freigabe.
 
     +=================================================================+
-    |  EBENE 1 — IT Firma (intern)                                   |
-    |                                                                 |
-    |  SECURITY MASTER AI (Cloud)                                     |
-    |  - Verwaltet die Kunden-Installationen der IT Firma            |
-    |  - Korreliert Events ueber mehrere Kunden                       |
-    |  - Schlaegt Changes fuer Kunden vor                             |
-    |  - Spricht mit externen LLMs (MCP)                              |
-    |  - Hat NICHTS mit Endkunden-Mitarbeitern zu tun                 |
+    |  MENSCH (letzte Instanz)                                        |
+    |  Entscheidet bei Risiko >= 2.                                   |
     +================================+================================+
                                      |
-                                     |  Verwaltung, Monitoring
+                                     |  Freigabe
                                      v
     +=================================================================+
-    |  EBENE 2 — KUNDE (lokal beim Kunden)                            |
+    |  ADMIN AI (Cloud, optional)  |  KUNDEN-KI (Cloud, optional)     |
+    |  Sicherheit, Korrelation     |  Mitarbeiter-Aufgaben            |
+    |  Vorschlaege, Changes        |  Fragen, Schreibvorschlaege      |
+    +================================+================================+
+                                     |
+                                     |  Vorschlag
+                                     v
+    +=================================================================+
+    |  CORE (lokal, deterministisch, 24/7)                            |
     |                                                                 |
-    |  SECURITY AI (Core, lokal) = KONTROLLSCHICHT                    |
-    |                                                                 |
-    |  Aufgaben:                                                      |
     |  - Detection Engine (regelbasiert, kein LLM)                    |
     |  - Risk Engine (deterministisch, kein LLM)                      |
     |  - Inventory (Geraete, Personen, Whitelist)                     |
@@ -43,55 +58,25 @@ laeuft durch sie. Nichts an ihr vorbei.
     |  - Lokales LLM (Ollama) fuer Erklaerungen                       |
     |                                                                 |
     |  = SCHNITTSTELLE zu ALLEN Bridges                               |
-    |                                                                 |
-    |  Was sie kontrolliert:                                          |
-    |  - Jede Bridge                                                  |
-    |  - Jede Anfrage                                                 |
-    |  - Jede Schreibaktion                                           |
-    |                                                                 |
-    |  WICHTIG: Sie entscheidet nichts ueber Menschen.                |
-    |           Sie fuehrt aus, was der Mensch freigegeben hat.       |
+    |  = einzige Instanz, die Aktionen ausfuehrt                      |
     +================================+================================+
                                      |
-          +--------------------------+--------------------------+
-          |                          |                          |
-          v                          v                          v
-    +--------------+    +-------------------+    +-------------------+
-    |  KUNDEN-     |    |  BRIDGES (Cloud)  |    |  DATA CONNECTORS  |
-    |  MITARBEITER-|    |                   |    |  (falls lokal)    |
-    |  KI          |    |  HR-Bridge        |    |                   |
-    |              |    |  (Personio,       |    |  Optional fuer    |
-    |  - Endnutzer |    |   SAP HR,         |    |  On-Prem-Systeme  |
-    |    fragen    |    |   Workday)        |    |                   |
-    |  - Nur was   |    |                   |    |                   |
-    |    Security  |    |  Buchhaltung-     |    |                   |
-    |    AI frei-  |    |  Bridge           |    |                   |
-    |    gibt      |    |  (DATEV, SAP)     |    |                   |
-    |              |    |                   |    |                   |
-    |  - Schlaegt  |    |  CRM-Bridge       |    |                   |
-    |    Schreib-  |    |  (Hubspot,        |    |                   |
-    |    aktionen  |    |   Salesforce)     |    |                   |
-    |    vor       |    |                   |    |                   |
-    |              |    |  Ticket-Bridge    |    |                   |
-    |              |    |  (Jira, Zendesk)  |    |                   |
-    |              |    |                   |    |                   |
-    |              |    |  M365-Bridge      |    |                   |
-    |              |    |  (Microsoft Graph)|    |                   |
-    |              |    |                   |    |                   |
-    |              |    |  LLM-Bridges      |    |                   |
-    |              |    |  (Anthropic,      |    |                   |
-    |              |    |   OpenAI,         |    |                   |
-    |              |    |   Azure OpenAI,   |    |                   |
-    |              |    |   DeepSeek)       |    |                   |
-    +--------------+    +-------------------+    +-------------------+
-                                     |
-                                     |  Cloud-API-Aufrufe
+                                     |  Aktion
                                      v
     +=================================================================+
-    |  EXTERNE CLOUD-SYSTEME                                          |
-    |                                                                 |
-    |  HR, Buchhaltung, CRM, Ticketsystem, M365, LLM-Provider         |
+    |  GERAETE, NETZ, SYSTEME, EXTERNE DIENSTE                        |
+    |  Fritz!Box, Docker, Proxmox, Sensoren, RFID                     |
+    |  Bridges: HR, Buchhaltung, CRM, Tickets,                        |
+    |  M365, LLMs                                                     |
     +=================================================================+
+
+Der **gemeinsame Ausfuehrungspfad** aller KIs:
+
+    Vorschlag -> Bestaetigung -> Core prueft
+      -> Applier fuehrt aus -> Audit
+
+Kein LLM entscheidet. Kein LLM schreibt direkt.
+Jede Aktion laeuft durch den Core.
 
 ## 2.0 Drei Blickwinkel auf dieselbe Architektur
 
@@ -122,63 +107,75 @@ Vier Rollen:
 Score-Regeln, Kategorie-Mapping, Kette, Approval,
 Change Requests. Details: docs/DESIGN_DECISIONS.md.
 
-## 2. Die drei KI-Ebenen — im Detail (Rollen im Betrieb)
+## 2. Die Rollen im Detail
 
-### 2.1 Security Master AI (Ebene 1 — IT Firma, Cloud)
+### 2.1 Admin AI (Cloud, Sicherheit)
 
-Die Security Master AI ist die **Admin-KI der IT Firma**.
-Sie laeuft in der Cloud. Sie verwaltet die **Kunden-
-Installationen** der IT Firma.
+Die Admin AI ist die **Sicherheits-KI der IT Firma**.
+Sie laeuft in der Cloud. Sie ist optional - das
+System funktioniert autark ohne sie.
 
 **Was sie macht:**
 
-1. **Kunden verwalten.** Sie kennt alle Kunden-
-   Installationen der IT Firma. Welche Version laeuft?
-   Welche Bridges sind aktiv? Welche Events gibt es?
+1. **Installationen verwalten.** Sie kennt mehrere
+   Installationen des Betreibers. Welche Version
+   laeuft? Welche Bridges sind aktiv? Welche Events
+   gibt es?
 
-2. **Ueber Kunden korrelieren.** Sie sieht Events aus
-   mehreren Kunden-Installationen. Sie erkennt Muster
-   ueber Kunden hinweg ("drei Kunden haben heute
-   denselben Port-Scan-Typ gesehen").
+2. **Ueber Installationen korrelieren.** Sie sieht
+   Events aus mehreren Installationen. Sie erkennt
+   Muster ueber Installationen hinweg.
 
-3. **Changes vorschlagen.** Sie schlaegt Changes fuer
-   Kunden vor ("Kunde A sollte seine Firewall-Regel
-   anpassen"). Der Mensch gibt frei.
+3. **Changes vorschlagen.** Sie schlaegt Changes
+   fuer Installationen vor. Der Mensch gibt frei.
 
-4. **Mit externen LLMs sprechen.** Ueber MCP. Sie kann
-   Anthropic, OpenAI, Azure OpenAI, DeepSeek anbinden.
-   Je nach Aufgabe und Datenschutz-Anforderung.
+4. **Mit externen LLMs sprechen.** Ueber MCP. Sie
+   kann Anthropic, OpenAI, Azure OpenAI, DeepSeek
+   anbinden - je nach Aufgabe und
+   Datenschutz-Anforderung.
 
 **Was sie NICHT macht:**
 
-- **Kein Kontakt zu Endkunden-Mitarbeitern.**
-- Kein Zugriff auf Endkunden-Daten (nur Aggregate).
+- Kein Kontakt zu Endnutzer-Mitarbeitern.
+- Kein Zugriff auf Rohdaten (nur Aggregate).
 - Keine Aktionen ohne Human Approval.
 - Keine personenbezogenen Entscheidungen.
+- Keine direkte Ausfuehrung.
 
-**Kurz:** Die Security Master AI ist der **Kopf der
-IT Firma**. Sie koordiniert, korreliert, schlaegt vor.
-Sie hat nichts mit den Mitarbeitern der Kunden zu tun.
+**Ausfuehrungspfad:** Die Admin AI folgt demselben
+Pfad wie jede andere KI im System: Vorschlag ->
+Bestaetigung durch den Menschen -> Core prueft ->
+Applier fuehrt aus -> Audit. Sie fuehrt nichts
+selbst aus.
 
-### 2.2 Security AI (Ebene 2 — Kunde, lokal) — Der zentrale Hub
+**Kurz:** Die Admin AI ist der **Kopf der IT Firma**.
+Sie koordiniert, korreliert, schlaegt vor. Sie hat
+nichts mit den Mitarbeitern der Kunden zu tun.
 
-Die Security AI ist die **Kontrollschicht**. Sie laeuft
-**lokal beim Kunden** im Container. Sie ist der
-**zentrale Hub** — alles laeuft durch sie. Nichts an
-ihr vorbei.
+### 2.2 Core (lokal, deterministisch)
 
-**Was sie macht:**
+Der Core ist das **BIOS des Systems**: basal,
+deterministisch, immer da. Er entscheidet nicht,
+er liefert Zustand. Er ist auch die **Bridge** zu
+allen Geraeten und Diensten und der **Anker**, an
+dem jede Aktion haengt.
 
-1. **Detection.** Sie liest Events von Sensoren
-   (Netzwerk, Fritz!Box, Docker, Proxmox, Logs, RFID,
-   Tueren). Sie wendet **deterministische Regeln** an.
-   Kein LLM. Klare Regeln.
+Der Core laeuft **lokal beim Betreiber** im
+Container. Er ist der **zentrale Hub** - alles
+laeuft durch ihn. Nichts an ihm vorbei.
 
-2. **Risk Engine.** Sie bewertet Events
-   **deterministisch**. Score aus Basis + Modifikatoren.
-   Kein LLM. Nachvollziehbar.
+**Was er macht:**
 
-3. **Inventory.** Sie kennt Geraete, Personen,
+1. **Detection.** Er liest Events von Sensoren
+   (Fritz!Box, Netzwerk, Docker, Proxmox, Logs,
+   RFID, Tueren). Er wendet **deterministische
+   Regeln** an. Kein LLM.
+
+2. **Risk Engine.** Er bewertet Events
+   **deterministisch**. Score aus Basis +
+   Modifikatoren. Kein LLM. Nachvollziehbar.
+
+3. **Inventory.** Er kennt Geraete, Personen,
    Whitelist.
 
 4. **RBAC.** Drei unabhaengige Skalen:
@@ -188,39 +185,43 @@ ihr vorbei.
    Kein Level ist automatisch von einem anderen
    abhaengig.
 
-5. **Policy Engine.** Sie weiss, welches Tool unter
+5. **Policy Engine.** Er weiss, welches Tool unter
    welchen Bedingungen erlaubt ist. Globale Pruefer
    (Shell-Injection, Path-Traversal) laufen immer.
 
-6. **Guardrails.** Sie weiss, was **NIEMALS** erlaubt
+6. **Guardrails.** Er weiss, was **NIEMALS** erlaubt
    ist. Das ist Code, nicht Prompt.
 
-7. **Sandbox.** Sie fuehrt Tools **isoliert** aus.
+7. **Sandbox.** Er fuehrt Tools **isoliert** aus.
    Timeouts, rlimits, kein Shell.
 
-8. **Audit.** Sie schreibt **jede** Aktion in ein
+8. **Audit.** Er schreibt **jede** Aktion in ein
    append-only JSONL-Log. Unveraenderlich.
 
-9. **Approval Queue.** Sie legt Aktionen mit Risiko
+9. **Approval Queue.** Er legt Aktionen mit Risiko
    >= 2 in eine Queue. Der Mensch entscheidet.
 
-10. **Change Request Workflow.** Sie erstellt Antraege
-    fuer Aenderungen. Mit Diff, Rollback, Tests.
+10. **Change Request Workflow.** Er erstellt
+    Antraege fuer Aenderungen. Mit Diff, Rollback,
+    Tests.
 
-11. **Lokales LLM (Ollama).** llama3.2:3b fuer schnelle
-    Erklaerungen, qwen2.5:7b fuer tiefe Fragen
-    (Auto-Switch).
+11. **Lokales LLM (Ollama, optional).** llama3.2:3b
+    fuer schnelle Erklaerungen, qwen2.5:7b fuer tiefe
+    Fragen (Auto-Switch). Nur fuer Erklaerungen,
+    nie fuer Entscheidungen.
 
-12. **Schnittstelle zu allen Bridges.** Sie ist die
+12. **Schnittstelle zu allen Bridges.** Er ist die
     **einzige** Instanz, die Bridges aufruft. Keine
-    andere Komponente spricht direkt mit einer Bridge.
+    andere Komponente spricht direkt mit einer
+    Bridge.
 
-13. **Kontrolliert die Kunden-Mitarbeiter-KI.** Sie
-    prueft jede Anfrage, bevor sie an die Mitarbeiter-
-    KI weitergegeben wird.
+13. **Kontrolliert die Kunden-KI.** Er prueft jede
+    Anfrage, bevor sie an die Kunden-KI
+    weitergegeben wird (siehe 2.3).
 
-**Was sie NICHT macht:**
+**Was er NICHT macht:**
 
+- Kein LLM in Entscheidungen.
 - Keine direkten Systemaenderungen ohne Approval.
 - Keine Whitelist-Aenderungen.
 - Keine Policies aendern.
@@ -229,16 +230,24 @@ ihr vorbei.
 - Keine personenbezogenen Entscheidungen.
 - Keine Cloud-Abhaengigkeit.
 
-**Kurz:** Die Security AI ist die **kontrollierte
-Ausfuehrungsumgebung** und der **zentrale Hub**. Sie
-entscheidet nichts ueber Menschen. Sie fuehrt aus, was
-der Mensch freigegeben hat.
+**Ausfuehrungspfad:** Der Core ist die Stelle, an
+der jede Aktion geprueft und ausgefuehrt wird.
+Er empfaengt Vorschlaege von den KIs (Admin AI,
+Kunden-KI) oder vom Menschen, prueft sie gegen
+Policy und Berechtigungen, fuehrt sie bei
+Freigabe aus und auditiert.
 
-### 2.3 Kunden-Mitarbeiter-KI (Ebene 3 — Kunde)
+**Kurz:** Der Core ist die **kontrollierte
+Ausfuehrungsumgebung** und der **zentrale Hub**.
+Er entscheidet nichts ueber Menschen. Er fuehrt
+aus, was der Mensch freigegeben hat.
 
-Die Kunden-Mitarbeiter-KI ist die **KI fuer die
-Mitarbeiter des Kunden**. Sie ist die Schnittstelle
-zwischen Mensch und Daten.
+### 2.3 Kunden-KI (Cloud, Mitarbeiter-Aufgaben)
+
+Die Kunden-KI ist die **KI fuer die Mitarbeiter des
+Kunden**. Sie ist die Schnittstelle zwischen Mensch
+und Daten. Sie ist optional - der Core funktioniert
+autark ohne sie.
 
 **Was sie macht:**
 
@@ -250,26 +259,33 @@ zwischen Mensch und Daten.
 2. **Kontext verstehen.** Sie kennt den Principal
    (wer fragt), die Rolle, die Berechtigungen.
 
-3. **An Security AI weiterleiten.** Jede Anfrage geht
-   an die Security AI. Die entscheidet, was erlaubt ist.
+3. **An den Core uebergeben.** Jede Anfrage geht
+   an den Core. Der Core entscheidet, was erlaubt
+   ist. Die Kunden-KI entscheidet nichts.
 
 4. **Antworten formulieren.** Sie formuliert die
    Antwort in natuerlicher Sprache.
 
 5. **Schreibaktionen vorschlagen.** Sie schlaegt
-   Change Requests vor ("Trage Urlaub ein"). Der Mensch
-   gibt frei.
+   Change Requests vor ("Trage Urlaub ein"). Der
+   Mensch gibt frei.
 
 **Was sie NICHT macht:**
 
-- Kein direkter Datenzugriff. Alles ueber Security AI.
+- Kein direkter Datenzugriff. Alles ueber den Core.
 - Keine Aktionen ohne Approval.
 - Keine Entscheidungen ueber Personen.
-- Keine Umgehung der Security AI.
+- Keine Umgehung des Core.
 
-**Kurz:** Die Kunden-Mitarbeiter-KI ist der **Assistent
-des Endkunden**. Sie ist die einzige KI, mit der
-Endkunden-Mitarbeiter direkt sprechen.
+**Ausfuehrungspfad:** Die Kunden-KI folgt demselben
+Pfad wie jede andere KI im System: Vorschlag ->
+Bestaetigung durch den Menschen -> Core prueft ->
+Applier fuehrt aus -> Audit. Sie fuehrt nichts
+selbst aus.
+
+**Kurz:** Die Kunden-KI ist der **Assistent des
+Endnutzers**. Sie ist die einzige KI, mit der
+Endnutzer-Mitarbeiter direkt sprechen.
 
 ## 3. Die Bridges — die Cloud-Anbindungen
 
@@ -411,37 +427,35 @@ Bridges parallel zum Core entstehen.
 
 ## 5. Die Reise in einem Satz
 
-Wir bauen ein System, das heute ein Homelab-Netzwerk
-ueberwacht, morgen mehrere Firmenstandorte foederiert
-und uebermorgen eine KI-Schicht ueber allen relevanten
-Firmendaten bildet — mit digitalen UND physischen
-Zugriffen, mit Human-in-the-Loop, mit lueckenlosem
-Audit und DSGVO-konform.
-
-Der Mensch entscheidet. Die Security Master AI
-verwaltet und koordiniert. Die Security AI kontrolliert
-und fuehrt aus. Die Kunden-Mitarbeiter-KI assistiert
-dem Endnutzer. Jede Aktion ist auditierbar und
-umkehrbar.
+Vom lokalen Homelab ueber foederierte Netzwerke
+bis zur Enterprise-Plattform. Der Core bleibt
+derselbe: deterministisch, lokal, 24/7. Die KIs
+kommen dazu (Admin AI fuer Sicherheit, Kunden-KI
+fuer Mitarbeiter). Der Mensch entscheidet immer.
 
 ## 6. Kurzbeschreibung
 
-Das System erkennt unbekannte Geraete, Gast-WLAN-
-Aktivitaet, Port-Scans und Web-Reconnaissance in einem
-Netzwerk. Es erfasst physische Zutrittsereignisse
-(RFID, Magnetkarte, PIN, optional Biometrie), bewertet
-sie deterministisch, alarmiert per Telegram und legt
-die Daten als Grundlage fuer eine spaetere
-KI-gestuetzte Analyse aus.
+Das System erkennt unbekannte Geraete, Netz-Wechsel,
+MAC-Wechsel und Flattern in einem Netzwerk. Port-Scan-
+Regeln sind vorhanden, der Producer (Host-Scanner)
+fehlt noch (Phase 3.8).
+
+Es bewertet Ereignisse deterministisch und alarmiert
+per ntfy (self-hosted).
+
+Physische Zutrittsereignisse (RFID, Magnetkarte,
+PIN, optional Biometrie) sind als Phase 10
+vorgesehen, aber noch nicht implementiert.
 
 Besonders wichtig: Das System korreliert **digitale
-und physische Sicherheit**. Es erkennt Zusammenhaenge,
-die einzelne Systeme niemals sehen wuerden.
+und physische Sicherheit** (Phase 11). Es erkennt
+Zusammenhaenge, die einzelne Systeme niemals sehen
+wuerden.
 
 Das Projekt ist bewusst als kleine, lauffaehige
-Referenz angelegt — mit der Architektur, die spaeter
-auf mehrere Netzwerke, Gebaeude und Unternehmens-
-umgebungen skaliert werden kann.
+Referenz angelegt - mit der Architektur, die
+spaeter auf mehrere Netzwerke, Gebaeude und
+Unternehmensumgebungen skaliert werden kann.
 
 ## 7. Grundprinzipien
 
@@ -666,26 +680,24 @@ Sicherheits- und Verwaltungsplattform, die:
 - Mehrere Netzwerke und Gebaeude verbindet.
 - Digitale und physische Sicherheit korreliert.
 - Mitarbeitern aus allen Bereichen den Zugriff auf
-  die fuer sie relevanten Daten gibt — in
-  natuerlicher Sprache, ueber die Kunden-
-  Mitarbeiter-KI.
+  die fuer sie relevanten Daten gibt - in
+  natuerlicher Sprache, ueber die Kunden-KI.
 - Personalverwaltung, HR-Daten, Buchhaltung und
-  Sicherheit zusammenfuehrt — mit strikter
+  Sicherheit zusammenfuehrt - mit strikter
   RBAC-Kontrolle und DSGVO-Konformitaet.
 - An externe Cloud-KIs ueber offizielle Protokolle
-  angebunden werden kann (MCP) — oder autark lokal
+  angebunden werden kann (MCP) - oder autark lokal
   laeuft, wenn Cloud nicht gewuenscht ist.
 - Jede Aktion auditiert, jede Entscheidung
   menschlich freigegeben, jede Aenderung umkehrbar.
 
-Drei KI-Ebenen. Klar getrennt. Jede mit eigener
-Rolle. Die Security Master AI verwaltet die Kunden
-der IT Fabrik. Die Security AI ist der zentrale
-Kontrollpunkt beim Kunden — die einzige Schnittstelle
-zu allen Bridges. Die Kunden-Mitarbeiter-KI
-assistiert den Endnutzer.
-
-Der Mensch bleibt immer die letzte Instanz.
+Vier Rollen. Klar getrennt. Der Core bleibt der
+harte Kern - lokal, deterministisch, kein LLM in
+Entscheidungen. Die Admin AI (Cloud, optional)
+korreliert ueber Installationen und schlaegt
+Changes vor. Die Kunden-KI (Cloud, optional)
+assistiert Endnutzern. Der Mensch ist immer die
+letzte Instanz.
 
 ## 17. Referenzen
 
