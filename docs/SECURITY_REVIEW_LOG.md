@@ -1780,7 +1780,7 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       Audit-Log pruefen (execution_status=OK).
     - Betriebsakt (kein Code).
 
-77. (offen, Kategorie 1 + 3, Betrieb + Code) ntfy
+77. (erledigt 2026-10-02, Kategorie 1 + 3, Betrieb + Code)
     als eigenes Benachrichtigungssystem.
     - ntfy self-hosted auf Proxmox-Host (nicht CT102).
     - Bind: Tailscale-IP des Hosts, Port 2586.
@@ -1803,5 +1803,23 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       Play-Store-Variante geht ueber FCM (Google).
     - Kategorie 3 fuer den Code-Anteil,
       Kategorie 1 fuer den Betriebsakt.
+    - Betrieb 2026-10-02: ntfy 2.11.0 (Debian-Paket)
+      auf pve, User _ntfy, Bind 100.117.49.116:2586
+      (Tailscale, kein 0.0.0.0).
+    - systemd-Override Restart=always, RestartSec=5.
+    - Auth: deny-all, enable-signup false.
+    - User builder (write-only) + phone (read-only).
+    - Topic MUCMnqSOZXHChAh2k5PS2LkdLwOehIu.
+    - Publish-Test von CT102 erfolgreich (HTTP 200,
+      ok=True). Drei Nachrichten publiziert.
+    - F-Droid-App auf Android verbunden
+      (subscribers=1). Prio-Mapping live verifiziert:
+      INFO/WARNING/CRITICAL -> low/high/urgent.
+    - Play-Store-Variante wurde verworfen: FCM
+      braucht oeffentlichen ntfy (upstream-base-url
+      plus Internet-Erreichbarkeit). Tailnet-only
+      passt nur mit F-Droid.
+    - Offen: Rotation der im Chat sichtbaren Token
+      (Read + Publish) als eigene Mini-Aufgabe.
 
 Bewusst offen (kein Bau heute):
