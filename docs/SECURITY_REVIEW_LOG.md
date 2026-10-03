@@ -359,7 +359,7 @@ Punkt 82: Orchestrator-Docstring 5->6 Tools (6d9c1c1).
   read_all im UI).
 - 3.6.8i: /settings (role.manage, read-only Konfig-
   Anzeige, kein SECRET_KEY, kein os.environ-Dump).
-- 3.6.8 Doku-Abschluss: 3beab99 (a-i alle [x]).
+- 3.6.8 Doku-Abschluss: 3beab99 (a-i alle ✅).
 - 3.6.10: responsive Tabellen (CSS-only, E+B).
 - 3.6.11: Hamburger-Navigation (Sidebar-Overlay,
   nav.js, CSP-konform).
@@ -1418,7 +1418,7 @@ A900 abgeschlossen (23 Commits, 66 -> 2).
 
 ## A900 - no-untyped-def (Kategorie 2 + 3)
 
-Status: [x] abgeschlossen (HEAD 81a3607, 2026-09-30).
+Status: ✅ abgeschlossen (HEAD 81a3607, 2026-09-30).
 Kurzfassung: mypy no-untyped-def 66 -> 2, ruff 2 -> 0,
 23 Commits, Tests durchgehend 1028 gruen.
 

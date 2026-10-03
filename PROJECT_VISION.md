@@ -488,15 +488,15 @@ Unternehmensumgebungen skaliert werden kann.
 ### Stufe 1 — Netzwerk Homelab (heute)
 Ein Netzwerk. Ein Core. Keine Admin
 AI. Keine Kunden-KI.
-Status (2026-09-26): [x] implementiert (Commit f986ba2).
+Status (2026-09-26): ✅ implementiert (Commit f986ba2).
 
 ### Stufe 2 — Erweiterung (Monate)
 Change-Request-Generator. Approval-Queue. Lokales LLM.
-Status (2026-09-26): [x] implementiert (Commit f986ba2).
+Status (2026-09-26): ✅ implementiert (Commit f986ba2).
 
 ### Stufe 2.5 — Lokale KI (Monate)
 Ollama, Chat, RBAC, Auto-Switch.
-Status (2026-09-26): [x] implementiert (Commit f986ba2).
+Status (2026-09-26): ✅ implementiert (Commit f986ba2).
 
 ### Stufe 3 — Foederation (spaeter)
 Mehrere isolierte Netzwerke. Zentrale Security
@@ -525,7 +525,7 @@ Loeschfristen, Betroffenenrechte, Verzeichnis von
 Verarbeitungstaetigkeiten, TOMs, AVV-Vorlagen.
 Lueckenlos. Kein Kompromiss.
 
-Status (2026-09-26): [ ] geplant.
+Status (2026-09-26): 💡 geplant.
 
 ### Stufe 5 — Physische Sicherheit (Zukunft)
 RFID, Magnetkarte, PIN, optional Biometrie.

@@ -3,21 +3,21 @@
 Uebersicht aller Phasen mit Status.
 Details in `docs/DESIGN_DECISIONS.md` und den jeweiligen Modulen.
 
-Legende: [x] abgeschlossen, [~] in Arbeit, [ ] geplant.
+Legende: ✅ abgeschlossen, 🔨 in Arbeit, 💡 geplant.
 
-## Phase 1 — Harness + Docs  [x]
+## Phase 1 — Harness + Docs  ✅
 
 7 Docs, 7 Kernmodule: events, audit/writer,
 permissions/levels, tool_registry/{tool,registry},
 agent_loop/{loop,model}. 12 Tests.
 
-## Phase 2 — Detection  [x]
+## Phase 2 — Detection  ✅
 
 core/detection/rule_base.py, engine.py.
 Regeln unknown_device + port_scan.
 detection/rules.yaml.
 
-## Phase 2b — Inventory + Risk + Orchestrator + Audit  [x]
+## Phase 2b — Inventory + Risk + Orchestrator + Audit  ✅
 
 Inventory in SQLite (data/migrations/0002, devices,
 device_history, whitelisted_devices).
@@ -26,32 +26,32 @@ Risk Engine (core/risk/{models,engine}.py + rules.yaml).
 apps/security_ai/orchestrator.py mit process(event) und
 Audit-Eintraegen.
 
-## Phase 3.1 — Policy Engine  [x]
+## Phase 3.1 — Policy Engine  ✅
 
 harness/policy_engine/{policy,engine}.py, policies/tools.yaml.
 Decision ALLOWED / APPROVAL_REQUIRED / FORBIDDEN, strengste
 gewinnt. Globale Pruefer no_shell_chars, no_path_traversal,
 no_null_bytes.
 
-## Phase 3.2 — 5 Tools  [x]
+## Phase 3.2 — 5 Tools  ✅
 
 tools/{nmap_scan,read_logs,get_devices,whitelist_check,
 telegram_alert}.py.
 
-## Phase 3.3 — Orchestrator + AgentLoop + Integration  [x]
+## Phase 3.3 — Orchestrator + AgentLoop + Integration  ✅
 
 apps/security_ai/planning.py (SecurityPlanModel),
 apps/security_ai/config.yaml, AgentLoop mit Policy-Check
 vor Argument-Validierung.
 
-## Phase 3.4 — Echter nmap-Aufruf  [x]
+## Phase 3.4 — Echter nmap-Aufruf  ✅
 
 tools/nmap_scan.py v0.2.0: subprocess mit Sandbox
 (Timeout, kein Shell, Argument-Whitelist, Ziel-Whitelist via
 ipaddress, XML-Parsing mit -oX -). Integrationstest
 tests/integration/test_nmap_real.py (skipif kein nmap).
 
-## Phase 4.1-4.3 — Approval + Change Requests  [x]
+## Phase 4.1-4.3 — Approval + Change Requests  ✅
 
 data/migrations/0003_approvals.sql, 0004_change_requests.sql.
 core/approval/, core/changes/.
@@ -60,7 +60,7 @@ harness/versioning/applier.py (Stub).
 harness/approval/queue.py, AgentLoop mit approval_queue.
 _notify_approval (Telegram, fail open).
 
-## Phase 3.5 — Lokale KI  [x]
+## Phase 3.5 — Lokale KI  ✅
 
 Fertig:
 - core/config.py (.env-Loader)
@@ -79,7 +79,7 @@ Fertig:
 
 Offen: keine funktionalen Blocker.
 
-## Phase 3.5.5 — Service-Refactor  [x]
+## Phase 3.5.5 — Service-Refactor  ✅
 
 AccessChecker mit Repo-Injection (principal_repo, role_repo,
 permission_repo) + from_conn-Convenience + check-Alias.
@@ -88,7 +88,7 @@ unbekannt/inaktiv). AccessService und ChatService mit DI.
 chat_cli.py verdrahtet Repos + Checker.
 tests/unit/test_access.py.
 
-## Phase 3.5.6 — Kontext-Anschluss  [x]
+## Phase 3.5.6 — Kontext-Anschluss  ✅
 
 Commits: 9d4dead, 8d345e6, 7c65f51, c07ea4e
 
@@ -97,7 +97,7 @@ Commits: 9d4dead, 8d345e6, 7c65f51, c07ea4e
 - _build_prompt zeigt Kategorien, Regeln, Scores, Zeitraum.
 - chat_cli laedt Kontext und uebergibt an ChatService.
 
-## Phase 3.5.7 — Auto-Switch zu grossem Modell  [x]
+## Phase 3.5.7 — Auto-Switch zu grossem Modell  ✅
 
 Commits: 6ba7b26, 1b2ca83, c857e55, f414626, 7500825
 
@@ -109,7 +109,7 @@ Commits: 6ba7b26, 1b2ca83, c857e55, f414626, 7500825
   qwen2.5:7b.
 - ChatResponse.model_reason fuer Transparenz.
 
-## Phase 3.5.7a — Timeouts + --no-auto-large  [x]
+## Phase 3.5.7a — Timeouts + --no-auto-large  ✅
 
 Commits: 35d34ed
 
@@ -117,14 +117,14 @@ Commits: 35d34ed
 - --no-auto-large als Opt-out.
 - CLI zeigt [Modell: <name> -- <reason>].
 
-## Phase 3.5.7b — Warnung vor LLM  [x]
+## Phase 3.5.7b — Warnung vor LLM  ✅
 
 Commits: 73278e3
 
 - ChatService.ask(on_model_selected=...) Callback.
 - Warnung kommt VOR dem LLM-Aufruf.
 
-## Phase 3.5.8 — Frage-Klassifikation  [x]
+## Phase 3.5.8 — Frage-Klassifikation  ✅
 
 Commits: 47ccd04
 
@@ -135,7 +135,7 @@ Commits: 47ccd04
 - _answer_fact fuer "Gab es Auffaelligkeiten?", "Welche
   Kategorien?", "Wie viele?".
 
-## Phase 3.5.9 — Sanity-Check + Retry  [x]
+## Phase 3.5.9 — Sanity-Check + Retry  ✅
 
 Commits: cd16bf6, 93354e4, d266bff
 
@@ -147,19 +147,19 @@ Commits: cd16bf6, 93354e4, d266bff
 - Prompt-Hinweis "Du MUSST die CONFIRMED-Zahlen nennen".
 - CLI-Warnung bei --no-auto-large.
 
-## Phase 3.5.5+ — optional  [ ]
+## Phase 3.5.5+ — optional  💡
 
 Principal-Objekte als API-Rueckgabe, assign_role, strengere
 Service-Trennung. Aktuell nicht noetig.
 
-## Phase 3.6 — Web-Dashboard  [~]
+## Phase 3.6 — Web-Dashboard  🔨
 
 Flask-App in apps/dashboard/. Login ueber principals.
 Bereiche: Dashboard, Inventar, Alarme, Approvals, Changes,
 Chat, Benutzerverwaltung, Rollenverwaltung, Audit,
 Einstellungen. Ziel: Browser als primaeres Interface.
 
-## Phase 3.6.1 — Session-Modell + Repository  [x]
+## Phase 3.6.1 — Session-Modell + Repository  ✅
 
 Commits: d3b6689, 84511c4, cd6eda4, 9fc4a83,
          0a0c5b2, cf0d30c
@@ -169,7 +169,7 @@ Commits: d3b6689, 84511c4, cd6eda4, 9fc4a83,
 - SessionRepository + LoginAttemptRepository.
 - AccessService(session_repo Pflicht).
 
-## Phase 3.6.2 — get_secret_key  [x]
+## Phase 3.6.2 — get_secret_key  ✅
 
 Commits: 4b4a82b
 
@@ -177,7 +177,7 @@ Commits: 4b4a82b
 - ConfigError (fail closed).
 - Byte-Laenge, nicht Zeichen-Laenge.
 
-## Phase 3.6.3 — AccessService.set_password  [x]
+## Phase 3.6.3 — AccessService.set_password  ✅
 
 Commits: 644993a
 
@@ -185,7 +185,7 @@ Commits: 644993a
 - revoke_all_for_principal bei Passwort-Aenderung.
 - Auflage 14.
 
-## Phase 3.6.4 — AuditReaderService  [x]
+## Phase 3.6.4 — AuditReaderService  ✅
 
 Commits: 4a4e2ab
 
@@ -193,7 +193,7 @@ Commits: 4a4e2ab
 - RBAC (audit.read), Input-Validierung.
 - Nur Lesen.
 
-## Phase 3.6.5 — Flask-App-Factory + RBAC  [x]
+## Phase 3.6.5 — Flask-App-Factory + RBAC  ✅
 
 Commits: e8ff4d2
 
@@ -204,7 +204,7 @@ Commits: e8ff4d2
 - Auflagen 53-74, 106, 108.
 - venv-Umstellung (pyproject-konform) parallel.
 
-## Phase 3.6.6 — Login + Logout + CSRF + Rate-Limit + Audit  [x]
+## Phase 3.6.6 — Login + Logout + CSRF + Rate-Limit + Audit  ✅
 
 Commit: c2e5e9d, b3558db
 
@@ -221,7 +221,7 @@ Notizen:
 - Details: docs/WEB_SECURITY_CHECKLIST.md
   Abschnitt A, B, C, I.
 
-## Phase 3.6.7a — Static (CSS, JS, img)  [x]
+## Phase 3.6.7a — Static (CSS, JS, img)  ✅
 
 Commit: 57081d3
 
@@ -229,7 +229,7 @@ Commit: 57081d3
 - Kein CDN, keine externen Fonts.
 - SVG-Favicon.
 
-## Phase 3.6.7b — base.html + Partials + CSP  [x]
+## Phase 3.6.7b — base.html + Partials + CSP  ✅
 
 Commit: d6d8e95
 
@@ -240,7 +240,7 @@ Commit: d6d8e95
   Permissions-Policy).
 - XSS-Tests (test_templates_xss.py).
 
-## Phase 3.6.7c — login.html als Template  [x]
+## Phase 3.6.7c — login.html als Template  ✅
 
 Commit: 8b75f0a
 
@@ -248,7 +248,7 @@ Commit: 8b75f0a
 - login_form rendert Template.
 - html.escape entfernt (Jinja escaped).
 
-## Phase 3.6.7d — index.html + Route /  [x]
+## Phase 3.6.7d — index.html + Route /  ✅
 
 Commit: 63f6988
 
@@ -263,14 +263,14 @@ Commit: 63f6988
   via can_view_* (context_processor). Fallback "—"
   bei Service-Fehler oder fehlender Permission.
 
-## Phase 3.6.7e — CSP-Test + PHASES  [x]
+## Phase 3.6.7e — CSP-Test + PHASES  ✅
 
 Commit: 06f6f48, 3a3f926
 
 - test_csp_all_directives_present.
 - Diese Notizen.
 
-## Phase 3.6.8 — Seiten mit echten Daten  [x]
+## Phase 3.6.8 — Seiten mit echten Daten  ✅
 
 Ziel: die in der Sidebar verlinkten Seiten mit
 Inhalten fuellen (Route + Service + Template +
@@ -293,41 +293,41 @@ Commits: b82f253, 8692eb6, 97dbde9, 36f65a1,
 
 Offen:
 
-- [x] 3.6.8a Inventar       (/inventory,
+- ✅ 3.6.8a Inventar       (/inventory,
                              device.read)
       Commit: 2d4b437.
-- [x] 3.6.8b Alarme         (/alerts,
+- ✅ 3.6.8b Alarme         (/alerts,
                              alert.view)
       Commit: 6ae8bd5.
       Fix:    8d43034 (AuditReaderService base_dir).
-- [x] 3.6.8c Approvals      (/approvals,
+- ✅ 3.6.8c Approvals      (/approvals,
                              approval.view
                              + approval.decide)
       Commit: 25d9614.
-- [x] 3.6.8d Changes        (/changes,
+- ✅ 3.6.8d Changes        (/changes,
                              change.view
                              + change.create)
       Commit: 29535ce.
-- [x] 3.6.8e Chat           (/chat + /api/chat,
+- ✅ 3.6.8e Chat           (/chat + /api/chat,
                              chat.ask)
       Commit: 148b434.
       Inkl.: RateLimitService + CSRF-Header (X-CSRF-Token)
              + _inject_csrf-Context-Processor.
-- [x] 3.6.8f Benutzer       (/users,
+- ✅ 3.6.8f Benutzer       (/users,
                              principal.manage)
       Commit: 1f16127.
       Inkl.: principal_to_view, MIN_PASSWORD_LEN=12,
              list_roles mit principal.manage.
-- [x] 3.6.8g Rollen         (/roles,
+- ✅ 3.6.8g Rollen         (/roles,
                              role.manage)
       Commit: 9c3accb.
       Inkl.: role_to_view, permission_to_view,
              assign/revoke, self-critical Warnung (A184).
-- [x] 3.6.8h Audit          (/audit, audit.read)
+- ✅ 3.6.8h Audit          (/audit, audit.read)
       Commit: fbfafc6.
       Inkl.: Tag-Filter (UTC heute default), Detail
              mit formatiertem details, kein read_all.
-- [x] 3.6.8i Einstellungen  (/settings,
+- ✅ 3.6.8i Einstellungen  (/settings,
                              role.manage)
       Commit: 14cccd5.
       Inkl.: read-only Konfigurationsanzeige, kein
@@ -337,15 +337,15 @@ Kategorie 3 fuer alle (Routes + RBAC + Templates).
 
 Nach 3.6.8i (Optik, sobald Struktur + Daten stehen):
 
-- [x] 3.6.10 Responsive-Feinschliff (Kategorie 1, CSS-only)  -- erledigt in 064ea5b
+- ✅ 3.6.10 Responsive-Feinschliff (Kategorie 1, CSS-only)  -- erledigt in 064ea5b
       .table-Verhalten auf <700px, .topbar, .card,
       .form-input. Keine Template-Aenderung.
-- [x] 3.6.11 Hamburger-Navigation (Kategorie 3)  -- erledigt in bc058a1
+- ✅ 3.6.11 Hamburger-Navigation (Kategorie 3)  -- erledigt in bc058a1
       Button in topbar.html, Toggle in static/js/nav.js
       (extern, addEventListener, kein onclick=, kein
       Inline-<script>, keine style="..."), CSP-konform.
 
-## Punkt 26 — security_ai-Startpfad  [x]
+## Punkt 26 — security_ai-Startpfad  ✅
 
 Ziel: __main__.py, systemd-Unit (analog
 security-ai-dashboard), check_schema_version.
@@ -358,7 +358,7 @@ Der Reader liest data/events-YYYY-MM-DD.jsonl, ruft
 SecurityAI.process() pro Event, Cursor in event_cursor,
 Idempotenz via processed_events. Siehe Phase 3.8b.
 
-## Phase 3.8a — Fritz!Box-Watcher  [x]
+## Phase 3.8a — Fritz!Box-Watcher  ✅
 
 Producer fuer device_presence/device_offline. Liest die
 Fritz!Box-Hosts via TR-064, vergleicht mit letztem
@@ -381,7 +381,7 @@ Commits: e4d032e, e7a669e, 22ad6d5, 8eb9772, 50daee8.
 Punkt 42 (MAC-Identifier) erledigt. Punkt 43
 (MAC-Randomisierung) offen.
 
-## Phase 3.8b — Orchestrator-Startpfad  [x]
+## Phase 3.8b — Orchestrator-Startpfad  ✅
 
 Event-Reader (tools/event_reader.py) liest Tagesdatei,
 verarbeitet Events ueber SecurityAI.process(), Cursor
@@ -397,7 +397,7 @@ Commits: 6220997, 3d944db, c23c6af, 02f17c4, 468a14d (Doku).
 Punkt 26 erledigt. Punkt 47 (processed_events-Aufraeumen)
 offen.
 
-## Punkt 48 — IP im Inventory  [x]
+## Punkt 48 — IP im Inventory  ✅
 
 Watcher liefert ip in data['ip'], Orchestrator hat sie
 verworfen. Fix: devices.last_ip (Migration 0012),
@@ -410,7 +410,7 @@ Commits: 4d865d2, 1360560, 17411a3, 5d5fb15,
 identifier bleibt die Identitaet (MAC). last_ip ist
 Kontext-Feld.
 
-## Phase 3.8 — Host-Scanner / Netzwerk-Discovery  [ ]
+## Phase 3.8 — Host-Scanner / Netzwerk-Discovery  💡
 
 Ziel: das gesamte Heimnetz beobachten, nicht nur den
 Container. Scapy-Sniffer laeuft auf dem Proxmox-Host
@@ -427,7 +427,7 @@ Regeln (aus ARCHITECTURE § 5):
 Status: noch nicht implementiert. Aktuell nur nmap-Scan
 im Container gegen Test-Ziele (Phase 3.4).
 
-## Phase 3.6.11 — Hamburger-Navigation  [x]
+## Phase 3.6.11 — Hamburger-Navigation  ✅
 
 Ziel: Sidebar auf <=700px ausblenden und per Button
 in der Topbar ein-/ausblenden. Der Sidebar-Overflow
@@ -469,7 +469,7 @@ aria-controls), hamburger.svg extern, Fokus-Handling
 und Esc schliesst (nav.js), nav.js in base.html geladen.
 Sichtpruefung 1920/1100/700/400px bestaetigt.
 
-## Phase 3.6.12 — HTTPS fuer das Dashboard  [x]
+## Phase 3.6.12 — HTTPS fuer das Dashboard  ✅
 
 Ziel: Login und alle Dashboard-Routen ueber HTTPS
 erreichbar. Heute blockiert SESSION_COOKIE_SECURE=True
@@ -499,11 +499,11 @@ Erledigt in dieser Session (Commits afb4eb2 und 37ae99d):
   default_server return 444, CSP aus Flask unveraendert.
 - docs/DEPLOYMENT.md §3c (CA, Zertifikat, nginx-Config,
   systemd-Units, Fail closed, Checkliste §L), §4.2/§4.4/§7/§10
-  korrigiert, WEB_SECURITY_CHECKLIST §L auf [x].
+  korrigiert, WEB_SECURITY_CHECKLIST §L auf ✅.
 - Login-Test ueber HTTPS: 302 (Redirect), kein 500er.
 - Offene Punkte 12-15 in SECURITY_REVIEW_LOG ergaenzt.
 
-## Phase 3.6.13 — Systemvoraussetzungen dokumentieren  [x]
+## Phase 3.6.13 — Systemvoraussetzungen dokumentieren  ✅
 
 Ziel: eine vollstaendige Liste der Systempakete und
 Python-Abhaengigkeiten, die fuer den Betrieb von CT102
@@ -518,7 +518,7 @@ sind die Abhaengigkeiten ueber pyproject.toml, DEPLOYMENT.md
 §2.4/§3a/§3b/§3c verstreut. Ein Neuaufbau braucht die
 zentrale Liste.
 
-## Phase 3.6.14 — UI-Politur Alerts-Tabelle  [x]
+## Phase 3.6.14 — UI-Politur Alerts-Tabelle  ✅
 
 Ziel: die Alert-Tabelle lesbarer machen. Aus der
 Sichtpruefung 3.6.10 ergaben sich drei Befunde, die
@@ -579,7 +579,7 @@ Abschluss (2026-09-25, Commit bba4ac7):
 - Pro-Tabelle-Klassen als offener Punkt 19 notiert
   (Auflage 419), eigener Folgeschritt.
 
-## Phase 3.6.15a — Migrations-Tracking + Deployment-Schritt  [x]
+## Phase 3.6.15a — Migrations-Tracking + Deployment-Schritt  ✅
 
 Ziel: das Migrations-Tracking reparieren (offener
 Punkt 15 in SECURITY_REVIEW_LOG), einen
@@ -633,7 +633,7 @@ Fix C (Commit dd10214):
 
 Reihenfolge: nach 3.6.13, vor 3.6.15b.
 
-## Phase 3.6.15b — Audit-Rechte fail closed + Test-Isolation  [x]
+## Phase 3.6.15b — Audit-Rechte fail closed + Test-Isolation  ✅
 
 Ziel: AuditWriter fail closed bei inkonsistenten
 Tagesdateien (Modus, Owner). Service-Start prueft
@@ -693,7 +693,7 @@ Betriebsakt (offen, Mensch entscheidet):
 
 Reihenfolge: nach 3.6.15a, vor 3.6.15c.
 
-## Phase 3.6.15c — Fehlerklassen-Trennung (Punkte 5/6)  [x]
+## Phase 3.6.15c — Fehlerklassen-Trennung (Punkte 5/6)  ✅
 
 Ziel: Format- und Betriebsfehler in den Kern-Services
 trennen (Punkte 5 und 6 in SECURITY_REVIEW_LOG).
@@ -718,7 +718,7 @@ Umgesetzt in fuenf Commits:
 
 Tests: 805 passed (Vollsuite, venv).
 
-## Phase 3.6.15d — Chat-Klassifikations-Bug  [x]
+## Phase 3.6.15d — Chat-Klassifikations-Bug  ✅
 
 Ziel: Der 3B-Chat darf Zustandsfragen nicht mehr als
 Konzeptfragen klassifizieren und muss bei kritischen
@@ -745,7 +745,7 @@ Neu: tests/unit/test_chat_classify.py (22 Tests).
 Offen: Punkt 22 (Sanity-Check-Neumessung) im
 SECURITY_REVIEW_LOG.
 
-## Zwischenblock Punkt 22 — Sanity-Check-Neumessung  [x]
+## Zwischenblock Punkt 22 — Sanity-Check-Neumessung  ✅
 
 Ziel: pruefen, ob der Sanity-Check nach 3.6.15d
 feuert (vorher 0 von 14 kritischen Faellen).
@@ -766,7 +766,7 @@ Sanity-Check funktioniert. Kein Fix noetig.
 Punkt 23 neu (Audit model_reason=null bei fact/detail).
 Keine Code-Aenderung in diesem Block.
 
-## Phase 3.6.16 — Globale Suche  [x]
+## Phase 3.6.16 — Globale Suche  ✅
 
 Ziel: zentrale Suche in der Topbar, die alle
 Informationen zu einem Schlagwort zusammenzieht.
@@ -788,7 +788,7 @@ Umgesetzt:
 Limits (A531): 20 pro Quelle. Kein globales Limit.
 Kein "Erste 20 von N"-Hinweis (A371).
 
-## Zwischenblock 3.6.16-topbar-usermenu  [x]
+## Zwischenblock 3.6.16-topbar-usermenu  ✅
 
 Ziel: User-Bereich in der Topbar mit Dropdown und
 Logout. Der Logout-Button war seit 3.6.7b offen.
@@ -807,7 +807,7 @@ Umgesetzt:
 
 Tests: 861 passed (Vollsuite, venv).
 
-## Zwischenblock Punkt 23 — Audit model_reason  [x]
+## Zwischenblock Punkt 23 — Audit model_reason  ✅
 
 Aus der Punkt-22-Messung: chat_answered-Audit-
 Eintraege in den Pfaden fact, detail_append,
@@ -822,7 +822,7 @@ Fix:
 
 Tests: 864 passed (Vollsuite, venv).
 
-## Zwischenblock Punkt 16 — gunicorn + ProxyFix  [x]
+## Zwischenblock Punkt 16 — gunicorn + ProxyFix  ✅
 
 Ziel: Flask dev-Server durch gunicorn ersetzen;
 Login-Rate-Limit pro Client statt global.
@@ -846,7 +846,7 @@ Erledigt (16b, Commit b4a21e4, nach Betriebsakt):
   CSRF -> 400.
 - control_socket_disable = True.
 
-## Zwischenblock Punkt 9 — Rate-Limit Multi-Worker  [x]
+## Zwischenblock Punkt 9 — Rate-Limit Multi-Worker  ✅
 
 Ziel: Rate-Limit fuer /api/chat Multi-Worker-fest.
 Ausloeser: gunicorn mit 2 Workern (Punkt 16a) ->
@@ -867,56 +867,56 @@ Umgesetzt:
 
 Tests: 879 passed (Vollsuite, venv).
 
-## Phase 3.6.18a — category durchsuchbar  [x]
+## Phase 3.6.18a — category durchsuchbar  ✅
 
 Bugfix aus 3.6.16: risk_assessments.category in die
 Suchfelder aufgenommen (A530).
 
-## Phase 3.6.18b — Fact-Antwort-Stil  [x]
+## Phase 3.6.18b — Fact-Antwort-Stil  ✅
 
 Labels statt Rohkategorien, dynamischer Zeitraum,
 "Vorkommen" statt "Assessments". Commit 7a92b54.
 Punkt 31, Auflagen 821-854.
 
-## Phase 3.6.18c — nav_links im Fact-Pfad  [x]
+## Phase 3.6.18c — nav_links im Fact-Pfad  ✅
 
 Auffaelligkeits-Antwort liefert Navigations-Link
 auf /alerts. ChatResponse.nav_links, API 8 Schluessel,
 chat.js renderNavLinks. Commit 7b234df.
 Punkt 33, Auflagen 858-881.
 
-## Zwischenblock Punkt 28 — Chat-Kontext  [x]
+## Zwischenblock Punkt 28 — Chat-Kontext  ✅
 
 Dashboard-Chat bekommt Kontext
 (core/context/builder.build_chat_context).
 CLI und Dashboard nutzen denselben Builder.
 Commit a2b58c1, Auflagen 719-728.
 
-## Zwischenblock Punkt 29 — Wert-Synonyme  [x]
+## Zwischenblock Punkt 29 — Wert-Synonyme  ✅
 
 core/search/synonyms.yaml + synonyms.py.
 Suchbegriffe werden auf Synonym-Zielwerte erweitert.
 Commit 0ede98f, Auflagen 776-790.
 
-## Zwischenblock Punkt 30 — Links im Chat  [x]
+## Zwischenblock Punkt 30 — Links im Chat  ✅
 
 fact/detail_append-Antworten liefern strukturierte
 Link-Liste (core/context/links.py). API-Antwort
 7 Schluessel. Commit f737d3f, Auflagen 757-772.
 
-## Punkt 11 — SSH Key-only  [x]
+## Punkt 11 — SSH Key-only  ✅
 
 Betriebsakt, kein Code. sshd_config:
 PermitRootLogin prohibit-password,
 PasswordAuthentication no, PubkeyAuthentication yes.
 Key windows@... in authorized_keys. Commit d1602ef.
 
-## Punkt 32 — Klassifikations-Luecke "gibt es"  [x]
+## Punkt 32 — Klassifikations-Luecke "gibt es"  ✅
 
 _FACT_RE um "gibt es" erweitert, Veto gegen
 Bewertungsworte. Commit 213ab7b, Auflagen 804-811.
 
-## Zwischenblock Lint/Typen  [x]
+## Zwischenblock Lint/Typen  ✅
 
 ruff 452 -> 122, mypy 89 -> 71 (echte Typfehler
 15 -> 0). Auto-Fix-Kategorien I001, UP017,
@@ -926,7 +926,7 @@ Commits 540b205, 3a5dbab, 6426967, d6ecc01,
 3b20891, 6ec5c12, 9697c22, c1d2fe2, c05283e,
 2bdc16b, 75b5ec1, b3db49c, 01466e0.
 
-## Doku-Nachzug README + PHASES  [x]
+## Doku-Nachzug README + PHASES  ✅
 
 README repariert (Heredoc-Vorfall 5b5a727),
 - Vorfall-Nachtrag 2026-09-28: PROJECT_VISION.md
@@ -936,7 +936,7 @@ README repariert (Heredoc-Vorfall 5b5a727),
 Kernzahlen 950 Tests. PHASES 3.6.10/3.6.11
 abgehakt. Commits e0a6aa4, 4cc0a45, 8e79495.
 
-## A900 - no-untyped-def + Ruff-Fix  [x]
+## A900 - no-untyped-def + Ruff-Fix  ✅
 
 mypy no-untyped-def 66 -> 2, ruff 2 -> 0.
 23 Commits (A900-1, A900-2a, A900-2b-1,
@@ -944,7 +944,7 @@ A900-2b-2a/b/c, Ruff-I001-Fix).
 Details in docs/SECURITY_REVIEW_LOG.md.
 Punkt 60 erledigt in B1b-2 (d93cc68).
 
-## B1 - mypy-Aufraeumen  [x]
+## B1 - mypy-Aufraeumen  ✅
 
 mypy 37 -> 0 in 15 Dateien
 (arg-type, return-value, import-untyped,
@@ -967,7 +967,7 @@ Punkt 64 entfaellt (B4 war Fehlalarm).
   orchestrator, chat, agent_loop).
 Details in docs/SECURITY_REVIEW_LOG.md.
 
-## Punkt 55 - Dashboard-Anzeige-Erweiterung  [x]
+## Punkt 55 - Dashboard-Anzeige-Erweiterung  ✅
 
 7 Commits (e0b60f8, 876e7c7, 397a551, 3e2d354,
 2d3223c, 36ef968, d607d82).
@@ -991,7 +991,7 @@ Neue Punkte 65 (Extern-Kachel), 66 (/system-
 Detailseite).
 Details in docs/SECURITY_REVIEW_LOG.md.
 
-## Phase 5 — Admin AI  [ ]
+## Phase 5 — Admin AI  💡
 
 **Baut auf:** Core (Phase 1-4). Nutzt die
 Change-Request-Mechanik aus Phase 4.3.
@@ -1003,7 +1003,7 @@ Voraussetzungen: Phase 3.5 (lokale KI).
 Siehe PROJECT_VISION.md, Abschnitt 2.1 (Security
 Master AI).
 
-## Phase 6 — DSGVO-Konformitaet  [ ]
+## Phase 6 — DSGVO-Konformitaet  💡
 
 Ziel: Das System wird in einer Firma betreibbar,
 ohne gegen DSGVO zu verstossen.
@@ -1026,7 +1026,7 @@ Skizze:
   Massnahmen).
 - AVV-Vorlage (falls SaaS-Modell).
 
-## Phase 7 — Data Connectors  [ ]
+## Phase 7 — Data Connectors  💡
 
 **Baut auf:** Core als Bridge (Phase 1-4).
 Jeder Connector laeuft ueber Core-Services und
@@ -1054,7 +1054,7 @@ Skizze:
   Abschnitt 3, Vorbereitbarkeit): Public-API-Doku +
   Sandbox-Account reicht fuer die erste Version.
 
-## Phase 8 — LLM-Bridges  [ ]
+## Phase 8 — LLM-Bridges  💡
 
 **Baut auf:** Phase 5 (Admin AI) + Phase 7
 (Data Connectors). Daten zuerst, dann Intelligenz.
@@ -1076,7 +1076,7 @@ Skizze:
 - Datenfluss-Kontrolle (was darf raus, was nicht).
 - Opt-in pro Installation. Kein Cloud-Zwang.
 
-## Phase 9 — Kunden-Mitarbeiter-KI  [ ]
+## Phase 9 — Kunden-Mitarbeiter-KI  💡
 
 **Baut auf:** Phase 5 (Admin AI) + Phase 7
 (Data Connectors) + Phase 8 (LLM-Bridges).
@@ -1102,7 +1102,7 @@ Skizze:
 - Kein direkter Datenzugriff, keine Umgehung der
   Security AI.
 
-## Phase 10 — Physische Sicherheit  [ ]
+## Phase 10 — Physische Sicherheit  💡
 
 **Baut auf:** Core (Inventory, RBAC, Detection,
 Events aus Phase 1-4).
@@ -1127,7 +1127,7 @@ Skizze:
   sind verbindlich: keine Gesichtserkennung ohne
   Freigabe, keine Bewegungsprofile.
 
-## Phase 11 — Ganzheitliche Korrelation  [ ]
+## Phase 11 — Ganzheitliche Korrelation  💡
 
 **Baut auf:** Phase 10 (physisch) + Core
 (Phase 1-4) + Phase 5 (Admin AI fuer Korrelation
@@ -1196,7 +1196,7 @@ Insbesondere:
   Doku-Audit nachgetragen).
 - Punkt 10/11: HTTPS und SSH-Zugang.
 
-## Alarm-Paket A1-A3 (Punkte 70-72)  [x]
+## Alarm-Paket A1-A3 (Punkte 70-72)  ✅
 
 Drei neue Detection-Regeln, live verifiziert.
 
@@ -1214,7 +1214,7 @@ Drei neue Detection-Regeln, live verifiziert.
 - A4 (unbekanntes Geraet > X Minuten) bleibt
   Merkposten.
 
-## Punkt 74 (A4) — unknown_device_persistent  [x]
+## Punkt 74 (A4) — unknown_device_persistent  ✅
 
 Zusaetzliche Regel: unbekanntes Geraet im Hauptnetz
 laenger als alarm_after_seconds (Default 3600 s).
@@ -1229,7 +1229,7 @@ Baut auf Punkt 73a (known aus Whitelist).
 
 Commit c6c3691.
 
-## Punkt 75 — internal_name + IP-Suche  [x]
+## Punkt 75 — internal_name + IP-Suche  ✅
 
 Nutzervergebener Name pro Geraet, unabhaengig vom
 Fritz!Box-Namen. IP in der Suche.
@@ -1244,7 +1244,7 @@ Fritz!Box-Namen. IP in der Suche.
 
 Commits b11e958 + 9a9775c.
 
-## Punkt 77 — ntfy als Benachrichtigungssystem  [x]
+## Punkt 77 — ntfy als Benachrichtigungssystem  ✅
 
 Self-hosted Push-Kanal auf Proxmox-Host, Tool in
 CT102, Empfang per F-Droid-App.
@@ -1262,7 +1262,7 @@ CT102, Empfang per F-Droid-App.
 
 Commits f3c6f5f + e013e5e + 3db1aa5 (Betrieb).
 
-## Punkt 79 + 79a — Alarme-Seite Klartext + Kontext + Links  [x]
+## Punkt 79 + 79a — Alarme-Seite Klartext + Kontext + Links  ✅
 
 21 Alarme ohne verwertbare Info. Neuer Aufbau.
 
@@ -1281,7 +1281,7 @@ Commits f3c6f5f + e013e5e + 3db1aa5 (Betrieb).
 
 Commits 02010cb + 9dec780 + 747fa08.
 
-## Punkt 81 — Alarm-Kanal auf ntfy  [x]
+## Punkt 81 — Alarm-Kanal auf ntfy  ✅
 
 Alarm-Pfad nutzt notify_ntfy statt telegram_alert.
 ntfy ist primaerer Kanal (self-hosted, Tailscale).
@@ -1301,7 +1301,7 @@ Telegram bleibt fuer Approval-Benachrichtigung
 
 Commit 6d9c1c1.
 
-## Lizenz AGPL-3.0-or-later  [x]
+## Lizenz AGPL-3.0-or-later  ✅
 
 - LICENSE (AGPL-3.0).
 - pyproject.toml license-Feld (klassische
@@ -1311,7 +1311,7 @@ Commit 6d9c1c1.
 
 Commits f323ff5 + efc4936 + 413540e.
 
-## WORKFLOW-Nachtrag "ruff-Ausgabe vollstaendig lesen"  [x]
+## WORKFLOW-Nachtrag "ruff-Ausgabe vollstaendig lesen"  ✅
 
 Anti-Pattern-Abschnitt ergaenzt, projektunabhaengig.
 - ruff-Ausgabe vor dem Commit vollstaendig lesen.
@@ -1322,7 +1322,7 @@ Anti-Pattern-Abschnitt ergaenzt, projektunabhaengig.
 
 Commit 03cb7bb.
 
-## Doku-Kopf-Nachzug  [x]
+## Doku-Kopf-Nachzug  ✅
 
 Kopfzeilen in neun Dateien auf HEAD 413540e / 1191.
 Commit-Kopf 1855483 (Zwischenstand) + aktueller
