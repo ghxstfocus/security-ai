@@ -344,5 +344,34 @@ Vor jedem Deployment:
 - 💡 Logs rotieren
 - 💡 Backups funktionieren
 
+## 13. Alarm-Regeln
+
+Alarme laufen ueber den **ntfy-Kanal**
+(self-hosted, Tailscale). Telegram bleibt als
+optionaler Fallback (Punkt 76 offen).
+
+### 13.1 Digital
+
+Gastgeraet: kein Alarm. Bekanntes Geraet: kein
+Alarm. Unbekanntes Geraet im Hauptnetz: ntfy (W).
+Port-Scan von Whitelist oder extern: ntfy (C).
+HTTP-Recon: ntfy (W).
+
+### 13.2 Physisch (Phase 10, geplant)
+
+Zutritt erfolgreich: kein Alarm. Zutritt verweigert:
+ntfy (W). Raum-Level-Mismatch: ntfy (C). Zutritt
+ausserhalb Arbeitszeit: ntfy (W). Tailgating:
+ntfy (W). Tuer offen: ntfy (W).
+
+### 13.3 Korreliert (Phase 11, geplant)
+
+Login ohne Zutritt: ntfy (C). Zugriff bleibt aktiv:
+ntfy (W). Ungewoehnliches Muster: ntfy (W). System
+bleibt offen: ntfy (W). Mehrere Versuche: ntfy (C).
+
+Kanal-Details: DESIGN_DECISIONS § 23 (Alarm-Kanal)
+und docs/NTFY.md.
+
 ---
 Letzte Aktualisierung: 2026-10-02

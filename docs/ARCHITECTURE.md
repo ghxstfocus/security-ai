@@ -446,6 +446,59 @@ Regel: Lesen -> Checker, Schreiben -> AccessService.
 Design: UI (Web/CLI/Telegram) -> Services -> Repos.
 Keine Fachlogik in der UI.
 
+### 3.18 Bridges (geplant) 💡
+
+**Status:** geplant (Phase 7). Adapter-Muster
+definiert, keine Implementierung.
+
+Die Bridges sind **Adapter zu Cloud-Systemen**.
+Sie laufen **unter** dem Core. Sie werden von ihm
+**kontrolliert** und **auditiert**.
+
+**Was eine Bridge ist:**
+
+- Ein Adapter zu einem externen System.
+- Sie kennt die API des Systems (z. B. Personio).
+- Sie kennt das Schema (z. B. Personio Employee).
+- Sie mappt auf das interne Schema.
+- Sie laeuft in der Sandbox.
+- Sie wird von der Policy Engine kontrolliert.
+- Sie wird auditiert.
+
+**Welche Bridges gibt es (geplant):**
+
+- HR-Bridge: Personio, SAP HR, Workday.
+- Buchhaltung-Bridge: DATEV, SAP FI.
+- CRM-Bridge: Hubspot, Salesforce.
+- Ticket-Bridge: Jira, Zendesk.
+- M365-Bridge: Microsoft Graph.
+- LLM-Bridges: Anthropic, OpenAI, Azure OpenAI,
+  DeepSeek (alle ueber MCP).
+
+**Was eine Bridge darf:**
+
+- Lesen im Default.
+- Schreiben nur ueber Change Request + Human
+  Approval.
+
+**Was eine Bridge NICHT darf:**
+
+- Direkt auf Daten zugreifen (nur ueber den Core).
+- Ohne Audit arbeiten.
+- Ohne Policy-Check laufen.
+- Ohne Sandbox laufen.
+
+**Vorbereitbarkeit:** Bridges sind codeseitig
+vorbereitbar. Die Zielsysteme (Personio, SAP HR,
+Workday, DATEV, Hubspot, Jira, Microsoft Graph)
+haben stabile, dokumentierte APIs. Der
+Vertrauensakt ist der Betrieb beim Kunden
+(Vertrag, Haftung, Versicherung, Support) -
+nicht die Entwicklung des Adapters.
+
+Siehe PROJECT_VISION § 2 (Bridge-Begriff im
+Rollensicht-Bild) und docs/PHASES.md Phase 7.
+
 ## 4. Datenfluss — Beispiel
 
 Szenario: Unbekanntes Gerät im Hauptnetz.
