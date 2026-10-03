@@ -66,3 +66,12 @@ tools:
       - "--script"
       - "-oA"
     reason: "Nmap nur gegen autorisierte Netze"
+
+  # --- net_diag (Punkt 58 Runde 1) ---
+
+  ping:
+    allowed: true
+    level: 0
+    conditions:
+      - target_in_scope
+    reason: "Ping gegen autorisierte Netze"
