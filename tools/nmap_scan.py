@@ -19,15 +19,14 @@ Also: nmap_scan_run(target=..., ports=..., scan_type=...).
 """
 from __future__ import annotations
 
-import ipaddress
 import shutil
-import socket
 import subprocess
 from datetime import UTC, datetime
 from typing import Any
 
 from defusedxml import ElementTree as ET
 
+from core.net.scope import check_target_allowed
 from harness.permissions.levels import Level
 from harness.tool_registry.tool import Tool, ToolArgumentError, ToolError
 
@@ -50,15 +49,6 @@ _ARG_WHITELIST = frozenset({
 })
 
 # Ziel-Whitelist als Netz-Objekte.
-_ALLOWED_NETWORKS = tuple(
-    ipaddress.ip_network(n) for n in (
-        "127.0.0.0/8",
-        "10.0.0.0/8",
-        "172.16.0.0/12",
-        "192.168.0.0/16",
-    )
-)
-_ALLOWED_HOSTNAMES = frozenset({"localhost"})
 
 _MAX_PORTS_LEN = 512
 _MAX_TARGET_LEN = 253
@@ -129,71 +119,6 @@ def _validate_scan_type(scan_type: Any) -> str:
             f"Erlaubt: {sorted(_ALLOWED_SCAN_TYPES)}"
         )
     return st
-
-
-# ---------------------------------------------------------------------- #
-# Ziel-Whitelist (Sandbox-Ebene)
-# ---------------------------------------------------------------------- #
-
-def _resolve_target_networks(
-    target: str,
-) -> list[ipaddress.IPv4Network | ipaddress.IPv6Network]:
-    """
-    Zerlegt target in pruefbare Netze.
-
-    - IP oder CIDR: ipaddress.ip_network(target, strict=False)
-      (Einzel-IP wird als /32 bzw. /128 zurueckgegeben.)
-    - Hostname: socket.getaddrinfo, jede IP als /32 bzw. /128.
-    - "localhost" ist in _ALLOWED_HOSTNAMES und wird zu 127.0.0.1/32.
-
-    Fail closed: Aufloesefehler -> ToolError.
-    """
-    if target in _ALLOWED_HOSTNAMES:
-        return [ipaddress.ip_network("127.0.0.1/32")]
-
-    # IP oder CIDR
-    try:
-        return [ipaddress.ip_network(target, strict=False)]
-    except ValueError:
-        pass
-
-    # Hostname
-    try:
-        infos = socket.getaddrinfo(target, None, proto=socket.IPPROTO_TCP)
-    except socket.gaierror as exc:
-        raise ToolError(
-            f"nmap_scan: Ziel {target!r} nicht aufloesbar: {exc}"
-        ) from exc
-
-    nets: list[ipaddress.IPv4Network | ipaddress.IPv6Network] = []
-    for info in infos:
-        addr = info[4][0]
-        try:
-            ip = ipaddress.ip_address(addr)
-        except ValueError:
-            continue
-        prefix = 32 if ip.version == 4 else 128
-        nets.append(ipaddress.ip_network(f"{ip}/{prefix}", strict=False))
-    if not nets:
-        raise ToolError(f"nmap_scan: keine IP fuer Ziel {target!r}")
-    return nets
-
-
-def _check_target_allowed(target: str) -> None:
-    """
-    Jedes aufgeloeste Netz muss ECHTE TEILMENGE mindestens eines
-    erlaubten Netzes sein (subnet_of), nicht nur ueberlappen.
-    Fail closed.
-    """
-    for net in _resolve_target_networks(target):
-        allowed_same_version = [
-            a for a in _ALLOWED_NETWORKS if a.version == net.version
-        ]
-        if not any(net.subnet_of(a) for a in allowed_same_version):  # type: ignore[arg-type]  # mypy sieht net.version-Filter nicht
-            raise ToolError(
-                f"nmap_scan: Ziel {target!r} ({net}) liegt nicht komplett "
-                f"in den erlaubten Netzen (localhost, RFC1918)"
-            )
 
 
 # ---------------------------------------------------------------------- #
@@ -303,7 +228,7 @@ def nmap_scan_run(
     p = _validate_ports(ports)
     st = _validate_scan_type(scan_type)
 
-    _check_target_allowed(t)
+    check_target_allowed(t)
 
     if shutil.which(_NMAP_BIN) is None:
         raise ToolError(

@@ -43,6 +43,7 @@ KNOWN_SANDBOX_PROFILES = frozenset({
     "no_network_except_ntfy",
     "nmap_local",
     "local_filesystem",
+    "net_diag_local",
 })
 
 # Regex für Tool-Namen: nur Kleinbuchstaben, Ziffern, Unterstriche

@@ -1,0 +1,25 @@
+# Sandbox-Profil: net_diag_local
+#
+# Status: aktiv (Punkt 58 Runde 1, Schritt 1a).
+# Verwendet von: tools/ping.py, traceroute.py, whois.py,
+#                dns_lookup.py, port_check.py
+#
+# Erlaubt:
+#   - Netzwerk-Diagnose gegen RFC1918-Adressen und localhost
+#   - Lesender Zugriff
+#
+# Verboten:
+#   - Shell
+#   - Dateisystem-Schreibzugriff
+#   - Ziele ausserhalb der Whitelist
+name: net_diag_local
+timeout_seconds: 15
+network: restricted
+allowed_targets:
+  - "127.0.0.0/8"
+  - "10.0.0.0/8"
+  - "172.16.0.0/12"
+  - "192.168.0.0/16"
+filesystem: read_only
+allowed_args: []
+shell: false
