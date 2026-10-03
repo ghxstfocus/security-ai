@@ -323,7 +323,7 @@ unvollstaendiger Commit.
 
 Was zum Doku-Nachzug gehoert, generisch:
 
-- **Phasen-Doku** — Status `[x]` fuer den
+- **Phasen-Doku** — Status `✅` fuer den
   Unterschritt, Commit-Hash, Kurzbeschreibung. Neue
   Unterschritte bekommen einen eigenen Block.
 - **Einstiegs-Prompt** — HEAD-Commit, Testzahl

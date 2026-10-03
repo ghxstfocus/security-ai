@@ -427,11 +427,11 @@ Port 8080 wird nicht mehr verwendet.
 
 ### 3c.8 Checkliste WEB_SECURITY_CHECKLIST § L
 
-- [x] Dashboard laeuft hinter Reverse-Proxy.
-- [x] NICHT direkt ins Internet.
-- [x] systemd-Service mit User=, ProtectSystem=strict,
+- ✅ Dashboard laeuft hinter Reverse-Proxy.
+- ✅ NICHT direkt ins Internet.
+- ✅ systemd-Service mit User=, ProtectSystem=strict,
   NoNewPrivileges.
-- [x] Binding auf 127.0.0.1 fuer Flask.
+- ✅ Binding auf 127.0.0.1 fuer Flask.
 
 ## 3d. Systemvoraussetzungen
 
@@ -797,14 +797,14 @@ Zeile hinzufuegen:
 
 Checkliste:
 
-- [ ] .env hat chmod 600
-- [ ] Capabilities in 102.conf gesetzt
-- [ ] Firewall-Regeln aktiv
-- [x] SSH nur mit Key (kein Passwort) -- 2026-09-28
-- [ ] Telegram-Bot-Token nicht in Logs
-- [ ] Audit-Logs schreibgeschuetzt (chattr +a)
-- [ ] Backups laufen
-- [ ] Service startet bei Reboot
+- 💡 .env hat chmod 600
+- 💡 Capabilities in 102.conf gesetzt
+- 💡 Firewall-Regeln aktiv
+- ✅ SSH nur mit Key (kein Passwort) -- 2026-09-28
+- 💡 Telegram-Bot-Token nicht in Logs
+- 💡 Audit-Logs schreibgeschuetzt (chattr +a)
+- 💡 Backups laufen
+- 💡 Service startet bei Reboot
 
 ## 10. Naechste Schritte
 

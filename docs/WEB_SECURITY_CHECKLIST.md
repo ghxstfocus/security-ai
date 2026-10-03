@@ -10,121 +10,121 @@ was der Service freigibt.
 
 ## A. Authentifizierung
 
-- [ ] Passwort-Hashing: pbkdf2_sha256, 600_000 Iterationen
+- 💡 Passwort-Hashing: pbkdf2_sha256, 600_000 Iterationen
       (Format: pbkdf2_sha256$600000$<salt>$<hash>).
-- [ ] Vergleich mit hmac.compare_digest (timing-safe).
+- 💡 Vergleich mit hmac.compare_digest (timing-safe).
       (in core/access/models.py::verify_password vorhanden)
-- [ ] Kein Klartext-Passwort in Logs oder Audit.
-- [ ] Fail closed bei fehlendem password_hash: Systeme
+- 💡 Kein Klartext-Passwort in Logs oder Audit.
+- 💡 Fail closed bei fehlendem password_hash: Systeme
       ohne Login koennen sich NICHT anmelden.
-- [ ] Fail closed bei is_active=False.
+- 💡 Fail closed bei is_active=False.
 
 ## B. Sessions
 
-- [ ] Serverseitige Sessions. Kein Cookie mit Nutzdaten.
-- [ ] SECRET_KEY aus .env (nicht im Repo). Mind. 32 Byte.
-- [ ] Cookie-Flags: HttpOnly, Secure, SameSite=Strict.
-- [ ] Session-Timeout (z.B. 30 min idle).
-- [ ] Logout invalidiert serverseitig.
-- [ ] Login rotiert die Session-ID (Session-Fixation
+- 💡 Serverseitige Sessions. Kein Cookie mit Nutzdaten.
+- 💡 SECRET_KEY aus .env (nicht im Repo). Mind. 32 Byte.
+- 💡 Cookie-Flags: HttpOnly, Secure, SameSite=Strict.
+- 💡 Session-Timeout (z.B. 30 min idle).
+- 💡 Logout invalidiert serverseitig.
+- 💡 Login rotiert die Session-ID (Session-Fixation
       verhindern).
 
 ## C. CSRF
 
-- [ ] Pflicht fuer POST/PUT/DELETE mit Cookie-Auth.
-- [ ] Token-Verfahren: Flask-WTF oder synchronizer token.
-- [ ] JSON-Endpoints mit Cookie-Auth ebenfalls schuetzen.
-- [ ] Ausnahme nur mit Authorization-Header und
+- 💡 Pflicht fuer POST/PUT/DELETE mit Cookie-Auth.
+- 💡 Token-Verfahren: Flask-WTF oder synchronizer token.
+- 💡 JSON-Endpoints mit Cookie-Auth ebenfalls schuetzen.
+- 💡 Ausnahme nur mit Authorization-Header und
       SameSite=Strict.
 
 ## D. RBAC
 
-- [ ] Jede Route ruft AccessChecker.require_permission(
+- 💡 Jede Route ruft AccessChecker.require_permission(
       principal, code).
-- [ ] UI-Verstecken von Menuepunkten ist KEIN Schutz.
-- [ ] GET-Routen: *.view-Permission.
-- [ ] POST/PUT/DELETE: Aktions-Permission.
-- [ ] whoami-Route fuer UI-Anzeige, nicht als RBAC-Ersatz.
-- [ ] 403 bei fehlender Permission, nicht 404.
+- 💡 UI-Verstecken von Menuepunkten ist KEIN Schutz.
+- 💡 GET-Routen: *.view-Permission.
+- 💡 POST/PUT/DELETE: Aktions-Permission.
+- 💡 whoami-Route fuer UI-Anzeige, nicht als RBAC-Ersatz.
+- 💡 403 bei fehlender Permission, nicht 404.
       (404 nur, wenn Existenz verbergen gewuenscht.)
 
 ## E. XSS
 
-- [ ] Jinja2-Autoescape ist Standard, NICHT mit |safe
+- 💡 Jinja2-Autoescape ist Standard, NICHT mit |safe
       abschalten.
-- [ ] Kein Markup(...) aus Nutzereingaben.
-- [ ] Chat-Antworten des LLM als Text rendern
+- 💡 Kein Markup(...) aus Nutzereingaben.
+- 💡 Chat-Antworten des LLM als Text rendern
       (<pre> mit white-space: pre-wrap), nicht als HTML.
-- [ ] Content-Security-Policy-Header:
+- 💡 Content-Security-Policy-Header:
       default-src 'self'; script-src 'self';
       style-src 'self'; img-src 'self' data:;
       connect-src 'self'.
       (Quelle: DESIGN_DECISIONS §16 — streng, kein
       unsafe-inline, kein unsafe-eval.)
-- [ ] Keine Inline-Skripte (nur externe JS-Dateien).
+- 💡 Keine Inline-Skripte (nur externe JS-Dateien).
 
 ## F. SQL-Injection
 
-- [ ] Nur parametrisierte Queries (?-Platzhalter).
-- [ ] Kein String-Concatenation in SQL.
-- [ ] Web-Layer ruft NIEMALS direkt SQL.
+- 💡 Nur parametrisierte Queries (?-Platzhalter).
+- 💡 Kein String-Concatenation in SQL.
+- 💡 Web-Layer ruft NIEMALS direkt SQL.
       Immer ueber Repositories in core/.
 
 ## G. Path-Traversal / File-Uploads
 
-- [ ] Kein File-Upload in Phase 3.6.
-- [ ] Falls doch noetig: Whitelist der Extensions,
+- 💡 Kein File-Upload in Phase 3.6.
+- 💡 Falls doch noetig: Whitelist der Extensions,
       pathlib.resolve().is_relative_to(BASE) pruefen.
-- [ ] Dateien nicht im Web-Root speichern.
+- 💡 Dateien nicht im Web-Root speichern.
 
 ## H. LLM im Web-Kontext
 
-- [ ] Chat-Route ruft ChatService.ask(...).
+- 💡 Chat-Route ruft ChatService.ask(...).
       Der Service macht RBAC + Klassifikation +
       Sanity-Check.
-- [ ] Keine direkte LLM-Anbindung in der Route.
-- [ ] Chat-Antworten als Text, nicht als HTML.
-- [ ] Rate-Limit fuer Chat-Endpoint
+- 💡 Keine direkte LLM-Anbindung in der Route.
+- 💡 Chat-Antworten als Text, nicht als HTML.
+- 💡 Rate-Limit fuer Chat-Endpoint
       (z.B. 10 Anfragen/Minute pro Principal).
-- [ ] Timeout fuer Chat-Requests (180s fuer 7B).
+- 💡 Timeout fuer Chat-Requests (180s fuer 7B).
 
 ## I. Audit
 
-- [ ] Jeder Login-Versuch wird auditiert:
+- 💡 Jeder Login-Versuch wird auditiert:
       login_success, login_failed, login_locked.
-- [ ] Login-Audit enthaelt IP + User-Agent
+- 💡 Login-Audit enthaelt IP + User-Agent
       (nur Nachweis, kein Sicherheitsmerkmal).
-- [ ] Jede schreibende Aktion ueber Services -> Audit
+- 💡 Jede schreibende Aktion ueber Services -> Audit
       (bestehende Konventionen).
-- [ ] Audit-Fehler ist fail closed
+- 💡 Audit-Fehler ist fail closed
       (Service-Aufruf bricht ab).
 
 ## J. Logging
 
-- [ ] NIEMALS loggen: Passwoerter, Tokens, Session-IDs,
+- 💡 NIEMALS loggen: Passwoerter, Tokens, Session-IDs,
       SECRET_KEY, password_hash, CSRF-Token.
-- [ ] NIEMALS den vollen Request-Body bei Login.
-- [ ] Fehlerantworten generisch
+- 💡 NIEMALS den vollen Request-Body bei Login.
+- 💡 Fehlerantworten generisch
       ("Ungueltige Anmeldedaten").
-- [ ] Details nur intern (Log), nicht im HTTP-Response.
+- 💡 Details nur intern (Log), nicht im HTTP-Response.
 
 ## K. Konfiguration
 
-- [ ] DEBUG=False in Produktion. Flask-Debug-PIN ist eine
+- 💡 DEBUG=False in Produktion. Flask-Debug-PIN ist eine
       Hintertuer.
-- [ ] SECRET_KEY aus .env.
-- [ ] SESSION_COOKIE_SECURE=True (HTTPS/Tailscale).
-- [ ] Kein Wildcard-Host (Host-Header-Validierung).
-- [ ] MAX_CONTENT_LENGTH setzen (Body-Size-Limit).
+- 💡 SECRET_KEY aus .env.
+- 💡 SESSION_COOKIE_SECURE=True (HTTPS/Tailscale).
+- 💡 Kein Wildcard-Host (Host-Header-Validierung).
+- 💡 MAX_CONTENT_LENGTH setzen (Body-Size-Limit).
 
 ## L. Deployment
 
-- [x] Dashboard laeuft hinter Reverse-Proxy (nginx/caddy)
+- ✅ Dashboard laeuft hinter Reverse-Proxy (nginx/caddy)
       oder nur ueber Tailscale.
-- [x] NICHT direkt ins Internet.
-- [x] systemd-Service mit User=, ProtectSystem=strict,
+- ✅ NICHT direkt ins Internet.
+- ✅ systemd-Service mit User=, ProtectSystem=strict,
       NoNewPrivileges.
-- [x] Binding auf 127.0.0.1 oder Tailscale-Interface,
+- ✅ Binding auf 127.0.0.1 oder Tailscale-Interface,
       nicht 0.0.0.0 (falls ohne Proxy).
 
 Erfuellt durch Phase 3.6.12 (nginx Reverse-Proxy mit TLS).
@@ -132,14 +132,14 @@ Siehe docs/DEPLOYMENT.md Abschnitt 3c.
 
 ## M. Test-Ebene
 
-- [ ] Login: erfolgreich, falsches Passwort, inaktiver
+- 💡 Login: erfolgreich, falsches Passwort, inaktiver
       Principal, fehlender password_hash.
-- [ ] RBAC: 403 ohne Permission fuer jede Route.
-- [ ] CSRF: POST ohne Token -> 400/403.
-- [ ] Session-Timeout nach Idle.
-- [ ] XSS: HTML in Chat-Antwort wird escaped.
-- [ ] Rate-Limit: zu viele Requests -> 429.
-- [ ] Logout: Session serverseitig ungueltig.
+- 💡 RBAC: 403 ohne Permission fuer jede Route.
+- 💡 CSRF: POST ohne Token -> 400/403.
+- 💡 Session-Timeout nach Idle.
+- 💡 XSS: HTML in Chat-Antwort wird escaped.
+- 💡 Rate-Limit: zu viele Requests -> 429.
+- 💡 Logout: Session serverseitig ungueltig.
 
 ## N. Was NICHT ins Dashboard gehoert
 

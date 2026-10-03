@@ -335,14 +335,14 @@ Wenn ein Sicherheitsvorfall erkannt wird:
 
 Vor jedem Deployment:
 
-- [ ] .env nicht im Repo
-- [ ] Alle Secrets gesetzt und stark
-- [ ] Guardrails aktiv
-- [ ] Audit-System schreibt
-- [ ] Capabilities korrekt gesetzt
-- [ ] Firewall-Regeln geprüft
-- [ ] Logs rotieren
-- [ ] Backups funktionieren
+- 💡 .env nicht im Repo
+- 💡 Alle Secrets gesetzt und stark
+- 💡 Guardrails aktiv
+- 💡 Audit-System schreibt
+- 💡 Capabilities korrekt gesetzt
+- 💡 Firewall-Regeln geprüft
+- 💡 Logs rotieren
+- 💡 Backups funktionieren
 
 ---
 Letzte Aktualisierung: 2026-10-02

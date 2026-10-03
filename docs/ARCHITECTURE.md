@@ -367,7 +367,7 @@ Jede Änderung ist ein Change Request:
       "risk_level": 2,
       "proposed_change": { },
       "rollback": { },
-      "tests": [ ],
+      "tests": 💡,
       "requires_approval": true
     }
 
@@ -489,7 +489,7 @@ Szenario: Unbekanntes Gerät im Hauptnetz.
     CT101 = 192.168.178.116 (ruht, bleibt unberuehrt)
 
 Kein security-tools-LXC, kein security-db-LXC.
-host_scanner ist nicht implementiert (Phase 3.8, [ ]).
+host_scanner ist nicht implementiert (Phase 3.8, 💡).
 Alle Aktionen laufen heute lokal in CT102.
 
 ### 5.2 Ziel-Topologie (noch nicht gebaut)
