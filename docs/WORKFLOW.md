@@ -756,6 +756,30 @@ die Eingabe. Symptome:
   oder mehrzeilige Strings mit echten
   Zeilenumbruechen.
 
+### Backtick-! in Commit-Messages
+
+Ein Commit-Text, der ein Backtick-Ausrufezeichen enthaelt und per
+`git commit -m` uebergeben wird, kann von der Shell als
+History-Expansion interpretiert werden. Folge: Commit-Message wird
+abgeschnitten, Datei trotzdem committet.
+
+- **Regel:** Solche Zeichen vermeiden, oder
+  `git commit -F /tmp/msg.txt` mit Datei nutzen.
+
+Vorfall: Punkt 83 (2026-10-02), Commit 3784998.
+
+### Hash-Zirkel in Doku-Eintraegen
+
+Wenn ein SECURITY_REVIEW_LOG-Eintrag den Commit-Hash enthaelt,
+der ihn selbst committet, entsteht ein Amend-Zirkel: der Hash
+aendert sich bei jedem Amend.
+
+- **Regel:** Kein Commit-Hash im Eintrag selbst.
+  Hash in die Commit-Message, oder in einem separaten
+  Nachzug-Commit nachtragen.
+
+Vorfall: Punkt 84 (2026-10-03), Amend-Zirkel,aufgeloest durch Nachzug-Commit 32bca09.
+
 ## Sprache und Format
 
 - Keine Umlaute in Code-Bloecken (oe/ue/ae/ss).
