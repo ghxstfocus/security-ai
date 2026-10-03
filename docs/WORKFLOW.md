@@ -91,6 +91,12 @@ HR9. Reviewer-Blocks immer in einen Codeblock.
      Patch-Skript in `/tmp` schreiben, dort
      verifizieren, dann ausfuehren. Kein Heredoc in
      die interaktive Shell.
+     KONKRET: `python3 /tmp/patch.py` (Skript als
+     Datei), NICHT `python3 - <<'PY'` (Heredoc in
+     die Shell). Nur so ist der Patch reproduzierbar,
+     nachpruefbar und im Fehlerfall wiederholbar.
+     Verstoss = Prozessfehler, im Selbst-Review
+     unter RISIKEN nennen.
      Anker-Messung Pflicht: bei jedem Patch, der
      mehrzeilige Anker nutzt, den Anker IM Patch-
      Skript ermitteln (lines.index, text.find,
@@ -606,6 +612,14 @@ hardcoded Kernel-Limit.
   (`ls -la`, `wc -l`, `tail -3`, `py_compile`).
   Wenn Datei fehlt oder zu kurz: Schritt wiederholen,
   nicht weitermachen.
+
+Praxisbelege:
+- 2026-09-29: Commit 3, PHASES-Duplikat (4 Anlaeufe).
+- 2026-10-02/03 (Punkt 80): dreimal Heredoc in die
+  interaktive Shell, dreimal zerhackt. Trotz
+  bestehender HR9-Regel. Naechster Versuch jeweils
+  mit `python3 /tmp/script.py` (Datei) erfolgreich.
+  Lehre: HR9 ist nicht optional, sondern Pflicht.
 
 ### Anker aus dem Chat abgeleitet statt im Skript gemessen
 

@@ -1899,20 +1899,16 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       veraltet (heute 0/0, A900+B1 abgeschlossen).
     - Eigener Doku-Block nach Punkt 81.
 
-84. (offen, Kategorie 1, Doku) Heredoc-Zerhackung.
-    Wiederholt in der Session 2026-10-02: Heredoc
-    > ~3 KB in die interaktive Shell zerhackt
-    (fuenfmal). TTY-Puffer N_TTY_BUF_SIZE (4096
-    Byte), kein Shell-Bug. WORKFLOW-Anti-Pattern.
-    - Praevention: Patch-Skripte > ~3 KB per
-      stueckweises Anhaengen mit >> an die
-      /tmp-Datei, oder python3 - <<'PY' inline.
-    - Nach jedem cat >: wc -l, py_compile,
-      tail -3 zur Vollstaendigkeitspruefung.
-    - Bereits in WORKFLOW dokumentiert (Heredoc-
-      Anti-Pattern), aber Praevention wird in der
-      Praxis noch zu oft ignoriert.
-    - Kein Code-Bezug, reiner Prozess-Hinweis.
+84. (erledigt in adf4485, Kategorie 1, Doku) Heredoc-Zerhackung.
+    Praezisierung statt Neuschrieb:
+    - WORKFLOW.md HR9 verschaerft (KONKRET: python3
+      /tmp/patch.py, NICHT python3 - <<'PY').
+    - Anti-Pattern Heredoc ueber ~3 KB um Praxisbeleg
+      Punkt 80 (2026-10-02/03) erweitert.
+    - Keine vierte Anti-Pattern-Sektion (Redundanz
+      vermieden).
+    - Ursache war nicht fehlende Doku, sondern
+      wiederholtes Ignorieren der bestehenden Regel.
 
 85. (verworfen) Detection-Tuning Handy-WLAN.
     Angedacht, aber Nutzer-Entscheidung: S25-von-A
