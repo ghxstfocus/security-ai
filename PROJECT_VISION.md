@@ -4,7 +4,7 @@
 > arbeitet, wenn Sicherheit zaehlt, und LLMs nur
 > dort einsetzt, wo sie erklaeren helfen.
 
-Stand: 2026-10-03 | HEAD: <wird nach Commit gesetzt>
+Stand: 2026-10-03 | HEAD: 057cc3f
 
 ---
 
