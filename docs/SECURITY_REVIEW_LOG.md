@@ -1899,7 +1899,7 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       veraltet (heute 0/0, A900+B1 abgeschlossen).
     - Eigener Doku-Block nach Punkt 81.
 
-84. (erledigt in adf4485, Kategorie 1, Doku) Heredoc-Zerhackung.
+84. (erledigt in 4b45487, Kategorie 1, Doku) Heredoc-Zerhackung.
     Praezisierung statt Neuschrieb:
     - WORKFLOW.md HR9 verschaerft (KONKRET: python3
       /tmp/patch.py, NICHT python3 - <<'PY').
