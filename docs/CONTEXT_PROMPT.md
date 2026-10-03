@@ -244,7 +244,7 @@ Punkt 29 (Wert-Synonyme), Punkt 30 (Links im Chat),
 3.6.18a (category durchsuchbar), UI-Feinschliff
 (SVG, Spalten, Sidebar, Suche, Topbar-Dropdown),
 Diagnose 2026-09-27 (ruff/mypy eingerichtet).
-HEAD 33b5985, Working Tree sauber.
+HEAD 7ccda7c, Working Tree sauber.
 
 Core-Status: Core (Stufe 1-3.6.18) abgeschlossen.
 Fritz!Box-Watcher (Phase 3.8a) und Event-Reader
@@ -254,41 +254,46 @@ Der Alarm-Pfad nutzt notify_ntfy (Punkt 81).
 Bewusst offen (kein Bau heute):
 - Punkt 76: Telegram-Kanal konfigurieren
   (Kategorie 1, Betriebsakt).
-- Punkt 80: Alarme-Seite Filter + Pagination
-  (Kategorie 3, UI).
-- Punkt 83: CONTEXT_PROMPT-Sanierung
-  (Kategorie 1, Doku).
-- Punkt 84: Heredoc-Zerhackung
-  (Kategorie 1, Doku).
-- Punkte 87-101: Ausblick-Themen
+- Punkte 88-101: Ausblick-Themen
   (Wortlaut offen).
+- WORKFLOW-Nachtrag "! in Commit-Messages"
+  (Kategorie 1, Doku).
+- Hash-Zirkel-Regel: kein <hash> in
+  SECURITY_REVIEW_LOG, Hash erst nach Commit
+  (Kategorie 1, Doku).
+- 56b, 57, 58, 59, 66: unveraendert.
 - Lint/Typen-Reste:
   - ruff 0 (A900 + B1 abgeschlossen).
   - mypy 0 (A900 + B1 abgeschlossen).
   - Echte Typfehler: 0.
 
 Offene Punkte 1-41 in docs/SECURITY_REVIEW_LOG.md.
-Chronologie bis 33b5985 dokumentiert (sortiert nach
+Chronologie bis 7ccda7c dokumentiert (sortiert nach
 Commit-Zeit).
 DESIGN_DECISIONS: §11 (Kontext, Wert-Synonyme,
 Suchfelder), §14 (Frage-Klassifikation, Anzeige-Labels,
 since_hours), §16 (ProxyFix, Links im Chat, nav_links,
 JS-Ausnahme, server_name, default_server).
 
-Stand: 2026-10-02 | HEAD: 33b5985 |
-Tests: 1192 gruen (venv, pytest 9.1.1).
+Stand: 2026-10-03 | HEAD: 7ccda7c |
+Tests: 1208 gruen (venv, pytest 9.1.1).
 Drei Blickwinkel auf dieselbe Architektur:
 - Technische Schichten 5-1 (docs/ARCHITECTURE.md).
 - Rollen im Betrieb (PROJECT_VISION.md, README.md).
 - Test-Ebenen 1-5 (docs/DESIGN_DECISIONS.md).
-Heute abgeschlossen: Punkt 81 (Alarm-Kanal auf
-notify_ntfy, live verifiziert), Punkt 82 (Docstring
-5->6 Tools), Doku-Block drei Blickwinkel (README,
-PROJECT_VISION 2.0, PHASES, dieser Prompt), README-
-Neuschrieb (Haltung + Rollensicht), PROJECT_VISION-
-Rollensicht (Commit 1 + 2).
-Offen: Punkt 76 (Telegram), 80 (Filter + Pagination),
-83 (dieser Prompt), 84 (Heredoc), 87-101 (Ausblick).
+Seit 2026-10-02 abgeschlossen:
+- Punkt 81 (Alarm-Kanal auf ntfy, live verifiziert).
+- Punkt 82 (Docstring 5->6 Tools).
+- Punkt 83 (dieser Prompt, CONTEXT_PROMPT-Sanierung).
+- Punkt 87 (Reason-Text unknown_device_persistent).
+- Punkt 80 (Alarme-Filter + Pagination, +16 Tests).
+- Punkt 84 (Heredoc-Workflow, HR9 verschaerft).
+- Icon-System (docs/ICONS.md, Runde 1+2).
+- PROJECT_VISION-Kern (716 -> 225 Zeilen, Icons).
+- Auslagerung: Bridges -> ARCHITECTURE Paragraph 3.18,
+  Alarm-Regeln -> SECURITY Paragraph 13.
+Offen: Punkt 76 (Telegram), 88-101 (Ausblick),
+WORKFLOW-Nachtrag, Hash-Zirkel-Regel, 56b/57/58/59/66.
 Quelle der Wahrheit ist `pytest --collect-only -q`.
 
 ### Aufgabe jetzt
