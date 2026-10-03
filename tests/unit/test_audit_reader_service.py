@@ -50,6 +50,17 @@ def checker(conn: sqlite3.Connection) -> AccessChecker:
 
 
 @pytest.fixture()
+def checker_admin(conn: sqlite3.Connection) -> AccessChecker:
+    """Punkt 80: Fixture mit alert.view (admin-Rolle)."""
+    principals = PrincipalRepository(conn)
+    roles = RoleRepository(conn)
+    perms = PermissionRepository(conn)
+    admin = roles.get_by_name("admin")
+    principals.create(name="alice", role_id=admin.row_id)
+    return AccessChecker(principals, roles, perms)
+
+
+@pytest.fixture()
 def audit(tmp_path: Path) -> AuditWriter:
     return AuditWriter(base_dir=tmp_path / "audit")
 
@@ -406,3 +417,136 @@ def test_list_with_context_no_trigger_no_error():
     entry = {"event_id": None, "trigger_event_id": None}
     lookup = entry.get("trigger_event_id") or entry.get("event_id")
     assert lookup is None
+
+
+# --- Punkt 80: Filter + Pagination ---------------------------------- #
+
+def _seed_assessments(audit, entries):
+    """Schreibt mehrere risk_assessment-Eintraege."""
+    for e in entries:
+        audit.log(
+            agent="security_ai",
+            tool="risk.test",
+            policy_result="ALLOWED",
+            permission_level=0,
+            execution_status="OK",
+            network_id="homelab-default",
+            details={
+                "kind": "risk_assessment",
+                "event_id": e.get("event_id", "EVT-X"),
+                "category": e.get("category", "EVENT"),
+                "score": e.get("score", 0.5),
+                "rule_id": e.get("rule_id", "unknown_device"),
+                "base": 0.5,
+                "modifiers": [],
+                "reasons": [],
+            },
+        )
+
+
+@pytest.fixture()
+def svc_with_devices(audit, checker_admin, conn):
+    """Service mit Device-Repo und alert.view."""
+    from core.inventory.repository import DeviceRepository
+    return AuditReaderService(
+        audit_writer=audit,
+        checker=checker_admin,
+        device_repo=DeviceRepository(conn),
+    )
+
+
+def test_filter_by_since_hours(svc_with_devices, audit):
+    """since_hours=24 liefert Eintraege; unbekannter Wert Fehler."""
+    _seed_assessments(audit, [{"event_id": "EVT-A"}])
+    result = svc_with_devices.list_recent_assessments_with_context(
+        "alice", since_hours=24,
+    )
+    assert "items" in result
+    assert isinstance(result["total"], int)
+
+
+def test_filter_by_since_hours_invalid(svc_with_devices):
+    with pytest.raises(AuditReaderServiceError):
+        svc_with_devices.list_recent_assessments_with_context(
+            "alice", since_hours=999,
+        )
+
+
+def test_filter_by_category(svc_with_devices, audit):
+    _seed_assessments(audit, [
+        {"event_id": "EVT-A", "category": "CONFIRMED"},
+        {"event_id": "EVT-B", "category": "EVENT"},
+    ])
+    result = svc_with_devices.list_recent_assessments_with_context(
+        "alice", category="CONFIRMED",
+    )
+    for item in result["items"]:
+        assert item["category"] == "CONFIRMED"
+
+
+def test_filter_by_category_invalid(svc_with_devices):
+    with pytest.raises(AuditReaderServiceError):
+        svc_with_devices.list_recent_assessments_with_context(
+            "alice", category="GIBT_ES_NICHT",
+        )
+
+
+def test_filter_by_identifier(svc_with_devices, audit):
+    _seed_assessments(audit, [
+        {"event_id": "EVT-A", "category": "CONFIRMED"},
+    ])
+    # identifier-Filter greift nur auf Eintraege mit event_id-Lookup.
+    # Ohne passendes Event im events.jsonl -> alle Eintraege raus.
+    result = svc_with_devices.list_recent_assessments_with_context(
+        "alice", identifier="00:00:00:00:00:99",
+    )
+    assert result["items"] == []
+
+
+def test_filter_by_identifier_invalid(svc_with_devices):
+    with pytest.raises(AuditReaderServiceError):
+        svc_with_devices.list_recent_assessments_with_context(
+            "alice", identifier="nicht-MAC-format-!!!",
+        )
+
+
+def test_filter_by_network_type(svc_with_devices, audit):
+    _seed_assessments(audit, [{"event_id": "EVT-A"}])
+    # Ohne passendes Event im events.jsonl -> alle Eintraege raus.
+    result = svc_with_devices.list_recent_assessments_with_context(
+        "alice", network_type="Hauptnetz",
+    )
+    assert result["items"] == []
+
+
+def test_filter_by_q_too_short(svc_with_devices):
+    with pytest.raises(AuditReaderServiceError):
+        svc_with_devices.list_recent_assessments_with_context(
+            "alice", q="x",
+        )
+
+
+def test_pagination_page_1(svc_with_devices):
+    result = svc_with_devices.list_recent_assessments_with_context(
+        "alice", page=1,
+    )
+    assert result["page"] == 1
+    assert result["per_page"] == 20
+    assert isinstance(result["pages"], int)
+
+
+def test_pagination_page_out_of_range(svc_with_devices):
+    """page > pages wird auf pages gekappt (Auflage 1964)."""
+    result = svc_with_devices.list_recent_assessments_with_context(
+        "alice", page=9999,
+    )
+    assert result["page"] == result["pages"]
+    assert result["items"] == []
+
+
+def test_pagination_per_page_fixed(svc_with_devices):
+    """per_page ist konfigurierbar, aber im Bereich 1..200."""
+    result = svc_with_devices.list_recent_assessments_with_context(
+        "alice", per_page=50,
+    )
+    assert result["per_page"] == 50

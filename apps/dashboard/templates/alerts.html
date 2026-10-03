@@ -20,6 +20,52 @@
 
 {% block content %}
 <h1>Alarme</h1>
+
+{# Filterleiste (Punkt 80). GET, kein CSRF. #}
+<form method="GET" action="/alerts" class="filter-bar">
+    <label>
+        <span>Zeitraum</span>
+        <select name="since">
+            {% for h in since_values %}
+            <option value="{{ h }}"{% if h == filter_since %} selected{% endif %}>{% if h == 24 %}24 h{% elif h == 168 %}7 Tage{% elif h == 720 %}30 Tage{% else %}{{ h }} h{% endif %}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        <span>Kategorie</span>
+        <select name="category">
+            <option value=""{% if not filter_category %} selected{% endif %}>Alle</option>
+            {% for code, label in category_values.items() %}
+            <option value="{{ code }}"{% if code == filter_category %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        <span>Geraet</span>
+        <select name="identifier">
+            <option value=""{% if not filter_identifier %} selected{% endif %}>Alle</option>
+            {% for d in devices %}
+            {% set label = d.internal_name or d.entity_name or d.identifier %}
+            <option value="{{ d.identifier }}"{% if d.identifier == filter_identifier %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        <span>Netz</span>
+        <select name="network_type">
+            <option value=""{% if not filter_network_type %} selected{% endif %}>Alle</option>
+            {% for nt in network_type_values %}
+            <option value="{{ nt }}"{% if nt == filter_network_type %} selected{% endif %}>{{ nt }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        <span>Suche</span>
+        <input type="text" name="q" minlength="2" maxlength="200" value="{{ filter_q }}" placeholder="Geraet, Text, MAC">
+    </label>
+    <button type="submit">Filtern</button>
+</form>
+
 {% if assessments %}
 <table class="table table-alerts">
     <thead>
@@ -90,7 +136,25 @@
         {% endfor %}
     </tbody>
 </table>
+
+{# Pagination (Punkt 80). #}
+{% if pages > 1 %}
+<nav class="pagination">
+    {% if page > 1 %}
+    <a href="/alerts?since={{ filter_since }}{% if filter_category %}&category={{ filter_category|urlencode }}{% endif %}{% if filter_identifier %}&identifier={{ filter_identifier|urlencode }}{% endif %}{% if filter_network_type %}&network_type={{ filter_network_type|urlencode }}{% endif %}{% if filter_q %}&q={{ filter_q|urlencode }}{% endif %}&page={{ page - 1 }}">Zurueck</a>
+    {% else %}
+    <span class="pagination-disabled">Zurueck</span>
+    {% endif %}
+    <span class="pagination-info">Seite {{ page }} von {{ pages }} ({{ total }} Eintraege)</span>
+    {% if page < pages %}
+    <a href="/alerts?since={{ filter_since }}{% if filter_category %}&category={{ filter_category|urlencode }}{% endif %}{% if filter_identifier %}&identifier={{ filter_identifier|urlencode }}{% endif %}{% if filter_network_type %}&network_type={{ filter_network_type|urlencode }}{% endif %}{% if filter_q %}&q={{ filter_q|urlencode }}{% endif %}&page={{ page + 1 }}">Weiter</a>
+    {% else %}
+    <span class="pagination-disabled">Weiter</span>
+    {% endif %}
+</nav>
+{% endif %}
+
 {% else %}
-<p>Keine Alarme in den letzten 24 Stunden.</p>
+<p>Keine Alarme gefunden.</p>
 {% endif %}
 {% endblock %}
