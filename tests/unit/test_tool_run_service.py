@@ -9,6 +9,7 @@ from typing import Any
 
 from core.services.tool_run_service import (
     ToolRunOperationError,
+    ToolRunRateLimitError,
     ToolRunService,
     ToolRunServiceError,
 )
@@ -39,10 +40,19 @@ class _FakeRegistry:
     def get(self, name: str) -> Tool:
         return self._tools[name]
 
-def _make_ping_tool(func: Any) -> Tool:
+
+class _FakeRateLimiter:
+    def __init__(self, ret: tuple[bool, int] = (True, 0)) -> None:
+        self.ret = ret
+        self.calls: list[str] = []
+    def allow(self, key: str) -> tuple[bool, int]:
+        self.calls.append(key)
+        return self.ret
+
+def _make_ping_tool(func: Any, level: Level = Level.READ) -> Tool:
     return Tool(
         name="ping",
-        level=Level.READ,
+        level=level,
         func=func,
         description="test",
         sandbox_profile="net_diag_local",
@@ -50,12 +60,23 @@ def _make_ping_tool(func: Any) -> Tool:
     )
 
 class ToolRunServiceTests(unittest.TestCase):
-    def _build(self, func: Any, allow: bool = True) -> tuple[ToolRunService, _FakeAudit, _FakeRegistry]:
-        tool = _make_ping_tool(func)
+    def _build(
+        self,
+        func: Any,
+        allow: bool = True,
+        ret: tuple[bool, int] = (True, 0),
+        level: Level = Level.READ,
+    ) -> tuple[ToolRunService, _FakeAudit, _FakeRegistry]:
+        tool = _make_ping_tool(func, level=level)
         reg = _FakeRegistry({"ping": tool})
         audit = _FakeAudit()
         checker = _FakeChecker(allow=allow)
-        return ToolRunService(reg, audit, checker), audit, reg
+        limiter = _FakeRateLimiter(ret=ret)
+        return (
+            ToolRunService(reg, audit, checker, limiter),
+            audit,
+            reg,
+        )
 
     def test_run_unknown_tool(self) -> None:
         svc, _, _ = self._build(lambda **kw: {})
@@ -64,7 +85,9 @@ class ToolRunServiceTests(unittest.TestCase):
 
     def test_run_tool_not_registered(self) -> None:
         reg = _FakeRegistry({})
-        svc = ToolRunService(reg, _FakeAudit(), _FakeChecker())
+        svc = ToolRunService(
+            reg, _FakeAudit(), _FakeChecker(), _FakeRateLimiter()
+        )
         with self.assertRaises(ToolRunServiceError):
             svc.run("admin", "ping", {"target": "127.0.0.1"})
 
@@ -98,3 +121,48 @@ class ToolRunServiceTests(unittest.TestCase):
             svc.run("admin", "ping", {"target": "127.0.0.1"})
         self.assertEqual(len(audit.entries), 1)
         self.assertEqual(audit.entries[0]["execution_status"], "ERR")
+
+    def test_rate_limit_exceeded(self) -> None:
+        svc, _, _ = self._build(
+            lambda target: {"ok": True},
+            ret=(False, 30),
+        )
+        with self.assertRaises(ToolRunRateLimitError):
+            svc.run("admin", "ping", {"target": "127.0.0.1"})
+
+    def test_rate_limit_error_has_retry_after_seconds(self) -> None:
+        svc, _, _ = self._build(
+            lambda target: {"ok": True},
+            ret=(False, 30),
+        )
+        try:
+            svc.run("admin", "ping", {"target": "127.0.0.1"})
+        except ToolRunRateLimitError as e:
+            self.assertEqual(e.retry_after_seconds, 30)
+            self.assertGreater(e.retry_after_seconds, 0)
+        else:
+            self.fail("ToolRunRateLimitError erwartet")
+
+    def test_rate_limit_backend_error_is_operation_error(self) -> None:
+        svc, _, _ = self._build(
+            lambda target: {"ok": True},
+            ret=(False, 0),
+        )
+        with self.assertRaises(ToolRunOperationError):
+            svc.run("admin", "ping", {"target": "127.0.0.1"})
+
+    def test_level_2_rejected(self) -> None:
+        svc, _, _ = self._build(
+            lambda target: {"ok": True},
+            level=Level.REVIEW_REQUIRED,
+        )
+        with self.assertRaises(ToolRunServiceError):
+            svc.run("admin", "ping", {"target": "127.0.0.1"})
+
+    def test_level_2_rejected_before_validate_args(self) -> None:
+        svc, _, _ = self._build(
+            lambda target: {"ok": True},
+            level=Level.REVIEW_REQUIRED,
+        )
+        with self.assertRaises(ToolRunServiceError):
+            svc.run("admin", "ping", {"unbekannt": "x"})
