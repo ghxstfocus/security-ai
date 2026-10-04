@@ -2080,3 +2080,31 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     - Eigener Block nach dem Architektur-Doku-Block.
     - Kategorie 1.
 
+99. (erledigt in 7f9fdc7, Kategorie 3, Detection + Watcher)
+    Bug: Fehlalarm durch Sentinel und fehlende IP.
+    - Befund 2026-10-04: /alerts zeigt
+      "Unbekanntes Geraet seit ueber einer Stunde
+      im Hauptnetz" fuer ein Gastnetz-Geraet
+      (192.168.189.4).
+    - Drei zusammenwirkende Ursachen:
+      1. resolve_network_type(None) -> "Hauptnetz"
+         (Default) statt "Unbekannt".
+      2. Sentinel "__FALLBACK__" landete als
+         entity_name im Event.
+      3. Detection-Regeln kannten den Sentinel
+         nicht.
+    - Fix A (e0cf6fa): resolve_network_type
+      gibt "Unbekannt" bei fehlender/ungueltiger IP.
+    - Fix B (6f3c9f3): _diff_and_emit filtert
+      den Sentinel aus dem Event-entity_name.
+    - Fix C1 (47e4307): zentrale Sentinel-Konstante
+      core/sentinels.py.
+    - Fix C2 (7f9fdc7): Sentinel-Check in
+      unknown_device und unknown_device_persistent
+      (Defense in Depth).
+    - Konsequenz: die Kombination, die den Fehlalarm
+      erzeugte, greift nicht mehr.
+    - Alt-Eintraege in audit-logs bleiben
+      (append-only). Der Alarm ist ab jetzt nicht
+      reproduzierbar.
+
