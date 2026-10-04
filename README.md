@@ -58,10 +58,9 @@ Der Mensch bleibt die letzte Instanz.
 - Alarme per ntfy (self-hosted, Tailscale).
 - RBAC: Rollen, Permissions, Sessions.
 - Web-Dashboard mit RBAC und strikter CSP.
-- Lokaler Chat (Ollama), optional und langsam.
 - Approval Queue und Change Requests.
 - Append-only Audit.
-- Ueber 1000 Tests, alle gruen.
+- Ueber 1200 Tests, alle gruen.
 
 ## Was es nicht tut
 
@@ -74,8 +73,8 @@ Der Mensch bleibt die letzte Instanz.
 ## Was kommen soll
 
 - Host-Scanner (Phase 3.8).
-- Admin AI (Cloud, optional).
-- Kunden-KI (Mitarbeiter-Aufgaben).
+- Admin AI (Cloud, Pflicht fuer Sicherheitsnutzung).
+- Kunden-KI (baut auf der Admin AI auf).
 - Data Connectors (HR, CRM, Tickets).
 - Physische Sicherheit (Phase 10).
 - Ganzheitliche Korrelation (Phase 11).
