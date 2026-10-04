@@ -38,7 +38,7 @@ Regeln:
 - Kein direkter Shell-Zugriff durch das Modell.
 - Capabilities werden im Security-Container entzogen.
 
-### Ebene 4 — Security AI
+### Ebene 4 — Core (Security AI)
 
 Läuft pro Netzwerk in einem eigenen Container.
 
@@ -49,7 +49,6 @@ Aufgaben:
 - Berechnet Risk-Scores
 - Sendet Alarme (Telegram) bei Sicherheitsvorfällen
 - Loggt alles in die Datenbank
-- Kann das lokale LLM für Erklärungen nutzen
 
 Was sie NICHT tut:
 
@@ -65,7 +64,13 @@ Komponenten:
 - core/inventory/ — Geräte, Whitelist
 - core/events/ — Event-Modell
 
-### Lokale KI (Phase 3.5)
+### Lokale KI (Phase 3.5) — entfernt (Phase 16)
+
+Dieser Abschnitt beschreibt, wie der lokale
+Ollama-Chat funktionierte. Er ist mit dem
+Ollama-Rueckbau (Phase 16) obsolet. Die
+Cloud-Provider uebernehmen die Intelligenz-
+schicht (siehe docs/ADMIN_AI_SCOPE.md).
 
 Die Security AI wird zur echten KI. Ein lokales LLM erklaert,
 entscheidet aber nicht.
@@ -127,7 +132,15 @@ Regeln:
 
 ### Ebene 2 — Admin AI
 
-Läuft zentral (Cloud oder eigener Server).
+Pflicht, wenn das System als Sicherheitssystem
+genutzt wird. Ohne Admin AI bleibt der Core ein
+deterministischer Detektor und Regelvollstrecker.
+Läuft zentral in der Cloud der Firma.
+
+Cloud-Provider sind austauschbar: Azure (deutscher
+Standard), Anthropic, OpenAI, DeepSeek, Copilot.
+
+Details: siehe docs/ADMIN_AI_SCOPE.md.
 
 Aufgaben:
 
@@ -390,7 +403,7 @@ oder Change-Freigaben.
 
 Details: docs/DESIGN_DECISIONS.md, Abschnitt 8.
 
-### 3.14 harness/llm — Ollama-Client (Phase 3.5)
+### 3.14 harness/llm — entfernt (Phase 16)
 
 **Status:** implementiert (Phase 3.5).
 
@@ -433,15 +446,24 @@ ChatService selbst an die DB geht.
 
 Regel: Lesen -> Checker, Schreiben -> AccessService.
 
+### 3.16a Rollentypen und Rolleninstanzen
+
+Der Core definiert Rollentypen (Vorlagen). Die
+Admin AI darf Rolleninstanzen aus existierenden
+Typen anlegen, wenn der Typ existiert und kein
+Core-Admin ist. Ausnahme: Core-Admins nur durch
+Menschen. Details: docs/ADMIN_AI_SCOPE.md § 4.
+
 ### 3.17 core/services — Service-Schicht (Phase 3.5)
 
 **Status:** implementiert (Phase 3.5).
 
 - access_service.py — AccessService (RBAC-Verwaltung,
   whoami, create_principal, assign_permission).
-- ChatService (apps/security_ai/chat.py) ist ebenfalls
-  Service-Schicht, liegt aber in apps/ (kennt den
-  Kontext-Bauer und das LLM).
+- ChatService (apps/security_ai/chat.py) ist
+  ebenfalls Service-Schicht, liegt aber in apps/.
+  ChatService ist mit dem Ollama-Rueckbau
+  (Phase 16) entfernt.
 
 Design: UI (Web/CLI/Telegram) -> Services -> Repos.
 Keine Fachlogik in der UI.
