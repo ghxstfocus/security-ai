@@ -5,7 +5,7 @@
 > spricht, wie sie sich von der Kunden-KI
 > unterscheidet.
 
-Stand: 2026-10-04 | HEAD: <wird nach Commit gesetzt>
+Stand: 2026-10-04 | HEAD: 3a0587e
 
 ## 1. Rolle und Zweck
 
