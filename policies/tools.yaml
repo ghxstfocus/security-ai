@@ -126,3 +126,9 @@ tools:
     level: 0
     conditions: []
     reason: "Netz-Interfaces"
+
+  audit_tail:
+    allowed: true
+    level: 0
+    conditions: []
+    reason: "Audit-Log Ende"
