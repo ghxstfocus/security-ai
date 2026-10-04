@@ -930,7 +930,18 @@ Kein RBAC, kein Audit. Wird von CLI
 Log-Excerpts und recent_events sind leer
 (Auflagen 720/721).
 
-### ChatService
+### ChatService — entfernt (Phase 16)
+
+Der ChatService (apps/security_ai/chat.py) und
+der zugehoerige Kontext-Bauer wurden mit dem
+Ollama-Rueckbau (Phase 16) entfernt. Die
+Intelligenz-Schicht wird von der Admin AI
+uebernommen (siehe docs/ADMIN_AI_SCOPE.md).
+
+Die nachfolgende Beschreibung bleibt als
+historischer Bezug stehen. Sie ist nicht mehr
+aktiv.
+
 
 - Nutzt AccessChecker (RBAC).
 - Nutzt ContextBuilder (harness/context).
@@ -980,7 +991,17 @@ gesetzt ist, wird der Detail-Pfad genutzt:
 - Kein Streaming (spaeter).
 - Keine Session-Historie (harness/memory, spaeter).
 
-## 12. Auto-Switch zu grossem Modell (Phase 3.5.7)
+## 12. Auto-Switch zu grossem Modell — obsolet nach Ollama-Rueckbau
+
+Begruendung: das lokale 3B-Modell liefert
+keine brauchbaren Antworten fuer die Komplexitaet
+der Aufgaben. Ersetzt durch Cloud-Provider
+(siehe docs/ADMIN_AI_SCOPE.md, Phase 13, und
+SECURITY_REVIEW_LOG Punkt <N>).
+
+(Historischer Inhalt, nicht mehr aktiv.)
+
+--- Ab hier: der bisherige § 12-Inhalt ---
 
 ### Prinzip
 
@@ -1073,7 +1094,17 @@ Wenn keine kritischen Assessments vorliegen, ist die
 Modellwahl eine Empfehlung. Der Mensch kann mit --model
 eingreifen. Bei kritischen Assessments greift die Pflicht.
 
-## 14. Frage-Klassifikation (Phase 3.5.8)
+## 14. Frage-Klassifikation — obsolet nach Ollama-Rueckbau
+
+Begruendung: die Klassifikation war fuer das
+lokale Modell gedacht. Cloud-Provider
+uebernehmen die Klassifikation selbst. Siehe
+docs/ADMIN_AI_SCOPE.md, Phase 13, und
+SECURITY_REVIEW_LOG Punkt <N>.
+
+(Historischer Inhalt, nicht mehr aktiv.)
+
+--- Ab hier: der bisherige § 14-Inhalt ---
 
 ### Drei Arten von Fragen
 
@@ -1195,6 +1226,12 @@ Wert fliesst in ContextBundle.since_hours und wird
 in _answer_fact zur Anzeige genutzt (Auflage 854).
 
 ## 15. Redaction / Prompt-Injection-Schutz (Phase 3.5)
+
+> Hinweis (2026-10-04): Redaction wird fuer
+> Cloud-LLM weiter genutzt — sogar wichtiger,
+> weil Cloud bedeutet, dass Daten das Haus
+> verlassen. Der folgende Abschnitt beschreibt
+> Regeln, die weiterhin gelten.
 
 ### Prinzip
 
@@ -1659,3 +1696,153 @@ View-Funktion ist explizit und auditierbar.
 - list_roles: role.manage ODER principal.manage.
 - Begruendung: Principals anlegen erfordert
   Rollen-Kenntnis.
+
+## 24. Rollentypen und Rolleninstanzen
+
+Der Core definiert Rollentypen. Ein Rollentyp
+ist eine Vorlage: er beschreibt, welche
+Domaenen und welche Permissions in welcher
+Domaene ein Principal haben darf.
+
+Eine Rolleninstanz ist eine konkrete Rolle,
+die einem Principal zugewiesen wird. Sie
+entsteht aus einem Rollentyp.
+
+Die Admin AI darf Rolleninstanzen aus
+existierenden Rollentypen anlegen, wenn:
+- der Rollentyp existiert,
+- der Rollentyp kein Core-Admin ist,
+- die Zuweisung im Rahmen der Berechtigung
+  der Admin AI liegt.
+
+Ausnahme: Core-Admins (hoechste Rolle) duerfen
+nur vom Menschen angelegt werden. Die Admin AI
+darf sich nicht selbst privilegieren.
+
+Siehe docs/ADMIN_AI_SCOPE.md § 4.
+
+## 25. Admin-AI-Scope
+
+Die Admin AI ist Pflicht fuer die Nutzung des
+Systems als Sicherheitssystem. Sie ist nicht
+optional.
+
+Sie darf:
+- den Core verwalten (lesen, Endpunkte
+  registrieren, Rollen aus existierenden
+  Typen anlegen),
+- Guardrails lesen,
+- Angriffe korrelieren, Massnahmen
+  vorschlagen,
+- Massnahmen mit Human-Approval ausfuehren,
+- die Kunden-KI konfigurieren und ueberwachen,
+- Bridges registrieren und verwalten.
+
+Sie darf nicht:
+- Guardrails schreiben/aendern,
+- Core-Aenderungen ohne Change Request,
+- sich selbst privilegieren,
+- Core-Admins anlegen,
+- ohne Human-Approval kritische Aktionen
+  ausfuehren.
+
+Siehe docs/ADMIN_AI_SCOPE.md.
+
+## 26. Ollama-Rueckbau (beschlossen)
+
+Der lokale Ollama-Chat wird entfernt. Grund:
+das lokale Modell (llama3.2:3b, qwen2.5:7b)
+liefert keine brauchbaren Antworten fuer die
+Komplexitaet der Aufgaben, die das System
+bewaeltigen soll.
+
+Die Intelligenz-Schicht wird von Cloud-Providern
+uebernommen (siehe § 28). Der lokale Chat,
+die Frage-Klassifikation (§ 14), der Auto-
+Switch (§ 12) und die zugehoerigen
+Komponenten (ChatService, chat_cli, Dashboard-
+Chat, Kontext-Bauer, Chat-Links,
+Wert-Synonyme) werden entfernt.
+
+Das Dashboard bleibt als Basic-Verwaltung
+ohne LLM. Guardrails-Aktivierung ist
+Mensch-only (ueber Dashboard oder CLI).
+
+Siehe SECURITY_REVIEW_LOG Punkt <N>.
+
+## 27. Datenklassifikation
+
+Jede Information, die durch den Core geht,
+hat eine Vertraulichkeitsstufe:
+
+- **Oeffentlich.** Darf an jeden Cloud-Provider.
+- **Intern.** Nur an Provider mit AVV
+  (Auftragsverarbeitungsvertrag).
+- **Vertraulich.** Nur an Provider mit AVV
+  und in der EU oder gleichwertig.
+- **Streng vertraulich.** Nur lokal oder
+  gar nicht. Kein Cloud-Provider.
+
+Die Firma entscheidet pro Installation,
+welche Stufe welchen Provider nutzen darf.
+
+Der Core filtert jede Anfrage an die Admin AI
+nach dieser Klassifikation. Was nicht raus
+darf, geht nicht raus.
+
+Die Klassifikation ist Datenpflege, nicht
+Code. Sie kann im Dashboard angepasst werden
+(vom Menschen) oder durch Change Request.
+
+## 28. Cloud-Provider austauschbar
+
+Die LLM-Anbieter sind austauschbare Module.
+Der Core kennt nur das LLMProvider-Interface.
+Welche Anbieter konfiguriert sind, steht in
+einer Provider-Registry.
+
+Vorgesehene Anbieter (nicht abschliessend):
+- Azure OpenAI (deutscher Standard fuer
+  Firmen).
+- Anthropic (Claude).
+- OpenAI (GPT).
+- DeepSeek.
+- Microsoft Copilot.
+
+Ein neuer Anbieter ist ein Eintrag in der
+Provider-Registry und eine Implementierung
+des LLMProvider-Interface. Kein Umbau der
+Architektur.
+
+Der Core routet Anfragen an den passenden
+Provider je nach:
+- Datenklassifikation (§ 27),
+- Verfuegbarkeit,
+- Konfiguration.
+
+## 29. Core pro Firma
+
+Jede Firma installiert ihren eigenen Core.
+Keine Mandantenfaehigkeit auf einer
+gemeinsamen Installation.
+
+Konsequenzen:
+- Keine Mandanten-Spalte in Tabellen.
+- Keine Trennung zwischen Kunden auf
+  Anwendungsebene.
+- Eigene Datenbank pro Firma.
+- Eigene Zertifikate pro Firma.
+- Eigene Rollen, Domaenen, Endpunkte
+  pro Firma.
+- Eigene Admin AI (Cloud der Firma).
+- Eigene Kunden-KI (Cloud der Firma).
+
+Foederation zwischen Installationen ist
+optional (siehe docs/PROTOCOL.md). Eine
+Admin AI kann mehrere Cores ihrer Firma
+korrelieren. Kein Core sieht einen anderen.
+
+Der Core laeuft autark. Er funktioniert auch
+ohne Admin AI und ohne Kunden-KI. Was fehlt,
+ist die Intelligenz-Schicht, nicht die
+Sicherheitsbasis.
