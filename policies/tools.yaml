@@ -114,3 +114,9 @@ tools:
     level: 0
     conditions: []
     reason: "systemctl is-active (Whitelist)"
+
+  disk_usage:
+    allowed: true
+    level: 0
+    conditions: []
+    reason: "Disk-Auslastung"

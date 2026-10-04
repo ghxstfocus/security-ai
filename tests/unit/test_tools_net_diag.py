@@ -8,6 +8,7 @@ import unittest
 from unittest import mock
 
 from harness.tool_registry.tool import ToolError
+from tools.disk_usage import disk_usage_run
 from tools.dns_lookup import dns_lookup_run
 from tools.ping import ping_run
 from tools.port_check import port_check_run
@@ -171,3 +172,21 @@ class ServiceStatusTests(unittest.TestCase):
         import subprocess as _sp
         with mock.patch("tools.service_status.subprocess.run", side_effect=_sp.TimeoutExpired(cmd="systemctl", timeout=2)), self.assertRaises(ToolError):
             service_status_run(unit="security-ai-dashboard.service")
+
+
+class DiskUsageTests(unittest.TestCase):
+    def test_disk_usage_root(self) -> None:
+        result = disk_usage_run(mountpoint="/")
+        self.assertEqual(result["mountpoint"], "/")
+        self.assertGreater(result["total_bytes"], 0)
+        self.assertGreater(result["used_bytes"], 0)
+        self.assertGreaterEqual(result["percent"], 0.0)
+        self.assertEqual(result["source"], "disk_usage")
+
+    def test_disk_usage_invalid_mountpoint(self) -> None:
+        with self.assertRaises(ToolError):
+            disk_usage_run(mountpoint="kein-slash")
+
+    def test_disk_usage_path_traversal(self) -> None:
+        with self.assertRaises(ToolError):
+            disk_usage_run(mountpoint="/etc/..")
