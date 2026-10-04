@@ -780,6 +780,47 @@ aendert sich bei jedem Amend.
 
 Vorfall: Punkt 84 (2026-10-03), Amend-Zirkel,aufgeloest durch Nachzug-Commit 32bca09.
 
+### ruff ohne Pipe pruefen
+
+Ein `ruff check . | tail -5` liefert den Exit-Code
+von `tail`, nicht von `ruff`. Ein ruff-Fehler wird
+dadurch verschluckt, die Vollsuite laeuft unnoetig.
+
+- **Regel:** ruff isoliert aufrufen, ohne Pipe,
+  ohne &&-Kette. Exit-Code pruefen. Dann mypy
+  isoliert, dann pytest.
+
+Vorfall: Punkt 58 (2026-10-04), mehrere Runden.
+
+### ?? nach Patch pruefen
+
+Nach jedem Patch-Block: `git status --porcelain`
+auf "??"-Eintraege pruefen. Paste-Unfaelle erzeugen
+Phantom-Dateien (0 Byte), die nicht ins Repo gehoeren.
+
+- **Regel:** "??" pruefen. Wenn Datei unbekannt:
+  entfernen mit `rm -- 'name'`.
+
+Vorfälle: Punkt 58 (2026-10-04), zwei Phantom-Dateien
+("bei", "entfernt").
+
+### Dashboard-Deploy nach Commit
+
+systemd-gestartete Dienste laden Code beim Start.
+Nach einem Commit, der Dashboard-Code betrifft,
+laeuft der alte Code weiter, bis der Dienst neu
+gestartet wird.
+
+- **Regel:** Nach jedem Commit, der Dashboard-Code
+  betrifft:
+      systemctl restart security-ai-dashboard.service
+      systemctl status security-ai-dashboard.service --no-pager | head -3
+  Dann Sichtpruefung im Browser.
+
+Vorfall: Punkt 80 (2026-10-02 committet) erst am
+2026-10-04 sichtbar, weil der Dienst zwei Tage nicht
+neu gestartet worden war.
+
 ## Sprache und Format
 
 - Keine Umlaute in Code-Bloecken (oe/ue/ae/ss).
