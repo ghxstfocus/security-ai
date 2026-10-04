@@ -242,8 +242,9 @@ Architektur-Doku-Block (2026-10-04) abgeschlossen:
 - docs/SECURITY_REVIEW_LOG.md: Punkte 88-98.
 - docs/CONTEXT_PROMPT.md: dieser Stand.
 
-Naechster Bau-Block: Punkt 58 Runde 1 Schritt 3 (traceroute, whois, dns_lookup, port_check).
-Bereits fertig: 1a (Fundament), 1b (ToolRunService), 2 (ping).
+Naechster Bau-Block: Punkt 58 Runde 1 Schritt 6 (UI, Route /tools + /api/tools/run).
+Fertig: Schritte 1-5 (Fundament, ToolRunService, 17 Tools).
+Offen in Punkt 58: Schritt 6 (UI), Schritt 7 (Tests-Nachzug).
 
 Offene Punkte:
 - 56b, 57, 58, 59, 66 (Dashboard/Aktionen).
@@ -260,8 +261,8 @@ Offene Punkte:
 - 97 (Permission-IDs, Beobachtung).
 - 98 (PHASES-Neuschrieb).
 
-Stand: 2026-10-04 | HEAD: f50a2b9 |
-Tests: 1221 gruen (venv, pytest 9.1.1).
+Stand: 2026-10-04 | HEAD: 90c958e |
+Tests: 1261 gruen (venv, pytest 9.1.1).
 Drei Blickwinkel auf dieselbe Architektur:
 - Technische Schichten 5-1 (docs/ARCHITECTURE.md). Ebene 4 = Core (ehemals Security AI).
 - Rollen im Betrieb (PROJECT_VISION.md, README.md).
@@ -283,7 +284,7 @@ Seit 2026-10-02 abgeschlossen:
 - 2026-10-03: Punkt 84 (Heredoc-Workflow).
 - 2026-10-03: Punkt 87 (Reason-Text).
 - 2026-10-04: Architektur-Doku-Block (Dateien 1-6): Admin-AI-Scope, ARCHITECTURE, DESIGN_DECISIONS, PHASES, SECURITY_REVIEW_LOG, CONTEXT_PROMPT.
-- 2026-10-04: Punkt 58 Schritt 1a/1b/2 (Fundament, ToolRunService, ping).
+- 2026-10-04: Punkt 58 Schritte 1-5 (Fundament, ToolRunService, 17 Tools: net_diag, sys_status, db_read).
 Offen: Punkt 76 (Telegram), 88-101 (Ausblick),
 WORKFLOW-Nachtrag, Hash-Zirkel-Regel, 56b/57/58/59/66.
 Quelle der Wahrheit ist `pytest --collect-only -q`.

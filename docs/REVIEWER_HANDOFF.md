@@ -30,9 +30,9 @@ Lies zuerst, in dieser Reihenfolge:
 
 --- STAND ZUM SESSION-ENDE ---
 
-- HEAD: 4829ae3 (origin/main synchron).
+- HEAD: 90c958e (origin/main synchron).
 - Working Tree: sauber.
-- Tests: 1028 (gemessen).
+- Tests: 1261 (gemessen).
 - ruff 0.16.9: All checks passed.
 - mypy: 0 echte Typfehler.
 - Branch: main.
@@ -131,8 +131,8 @@ In SECURITY_REVIEW_LOG:
      "Default = E4/E7/E9/F/W",
      "extend-select = RUF100 noetig".
    - Alle drei falsch.
-   - Regel: ruff check --show-settings und
-     ruff check . --statistics vor jeder ruff-Auflage.
+   - Regel: ruff check . (isoliert, ohne Pipe)
+     vor jeder ruff-Auflage. --statistics nur bei Bedarf.
 
 4. Config-Aenderung an pyproject:
    eigener Block mit Bestandsaufnahme.
@@ -162,7 +162,7 @@ HR-R2. Bestandsaufnahme vor Reviewer-Block.
        Kein Auflagen-Paket ohne gemessene Fakten.
 
 HR-R3. Auflagen-Nummern global fortlaufend.
-       Letzte vergebene Nummer: 1486.
+       Letzte vergebene Nummer: 1982.
        Vor jeder Runde: pruefen, ob die Nummern,
        die der Bau-Chat nennt, wirklich vergeben sind.
        Kein doppeltes Vergeben.
