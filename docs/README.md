@@ -35,7 +35,7 @@ Index der Detail-Dokumentation.
 
 ## Betrieb
 
-- [DEPLOYMENT.md](DEPLOYMENT.md) — Setup, nmap, Ollama, Tuning.
+- [DEPLOYMENT.md](DEPLOYMENT.md) — Setup, nmap, Tuning.
 
 ## Siehe auch
 

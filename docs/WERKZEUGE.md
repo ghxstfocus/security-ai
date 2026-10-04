@@ -30,58 +30,9 @@ nicht ueberschrieben.
 
 Exit-Code 0 bei Erfolg, 1 bei Fehler.
 
-## scripts/chat_cli.py
+## scripts/chat_cli.py — entfernt (Phase 16)
 
-Chat mit der lokalen KI (Ollama). Nutzt ChatService
-(Service-Schicht).
-
-    .venv/bin/python3 scripts/chat_cli.py --principal cli-admin
-        # interaktiv, "exit" beendet
-
-    .venv/bin/python3 scripts/chat_cli.py --principal cli-admin \
-        --question "Was kannst du?"
-        # einmalige Frage
-
-    .venv/bin/python3 scripts/chat_cli.py --principal cli-admin --whoami
-        # Rolle + Permissions anzeigen
-
-Optionen:
-
-- `--principal NAME`   (Pflicht)
-- `--question TEXT`    einmalige Frage, sonst interaktiv
-- `--whoami`           Identitaets-Auskunft, keine Frage
-- `--detail`           Detail-Antwort ohne LLM
-                       (braucht chat.detail)
-- `--include-details`  Rohdaten in den Prompt
-                       (braucht chat.include_details)
-- `--model NAME`       Modell-Override (Default aus .env)
-- `--base-url URL`     Ollama-URL (Default aus .env)
-- `--timeout N`        LLM-Timeout in Sekunden
-- `--no-bootstrap`     kein Auto-Init der DB (fail closed)
-- `--db PATH`          SQLite-DB (Default: data/inventory.db)
-- `--migrations-dir`   Migrations-Ordner
-- `--audit-base-dir`   Audit-Log-Ordner
-
-Auto-Bootstrap: fehlt die DB, wird sie angelegt und `cli-admin`
-(role=admin) erzeugt. Mit `--no-bootstrap` stattdessen Exit 1.
-
-### Fact-Antwort (Punkt 31)
-
-Fragen wie "Gibt es Auffaelligkeiten?" werden ohne LLM
-deterministisch aus dem Kontext beantwortet. Anzeige-Labels
-aus CATEGORY_LABELS (core/risk/models.py), Reihenfolge nach
-Schweregrad absteigend (CONFIRMED, SECURITY_ALERT, SUSPICION,
-ANOMALY, EVENT). "Assessments" heisst im Text "Vorkommen".
-Der Zeitraum kommt aus --context-hours (Default 24).
-
-    .venv/bin/python3 scripts/chat_cli.py --principal cli-admin \
-        --question "Gibt es Auffaelligkeiten?"
-    # JA. Kritisch=1, Alarm=1 in den letzten 24 Stunden
-    # (insgesamt 3 Vorkommen).
-
-    .venv/bin/python3 scripts/chat_cli.py --principal cli-admin \
-        --question "Gibt es Auffaelligkeiten?" --context-hours 1
-    # NEIN. Keine Vorkommen im Kontext.
+Der lokale Chat (chat_cli, Ollama) wurde mit dem Ollama-Rueckbau entfernt. Siehe DESIGN_DECISIONS Paragraph 26 und SECURITY_REVIEW_LOG Punkt 88.
 
 ## scripts/approvals_cli.py
 

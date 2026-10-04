@@ -389,7 +389,7 @@ DEPLOYED (oder REJECTED / ROLLED_BACK).
 
 ### 3.13 harness/context — Kontext-Bauer (Phase 3.5)
 
-**Status:** geplant (Phase 3.5).
+**Status:** implementiert (core/context/builder.py, Punkt 28, a2b58c1).
 
 Baut vor jedem LLM-Aufruf einen strukturierten Kontext aus
 Events, DB-Historie, Log-Ausschnitten und Inventory-Status.
@@ -405,21 +405,11 @@ Details: docs/DESIGN_DECISIONS.md, Abschnitt 8.
 
 ### 3.14 harness/llm — entfernt (Phase 16)
 
-**Status:** implementiert (Phase 3.5).
-
-Duennes HTTP-Wrapper-Modul fuer Ollama.
-
-- errors.py — LLMError, LLMUnavailable, LLMTimeout.
-- models.py — LLMRequest, LLMResponse.
-- client.py — OllamaClient (HTTP POST /api/generate).
-
-Eigenschaften:
-- Synchron, kein Streaming.
-- Kein Cloud-Zugriff (nur http://127.0.0.1:11434).
-- Client bleibt dumm: Modell + Timeout sind Parameter, kein
-  os.environ.
-- Fail closed: HTTP != 2xx -> LLMError, nicht erreichbar ->
-  LLMUnavailable, Timeout -> LLMTimeout.
+**Status:** entfernt (Phase 16).
+Der ehemalige Ollama-Client (harness/llm/client.py) wurde
+mit dem Ollama-Rueckbau entfernt. Siehe
+DESIGN_DECISIONS Paragraph 26 und SECURITY_REVIEW_LOG
+Punkt 88. Fuer Cloud-Provider siehe docs/ADMIN_AI_SCOPE.md.
 
 ### 3.15 core/reporting — Reporting & Kontext (Phase 3.5.6)
 

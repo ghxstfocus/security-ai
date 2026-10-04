@@ -1980,7 +1980,7 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       Bestandsaufnahme vor Bau.
     - Kategorie 3.
 
-90. (offen bis Commit, Kategorie 1, Doku)
+90. (erledigt in 3a0587e + e82a96a, Kategorie 1, Doku)
     Admin-AI-Scope dokumentiert.
     - Neue Datei: docs/ADMIN_AI_SCOPE.md.
     - Beschreibt: Rolle, darf/nicht darf,
@@ -1988,7 +1988,7 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       Datenklassifikation, Ausfuehrungspfad,
       Verhaeltnis zu Kunden-KI und Dashboard,
       Nicht-Ziele.
-    - Commit <hash>.
+    - Erledigt in 3a0587e + e82a96a.
 
 91. (offen, Kategorie 3, Architektur/Datenschutz)
     Datenklassifikation.
@@ -2080,4 +2080,3 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     - Eigener Block nach dem Architektur-Doku-Block.
     - Kategorie 1.
 
-Bewusst offen (kein Bau heute):

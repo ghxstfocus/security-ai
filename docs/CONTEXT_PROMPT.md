@@ -14,7 +14,7 @@ bist du im Kontext.
 - Alter Container CT101 (192.168.178.116) ruht, bleibt unberuehrt
 - Debian 12, Python 3.11, pytest 9.1.1 (venv)
 - CT102: 16 GB Disk, 12 GB RAM, 4 Kerne
-- Ollama laeuft lokal (llama3.2:3b Default, qwen2.5:7b Large)
+- Ollama entfernt (Phase 16, Ollama-Rueckbau, SECURITY_REVIEW_LOG Punkt 88).
 
 ### Architektur (Kurzform)
 
@@ -187,7 +187,7 @@ sind projektspezifische Ergaenzungen dazu.
 - docs/ADMIN_AI_SCOPE.md — Scope der Admin AI (Rolle, darf/nicht darf, Rollentypen, Datenklassifikation)
 - docs/PERMISSIONS.md — Berechtigungen Level 0-5
 - docs/PROTOCOL.md — Foederationsprotokoll, Statusmodell
-- docs/DEPLOYMENT.md — Setup, nmap, Ollama, Tuning
+- docs/DEPLOYMENT.md — Setup, nmap, Tuning
 - docs/DESIGN_DECISIONS.md — Design-Entscheidungen,
   Audit-Nomenklatur, Test-Ebenen
 - docs/PHASES.md — Phasenuebersicht mit Status
