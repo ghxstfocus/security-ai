@@ -82,3 +82,9 @@ tools:
     conditions:
       - target_in_scope
     reason: "Traceroute gegen autorisierte Netze"
+
+  dns_lookup:
+    allowed: true
+    level: 0
+    conditions: []
+    reason: "DNS-Aufloesung"

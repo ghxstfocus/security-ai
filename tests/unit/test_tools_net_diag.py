@@ -8,6 +8,7 @@ import unittest
 from unittest import mock
 
 from harness.tool_registry.tool import ToolError
+from tools.dns_lookup import dns_lookup_run
 from tools.ping import ping_run
 from tools.traceroute import traceroute_run
 
@@ -58,3 +59,19 @@ class TracerouteTests(unittest.TestCase):
             traceroute_run(target="127.0.0.1", max_hops=0)
         with self.assertRaises(ToolError):
             traceroute_run(target="127.0.0.1", max_hops=99)
+
+
+class DnsLookupTests(unittest.TestCase):
+    def test_dns_lookup_localhost(self) -> None:
+        result = dns_lookup_run(hostname="localhost")
+        self.assertEqual(result["hostname"], "localhost")
+        self.assertIn("127.0.0.1", result["addresses"])
+        self.assertEqual(result["source"], "dns_lookup")
+
+    def test_dns_lookup_invalid_hostname(self) -> None:
+        with self.assertRaises(ToolError):
+            dns_lookup_run(hostname="8.8.8.8;rm")
+
+    def test_dns_lookup_empty_hostname(self) -> None:
+        with self.assertRaises(ToolError):
+            dns_lookup_run(hostname="")

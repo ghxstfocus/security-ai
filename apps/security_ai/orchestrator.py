@@ -59,6 +59,7 @@ from harness.audit.writer import (
 from harness.policy_engine.engine import PolicyEngine
 from harness.policy_engine.policy import PolicyContext
 from harness.tool_registry.registry import ToolRegistry
+from tools.dns_lookup import DNS_LOOKUP_TOOL
 from tools.get_devices import GET_DEVICES_TOOL
 from tools.nmap_scan import NMAP_SCAN_TOOL
 from tools.notify_ntfy import NOTIFY_NTFY_TOOL
@@ -146,6 +147,7 @@ def _build_default_registry() -> ToolRegistry:
     reg.register(NOTIFY_NTFY_TOOL)
     reg.register(PING_TOOL)
     reg.register(TRACEROUTE_TOOL)
+    reg.register(DNS_LOOKUP_TOOL)
     return reg
 
 
