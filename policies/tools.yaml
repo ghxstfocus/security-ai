@@ -132,3 +132,9 @@ tools:
     level: 0
     conditions: []
     reason: "Audit-Log Ende"
+
+  event_tail:
+    allowed: true
+    level: 0
+    conditions: []
+    reason: "Event-Log Ende"

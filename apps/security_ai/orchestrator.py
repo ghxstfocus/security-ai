@@ -62,6 +62,7 @@ from harness.tool_registry.registry import ToolRegistry
 from tools.audit_tail import AUDIT_TAIL_TOOL
 from tools.disk_usage import DISK_USAGE_TOOL
 from tools.dns_lookup import DNS_LOOKUP_TOOL
+from tools.event_tail import EVENT_TAIL_TOOL
 from tools.get_devices import GET_DEVICES_TOOL
 from tools.network_interfaces import NETWORK_INTERFACES_TOOL
 from tools.nmap_scan import NMAP_SCAN_TOOL
@@ -162,6 +163,7 @@ def _build_default_registry() -> ToolRegistry:
     reg.register(DISK_USAGE_TOOL)
     reg.register(NETWORK_INTERFACES_TOOL)
     reg.register(AUDIT_TAIL_TOOL)
+    reg.register(EVENT_TAIL_TOOL)
     return reg
 
 

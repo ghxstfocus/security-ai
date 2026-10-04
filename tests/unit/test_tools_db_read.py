@@ -12,6 +12,7 @@ from unittest import mock
 
 from harness.tool_registry.tool import ToolError
 from tools.audit_tail import audit_tail_run
+from tools.event_tail import event_tail_run
 
 
 class AuditTailTests(unittest.TestCase):
@@ -52,6 +53,47 @@ class AuditTailTests(unittest.TestCase):
             )
             with mock.patch("tools.audit_tail._AUDIT_DIR", tdp):
                 result = audit_tail_run(limit=10)
+            self.assertEqual(result["count"], 2)
+
+
+class EventTailTests(unittest.TestCase):
+    def test_event_tail_ok(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            tdp = Path(td)
+            from datetime import UTC, datetime
+            heute = datetime.now(UTC).strftime("%Y-%m-%d")
+            fp = tdp / f"events-{heute}.jsonl"
+            zeilen = [
+                json.dumps({"event_id": f"EVT-{i}", "event_type": "t"})
+                for i in range(5)
+            ]
+            fp.write_text(chr(10).join(zeilen) + chr(10), encoding="utf-8")
+            with mock.patch("tools.event_tail._EVENTS_DIR", tdp):
+                result = event_tail_run(limit=3)
+            self.assertEqual(result["count"], 3)
+            self.assertEqual(result["source"], "event_tail")
+            self.assertEqual(result["events"][0]["event_id"], "EVT-2")
+
+    def test_event_tail_invalid_limit(self) -> None:
+        with self.assertRaises(ToolError):
+            event_tail_run(limit=0)
+        with self.assertRaises(ToolError):
+            event_tail_run(limit=999)
+
+    def test_event_tail_skip_malformed_line(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            tdp = Path(td)
+            from datetime import UTC, datetime
+            heute = datetime.now(UTC).strftime("%Y-%m-%d")
+            fp = tdp / f"events-{heute}.jsonl"
+            fp.write_text(
+                json.dumps({"event_id": "E1"}) + chr(10)
+                + "kein json" + chr(10)
+                + json.dumps({"event_id": "E2"}) + chr(10),
+                encoding="utf-8",
+            )
+            with mock.patch("tools.event_tail._EVENTS_DIR", tdp):
+                result = event_tail_run(limit=10)
             self.assertEqual(result["count"], 2)
 
 
