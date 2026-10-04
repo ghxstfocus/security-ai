@@ -64,6 +64,7 @@ from tools.get_devices import GET_DEVICES_TOOL
 from tools.nmap_scan import NMAP_SCAN_TOOL
 from tools.notify_ntfy import NOTIFY_NTFY_TOOL
 from tools.ping import PING_TOOL
+from tools.port_check import PORT_CHECK_TOOL
 from tools.read_logs import READ_LOGS_TOOL
 from tools.telegram_alert import (
     TELEGRAM_ALERT_TOOL,
@@ -148,6 +149,7 @@ def _build_default_registry() -> ToolRegistry:
     reg.register(PING_TOOL)
     reg.register(TRACEROUTE_TOOL)
     reg.register(DNS_LOOKUP_TOOL)
+    reg.register(PORT_CHECK_TOOL)
     return reg
 
 

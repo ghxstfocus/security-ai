@@ -10,6 +10,7 @@ from unittest import mock
 from harness.tool_registry.tool import ToolError
 from tools.dns_lookup import dns_lookup_run
 from tools.ping import ping_run
+from tools.port_check import port_check_run
 from tools.traceroute import traceroute_run
 
 
@@ -75,3 +76,41 @@ class DnsLookupTests(unittest.TestCase):
     def test_dns_lookup_empty_hostname(self) -> None:
         with self.assertRaises(ToolError):
             dns_lookup_run(hostname="")
+
+
+class PortCheckTests(unittest.TestCase):
+    def test_port_check_open(self) -> None:
+        sock = mock.MagicMock()
+        sock.__enter__ = mock.MagicMock(return_value=sock)
+        sock.__exit__ = mock.MagicMock(return_value=False)
+        sock.connect_ex = mock.MagicMock(return_value=0)
+        with mock.patch("tools.port_check.socket.socket", return_value=sock):
+            result = port_check_run(target="127.0.0.1", port=443)
+        self.assertTrue(result["open"])
+        self.assertEqual(result["port"], 443)
+        self.assertEqual(result["source"], "port_check")
+
+    def test_port_check_closed(self) -> None:
+        sock = mock.MagicMock()
+        sock.__enter__ = mock.MagicMock(return_value=sock)
+        sock.__exit__ = mock.MagicMock(return_value=False)
+        sock.connect_ex = mock.MagicMock(return_value=111)
+        with mock.patch("tools.port_check.socket.socket", return_value=sock):
+            result = port_check_run(target="127.0.0.1", port=1)
+        self.assertFalse(result["open"])
+
+    def test_port_check_invalid_port(self) -> None:
+        with self.assertRaises(ToolError):
+            port_check_run(target="127.0.0.1", port=0)
+        with self.assertRaises(ToolError):
+            port_check_run(target="127.0.0.1", port=65536)
+
+    def test_port_check_invalid_timeout(self) -> None:
+        with self.assertRaises(ToolError):
+            port_check_run(target="127.0.0.1", port=443, timeout=0.1)
+        with self.assertRaises(ToolError):
+            port_check_run(target="127.0.0.1", port=443, timeout=11.0)
+
+    def test_port_check_out_of_scope_denied(self) -> None:
+        with self.assertRaises(ToolError):
+            port_check_run(target="8.8.8.8", port=443)
