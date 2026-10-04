@@ -294,7 +294,7 @@ Zentrale Verwaltung aller Tools.
 
 Regel: Kein nicht registriertes Tool kann ausgeführt werden.
 
-Die Werkbank-Registry (core/services/tool_run_registry.py)
+Die Werkbank-Registry (tools/workbench_registry.py)
 ist eine zweite Registry, unabhaengig vom AgentLoop. Sie
 enthaelt nur Level 0-1 read-only Tools und wird
 ausschliesslich vom ToolRunService genutzt.

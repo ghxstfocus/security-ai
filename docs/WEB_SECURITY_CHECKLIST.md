@@ -157,7 +157,7 @@ Siehe docs/DEPLOYMENT.md Abschnitt 3c.
     - ein Level-2-Guard im Service Level >= 2 hart
       ablehnt,
     - die Werkbank-Tools in der Werkbank-Registry
-      (core/services/tool_run_registry.py) gelistet
+      (tools/workbench_registry.py) gelistet
       sind.
   Siehe §N-Ausnahme Werkbank (Runde 1).
 - Keine Entscheidungen des LLM (nur Erklaerungen).
@@ -175,7 +175,7 @@ Service-Schicht, nicht ueber den AgentLoop:
 
 - Umfang: 13 Tools, alle Level 0-1 (read-only).
   Die Werkbank-Tools sind in
-  core/services/tool_run_registry.py gelistet.
+  tools/workbench_registry.py gelistet.
   Klassen-Ausnahme, keine 13 Einzeleintraege.
 - Service-Grenze: ausschliesslich ToolRunService
   (core/services/tool_run_service.py), nicht der
