@@ -95,3 +95,10 @@ tools:
     conditions:
       - target_in_scope
     reason: "TCP-Port-Check"
+
+  whois:
+    allowed: true
+    level: 0
+    conditions:
+      - target_in_scope
+    reason: "whois-Abfrage"

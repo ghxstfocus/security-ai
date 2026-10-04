@@ -72,6 +72,7 @@ from tools.telegram_alert import (
 )
 from tools.traceroute import TRACEROUTE_TOOL
 from tools.whitelist_check import WHITELIST_CHECK_TOOL
+from tools.whois import WHOIS_TOOL
 
 try:
     import yaml  # PyYAML
@@ -150,6 +151,7 @@ def _build_default_registry() -> ToolRegistry:
     reg.register(TRACEROUTE_TOOL)
     reg.register(DNS_LOOKUP_TOOL)
     reg.register(PORT_CHECK_TOOL)
+    reg.register(WHOIS_TOOL)
     return reg
 
 

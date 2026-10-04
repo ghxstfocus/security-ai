@@ -12,6 +12,7 @@ from tools.dns_lookup import dns_lookup_run
 from tools.ping import ping_run
 from tools.port_check import port_check_run
 from tools.traceroute import traceroute_run
+from tools.whois import whois_run
 
 
 class PingTests(unittest.TestCase):
@@ -114,3 +115,22 @@ class PortCheckTests(unittest.TestCase):
     def test_port_check_out_of_scope_denied(self) -> None:
         with self.assertRaises(ToolError):
             port_check_run(target="8.8.8.8", port=443)
+
+
+class WhoisTests(unittest.TestCase):
+    def test_whois_in_scope(self) -> None:
+        fake = mock.Mock(returncode=0, stdout="WHOIS ok", stderr="")
+        with mock.patch("tools.whois.subprocess.run", return_value=fake):
+            result = whois_run(target="127.0.0.1")
+        self.assertEqual(result["target"], "127.0.0.1")
+        self.assertEqual(result["returncode"], 0)
+        self.assertEqual(result["source"], "whois")
+        self.assertIn("WHOIS ok", result["stdout"])
+
+    def test_whois_out_of_scope_denied(self) -> None:
+        with self.assertRaises(ToolError):
+            whois_run(target="8.8.8.8")
+
+    def test_whois_binary_missing(self) -> None:
+        with mock.patch("tools.whois.subprocess.run", side_effect=FileNotFoundError()), self.assertRaises(ToolError):
+            whois_run(target="127.0.0.1")
