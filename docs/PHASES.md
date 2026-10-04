@@ -991,7 +991,23 @@ Neue Punkte 65 (Extern-Kachel), 66 (/system-
 Detailseite).
 Details in docs/SECURITY_REVIEW_LOG.md.
 
-## Phase 5 — Admin AI  💡
+## Phase 5 — Admin AI  🔨
+
+Wird zu Phase 13 (Admin AI, Cloud, Pflicht).
+Siehe unten.
+
+Die Admin AI ist Pflicht fuer die Nutzung des
+Systems als Sicherheitssystem, nicht optional.
+Sie laeuft in der Cloud der Firma (typisch
+Azure in Deutschland). Sie ist die rechte Hand
+der IT: sie verwaltet Core, Endpunkte,
+Rollen (innerhalb der Core-Vorgaben),
+Bridges.
+
+Detaillierte Beschreibung: siehe Phase 13
+unten und docs/ADMIN_AI_SCOPE.md.
+
+Historische Planung (vor 2026-10-04):
 
 **Baut auf:** Core (Phase 1-4). Nutzt die
 Change-Request-Mechanik aus Phase 4.3.
@@ -1054,7 +1070,21 @@ Skizze:
   Abschnitt 3, Vorbereitbarkeit): Public-API-Doku +
   Sandbox-Account reicht fuer die erste Version.
 
-## Phase 8 — LLM-Bridges  💡
+## Phase 8 — LLM-Bridges  🔨
+
+Wird zu Phase 13 (Admin AI) konsolidiert.
+Siehe unten.
+
+Die LLM-Anbindung ist kein separater
+Bauabschnitt mehr, sondern Teil der Admin AI.
+Die Anbieter (Azure, Anthropic, OpenAI,
+DeepSeek, Copilot) sind austauschbare Module
+ueber das LLMProvider-Interface.
+
+Detaillierte Beschreibung: siehe Phase 13
+unten und docs/ADMIN_AI_SCOPE.md.
+
+Historische Planung (vor 2026-10-04):
 
 **Baut auf:** Phase 5 (Admin AI) + Phase 7
 (Data Connectors). Daten zuerst, dann Intelligenz.
@@ -1153,6 +1183,99 @@ Skizze:
 - Alarmierung ueber bestehende Kanaele (Telegram,
   Dashboard).
 
+## Phase 12 — Core-Fundament  💡
+
+Baut auf: Phase 1-4 (Harness, Detection, Inventory, Approval).
+
+Ziel: Der Core wird zur Plattform. Jede Firma installiert ihren eigenen Core. Er funktioniert autark, ohne Admin AI, ohne Kunden-KI.
+
+Bausteine:
+- Domaenen-Modell (Domaenen als Entitaet).
+- Rollentypen und Rolleninstanzen (siehe docs/ADMIN_AI_SCOPE.md Paragraph 4).
+- Faehigkeits-Registry (welche Faehigkeit existiert, welche Domaene, welche Stufe).
+- Zertifikatsverwaltung (Endpunkte, Admin AI, Kunden-KI).
+- Endpunkt-Protokoll (Format, Auth, Replay-Schutz, Fail closed).
+- Change Applier (der Motor fuer Ausfuehrung).
+- Installer und Erstkonfiguration.
+- Autarkie-Sicherstellung (kein verstecktes Cloud-Muss).
+
+Kategorie: 3.
+
+## Phase 13 — Admin AI (Cloud, Pflicht)  💡
+
+Baut auf: Phase 12 (Core-Fundament).
+
+Ziel: Die Admin AI als zentrale Intelligenz- und Bedienungsschicht. Cloud der Firma (typisch Azure in Deutschland). Pflicht fuer Sicherheitsnutzung.
+
+Bausteine:
+- LLM-Provider-Interface (LLMProvider).
+- Provider-Registry (Azure, Anthropic, OpenAI, DeepSeek, Copilot).
+- Routing nach Datenklassifikation.
+- Consent-Layer (Cloud-Anfragen brauchen Zustimmung).
+- Datenschutz-Layer (Filterung vor Cloud).
+- MCP-Client (Anbindung an MCP-Server).
+- Admin-AI-Protokoll (Core <-> Admin AI, mTLS, signierte Nachrichten).
+- Rollen-Anlage innerhalb der Core-Vorgaben.
+- Angriffserkennung ueber mehrere Endpunkte.
+- Gegenmassnahmen mit Human-Approval.
+
+Konsolidiert: Phase 5 (alte Admin AI) und Phase 8 (LLM-Bridges).
+
+Kategorie: 3.
+
+## Phase 14 — Kunden-KI (Cloud)  💡
+
+Baut auf: Phase 13 (Admin AI).
+
+Ziel: Die Kunden-KI als Assistent fuer Mitarbeiter. Cloud der Firma. Ohne Admin AI nicht sinnvoll.
+
+Bausteine:
+- Chat-Oberflaeche (natuerliche Sprache).
+- RBAC mit Domaenen (ein Buchhalter sieht keine Personal-Daten, ein Personaler keine Buchhaltung).
+- Gemeinsamer Ausfuehrungspfad: Vorschlag -> Bestaetigung -> Core -> Applier -> Audit.
+- Eigene Einstellungen fuer jeden Nutzer (Hintergrund, Sprache, Profil).
+- Anbindung an Firmensysteme ueber Bridges (HR, Tickets, CRM, M365).
+- Keine sicherheitsrelevanten Aktionen (Systemeigenschaften, Netzwerk, Core).
+
+Kategorie: 3.
+
+## Phase 15 — Endpunkte und Agenten  💡
+
+Baut auf: Phase 12 (Endpunkt-Protokoll) und Phase 13 (Admin AI).
+
+Ziel: Endpunkt-Agenten auf PCs und Servern, die durch die Admin AI und den Core gesteuert werden. Alles ueber MCP und das Endpunkt-Protokoll, keine visuelle Desktop-Steuerung.
+
+Bausteine:
+- Admin-Agent (System- und Netzwerk-Operationen auf IT-Systemen).
+- Kunden-Agent (UI und Anwendungen auf Endnutzer-PCs, enger Funktionsumfang).
+- Endpunkt-Protokoll-Implementierung (Transport, Auth, Heartbeat).
+- Endpunkt-Registry im Core.
+- Fail closed: kein Auftrag ohne Core.
+
+Kategorie: 3.
+
+## Phase 16 — Ollama-Rueckbau  💡
+
+Baut auf: nichts. Kann parallel laufen.
+
+Ziel: Der lokale Ollama-Chat wird entfernt. Grund: das lokale Modell (llama3.2:3b, qwen2.5:7b) liefert keine brauchbaren Antworten fuer die Komplexitaet der Aufgaben.
+
+Bausteine:
+- harness/llm/ (OllamaClient, Modelle, Fehler) entfernen.
+- apps/security_ai/chat.py (ChatService, Klassifikation, Sanity-Check, Auto-Switch) entfernen.
+- scripts/chat_cli.py entfernen.
+- Dashboard-Chat (routes_chat.py, chat.html, chat.js) entfernen.
+- core/context/builder.py entfernen.
+- core/context/links.py entfernen.
+- core/search/synonyms.yaml entfernen.
+- Chat-Permissions (chat.ask, chat.detail, chat.include_details) entfernen (Migration).
+- chat_rate_hits-Tabelle entfernen (Migration).
+- Audit-Kinds chat_* bleiben als Historie.
+- harness/context/redaction.py bleibt (fuer Cloud-LLM weiter genutzt).
+
+Siehe SECURITY_REVIEW_LOG Punkt <N>.
+
+Kategorie: 3.
 
 ## Empfehlungen aus Doku-Audit 2026-09-23
 
