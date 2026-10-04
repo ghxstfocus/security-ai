@@ -355,3 +355,11 @@ class RePresenceTests(unittest.TestCase):
         hosts = self._hosts("aa:14", fw._FALLBACK_SENTINEL, "10.0.0.1")
         events = fw._diff_and_emit(old, hosts)
         self.assertEqual(len(events), 0)
+
+    def test_sentinel_wird_none_im_event(self) -> None:
+        from tools.fritzbox_watcher import _FALLBACK_SENTINEL, _diff_and_emit
+        old = {"hosts": {}}
+        new = [{"ip": "10.0.0.1", "mac": "aa:01", "name": _FALLBACK_SENTINEL, "active": True}]
+        events = _diff_and_emit(old, new)
+        self.assertEqual(len(events), 1)
+        self.assertIsNone(events[0].data["entity_name"])

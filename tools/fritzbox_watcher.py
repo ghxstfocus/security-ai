@@ -230,6 +230,13 @@ def _diff_and_emit(
         if event_type is None:
             continue
 
+        # Fix B (Punkt 99): Sentinel nicht ins Event.
+        # Der Sentinel bleibt im State (Diff-Basis, Punkt 67a),
+        # aber der Event-Pfad bekommt None.
+        entity_name = h["name"]
+        if entity_name == _FALLBACK_SENTINEL:
+            entity_name = None
+
         events.append(new_event(
             source=_EVENT_SOURCE,
             event_type=event_type,
@@ -238,7 +245,7 @@ def _diff_and_emit(
                 "identifier": mac,
                 "ip": h["ip"],
                 "mac": mac,
-                "entity_name": h["name"],
+                "entity_name": entity_name,
                 "network_type": resolve_network_type(h["ip"]),
                 "reason": reason,
             },
