@@ -202,28 +202,29 @@ def resolve_network_type(ip: str | None) -> str:
     """Leitet network_type aus einer IP ab (Punkt 67).
 
     - IP im Gastnetz-Prefix -> "Gastnetz".
-    - Alles andere oder fehlende/ungueltige IP
-      -> "Hauptnetz" (Default).
+    - IP ausserhalb des Gastnetz-Prefix -> "Hauptnetz".
+    - Fehlende/ungueltige IP, ungueltiger Prefix
+      -> "Unbekannt" (kein Netz zuzuordnen).
 
     Fail closed: bei ungueltigem GUEST_NETWORK_PREFIX
-    wird "Hauptnetz" zurueckgegeben (kein Crash).
+    wird "Unbekannt" zurueckgegeben (kein Crash).
 
     Diese Funktion vergibt NICHT "Extern". Das ist
     eine Detection-Kategorie (unknown_device), keine
     Konfigurationsaussage.
     """
     if not ip:
-        return DEFAULT_FRITZ_NETWORK_TYPE
+        return "Unbekannt"
     try:
         addr = ipaddress.ip_address(ip)
     except ValueError:
-        return DEFAULT_FRITZ_NETWORK_TYPE
+        return "Unbekannt"
     try:
         guest = ipaddress.ip_network(
             get_guest_network_prefix(), strict=False,
         )
     except ValueError:
-        return DEFAULT_FRITZ_NETWORK_TYPE
+        return "Unbekannt"
     if addr in guest:
         return "Gastnetz"
     return DEFAULT_FRITZ_NETWORK_TYPE

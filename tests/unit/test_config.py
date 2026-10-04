@@ -164,13 +164,13 @@ def test_resolve_hauptnetz():
     assert resolve_network_type("192.168.178.5") == "Hauptnetz"
 
 def test_resolve_none():
-    assert resolve_network_type(None) == "Hauptnetz"
+    assert resolve_network_type(None) == "Unbekannt"
 
 def test_resolve_leer():
-    assert resolve_network_type("") == "Hauptnetz"
+    assert resolve_network_type("") == "Unbekannt"
 
 def test_resolve_ungueltige_ip():
-    assert resolve_network_type("nicht-eine-ip") == "Hauptnetz"
+    assert resolve_network_type("nicht-eine-ip") == "Unbekannt"
 
 def test_resolve_kein_extern():
     assert resolve_network_type("8.8.8.8") != "Extern"
