@@ -27,6 +27,7 @@ from typing import Any
 
 from core.detection.rule_base import Rule, RuleContext
 from core.events.event import Event, EventType, Severity
+from core.sentinels import FALLBACK_SENTINEL
 
 _TRIGGER_TYPES = frozenset({
     EventType.DEVICE_PRESENCE.value,
@@ -68,6 +69,10 @@ class UnknownDevicePersistentRule(Rule):
             return []
 
         if event.data.get("known") is not False:
+            return []
+
+        # Fix C (Punkt 99): kein Alarm bei Sentinel-Name.
+        if event.data.get("entity_name") == FALLBACK_SENTINEL:
             return []
 
         identifier = event.data.get("identifier")

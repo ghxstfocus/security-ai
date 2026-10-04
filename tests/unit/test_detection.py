@@ -64,6 +64,19 @@ class UnknownDeviceTests(unittest.TestCase):
         self.assertEqual(out[0].data["identifier"], "192.168.178.87")
         self.assertFalse(out[0].data["known"])
 
+    def test_sentinel_kein_output(self):
+        e = new_event(
+            "fritzbox", EventType.DEVICE_PRESENCE.value, Severity.INFO,
+            {
+                "identifier": "192.168.178.87",
+                "entity_name": FALLBACK_SENTINEL,
+                "network_type": "Hauptnetz",
+                "known": False,
+            },
+        )
+        out = self.rule.evaluate(e, _ctx())
+        self.assertEqual(out, [])
+
     def test_gastnetz_kein_output(self):
         out = self.rule.evaluate(
             self._device_event(network_type="Gastnetz", known=False), _ctx())
@@ -460,6 +473,26 @@ class UnknownDevicePersistentTests(unittest.TestCase):
         out = self.rule.evaluate(
             self._presence(known=True), self._ctx(self.base, snap),
         )
+        self.assertEqual(out, [])
+
+    def test_sentinel_kein_output(self):
+        e = Event(
+            event_id=new_event_id(),
+            timestamp=self.base,
+            source="fritzbox",
+            event_type=EventType.DEVICE_PRESENCE.value,
+            severity=Severity.INFO,
+            data={
+                "identifier": "aa:01",
+                "mac": "aa:01",
+                "entity_name": FALLBACK_SENTINEL,
+                "network_type": "Hauptnetz",
+                "known": False,
+            },
+            network_id="homelab-default",
+        )
+        snap = {"first_seen": {"aa:01": self.base - timedelta(hours=2)}}
+        out = self.rule.evaluate(e, self._ctx(self.base, snap))
         self.assertEqual(out, [])
 
     def test_unknown_unter_schwelle_kein_output(self):

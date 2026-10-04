@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from core.detection.rule_base import Rule, RuleContext
 from core.events.event import Event, EventType, Severity
+from core.sentinels import FALLBACK_SENTINEL
 
 _DEFAULT_ALARM_NETWORK = "Hauptnetz"
 _TRIGGER_TYPES = frozenset({
@@ -42,6 +43,11 @@ class UnknownDeviceRule(Rule):
 
         # Nur explizit unbekannt alarmiert. Fehlendes Feld != False.
         if event.data.get("known") is not False:
+            return []
+
+        # Fix C (Punkt 99): kein Alarm bei Sentinel-Name.
+        # Defense in Depth (Fix B schliesst den Watcher-Pfad).
+        if event.data.get("entity_name") == FALLBACK_SENTINEL:
             return []
 
         from core.events.event import Event as _Event
