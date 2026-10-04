@@ -3,11 +3,15 @@
 
 """ToolRunService (Punkt 58 Runde 1, Schritt 1b).
 
-UI -> Service -> Tool-Registry -> Tool. Kein AgentLoop.
+UI -> Service -> Werkbank-Registry -> Tool. Kein AgentLoop.
 Nur Level 0-1 (read-only). Level 2+ kommt mit Change Request.
 
 RBAC pro Tool-Gruppe (tool.net_diag, tool.sys_status, tool.db_read).
 Fail closed: RBAC, Registry, Argumente, Audit.
+
+Audit-Konvention (Auflage 1987):
+  tool=<tool_name>, details.component="tool_run_service".
+  Siehe DESIGN_DECISIONS Paragraph 2 (tool = Komponente).
 """
 from __future__ import annotations
 
@@ -76,12 +80,13 @@ class ToolRunService:
             "kind": "tool_call",
             "source": "ui",
             "tool": tool_name,
+            "component": "tool_run_service",
             "permission": permission,
             "actor": actor,
         }
         self._audit.log(
             agent="security_ai",
-            tool="tool_run_service",
+            tool=tool_name,
             policy_result=policy,
             permission_level=level,
             execution_status=status,
