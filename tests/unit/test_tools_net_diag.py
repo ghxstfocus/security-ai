@@ -11,6 +11,7 @@ from harness.tool_registry.tool import ToolError
 from tools.dns_lookup import dns_lookup_run
 from tools.ping import ping_run
 from tools.port_check import port_check_run
+from tools.system_status import system_status_run
 from tools.traceroute import traceroute_run
 from tools.whois import whois_run
 
@@ -134,3 +135,19 @@ class WhoisTests(unittest.TestCase):
     def test_whois_binary_missing(self) -> None:
         with mock.patch("tools.whois.subprocess.run", side_effect=FileNotFoundError()), self.assertRaises(ToolError):
             whois_run(target="127.0.0.1")
+
+
+class SystemStatusTests(unittest.TestCase):
+    def test_system_status_liefert_werte(self) -> None:
+        result = system_status_run()
+        self.assertIn("cpu_percent", result)
+        self.assertIn("cpu_count", result)
+        self.assertIn("ram_percent", result)
+        self.assertIn("loadavg_1", result)
+        self.assertIn("uptime_seconds", result)
+        self.assertEqual(result["source"], "system_status")
+        self.assertGreater(result["cpu_count"], 0)
+
+    def test_system_status_psutil_fehler(self) -> None:
+        with mock.patch("tools.system_status.psutil.virtual_memory", side_effect=RuntimeError("boom")), self.assertRaises(ToolError):
+            system_status_run()

@@ -102,3 +102,9 @@ tools:
     conditions:
       - target_in_scope
     reason: "whois-Abfrage"
+
+  system_status:
+    allowed: true
+    level: 0
+    conditions: []
+    reason: "Systemzustand"
