@@ -144,11 +144,52 @@ Siehe docs/DEPLOYMENT.md Abschnitt 3c.
 ## N. Was NICHT ins Dashboard gehoert
 
 - Kein direktes DB-Schreiben (nur ueber Services).
-- Keine Tool-Aufrufe (nur ueber AgentLoop).
+- Keine Tool-Aufrufe mit Wirkung (Level 2+) aus dem UI.
+  Level 0-1 read-only duerfen ueber die Service-Schicht
+  laufen (UI -> Service -> Werkbank-Registry -> Tool),
+  wenn:
+    - RBAC pro Tool im Service erzwungen wird,
+    - Key-Whitelist in der Route UND Wert-Validierung
+      im Tool geprueft werden,
+    - kein Shell-Zugriff moeglich ist,
+    - Rate-Limit pro Principal und Tool im Service
+      greift,
+    - ein Level-2-Guard im Service Level >= 2 hart
+      ablehnt,
+    - die Werkbank-Tools in der Werkbank-Registry
+      (core/services/tool_run_registry.py) gelistet
+      sind.
+  Siehe §N-Ausnahme Werkbank (Runde 1).
 - Keine Entscheidungen des LLM (nur Erklaerungen).
 - Kein Konfig-Aenderung (nur Change Requests).
 - Kein Secret-Handling (nur Anzeige von Status).
 - Kein direkter Systemzugriff (kein Shell, kein subprocess).
+
+### §N-Ausnahme Werkbank (Runde 1)
+
+Das Dashboard bietet eine read-only Werkbank fuer
+Level 0-1 Tools. Der Aufruf laeuft ueber die
+Service-Schicht, nicht ueber den AgentLoop:
+
+    UI -> Service -> Werkbank-Registry -> Tool
+
+- Umfang: 13 Tools, alle Level 0-1 (read-only).
+  Die Werkbank-Tools sind in
+  core/services/tool_run_registry.py gelistet.
+  Klassen-Ausnahme, keine 13 Einzeleintraege.
+- Service-Grenze: ausschliesslich ToolRunService
+  (core/services/tool_run_service.py), nicht der
+  AgentLoop.
+- Fail-closed-Nachweis:
+    - unbekanntes Tool      -> 4xx.
+    - unbekannter Key       -> 4xx (Key-Whitelist
+      in der Route + validate_args im Service).
+    - Audit-Fehler          -> 5xx (ToolRunOperationError).
+    - Level >= 2            -> 4xx (Level-2-Guard).
+- Rate-Limit: pro Principal und Tool ueber den
+  bestehenden RateLimitService (Punkt 9).
+- Kein Shell, subprocess nur im Tool selbst
+  (shell=False).
 
 ### §N-Ausnahme: Services-Status (Punkt 66, Auflage 1753)
 

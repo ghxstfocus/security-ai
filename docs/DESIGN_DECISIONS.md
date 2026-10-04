@@ -1559,6 +1559,16 @@ Steuerpult. Die Rollenverschiebung ist explizit.
   nicht in Sammel-Reitern.
 - Change Request ist Pflicht bei Level 2+.
 
+Zwei Aufrufwege:
+
+- Level 0-1 read-only: UI -> Service ->
+  Werkbank-Registry -> Tool.
+- Level 2+: UI -> Service -> AgentLoop ->
+  Harness -> Tool.
+
+Der Service entscheidet den Pfad. Kein direkter
+Import des Orchestrators im Dashboard.
+
 Ausnahme: Services-Status auf /system (Punkt 66).
 Der SystemStatusService ruft systemctl is-active fuer
 die drei eigenen security-ai-Units direkt auf

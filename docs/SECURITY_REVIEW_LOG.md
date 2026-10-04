@@ -1246,8 +1246,16 @@ Punkt 82: Orchestrator-Docstring 5->6 Tools (6d9c1c1).
       whitelist_remove, firewall_rule_*.
     - Runde 3 (sehr invasiv, nur mit Design):
       fritz_*, proxmox_*, change_deploy.
-    - Aufrufweg: UI -> Service -> AgentLoop ->
-      Harness -> Tool. Kein direkter Tool-Aufruf.
+    - Aufrufweg:
+        - Level 0-1 read-only: UI -> Service ->
+          Werkbank-Registry -> Tool
+          (Ausnahme §N Werkbank).
+        - Level 2+: UI -> Service -> AgentLoop ->
+          Harness -> Tool.
+      Der ToolRunService entscheidet den Pfad,
+      nicht die Route. Der AgentLoop bleibt
+      Pflicht bei allem, was eine Policy-
+      Entscheidung braucht.
     - Kategorie 3 pro Runde.
 
 59. (offen, Kategorie 3, Betriebsparameter-Reiter)

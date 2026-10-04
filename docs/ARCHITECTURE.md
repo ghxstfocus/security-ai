@@ -274,6 +274,10 @@ Begrenzt durch:
 - max_tool_calls
 - Ressourcen-Limits
 
+Fuer Level 0-1 read-only entfaellt der Policy-Check.
+Der ToolRunService ruft direkt auf (Werkbank-Registry).
+Siehe WEB_SECURITY_CHECKLIST §N-Ausnahme Werkbank.
+
 ### 3.6 harness/tool_registry — Tool Registry
 
 Zentrale Verwaltung aller Tools.
@@ -289,6 +293,11 @@ Zentrale Verwaltung aller Tools.
         version: str
 
 Regel: Kein nicht registriertes Tool kann ausgeführt werden.
+
+Die Werkbank-Registry (core/services/tool_run_registry.py)
+ist eine zweite Registry, unabhaengig vom AgentLoop. Sie
+enthaelt nur Level 0-1 read-only Tools und wird
+ausschliesslich vom ToolRunService genutzt.
 
 ### 3.7 harness/permissions — Permission System
 
