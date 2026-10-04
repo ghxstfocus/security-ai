@@ -30,12 +30,11 @@ from typing import Any
 
 from core.detection.rule_base import Rule, RuleContext
 from core.events.event import Event, EventType, Severity
+from core.sentinels import FALLBACK_SENTINEL
 
 _TRIGGER_TYPES = frozenset({
     EventType.DEVICE_PRESENCE.value,
 })
-
-_SENTINEL = "__FALLBACK__"
 
 _DEFAULTS: dict[str, Any] = {
     "enabled": True,
@@ -76,7 +75,7 @@ class MacChangeRule(Rule):
         mac = event.data.get("mac") or event.data.get("identifier")
         if not name_raw or not mac:
             return []
-        if name_raw == _SENTINEL:
+        if name_raw == FALLBACK_SENTINEL:
             return []
 
         name = _normalize_name(str(name_raw))

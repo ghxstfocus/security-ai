@@ -23,6 +23,7 @@ from core.events.event import (
     new_event,
     new_event_id,
 )
+from core.sentinels import FALLBACK_SENTINEL
 
 
 def _ctx(now=None, config=None, state=None):
@@ -308,7 +309,7 @@ class MacChangeTests(unittest.TestCase):
 
     def test_entity_sentinel_kein_output(self):
         out = self.rule.evaluate(
-            self._presence(identifier="aa:01", entity_name="__FALLBACK__",
+            self._presence(identifier="aa:01", entity_name=FALLBACK_SENTINEL,
                            ts=self.base),
             _ctx(now=self.base, state=self.state),
         )

@@ -15,6 +15,7 @@ from core.inventory.repository import (
     connect,
 )
 from core.inventory.whitelist import WhitelistEntry, WhitelistRepository
+from core.sentinels import FALLBACK_SENTINEL
 
 
 def _fresh_conn():
@@ -128,20 +129,18 @@ class DeviceRepositoryTests(unittest.TestCase):
 
     def test_upsert_seen_fallback_sentinel_resets_entity_name(self):
         """Sentinel ueberschreibt alten Fallback-Namen mit None (67a)."""
-        from core.inventory.repository import _FALLBACK_SENTINEL
         self.repo.upsert_seen("192.168.178.90",
                               entity_name="PC-192-168-178-90")
         d = self.repo.upsert_seen("192.168.178.90",
-                                  entity_name=_FALLBACK_SENTINEL)
+                                  entity_name=FALLBACK_SENTINEL)
         self.assertIsNone(d.entity_name)
 
     def test_upsert_seen_fallback_sentinel_from_none(self):
         """Sentinel bei existing=None laesst entity_name None."""
-        from core.inventory.repository import _FALLBACK_SENTINEL
         self.repo.upsert_seen("192.168.178.91",
-                              entity_name=_FALLBACK_SENTINEL)
+                              entity_name=FALLBACK_SENTINEL)
         d = self.repo.upsert_seen("192.168.178.91",
-                                  entity_name=_FALLBACK_SENTINEL)
+                                  entity_name=FALLBACK_SENTINEL)
         self.assertIsNone(d.entity_name)
 
     def test_upsert_seen_real_name_overwrites_fallback(self):
@@ -153,9 +152,8 @@ class DeviceRepositoryTests(unittest.TestCase):
 
     def test_upsert_seen_fallback_sentinel_insert_only(self):
         """INSERT-Zweig filtert Sentinel -> None (Auflage 1772)."""
-        from core.inventory.repository import _FALLBACK_SENTINEL
         d = self.repo.upsert_seen("192.168.178.93",
-                                  entity_name=_FALLBACK_SENTINEL)
+                                  entity_name=FALLBACK_SENTINEL)
         self.assertIsNone(d.entity_name)
         row = self.conn.execute(
             "SELECT entity_name FROM devices WHERE identifier = ?",

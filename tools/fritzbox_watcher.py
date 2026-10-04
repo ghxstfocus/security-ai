@@ -49,7 +49,6 @@ from fritzconnection.lib.fritzhosts import FritzHosts
 #   IP-Format:  PC-N-N-N-N (Bindestriche).
 _FALLBACK_RE_MAC = re.compile(r"^PC-([0-9A-F]{2}-){5}[0-9A-F]{2}$")
 _FALLBACK_RE_IP = re.compile(r"^PC-(\d{1,3}-){3}\d{1,3}$")
-_FALLBACK_SENTINEL = "__FALLBACK__"
 
 
 def _is_fallback_name(name: str) -> bool:
@@ -68,6 +67,7 @@ from core.config import (
     resolve_network_type,
 )
 from core.events.event import Event, EventType, Severity, new_event
+from core.sentinels import FALLBACK_SENTINEL
 from harness.audit.writer import AuditWriter
 
 _log = logging.getLogger(__name__)
@@ -158,7 +158,7 @@ def _fetch_hosts(
             "ip": h.get("ip") or None,
             "mac": mac,
             "name": (
-                _FALLBACK_SENTINEL
+                FALLBACK_SENTINEL
                 if _is_fallback_name(h.get("name") or "")
                 else (h.get("name") or "")
             ),
@@ -234,7 +234,7 @@ def _diff_and_emit(
         # Der Sentinel bleibt im State (Diff-Basis, Punkt 67a),
         # aber der Event-Pfad bekommt None.
         entity_name = h["name"]
-        if entity_name == _FALLBACK_SENTINEL:
+        if entity_name == FALLBACK_SENTINEL:
             entity_name = None
 
         events.append(new_event(

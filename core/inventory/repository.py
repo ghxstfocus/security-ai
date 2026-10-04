@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from core.inventory.device import Device
+from core.sentinels import FALLBACK_SENTINEL
 
 # Single source of truth fuer den DB-Pfad.
 # Kann spaeter nach core/config.py wandern, wenn mehr
@@ -32,7 +33,6 @@ DEFAULT_DB_PATH = Path("data/inventory.db")
 # Sentinel-Wert aus dem Fritz!Box-Watcher (Punkt 67a, Auflage 1765).
 # Bedeutung: der neue entity_name ist ein Fallback, kein echter Name.
 # Das Repository setzt dann entity_name auf None statt zu ueberschreiben.
-_FALLBACK_SENTINEL = "__FALLBACK__"
 DEFAULT_MIGRATIONS_DIR = Path("data/migrations")
 
 logger = logging.getLogger(__name__)
@@ -323,7 +323,7 @@ class DeviceRepository:
         last_ip: None und "" gelten beide als "keine IP".
         Auflage 1757, Punkt 67b.
 
-        entity_name: _FALLBACK_SENTINEL bedeutet "kein
+        entity_name: FALLBACK_SENTINEL bedeutet "kein
         echter Name" und wird als None gespeichert
         (INSERT und UPDATE, Auflage 1771, Punkt 67a).
 
@@ -338,7 +338,7 @@ class DeviceRepository:
         existing = self.get(identifier)
         if existing is None:
             insert_name = (
-                None if entity_name == _FALLBACK_SENTINEL else entity_name
+                None if entity_name == FALLBACK_SENTINEL else entity_name
             )
             cur = self._conn.execute(
                 "INSERT INTO devices "
@@ -349,7 +349,7 @@ class DeviceRepository:
             device_id = cur.lastrowid
         else:
             device_id = existing.id
-            if entity_name == _FALLBACK_SENTINEL:
+            if entity_name == FALLBACK_SENTINEL:
                 new_name = None
             elif entity_name is not None:
                 new_name = entity_name

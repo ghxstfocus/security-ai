@@ -7,6 +7,7 @@ from __future__ import annotations
 import unittest
 from unittest import mock
 
+from core.sentinels import FALLBACK_SENTINEL
 from tools import fritzbox_watcher as fw
 
 
@@ -33,13 +34,13 @@ class FallbackNameTests(unittest.TestCase):
     def test_mac_fallback_becomes_sentinel(self) -> None:
         self.assertEqual(
             self._run_fetch("PC-82-E1-00-82-16-96"),
-            fw._FALLBACK_SENTINEL,
+            FALLBACK_SENTINEL,
         )
 
     def test_ip_fallback_becomes_sentinel(self) -> None:
         self.assertEqual(
             self._run_fetch("PC-192-168-178-117"),
-            fw._FALLBACK_SENTINEL,
+            FALLBACK_SENTINEL,
         )
 
     def test_real_name_unchanged(self) -> None:
