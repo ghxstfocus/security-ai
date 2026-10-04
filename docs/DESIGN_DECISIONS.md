@@ -997,7 +997,7 @@ Begruendung: das lokale 3B-Modell liefert
 keine brauchbaren Antworten fuer die Komplexitaet
 der Aufgaben. Ersetzt durch Cloud-Provider
 (siehe docs/ADMIN_AI_SCOPE.md, Phase 13, und
-SECURITY_REVIEW_LOG Punkt <N>).
+SECURITY_REVIEW_LOG Punkt 88).
 
 (Historischer Inhalt, nicht mehr aktiv.)
 
@@ -1100,7 +1100,7 @@ Begruendung: die Klassifikation war fuer das
 lokale Modell gedacht. Cloud-Provider
 uebernehmen die Klassifikation selbst. Siehe
 docs/ADMIN_AI_SCOPE.md, Phase 13, und
-SECURITY_REVIEW_LOG Punkt <N>.
+SECURITY_REVIEW_LOG Punkt 88.
 
 (Historischer Inhalt, nicht mehr aktiv.)
 
@@ -1768,7 +1768,7 @@ Das Dashboard bleibt als Basic-Verwaltung
 ohne LLM. Guardrails-Aktivierung ist
 Mensch-only (ueber Dashboard oder CLI).
 
-Siehe SECURITY_REVIEW_LOG Punkt <N>.
+Siehe SECURITY_REVIEW_LOG Punkt 88.
 
 ## 27. Datenklassifikation
 

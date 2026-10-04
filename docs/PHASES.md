@@ -1273,7 +1273,7 @@ Bausteine:
 - Audit-Kinds chat_* bleiben als Historie.
 - harness/context/redaction.py bleibt (fuer Cloud-LLM weiter genutzt).
 
-Siehe SECURITY_REVIEW_LOG Punkt <N>.
+Siehe SECURITY_REVIEW_LOG Punkt 88.
 
 Kategorie: 3.
 

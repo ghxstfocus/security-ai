@@ -1949,4 +1949,135 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       weiterhin aus detection/rules.yaml
       (Zeile 48, Wert 3600). Keine Aenderung.
 
+88. (offen, Kategorie 3, Architektur/Rueckbau)
+    Ollama-Rueckbau.
+    - Beschluss 2026-10-04: das lokale Modell
+      (llama3.2:3b, qwen2.5:7b) liefert keine
+      brauchbaren Antworten fuer die Komplexitaet
+      der Aufgaben. Ersetzt durch Cloud-Provider.
+    - Siehe DESIGN_DECISIONS Paragraph 26.
+    - Umfang: harness/llm/, apps/security_ai/
+      chat.py, scripts/chat_cli.py, Dashboard-
+      Chat (routes_chat.py, chat.html, chat.js),
+      core/context/builder.py, core/context/
+      links.py, core/search/synonyms.yaml.
+    - Chat-Permissions + chat_rate_hits-Tabelle
+      entfallen (Migration).
+    - Redaction (harness/context/redaction.py)
+      bleibt (fuer Cloud-LLM weiter genutzt).
+    - Design vor Code. Eigener Bau-Block.
+
+89. (offen, Kategorie 3, Architektur/Rollen)
+    Rollentypen und Rolleninstanzen.
+    - Beschluss 2026-10-04: der Core definiert
+      Rollentypen. Die Admin AI darf Rollen-
+      instanzen aus existierenden Typen anlegen.
+    - Ausnahme: Core-Admins nur durch Menschen.
+    - Siehe DESIGN_DECISIONS Paragraph 24 und
+      docs/ADMIN_AI_SCOPE.md Paragraph 4.
+    - Datenmodell: neue Tabelle role_types oder
+      Erweiterung der bestehenden roles-Tabelle.
+      Bestandsaufnahme vor Bau.
+    - Kategorie 3.
+
+90. (offen bis Commit, Kategorie 1, Doku)
+    Admin-AI-Scope dokumentiert.
+    - Neue Datei: docs/ADMIN_AI_SCOPE.md.
+    - Beschreibt: Rolle, darf/nicht darf,
+      Rollentypen, Auth, Protokoll, Audit,
+      Datenklassifikation, Ausfuehrungspfad,
+      Verhaeltnis zu Kunden-KI und Dashboard,
+      Nicht-Ziele.
+    - Commit <hash>.
+
+91. (offen, Kategorie 3, Architektur/Datenschutz)
+    Datenklassifikation.
+    - Beschluss 2026-10-04: jede Information
+      hat eine Vertraulichkeitsstufe
+      (oeffentlich, intern, vertraulich,
+      streng vertraulich).
+    - Der Core filtert jede Anfrage an die
+      Admin AI nach dieser Klassifikation.
+    - Siehe DESIGN_DECISIONS Paragraph 27.
+    - Kategorie 3: Datenmodell, Service,
+      Filterlogik.
+
+92. (offen, Kategorie 3, Architektur/LLM)
+    Cloud-Provider-Interface.
+    - Beschluss 2026-10-04: LLM-Anbieter
+      austauschbar (Azure, Anthropic, OpenAI,
+      DeepSeek, Copilot).
+    - Der Core kennt nur das LLMProvider-Interface.
+    - Siehe DESIGN_DECISIONS Paragraph 28.
+    - Kategorie 3.
+
+93. (offen, Kategorie 3, Architektur/Betrieb)
+    Firma-Installation und Installer.
+    - Beschluss 2026-10-04: jede Firma
+      installiert ihren eigenen Core.
+    - Siehe DESIGN_DECISIONS Paragraph 29.
+    - Bausteine: Installer-Skript, Erstkonfiguration
+      (erster Admin-Zugang, erste Rollen),
+      Update-Pfad, Backup-Konzept,
+      Abnahmetests.
+    - Kategorie 3.
+
+94. (offen, Kategorie 1, Doku)
+    Docstring orchestrator.py "5 Tools" -> "7 Tools".
+    - Orchestrator-Docstring nennt "5 Tools",
+      registriert sind heute 7 (nmap_scan,
+      read_logs, get_devices, whitelist_check,
+      telegram_alert, notify_ntfy, ping).
+    - Die Zahl waechst mit Punkt 58 weiter.
+    - Vorschlag: statt einer festen Zahl
+      "registrierte Tools" ohne Zahl schreiben.
+    - Kategorie 1.
+
+95. (offen, Kategorie 1, Doku)
+    WORKFLOW "Verifikation vor Commit".
+    - Neue Regel: ruff + mypy + pytest -q im
+      SELBEN Block VOR git add / git commit.
+      Nachmessung nach Commit ist kein Ersatz.
+    - Anlass: in mehreren Runden wurde die
+      Vollsuite erst nach dem Commit gemessen.
+    - Anti-Pattern-Eintrag in WORKFLOW.
+    - Kategorie 1.
+
+96. (offen, Kategorie 1, Betriebsakt)
+    Modus-Drift in data/migrations/.
+    - 0010-0012: 644 root:root.
+    - 0013-0014: 640 root:root.
+    - 0002-0009 und 0015: 640 security-ai:security-ai.
+    - Betriebsakt: chmod 640 + chown security-ai:security-ai
+      fuer 0010-0014.
+    - Braucht Host- oder sudo-Zugriff.
+    - Kategorie 1.
+
+97. (offen, Kategorie 1, Beobachtung)
+    Permission-IDs 1021, 1038, 1039.
+    - Die drei Permissions alert.view, search.run,
+      whitelist.manage haben ID-Bereich 10xx.
+    - Alle anderen 1-15.
+    - sqlite_sequence.seq = 1039, kein Sprung
+      durch geloeschte Zeilen.
+    - Ursprung unklar (manuelle Bearbeitung
+      oder alte Migration).
+    - IDs sind intern, kein Verhalten betroffen.
+    - Beobachtung, keine Aktion.
+
+98. (offen, Kategorie 1, Doku)
+    PHASES-Neuschrieb.
+    - PHASES.md ist 1468 Zeilen (Stand 1285fc9).
+    - Enthaelt Roadmap (Phasen 1-16) und
+      Chronik (Alarm-Paket, einzelne Punkte,
+      Doku-Nachzuege).
+    - Vorschlag: PHASES auf 100-200 Zeilen
+      reduzieren. Nur Roadmap.
+    - Detail-Logs bleiben im SECURITY_REVIEW_LOG.
+    - Empfehlungen aus Doku-Audit 2026-09-23
+      archivieren oder entfernen.
+    - Bestandsaufnahme vor Neuschrieb.
+    - Eigener Block nach dem Architektur-Doku-Block.
+    - Kategorie 1.
+
 Bewusst offen (kein Bau heute):
