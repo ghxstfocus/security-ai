@@ -65,7 +65,14 @@ class ToolRunService:
         self._checker = checker
         self._rate_limiter = rate_limiter
 
-    def run(self, actor: str, tool_name: str, args: dict[str, Any]) -> dict[str, Any]:
+    def run(
+        self,
+        actor: str,
+        tool_name: str,
+        args: dict[str, Any],
+        *,
+        original_args: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         permission = TOOL_PERMISSION.get(tool_name)
         if permission is None:
             raise ToolRunServiceError(f"Unbekanntes Tool: {tool_name!r}")
@@ -99,20 +106,31 @@ class ToolRunService:
         try:
             tool.validate_args(args)
         except Exception as exc:
-            self._log(actor, tool_name, permission, int(tool.level), "FORBIDDEN", "ERR", args, str(exc))
+            self._log(actor, tool_name, permission, int(tool.level), "FORBIDDEN", "ERR", args, str(exc), original_args)
             raise ToolRunServiceError(f"Ungueltige Argumente fuer {tool_name!r}") from exc
         try:
             output = tool.func(**args)
         except ToolError as exc:
-            self._log(actor, tool_name, permission, int(tool.level), "ALLOWED", "ERR", args, str(exc))
+            self._log(actor, tool_name, permission, int(tool.level), "ALLOWED", "ERR", args, str(exc), original_args)
             raise ToolRunOperationError(f"Tool {tool_name!r} fehlgeschlagen") from exc
         except Exception as exc:
-            self._log(actor, tool_name, permission, int(tool.level), "ALLOWED", "ERR", args, str(exc))
+            self._log(actor, tool_name, permission, int(tool.level), "ALLOWED", "ERR", args, str(exc), original_args)
             raise ToolRunOperationError(f"Unerwarteter Fehler in {tool_name!r}") from exc
-        self._log(actor, tool_name, permission, int(tool.level), "ALLOWED", "OK", args, None)
+        self._log(actor, tool_name, permission, int(tool.level), "ALLOWED", "OK", args, None, original_args)
         return {"ok": True, "output": output, "tool": tool_name}
 
-    def _log(self, actor: str, tool_name: str, permission: str, level: int, policy: str, status: str, args: dict[str, Any], error: str | None) -> None:
+    def _log(
+        self,
+        actor: str,
+        tool_name: str,
+        permission: str,
+        level: int,
+        policy: str,
+        status: str,
+        args: dict[str, Any],
+        error: str | None,
+        original_args: dict[str, Any] | None = None,
+    ) -> None:
         details = {
             "kind": "tool_call",
             "source": "ui",
@@ -127,7 +145,11 @@ class ToolRunService:
             policy_result=policy,
             permission_level=level,
             execution_status=status,
-            args=args,
+            # Wenn die Route unbekannte Keys gefiltert hat, dokumentiert
+            # der Audit-Hash den ORIGINAL-Versuch (original_args), nicht
+            # das Ergebnis. Nachweis-Luecke sonst: ein Angreifer koennte
+            # x-beliebige Keys schicken, ohne dass eine Spur bleibt.
+            args=(original_args if original_args is not None else args),
             details=details,
             error=error,
         )

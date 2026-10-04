@@ -166,3 +166,32 @@ class ToolRunServiceTests(unittest.TestCase):
         )
         with self.assertRaises(ToolRunServiceError):
             svc.run("admin", "ping", {"unbekannt": "x"})
+
+    def test_original_args_used_in_audit(self) -> None:
+        svc, audit, _ = self._build(
+            lambda target: {"ok": True},
+        )
+        svc.run(
+            "admin", "ping",
+            {"target": "1.1.1.1"},
+            original_args={"target": "1.1.1.1", "evil": "x"},
+        )
+        self.assertEqual(len(audit.entries), 1)
+        # Der Service uebergibt original_args an audit.log(),
+        # nicht das gefilterte args.
+        self.assertEqual(
+            audit.entries[0]["args"],
+            {"target": "1.1.1.1", "evil": "x"},
+        )
+
+    def test_original_args_none_uses_args(self) -> None:
+        svc, audit, _ = self._build(
+            lambda target: {"ok": True},
+        )
+        svc.run("admin", "ping", {"target": "1.1.1.1"})
+        self.assertEqual(len(audit.entries), 1)
+        # Ohne original_args uebergibt der Service args.
+        self.assertEqual(
+            audit.entries[0]["args"],
+            {"target": "1.1.1.1"},
+        )
