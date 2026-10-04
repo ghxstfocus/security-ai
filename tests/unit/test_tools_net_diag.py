@@ -11,6 +11,7 @@ from harness.tool_registry.tool import ToolError
 from tools.dns_lookup import dns_lookup_run
 from tools.ping import ping_run
 from tools.port_check import port_check_run
+from tools.service_status import service_status_run
 from tools.system_status import system_status_run
 from tools.traceroute import traceroute_run
 from tools.whois import whois_run
@@ -151,3 +152,22 @@ class SystemStatusTests(unittest.TestCase):
     def test_system_status_psutil_fehler(self) -> None:
         with mock.patch("tools.system_status.psutil.virtual_memory", side_effect=RuntimeError("boom")), self.assertRaises(ToolError):
             system_status_run()
+
+
+class ServiceStatusTests(unittest.TestCase):
+    def test_service_status_active(self) -> None:
+        fake = mock.Mock(returncode=0, stdout="active\n", stderr="")
+        with mock.patch("tools.service_status.subprocess.run", return_value=fake):
+            result = service_status_run(unit="security-ai-dashboard.service")
+        self.assertEqual(result["unit"], "security-ai-dashboard.service")
+        self.assertEqual(result["state"], "active")
+        self.assertEqual(result["source"], "service_status")
+
+    def test_service_status_unknown_unit(self) -> None:
+        with self.assertRaises(ToolError):
+            service_status_run(unit="apache2.service")
+
+    def test_service_status_timeout(self) -> None:
+        import subprocess as _sp
+        with mock.patch("tools.service_status.subprocess.run", side_effect=_sp.TimeoutExpired(cmd="systemctl", timeout=2)), self.assertRaises(ToolError):
+            service_status_run(unit="security-ai-dashboard.service")

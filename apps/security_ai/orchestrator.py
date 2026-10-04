@@ -66,6 +66,7 @@ from tools.notify_ntfy import NOTIFY_NTFY_TOOL
 from tools.ping import PING_TOOL
 from tools.port_check import PORT_CHECK_TOOL
 from tools.read_logs import READ_LOGS_TOOL
+from tools.service_status import SERVICE_STATUS_TOOL
 from tools.system_status import SYSTEM_STATUS_TOOL
 from tools.telegram_alert import (
     TELEGRAM_ALERT_TOOL,
@@ -154,6 +155,7 @@ def _build_default_registry() -> ToolRegistry:
     reg.register(PORT_CHECK_TOOL)
     reg.register(WHOIS_TOOL)
     reg.register(SYSTEM_STATUS_TOOL)
+    reg.register(SERVICE_STATUS_TOOL)
     return reg
 
 

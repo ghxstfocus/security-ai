@@ -108,3 +108,9 @@ tools:
     level: 0
     conditions: []
     reason: "Systemzustand"
+
+  service_status:
+    allowed: true
+    level: 0
+    conditions: []
+    reason: "systemctl is-active (Whitelist)"
