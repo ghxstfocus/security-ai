@@ -9,6 +9,7 @@ from unittest import mock
 
 from harness.tool_registry.tool import ToolError
 from tools.ping import ping_run
+from tools.traceroute import traceroute_run
 
 
 class PingTests(unittest.TestCase):
@@ -35,3 +36,25 @@ class PingTests(unittest.TestCase):
     def test_ping_target_empty(self) -> None:
         with self.assertRaises(ToolError):
             ping_run(target="")
+
+
+class TracerouteTests(unittest.TestCase):
+    def test_traceroute_in_scope(self) -> None:
+        fake = mock.Mock(returncode=0, stdout="TRACE ok", stderr="")
+        with mock.patch("tools.traceroute.subprocess.run", return_value=fake):
+            result = traceroute_run(target="127.0.0.1", max_hops=5)
+        self.assertEqual(result["target"], "127.0.0.1")
+        self.assertEqual(result["max_hops"], 5)
+        self.assertEqual(result["returncode"], 0)
+        self.assertEqual(result["source"], "traceroute")
+        self.assertIn("TRACE ok", result["stdout"])
+
+    def test_traceroute_out_of_scope_denied(self) -> None:
+        with self.assertRaises(ToolError):
+            traceroute_run(target="8.8.8.8")
+
+    def test_traceroute_max_hops_invalid(self) -> None:
+        with self.assertRaises(ToolError):
+            traceroute_run(target="127.0.0.1", max_hops=0)
+        with self.assertRaises(ToolError):
+            traceroute_run(target="127.0.0.1", max_hops=99)

@@ -68,6 +68,7 @@ from tools.telegram_alert import (
     TELEGRAM_ALERT_TOOL,
     telegram_alert_run,
 )
+from tools.traceroute import TRACEROUTE_TOOL
 from tools.whitelist_check import WHITELIST_CHECK_TOOL
 
 try:
@@ -144,6 +145,7 @@ def _build_default_registry() -> ToolRegistry:
     reg.register(TELEGRAM_ALERT_TOOL)
     reg.register(NOTIFY_NTFY_TOOL)
     reg.register(PING_TOOL)
+    reg.register(TRACEROUTE_TOOL)
     return reg
 
 
