@@ -60,6 +60,7 @@ from harness.policy_engine.engine import PolicyEngine
 from harness.policy_engine.policy import PolicyContext
 from harness.tool_registry.registry import ToolRegistry
 from tools.audit_tail import AUDIT_TAIL_TOOL
+from tools.device_history import DEVICE_HISTORY_TOOL
 from tools.disk_usage import DISK_USAGE_TOOL
 from tools.dns_lookup import DNS_LOOKUP_TOOL
 from tools.event_tail import EVENT_TAIL_TOOL
@@ -164,6 +165,7 @@ def _build_default_registry() -> ToolRegistry:
     reg.register(NETWORK_INTERFACES_TOOL)
     reg.register(AUDIT_TAIL_TOOL)
     reg.register(EVENT_TAIL_TOOL)
+    reg.register(DEVICE_HISTORY_TOOL)
     return reg
 
 

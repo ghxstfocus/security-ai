@@ -138,3 +138,9 @@ tools:
     level: 0
     conditions: []
     reason: "Event-Log Ende"
+
+  device_history:
+    allowed: true
+    level: 0
+    conditions: []
+    reason: "Geraeteverlauf"
