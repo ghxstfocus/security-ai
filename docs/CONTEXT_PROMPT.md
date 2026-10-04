@@ -184,6 +184,7 @@ sind projektspezifische Ergaenzungen dazu.
 - README.md (Root) — Kurzueberblick
 - docs/ARCHITECTURE.md — Architektur im Detail
 - docs/SECURITY.md — Threat Model, Guardrails, Audit
+- docs/ADMIN_AI_SCOPE.md — Scope der Admin AI (Rolle, darf/nicht darf, Rollentypen, Datenklassifikation)
 - docs/PERMISSIONS.md — Berechtigungen Level 0-5
 - docs/PROTOCOL.md — Foederationsprotokoll, Statusmodell
 - docs/DEPLOYMENT.md — Setup, nmap, Ollama, Tuning
@@ -205,6 +206,7 @@ sind projektspezifische Ergaenzungen dazu.
   Projektunabhaengig, in andere Projekte kopierbar.
 - docs/REVIEWER_HANDOFF.md — Handoff-Prompt fuer
   den externen Reviewer-Chat (Kategorie 3)
+- docs/ICONS.md — Icon-Konvention
 
 ### Projekt-Konventionen (projektspezifische Hard-Rules)
 
@@ -232,66 +234,56 @@ WORKFLOW.md Abschnitt "Hard-Rules (VERBINDLICH)".
 
 ### Aktuelle Phase
 
-Phase 1-4 abgeschlossen. Phase 3.5 inkl. 3.5.5-3.5.9
-abgeschlossen. Phase 3.6 (Web-Dashboard):
-3.6.1-3.6.7e fertig.
-Phase 3.6.8 (alle Dashboard-Seiten) KOMPLETT:
-a-i.
-Phase 3.6.10 bis 3.6.17 fertig (inkl. 16a/16b
-gunicorn, Punkt 9 Rate-Limit, Punkt 19 Pro-Tabelle).
-Zusaetzlich fertig: Punkt 28 (Chat-Kontext),
-Punkt 29 (Wert-Synonyme), Punkt 30 (Links im Chat),
-3.6.18a (category durchsuchbar), UI-Feinschliff
-(SVG, Spalten, Sidebar, Suche, Topbar-Dropdown),
-Diagnose 2026-09-27 (ruff/mypy eingerichtet).
-HEAD 7ccda7c, Working Tree sauber.
+Architektur-Doku-Block (2026-10-04) abgeschlossen:
+- docs/ADMIN_AI_SCOPE.md (neu): Rolle der Admin AI, darf/nicht darf, Rollentypen, Datenklassifikation.
+- docs/ARCHITECTURE.md: Ebene 4 = Core, Admin AI als Pflicht, Rollentypen.
+- docs/DESIGN_DECISIONS.md: Paragraph 12/14 obsolet, Paragraph 24-29 neu (Rollentypen, Admin-AI-Scope, Ollama-Rueckbau, Datenklassifikation, Cloud-Provider, Core pro Firma).
+- docs/PHASES.md: Phase 5/8 als Historie, neue Phasen 12-16.
+- docs/SECURITY_REVIEW_LOG.md: Punkte 88-98.
+- docs/CONTEXT_PROMPT.md: dieser Stand.
 
-Core-Status: Core (Stufe 1-3.6.18) abgeschlossen.
-Fritz!Box-Watcher (Phase 3.8a) und Event-Reader
-(Phase 3.8b) laufen als systemd-Timer.
-Der Alarm-Pfad nutzt notify_ntfy (Punkt 81).
+Naechster Bau-Block: Punkt 58 Runde 1 Schritt 3 (traceroute, whois, dns_lookup, port_check).
+Bereits fertig: 1a (Fundament), 1b (ToolRunService), 2 (ping).
 
-Bewusst offen (kein Bau heute):
-- Punkt 76: Telegram-Kanal konfigurieren
-  (Kategorie 1, Betriebsakt).
-- Punkte 88-101: Ausblick-Themen
-  (Wortlaut offen).
-- WORKFLOW-Nachtrag "! in Commit-Messages"
-  (Kategorie 1, Doku).
-- Hash-Zirkel-Regel: kein <hash> in
-  SECURITY_REVIEW_LOG, Hash erst nach Commit
-  (Kategorie 1, Doku).
-- 56b, 57, 58, 59, 66: unveraendert.
-- Lint/Typen-Reste:
-  - ruff 0 (A900 + B1 abgeschlossen).
-  - mypy 0 (A900 + B1 abgeschlossen).
-  - Echte Typfehler: 0.
+Offene Punkte:
+- 56b, 57, 58, 59, 66 (Dashboard/Aktionen).
+- 76 (Telegram).
+- 54 (Capability-Abgleich CT102).
+- 88 (Ollama-Rueckbau).
+- 89 (Rollentypen).
+- 91 (Datenklassifikation).
+- 92 (Cloud-Provider).
+- 93 (Firma-Installation).
+- 94 (Docstring).
+- 95 (WORKFLOW Verifikation).
+- 96 (Modus-Drift).
+- 97 (Permission-IDs, Beobachtung).
+- 98 (PHASES-Neuschrieb).
 
-Offene Punkte 1-41 in docs/SECURITY_REVIEW_LOG.md.
-Chronologie bis 7ccda7c dokumentiert (sortiert nach
-Commit-Zeit).
-DESIGN_DECISIONS: §11 (Kontext, Wert-Synonyme,
-Suchfelder), §14 (Frage-Klassifikation, Anzeige-Labels,
-since_hours), §16 (ProxyFix, Links im Chat, nav_links,
-JS-Ausnahme, server_name, default_server).
-
-Stand: 2026-10-03 | HEAD: 7ccda7c |
-Tests: 1208 gruen (venv, pytest 9.1.1).
+Stand: 2026-10-04 | HEAD: f50a2b9 |
+Tests: 1221 gruen (venv, pytest 9.1.1).
 Drei Blickwinkel auf dieselbe Architektur:
-- Technische Schichten 5-1 (docs/ARCHITECTURE.md).
+- Technische Schichten 5-1 (docs/ARCHITECTURE.md). Ebene 4 = Core (ehemals Security AI).
 - Rollen im Betrieb (PROJECT_VISION.md, README.md).
 - Test-Ebenen 1-5 (docs/DESIGN_DECISIONS.md).
+Nach dem Architektur-Doku-Block (2026-10-04) haben sich die Rollen praezisiert:
+- Der Core ist nicht mehr 'Security AI', sondern deterministischer Kern (BIOS).
+- Die Admin AI ist Pflicht fuer Sicherheitsnutzung, nicht optional.
+- Die Kunden-KI baut auf der Admin AI auf.
+- Das Dashboard bleibt Basic-Verwaltung ohne LLM.
+Siehe docs/ADMIN_AI_SCOPE.md und PROJECT_VISION.md Paragraph 2.0.
 Seit 2026-10-02 abgeschlossen:
-- Punkt 81 (Alarm-Kanal auf ntfy, live verifiziert).
-- Punkt 82 (Docstring 5->6 Tools).
-- Punkt 83 (dieser Prompt, CONTEXT_PROMPT-Sanierung).
-- Punkt 87 (Reason-Text unknown_device_persistent).
-- Punkt 80 (Alarme-Filter + Pagination, +16 Tests).
-- Punkt 84 (Heredoc-Workflow, HR9 verschaerft).
-- Icon-System (docs/ICONS.md, Runde 1+2).
-- PROJECT_VISION-Kern (716 -> 225 Zeilen, Icons).
-- Auslagerung: Bridges -> ARCHITECTURE Paragraph 3.18,
-  Alarm-Regeln -> SECURITY Paragraph 13.
+- 2026-10-02: Alarm-Runde A1-A4 (Punkte 70-74).
+- 2026-10-02: Whitelist-Pflege (56a), internal_name (75), known (73a), Alarme-Seite Klartext (79, 79a).
+- 2026-10-02: ntfy-Alarm-Kanal (77), Alarm-Kanal-Wechsel (81).
+- 2026-10-03: Icon-System (Runde 1+2).
+- 2026-10-03: PROJECT_VISION-Kern (225 Zeilen).
+- 2026-10-03: Auslagerung (ARCHITECTURE 3.18 Bridges, SECURITY 13 Alarm-Regeln).
+- 2026-10-03: Punkt 80 (Alarme-Filter + Pagination).
+- 2026-10-03: Punkt 84 (Heredoc-Workflow).
+- 2026-10-03: Punkt 87 (Reason-Text).
+- 2026-10-04: Architektur-Doku-Block (Dateien 1-6): Admin-AI-Scope, ARCHITECTURE, DESIGN_DECISIONS, PHASES, SECURITY_REVIEW_LOG, CONTEXT_PROMPT.
+- 2026-10-04: Punkt 58 Schritt 1a/1b/2 (Fundament, ToolRunService, ping).
 Offen: Punkt 76 (Telegram), 88-101 (Ausblick),
 WORKFLOW-Nachtrag, Hash-Zirkel-Regel, 56b/57/58/59/66.
 Quelle der Wahrheit ist `pytest --collect-only -q`.
