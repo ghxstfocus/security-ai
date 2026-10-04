@@ -14,6 +14,7 @@ from harness.tool_registry.tool import ToolError
 from tools.audit_tail import audit_tail_run
 from tools.device_history import device_history_run
 from tools.event_tail import event_tail_run
+from tools.scan_history import scan_history_run
 
 
 class AuditTailTests(unittest.TestCase):
@@ -140,6 +141,42 @@ class DeviceHistoryTests(unittest.TestCase):
             device_history_run(identifier="aa:01", limit=0)
         with self.assertRaises(ToolError):
             device_history_run(identifier="aa:01", limit=999)
+
+
+class ScanHistoryTests(unittest.TestCase):
+    def test_scan_history_ok(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            tdp = Path(td)
+            from datetime import UTC, datetime
+            heute = datetime.now(UTC).strftime("%Y-%m-%d")
+            fp = tdp / f"{heute}.jsonl"
+            eintraege = [
+                {"tool": "nmap_scan", "details": {"kind": "tool_call", "tool": "nmap_scan"}, "audit_id": "A1"},
+                {"tool": "fritzbox_watcher", "details": {"kind": "watcher_run"}, "audit_id": "A2"},
+                {"tool": "nmap_scan", "details": {"kind": "tool_call", "tool": "nmap_scan"}, "audit_id": "A3"},
+            ]
+            fp.write_text(chr(10).join(json.dumps(e) for e in eintraege) + chr(10), encoding="utf-8")
+            with mock.patch("tools.scan_history._AUDIT_DIR", tdp):
+                result = scan_history_run(limit=10)
+            self.assertEqual(result["count"], 2)
+            self.assertEqual(result["source"], "scan_history")
+
+    def test_scan_history_keine_scans(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            tdp = Path(td)
+            from datetime import UTC, datetime
+            heute = datetime.now(UTC).strftime("%Y-%m-%d")
+            fp = tdp / f"{heute}.jsonl"
+            fp.write_text(json.dumps({"tool": "fritzbox_watcher", "details": {"kind": "watcher_run"}}) + chr(10), encoding="utf-8")
+            with mock.patch("tools.scan_history._AUDIT_DIR", tdp):
+                result = scan_history_run(limit=10)
+            self.assertEqual(result["count"], 0)
+
+    def test_scan_history_invalid_limit(self) -> None:
+        with self.assertRaises(ToolError):
+            scan_history_run(limit=0)
+        with self.assertRaises(ToolError):
+            scan_history_run(limit=999)
 
 
 if __name__ == "__main__":

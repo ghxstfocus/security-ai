@@ -144,3 +144,9 @@ tools:
     level: 0
     conditions: []
     reason: "Geraeteverlauf"
+
+  scan_history:
+    allowed: true
+    level: 0
+    conditions: []
+    reason: "nmap-Scan-Verlauf"

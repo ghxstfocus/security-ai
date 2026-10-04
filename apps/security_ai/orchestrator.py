@@ -71,6 +71,7 @@ from tools.notify_ntfy import NOTIFY_NTFY_TOOL
 from tools.ping import PING_TOOL
 from tools.port_check import PORT_CHECK_TOOL
 from tools.read_logs import READ_LOGS_TOOL
+from tools.scan_history import SCAN_HISTORY_TOOL
 from tools.service_status import SERVICE_STATUS_TOOL
 from tools.system_status import SYSTEM_STATUS_TOOL
 from tools.telegram_alert import (
@@ -166,6 +167,7 @@ def _build_default_registry() -> ToolRegistry:
     reg.register(AUDIT_TAIL_TOOL)
     reg.register(EVENT_TAIL_TOOL)
     reg.register(DEVICE_HISTORY_TOOL)
+    reg.register(SCAN_HISTORY_TOOL)
     return reg
 
 
