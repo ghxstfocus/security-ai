@@ -62,6 +62,7 @@ from harness.tool_registry.registry import ToolRegistry
 from tools.disk_usage import DISK_USAGE_TOOL
 from tools.dns_lookup import DNS_LOOKUP_TOOL
 from tools.get_devices import GET_DEVICES_TOOL
+from tools.network_interfaces import NETWORK_INTERFACES_TOOL
 from tools.nmap_scan import NMAP_SCAN_TOOL
 from tools.notify_ntfy import NOTIFY_NTFY_TOOL
 from tools.ping import PING_TOOL
@@ -158,6 +159,7 @@ def _build_default_registry() -> ToolRegistry:
     reg.register(SYSTEM_STATUS_TOOL)
     reg.register(SERVICE_STATUS_TOOL)
     reg.register(DISK_USAGE_TOOL)
+    reg.register(NETWORK_INTERFACES_TOOL)
     return reg
 
 

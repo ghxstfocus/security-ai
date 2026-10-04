@@ -10,6 +10,7 @@ from unittest import mock
 from harness.tool_registry.tool import ToolError
 from tools.disk_usage import disk_usage_run
 from tools.dns_lookup import dns_lookup_run
+from tools.network_interfaces import network_interfaces_run
 from tools.ping import ping_run
 from tools.port_check import port_check_run
 from tools.service_status import service_status_run
@@ -190,3 +191,16 @@ class DiskUsageTests(unittest.TestCase):
     def test_disk_usage_path_traversal(self) -> None:
         with self.assertRaises(ToolError):
             disk_usage_run(mountpoint="/etc/..")
+
+
+class NetworkInterfacesTests(unittest.TestCase):
+    def test_network_interfaces_liefert_werte(self) -> None:
+        result = network_interfaces_run()
+        self.assertIn("interfaces", result)
+        self.assertIn("lo", result["interfaces"])
+        self.assertGreater(len(result["interfaces"]["lo"]["addresses"]), 0)
+        self.assertEqual(result["source"], "network_interfaces")
+
+    def test_network_interfaces_psutil_fehler(self) -> None:
+        with mock.patch("tools.network_interfaces.psutil.net_if_addrs", side_effect=RuntimeError("boom")), self.assertRaises(ToolError):
+            network_interfaces_run()
