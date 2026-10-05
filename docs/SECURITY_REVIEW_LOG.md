@@ -2116,3 +2116,37 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       (append-only). Der Alarm ist ab jetzt nicht
       reproduzierbar.
 
+1998. (offen, Kategorie 3, Architektur/UI)
+      Detailseiten-Aktionen (Punkt 58 Runde 2).
+      - Beschluss 2026-10-05: Tools, die in der
+        Werkbank verfuegbar sind, sollen auch
+        auf den fachlich passenden Detailseiten
+        nutzbar sein.
+      - Inventar-Detailseite:
+          net_diag-Tools (ping, traceroute,
+          whois, dns_lookup, port_check),
+          device_history, scan_history.
+      - Inventar-Detailseite (Level 2-4):
+          block_device, unblock_device,
+          whitelist_add, whitelist_remove.
+      - Alarme-Detailseite: passende Tools je
+        Alarm.
+      - Freigaben-Detailseite: was fachlich
+        passt.
+      - Die Werkbank-Seite /tools bleibt als
+        zentrale Uebersicht. Detailseiten-
+        Aktionen sind zusaetzlich, nicht
+        ersetzend.
+      - Sicherheitsregeln unveraendert:
+          Level 0-1: direkt ueber Service
+                     (Ausnahme §N Werkbank).
+          Level 2+:  ueber AgentLoop mit
+                     Change Request und
+                     Approval.
+          RBAC pro Aktion, Audit pro Aufruf.
+      - Vorbereitung Runde 2 (eigener Block
+        nach Commit 4b): Bestandsaufnahme
+        der Detailseiten, Design-Entscheidung
+        (einheitliches Aktions-Panel oder je
+        Seite eigene Aktionsleiste).
+      - Kategorie 3.
