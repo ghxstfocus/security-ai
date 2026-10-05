@@ -68,6 +68,20 @@ def _stub_ping_registry(app, func):
     app.extensions["workbench_registry"] = reg
 
 
+def _stub_registry(app, name, func, allowed):
+    """Generischer Registry-Fake fuer Typecast-Tests."""
+    reg = ToolRegistry()
+    reg.register(Tool(
+        name=name,
+        level=Level.READ,
+        func=func,
+        description="test",
+        sandbox_profile="net_diag_local",
+        allowed_args=frozenset(allowed),
+    ))
+    app.extensions["workbench_registry"] = reg
+
+
 # --- Seite ---------------------------------------------------------------- #
 
 def test_tools_page_redirects_without_login(app):
@@ -297,3 +311,81 @@ def test_tool_fields_match_allowed_args(app):
             f"{tool.name}: Felder {field_names} != "
             f"allowed_args {set(tool.allowed_args)}"
         )
+
+
+# --- Typecast (Auflage 2009) --------------------------------------------- #
+
+def test_api_tools_run_casts_int_field(app):
+    calls = []
+    def fake_ping(target, count):
+        calls.append({"target": target, "count": count})
+        return {"ok": True}
+    _stub_registry(app, "ping", fake_ping, {"target", "count"})
+    c, tok = _client_with_csrf(app, "admin")
+    body = json.dumps({
+        "tool": "ping",
+        "args": {"target": "127.0.0.1", "count": "4"},
+    })
+    r = _post_run(c, tok, body)
+    assert r.status_code == 200
+    assert len(calls) == 1
+    assert calls[0]["count"] == 4
+    assert isinstance(calls[0]["count"], int)
+
+
+def test_api_tools_run_casts_float_field(app):
+    calls = []
+    def fake_port_check(target, port, timeout):
+        calls.append({"timeout": timeout})
+        return {"ok": True}
+    _stub_registry(
+        app, "port_check", fake_port_check,
+        {"target", "port", "timeout"},
+    )
+    c, tok = _client_with_csrf(app, "admin")
+    body = json.dumps({
+        "tool": "port_check",
+        "args": {"target": "127.0.0.1", "port": "80",
+                 "timeout": "2.5"},
+    })
+    r = _post_run(c, tok, body)
+    assert r.status_code == 200
+    assert len(calls) == 1
+    assert calls[0]["timeout"] == 2.5
+    assert isinstance(calls[0]["timeout"], float)
+
+
+def test_api_tools_run_invalid_int_returns_400(app):
+    _stub_registry(
+        app, "ping",
+        lambda target, count: {"ok": True},
+        {"target", "count"},
+    )
+    c, tok = _client_with_csrf(app, "admin")
+    body = json.dumps({
+        "tool": "ping",
+        "args": {"target": "127.0.0.1", "count": "abc"},
+    })
+    r = _post_run(c, tok, body)
+    assert r.status_code == 400
+    data = r.get_json()
+    assert data["ok"] is False
+    assert "count" in data["error"]
+
+
+def test_api_tools_run_invalid_port_returns_400(app):
+    _stub_registry(
+        app, "port_check",
+        lambda target, port, timeout: {"ok": True},
+        {"target", "port", "timeout"},
+    )
+    c, tok = _client_with_csrf(app, "admin")
+    body = json.dumps({
+        "tool": "port_check",
+        "args": {"target": "127.0.0.1", "port": "abc"},
+    })
+    r = _post_run(c, tok, body)
+    assert r.status_code == 400
+    data = r.get_json()
+    assert data["ok"] is False
+    assert "port" in data["error"]

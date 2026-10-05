@@ -212,6 +212,45 @@ def _json_error(message: str, status: int) -> Response:
     return resp
 
 
+class _ToolArgCastError(Exception):
+    """Typecast-Fehler in der Route (intern, wird zu 400)."""
+
+    def __init__(self, field_name: str) -> None:
+        super().__init__(field_name)
+        self.field_name = field_name
+
+
+def _cast_args(
+    tool_name: str,
+    args: dict[str, Any],
+) -> dict[str, Any]:
+    """Wandelt Formularwerte gemaess TOOL_FIELDS-Typ um.
+
+    Formularwerte kommen als String aus tools.js.
+    type="number" -> int, wenn nicht moeglich float.
+    Bei Konvertierungsfehler: _ToolArgCastError.
+    """
+    schema = TOOL_FIELDS.get(tool_name, ())
+    type_map: dict[str, str] = {
+        f["name"]: f["type"] for f in schema
+    }
+    result: dict[str, Any] = {}
+    for key, val in args.items():
+        if type_map.get(key) == "number":
+            try:
+                result[key] = int(val)
+                continue
+            except (ValueError, TypeError):
+                pass
+            try:
+                result[key] = float(val)
+                continue
+            except (ValueError, TypeError):
+                raise _ToolArgCastError(key)
+        result[key] = val
+    return result
+
+
 def register_tools_routes(app: Flask) -> None:
 
     @app.route("/tools", methods=["GET"])
@@ -266,6 +305,15 @@ def register_tools_routes(app: Flask) -> None:
         filtered_args = {
             k: v for k, v in args.items() if k in allowed_args
         }
+
+        # 5b. Typecast (Auflage 2009): Formularwerte
+        # kommen als String, type="number" wird konvertiert.
+        try:
+            filtered_args = _cast_args(tool_name, filtered_args)
+        except _ToolArgCastError as exc:
+            return _json_error(
+                f"Ungueltige Eingabe: {exc.field_name}", 400
+            )
 
         # 6. RateLimiter (pro Request)
         rate_limiter = RateLimitService(
