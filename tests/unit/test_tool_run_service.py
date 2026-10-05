@@ -8,11 +8,13 @@ import unittest
 from typing import Any
 
 from core.services.tool_run_service import (
+    ToolRunAuditError,
     ToolRunOperationError,
     ToolRunRateLimitError,
     ToolRunService,
     ToolRunServiceError,
 )
+from harness.audit.writer import AuditWriteError
 from harness.permissions.levels import Level
 from harness.tool_registry.tool import Tool, ToolError
 
@@ -166,6 +168,19 @@ class ToolRunServiceTests(unittest.TestCase):
         )
         with self.assertRaises(ToolRunServiceError):
             svc.run("admin", "ping", {"unbekannt": "x"})
+
+    def test_audit_error_raises_tool_run_audit_error(self) -> None:
+        class _BadAudit:
+            def log(self, **kw: Any) -> None:
+                raise AuditWriteError("kaputt")
+        tool = _make_ping_tool(lambda target: {"ok": True})
+        reg = _FakeRegistry({"ping": tool})
+        svc = ToolRunService(
+            reg, _BadAudit(), _FakeChecker(), _FakeRateLimiter()
+        )
+        with self.assertRaises(ToolRunAuditError) as ctx:
+            svc.run("admin", "ping", {"target": "127.0.0.1"})
+        self.assertIsInstance(ctx.exception.__cause__, AuditWriteError)
 
     def test_original_args_used_in_audit(self) -> None:
         svc, audit, _ = self._build(

@@ -4,8 +4,10 @@
 """Tool: dns_lookup (Punkt 58 Runde 1, Schritt 3, Tool 2).
 
 DNS-Aufloesung eines Hostnames. Kein subprocess,
-Python socket.getaddrinfo. Kein scope-Check:
-DNS-Aufloesung selbst ist kein Zugriff auf das Ziel.
+Python socket.getaddrinfo. Scope-Check via
+check_target_allowed (Auflage 2000): DNS-Aufloesung
+selbst ist harmlos, aber einheitliches Muster fuer
+alle net_diag-Tools.
 
 Signatur folgt dem AgentLoop: tool.func(**args).
 Also: dns_lookup_run(hostname=...).
@@ -16,6 +18,7 @@ import re
 import socket
 from typing import Any
 
+from core.net.scope import check_target_allowed
 from harness.tool_registry.tool import ToolError
 
 _HOSTNAME_RE = re.compile(r"^[A-Za-z0-9.-]+$")
@@ -45,6 +48,7 @@ def dns_lookup_run(hostname: str) -> dict[str, Any]:
         raise ToolError(
             f"dns_lookup: 'hostname' enthaelt unerlaubte Zeichen: {h!r}"
         )
+    check_target_allowed(h)
     try:
         infos = socket.getaddrinfo(h, None)
     except socket.gaierror as exc:

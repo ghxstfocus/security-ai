@@ -16,6 +16,10 @@ from typing import Any
 import pytest
 
 from apps.dashboard import csrf
+from core.services.tool_run_service import (
+    ToolRunAuditError,
+    ToolRunService,
+)
 from harness.permissions.levels import Level
 from harness.tool_registry.registry import ToolRegistry
 from harness.tool_registry.tool import Tool
@@ -218,3 +222,78 @@ def test_api_tools_run_response_has_no_store(app):
     r2 = _post_run(c, tok, body2)
     assert r2.status_code == 400
     assert r2.headers.get("Cache-Control") == "no-store"
+
+
+def test_api_tools_run_audit_error_returns_500(app):
+    from unittest.mock import patch
+    _stub_ping_registry(app, lambda target: {"ok": True})
+    c, tok = _client_with_csrf(app, "admin")
+    body = json.dumps({"tool": "ping", "args": {"target": "127.0.0.1"}})
+    with patch.object(
+        ToolRunService,
+        "run",
+        side_effect=ToolRunAuditError("kaputt"),
+    ):
+        r = _post_run(c, tok, body)
+    assert r.status_code == 500
+    assert r.headers.get("Cache-Control") == "no-store"
+    data = r.get_json()
+    assert data["ok"] is False
+    assert "Audit" in data["error"]
+
+
+# --- UI/Sidebar (Auflage 1992) ------------------------------------------- #
+
+def test_sidebar_shows_werkzeuge_for_admin(app):
+    c, _ = _client_with_csrf(app, "admin")
+    r = c.get("/")
+    assert r.status_code == 200
+    body = r.get_data(as_text=True)
+    assert "Werkzeuge" in body
+    assert "/tools#netzwerk" in body
+    assert "/tools#system" in body
+    assert "/tools#datenbank" in body
+
+
+def test_sidebar_hides_werkzeuge_without_tool_permission(app):
+    c, _ = _client_with_csrf(app, "viewer")
+    r = c.get("/")
+    assert r.status_code == 200
+    body = r.get_data(as_text=True)
+    assert "/tools#netzwerk" not in body
+    assert "/tools#system" not in body
+    assert "/tools#datenbank" not in body
+
+
+def test_tools_page_renders_three_sections(app):
+    c, _ = _client_with_csrf(app, "admin")
+    r = c.get("/tools")
+    assert r.status_code == 200
+    body = r.get_data(as_text=True)
+    assert "id=\"netzwerk\"" in body
+    assert "id=\"system\"" in body
+    assert "id=\"datenbank\"" in body
+
+
+def test_tools_page_hides_section_without_permission(app):
+    c, _ = _client_with_csrf(app, "viewer")
+    r = c.get("/tools")
+    assert r.status_code == 200
+    body = r.get_data(as_text=True)
+    # viewer hat device.read, aber keine tool.*-Permission.
+    assert "id=\"netzwerk\"" not in body
+    assert "id=\"system\"" not in body
+    assert "id=\"datenbank\"" not in body
+
+
+def test_tool_fields_match_allowed_args(app):
+    from apps.dashboard.routes_tools import TOOL_FIELDS
+    from tools.workbench_registry import build_workbench_registry
+    reg = build_workbench_registry()
+    for tool in reg.list_tools():
+        fields = TOOL_FIELDS.get(tool.name, ())
+        field_names = {f["name"] for f in fields}
+        assert field_names == set(tool.allowed_args), (
+            f"{tool.name}: Felder {field_names} != "
+            f"allowed_args {set(tool.allowed_args)}"
+        )

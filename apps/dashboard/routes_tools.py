@@ -28,6 +28,8 @@ Fehler-Mapping:
 """
 from __future__ import annotations
 
+from typing import Any, TypedDict
+
 from flask import (
     Flask,
     Response,
@@ -43,12 +45,164 @@ from apps.dashboard import csrf
 from apps.dashboard.decorators import require_permission
 from core.services.rate_limit_service import RateLimitService
 from core.services.tool_run_service import (
+    ToolRunAuditError,
     ToolRunOperationError,
     ToolRunRateLimitError,
     ToolRunService,
     ToolRunServiceError,
 )
+from harness.tool_registry.registry import ToolNotFoundError
 from harness.tool_registry.tool import ToolArgumentError
+
+# Anzeigename pro Tool (deutsch, in Klammern Zweck).
+TOOL_LABELS: dict[str, str] = {
+    "ping": "Ping (Erreichbarkeit)",
+    "traceroute": "Traceroute (Weg zum Ziel)",
+    "whois": "Whois (Domain-/IP-Info)",
+    "dns_lookup": "DNS-Abfrage",
+    "port_check": "Port-Check (offen/zu)",
+    "system_status": "System-Status",
+    "service_status": "Dienst-Status",
+    "disk_usage": "Speicherplatz",
+    "network_interfaces": "Netzwerk-Interfaces",
+    "audit_tail": "Audit-Log (letzte N)",
+    "event_tail": "Ereignis-Log (letzte N)",
+    "device_history": "Geraete-Historie",
+    "scan_history": "Scan-Historie",
+}
+
+# Formularfelder pro Tool. Muessen zu tool.allowed_args passen
+# (Test: test_tool_fields_match_allowed_args).
+TOOL_FIELDS: dict[str, tuple[ToolField, ...]] = {
+    "ping": (
+        {"name": "target", "label": "Ziel (IP oder Hostname)",
+         "type": "text", "required": True},
+        {"name": "count", "label": "Anzahl Pakete (1-10)",
+         "type": "number", "required": False},
+    ),
+    "traceroute": (
+        {"name": "target", "label": "Ziel (IP oder Hostname)",
+         "type": "text", "required": True},
+        {"name": "max_hops", "label": "Max. Hops",
+         "type": "number", "required": False},
+    ),
+    "whois": (
+        {"name": "target", "label": "Ziel (IP oder Hostname)",
+         "type": "text", "required": True},
+    ),
+    "dns_lookup": (
+        {"name": "hostname", "label": "Hostname",
+         "type": "text", "required": True},
+    ),
+    "port_check": (
+        {"name": "target", "label": "Ziel (IP oder Hostname)",
+         "type": "text", "required": True},
+        {"name": "port", "label": "Port (1-65535)",
+         "type": "number", "required": True},
+        {"name": "timeout", "label": "Timeout (s)",
+         "type": "number", "required": False},
+    ),
+    "system_status": (),
+    "service_status": (
+        {"name": "unit", "label": "Unit",
+         "type": "text", "required": True},
+    ),
+    "disk_usage": (
+        {"name": "mountpoint", "label": "Mountpoint",
+         "type": "text", "required": False},
+    ),
+    "network_interfaces": (),
+    "audit_tail": (
+        {"name": "limit", "label": "Limit",
+         "type": "number", "required": False},
+    ),
+    "event_tail": (
+        {"name": "limit", "label": "Limit",
+         "type": "number", "required": False},
+    ),
+    "device_history": (
+        {"name": "identifier", "label": "Identifier (MAC/IP)",
+         "type": "text", "required": True},
+        {"name": "limit", "label": "Limit",
+         "type": "number", "required": False},
+    ),
+    "scan_history": (
+        {"name": "limit", "label": "Limit",
+         "type": "number", "required": False},
+    ),
+}
+
+class ToolField(TypedDict):
+    name: str
+    label: str
+    type: str
+    required: bool
+
+
+class ToolGroup(TypedDict):
+    label: str
+    permission_flag: str
+    tools: tuple[str, ...]
+
+
+# Gruppen fuer die Seite. label = Anzeige, permission_flag =
+# RBAC-Flag im Template, tools = Reihenfolge.
+TOOL_GROUPS: dict[str, ToolGroup] = {
+    "netzwerk": {
+        "label": "Netzwerk-Diagnose",
+        "permission_flag": "can_view_tool_net_diag",
+        "tools": ("ping", "traceroute", "whois",
+                  "dns_lookup", "port_check"),
+    },
+    "system": {
+        "label": "System",
+        "permission_flag": "can_view_tool_sys_status",
+        "tools": ("system_status", "service_status",
+                  "disk_usage", "network_interfaces"),
+    },
+    "datenbank": {
+        "label": "Datenbank",
+        "permission_flag": "can_view_tool_db_read",
+        "tools": ("audit_tail", "event_tail",
+                  "device_history", "scan_history"),
+    },
+}
+
+
+def _build_tools_by_group(
+    registry: Any,
+) -> dict[str, dict[str, Any]]:
+    """Baut die Datenstruktur fuer tools.html.
+
+    Pro Gruppe: label, permission_flag, tools (Liste).
+    Pro Tool: name, label, description, fields.
+    """
+    result: dict[str, dict[str, Any]] = {}
+    for key, group in TOOL_GROUPS.items():
+        tools_list: list[dict[str, Any]] = []
+        for name in group["tools"]:
+            tool_obj = None
+            if registry is not None:
+                try:
+                    tool_obj = registry.get(name)
+                except ToolNotFoundError:
+                    tool_obj = None
+            desc = (
+                getattr(tool_obj, 'description', '')
+                if tool_obj is not None else ''
+            )
+            tools_list.append({
+                "name": name,
+                "label": TOOL_LABELS.get(name, name),
+                "description": desc,
+                "fields": TOOL_FIELDS.get(name, ()),
+            })
+        result[key] = {
+            "label": group["label"],
+            "permission_flag": group["permission_flag"],
+            "tools": tools_list,
+        }
+    return result
 
 
 def _json_error(message: str, status: int) -> Response:
@@ -63,9 +217,14 @@ def register_tools_routes(app: Flask) -> None:
     @app.route("/tools", methods=["GET"])
     @require_permission("device.read")
     def tools_page() -> str:
+        registry = current_app.extensions.get(
+            "workbench_registry"
+        )
+        tools_by_group = _build_tools_by_group(registry)
         return render_template(
             "tools.html",
             page_title="Werkzeuge",
+            tools_by_group=tools_by_group,
         )
 
     @app.route("/api/tools/run", methods=["POST"])
@@ -149,6 +308,10 @@ def register_tools_routes(app: Flask) -> None:
             return _json_error("Ungueltige Anfrage", 400)
         except ToolArgumentError:
             return _json_error("Ungueltige Argumente", 400)
+        except ToolRunAuditError:
+            return _json_error(
+                "Audit-Fehler, Aktion nicht ausgefuehrt", 500
+            )
         except ToolRunOperationError:
             return _json_error("Interner Fehler", 500)
 

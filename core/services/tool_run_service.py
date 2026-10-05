@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import Any
 
 from core.services.errors import OperationError, ServiceError
+from harness.audit.writer import AuditWriteError
 from harness.permissions.levels import Level
 from harness.tool_registry.tool import ToolError
 
@@ -35,6 +36,14 @@ class ToolRunRateLimitError(ServiceError):
     def __init__(self, retry_after_seconds: int, message: str) -> None:
         super().__init__(message)
         self.retry_after_seconds = int(retry_after_seconds)
+
+
+class ToolRunAuditError(OperationError):
+    """Audit-Fehler beim Tool-Aufruf (5xx, Fail closed).
+
+    Eigene Klasse, damit die Semantik erhalten bleibt:
+    Nachweis-Kette unterbrochen, nicht Tool-Fehler.
+    """
 
 TOOL_PERMISSION: dict[str, str] = {
     "ping": "tool.net_diag",
@@ -139,23 +148,28 @@ class ToolRunService:
             "permission": permission,
             "actor": actor,
         }
-        self._audit.log(
-            agent="security_ai",
-            tool=tool_name,
-            policy_result=policy,
-            permission_level=level,
-            execution_status=status,
-            # Wenn die Route unbekannte Keys gefiltert hat, dokumentiert
-            # der Audit-Hash den ORIGINAL-Versuch (original_args), nicht
-            # das Ergebnis. Nachweis-Luecke sonst: ein Angreifer koennte
-            # x-beliebige Keys schicken, ohne dass eine Spur bleibt.
-            args=(original_args if original_args is not None else args),
-            details=details,
-            error=error,
-        )
+        try:
+            self._audit.log(
+                agent="security_ai",
+                tool=tool_name,
+                policy_result=policy,
+                permission_level=level,
+                execution_status=status,
+                # Wenn die Route unbekannte Keys gefiltert hat,
+                # dokumentiert der Audit-Hash den ORIGINAL-Versuch
+                # (original_args), nicht das Ergebnis.
+                args=(original_args if original_args is not None else args),
+                details=details,
+                error=error,
+            )
+        except AuditWriteError as exc:
+            raise ToolRunAuditError(
+                f"Audit-Fehler beim Tool-Aufruf: {tool_name}"
+            ) from exc
 
 __all__ = [
     "TOOL_PERMISSION",
+    "ToolRunAuditError",
     "ToolRunOperationError",
     "ToolRunRateLimitError",
     "ToolRunService",
