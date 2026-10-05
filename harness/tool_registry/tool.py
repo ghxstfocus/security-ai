@@ -35,6 +35,14 @@ class ToolArgumentError(ToolError):
     """Tool wurde mit ungültigen Argumenten aufgerufen."""
 
 
+class ToolArgumentValueError(ToolError):
+    """Nutzereingabe-Verletzung.
+
+    Wird vom ToolRunService als 4xx behandelt (semantische
+    Trennung Nutzer-Fehler <-> Betriebsfehler, Auflage 2015).
+    """
+
+
 # Erlaubte Sandbox-Profile (müssen als Datei in harness/sandbox/profiles/
 # existieren). None ist nur für Level 5 erlaubt.
 KNOWN_SANDBOX_PROFILES = frozenset({
@@ -140,6 +148,7 @@ __all__ = [
     "KNOWN_SANDBOX_PROFILES",
     "Tool",
     "ToolArgumentError",
+    "ToolArgumentValueError",
     "ToolError",
     "ToolValidationError",
 ]

@@ -19,7 +19,10 @@ from typing import Any
 from core.services.system_status_service import (
     UNIT_WHITELIST,
 )
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 
 _SYSTEMCTL_BIN = "systemctl"
 _TIMEOUT_S = 2
@@ -32,12 +35,12 @@ def service_status_run(unit: str) -> dict[str, Any]:
     Binary fehlt -> ToolError.
     """
     if not isinstance(unit, str):
-        raise ToolError("service_status: 'unit' muss String sein")
+        raise ToolArgumentValueError("service_status: 'unit' muss String sein")
     u = unit.strip()
     if not u:
-        raise ToolError("service_status: 'unit' darf nicht leer sein")
+        raise ToolArgumentValueError("service_status: 'unit' darf nicht leer sein")
     if u not in UNIT_WHITELIST:
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"service_status: Unit {u!r} nicht in Whitelist"
         )
     argv = [_SYSTEMCTL_BIN, "is-active", u]

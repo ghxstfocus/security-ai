@@ -7,7 +7,10 @@ from __future__ import annotations
 import unittest
 from unittest import mock
 
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 from tools.disk_usage import disk_usage_run
 from tools.dns_lookup import dns_lookup_run
 from tools.network_interfaces import network_interfaces_run
@@ -44,6 +47,10 @@ class PingTests(unittest.TestCase):
         with self.assertRaises(ToolError):
             ping_run(target="")
 
+    def test_ping_count_is_value_error(self) -> None:
+        with self.assertRaises(ToolArgumentValueError):
+            ping_run(target="192.168.178.1", count=999)
+
 
 class TracerouteTests(unittest.TestCase):
     def test_traceroute_in_scope(self) -> None:
@@ -66,6 +73,10 @@ class TracerouteTests(unittest.TestCase):
         with self.assertRaises(ToolError):
             traceroute_run(target="127.0.0.1", max_hops=99)
 
+    def test_traceroute_max_hops_is_value_error(self) -> None:
+        with self.assertRaises(ToolArgumentValueError):
+            traceroute_run(target="192.168.178.1", max_hops=999)
+
 
 class DnsLookupTests(unittest.TestCase):
     def test_dns_lookup_localhost(self) -> None:
@@ -80,6 +91,10 @@ class DnsLookupTests(unittest.TestCase):
 
     def test_dns_lookup_empty_hostname(self) -> None:
         with self.assertRaises(ToolError):
+            dns_lookup_run(hostname="")
+
+    def test_dns_lookup_empty_is_value_error(self) -> None:
+        with self.assertRaises(ToolArgumentValueError):
             dns_lookup_run(hostname="")
 
 
@@ -119,6 +134,10 @@ class PortCheckTests(unittest.TestCase):
     def test_port_check_out_of_scope_denied(self) -> None:
         with self.assertRaises(ToolError):
             port_check_run(target="8.8.8.8", port=443)
+
+    def test_port_check_timeout_is_value_error(self) -> None:
+        with self.assertRaises(ToolArgumentValueError):
+            port_check_run(target="192.168.178.1", port=443, timeout=999)
 
 
 class WhoisTests(unittest.TestCase):

@@ -20,7 +20,10 @@ from typing import Any
 from core.services.errors import OperationError, ServiceError
 from harness.audit.writer import AuditWriteError
 from harness.permissions.levels import Level
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 
 
 class ToolRunServiceError(ServiceError):
@@ -119,6 +122,10 @@ class ToolRunService:
             raise ToolRunServiceError(f"Ungueltige Argumente fuer {tool_name!r}") from exc
         try:
             output = tool.func(**args)
+        except ToolArgumentValueError as exc:
+            # Nutzereingabe-Verletzung (Auflage 2015): 4xx.
+            self._log(actor, tool_name, permission, int(tool.level), "ALLOWED", "ERR", args, str(exc), original_args)
+            raise ToolRunServiceError(str(exc)) from exc
         except ToolError as exc:
             self._log(actor, tool_name, permission, int(tool.level), "ALLOWED", "ERR", args, str(exc), original_args)
             raise ToolRunOperationError(f"Tool {tool_name!r} fehlgeschlagen") from exc

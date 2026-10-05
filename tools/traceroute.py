@@ -16,7 +16,10 @@ import subprocess
 from typing import Any
 
 from core.net.scope import check_target_allowed
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 
 _TIMEOUT_S = 15
 _HOPS_MIN = 1
@@ -30,17 +33,17 @@ def traceroute_run(target: str, max_hops: int = 30) -> dict[str, Any]:
     Timeout -> ToolError.
     """
     if not isinstance(target, str):
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"traceroute: 'target' muss String sein, "
             f"nicht {type(target).__name__}"
         )
     t = target.strip()
     if not t:
-        raise ToolError("traceroute: 'target' darf nicht leer sein")
+        raise ToolArgumentValueError("traceroute: 'target' darf nicht leer sein")
     if not isinstance(max_hops, int) or isinstance(max_hops, bool):
-        raise ToolError("traceroute: 'max_hops' muss int sein")
+        raise ToolArgumentValueError("traceroute: 'max_hops' muss int sein")
     if max_hops < _HOPS_MIN or max_hops > _HOPS_MAX:
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"traceroute: 'max_hops' muss {_HOPS_MIN}..{_HOPS_MAX} sein"
         )
     check_target_allowed(t)

@@ -20,7 +20,10 @@ from core.inventory.repository import (
     DeviceRepository,
     connect,
 )
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 
 _IDENT_RE = re.compile(r"^[0-9A-Fa-f:]{1,32}$")
 _LIMIT_MIN = 1
@@ -34,14 +37,14 @@ def device_history_run(identifier: str, limit: int = 50) -> dict[str, Any]:
     DB-Fehler -> ToolError.
     """
     if not isinstance(identifier, str):
-        raise ToolError("device_history: 'identifier' muss String sein")
+        raise ToolArgumentValueError("device_history: 'identifier' muss String sein")
     ident = identifier.strip()
     if not _IDENT_RE.match(ident):
-        raise ToolError("device_history: 'identifier' ungueltig")
+        raise ToolArgumentValueError("device_history: 'identifier' ungueltig")
     if not isinstance(limit, int) or isinstance(limit, bool):
-        raise ToolError("device_history: 'limit' muss int sein")
+        raise ToolArgumentValueError("device_history: 'limit' muss int sein")
     if limit < _LIMIT_MIN or limit > _LIMIT_MAX:
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"device_history: 'limit' muss {_LIMIT_MIN}..{_LIMIT_MAX} sein"
         )
     try:

@@ -21,7 +21,10 @@ import subprocess
 from typing import Any
 
 from core.net.scope import check_target_allowed
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 
 
 class PingError(ToolError):
@@ -40,17 +43,17 @@ def ping_run(target: str, count: int = 4) -> dict[str, Any]:
     Timeout -> ToolError.
     """
     if not isinstance(target, str):
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"ping: 'target' muss String sein, "
             f"nicht {type(target).__name__}"
         )
     t = target.strip()
     if not t:
-        raise ToolError("ping: 'target' darf nicht leer sein")
+        raise ToolArgumentValueError("ping: 'target' darf nicht leer sein")
     if not isinstance(count, int) or isinstance(count, bool):
-        raise ToolError("ping: 'count' muss int sein")
+        raise ToolArgumentValueError("ping: 'count' muss int sein")
     if count < _COUNT_MIN or count > _COUNT_MAX:
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"ping: 'count' muss {_COUNT_MIN}..{_COUNT_MAX} sein"
         )
     check_target_allowed(t)

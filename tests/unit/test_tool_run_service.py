@@ -16,7 +16,7 @@ from core.services.tool_run_service import (
 )
 from harness.audit.writer import AuditWriteError
 from harness.permissions.levels import Level
-from harness.tool_registry.tool import Tool, ToolError
+from harness.tool_registry.tool import Tool, ToolArgumentValueError, ToolError
 
 
 class _FakeChecker:
@@ -210,3 +210,21 @@ class ToolRunServiceTests(unittest.TestCase):
             audit.entries[0]["args"],
             {"target": "1.1.1.1"},
         )
+
+    def test_tool_argument_value_error_maps_to_400(self) -> None:
+        def _boom(target):
+            raise ToolArgumentValueError("kaputte Eingabe")
+        svc, audit, _ = self._build(_boom)
+        with self.assertRaises(ToolRunServiceError):
+            svc.run("admin", "ping", {"target": "1.1.1.1"})
+        self.assertEqual(len(audit.entries), 1)
+        self.assertEqual(audit.entries[0]["execution_status"], "ERR")
+
+    def test_tool_error_maps_to_500(self) -> None:
+        def _boom(target):
+            raise ToolError("betriebsfehler")
+        svc, audit, _ = self._build(_boom)
+        with self.assertRaises(ToolRunOperationError):
+            svc.run("admin", "ping", {"target": "1.1.1.1"})
+        self.assertEqual(len(audit.entries), 1)
+        self.assertEqual(audit.entries[0]["execution_status"], "ERR")

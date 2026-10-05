@@ -17,7 +17,10 @@ import socket
 from typing import Any
 
 from core.net.scope import check_target_allowed
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 
 _PORT_MIN = 1
 _PORT_MAX = 65535
@@ -32,23 +35,23 @@ def port_check_run(target: str, port: int, timeout: float = 2.0) -> dict[str, An
     OSError -> ToolError.
     """
     if not isinstance(target, str):
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"port_check: 'target' muss String sein, "
             f"nicht {type(target).__name__}"
         )
     t = target.strip()
     if not t:
-        raise ToolError("port_check: 'target' darf nicht leer sein")
+        raise ToolArgumentValueError("port_check: 'target' darf nicht leer sein")
     if not isinstance(port, int) or isinstance(port, bool):
-        raise ToolError("port_check: 'port' muss int sein")
+        raise ToolArgumentValueError("port_check: 'port' muss int sein")
     if port < _PORT_MIN or port > _PORT_MAX:
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"port_check: 'port' muss {_PORT_MIN}..{_PORT_MAX} sein"
         )
     if not isinstance(timeout, (int, float)) or isinstance(timeout, bool):
-        raise ToolError("port_check: 'timeout' muss Zahl sein")
+        raise ToolArgumentValueError("port_check: 'timeout' muss Zahl sein")
     if timeout < _TIMEOUT_MIN or timeout > _TIMEOUT_MAX:
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"port_check: 'timeout' muss {_TIMEOUT_MIN}..{_TIMEOUT_MAX} sein"
         )
     check_target_allowed(t)

@@ -10,7 +10,10 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 from tools.audit_tail import audit_tail_run
 from tools.device_history import device_history_run
 from tools.event_tail import event_tail_run
@@ -141,6 +144,10 @@ class DeviceHistoryTests(unittest.TestCase):
             device_history_run(identifier="aa:01", limit=0)
         with self.assertRaises(ToolError):
             device_history_run(identifier="aa:01", limit=999)
+
+    def test_device_history_invalid_identifier_is_value_error(self) -> None:
+        with self.assertRaises(ToolArgumentValueError):
+            device_history_run(identifier="192.168.178.1", limit=5)
 
 
 class ScanHistoryTests(unittest.TestCase):

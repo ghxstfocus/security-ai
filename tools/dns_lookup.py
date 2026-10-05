@@ -19,7 +19,10 @@ import socket
 from typing import Any
 
 from core.net.scope import check_target_allowed
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 
 _HOSTNAME_RE = re.compile(r"^[A-Za-z0-9.-]+$")
 _HOSTNAME_MIN = 1
@@ -33,19 +36,19 @@ def dns_lookup_run(hostname: str) -> dict[str, Any]:
     OSError -> ToolError.
     """
     if not isinstance(hostname, str):
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"dns_lookup: 'hostname' muss String sein, "
             f"nicht {type(hostname).__name__}"
         )
     h = hostname.strip()
     if not h:
-        raise ToolError("dns_lookup: 'hostname' darf nicht leer sein")
+        raise ToolArgumentValueError("dns_lookup: 'hostname' darf nicht leer sein")
     if len(h) < _HOSTNAME_MIN or len(h) > _HOSTNAME_MAX:
-        raise ToolError(
+        raise ToolArgumentValueError(
             "dns_lookup: 'hostname' muss 1..253 Zeichen sein"
         )
     if not _HOSTNAME_RE.match(h):
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"dns_lookup: 'hostname' enthaelt unerlaubte Zeichen: {h!r}"
         )
     check_target_allowed(h)
