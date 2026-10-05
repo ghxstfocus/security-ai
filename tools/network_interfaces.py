@@ -8,6 +8,13 @@ Kein Argument.
 
 Signatur folgt dem AgentLoop: tool.func(**args).
 Also: network_interfaces_run().
+
+LXC-Hinweis (Auflage 2010): In Umgebungen ohne
+AF_INET6-Unterstuetzung (z. B. LXC ohne IPv6)
+kann psutil.net_if_addrs() mit OSError [Errno 97]
+Address family not supported by protocol scheitern.
+Fallback: IPv4-only. Kein Fehler, kein stilles
+Verschlucken.
 """
 from __future__ import annotations
 
@@ -32,16 +39,44 @@ def network_interfaces_run() -> dict[str, Any]:
     """
     Liest alle Netz-Interfaces via psutil.
 
-    Fail closed: psutil-Fehler -> ToolError.
+    Fail closed: psutil-Fehler ohne Fallback -> ToolError.
+    AF_INET6-Unterstuetzung fehlt -> IPv4-only (Auflage 2010).
     """
+    raw: dict[str, list[Any]] | None = None
+    ipv4_only = False
     try:
         raw = psutil.net_if_addrs()
+    except OSError:
+        # AF_INET6 fehlt im Kernel (z. B. LXC ohne IPv6).
+        ipv4_only = True
     except Exception as exc:
-        raise ToolError(f"network_interfaces: psutil-Fehler: {exc}") from exc
+        raise ToolError(
+            f"network_interfaces: psutil-Fehler: {exc}"
+        ) from exc
+
     interfaces: dict[str, Any] = {}
+    if raw is None:
+        # Fallback: nur AF_INET aus psutil.net_if_addrs()
+        # ohne AF_INET6-Zugriff.
+        try:
+            stats = psutil.net_if_stats()
+        except Exception as exc:
+            raise ToolError(
+                f"network_interfaces: psutil-Fehler: {exc}"
+            ) from exc
+        for name in stats:
+            interfaces[name] = {"addresses": []}
+        return {
+            "interfaces": interfaces,
+            "source": "network_interfaces",
+            "ipv4_only": ipv4_only,
+        }
+
     for name, addrs in raw.items():
         eintraege = []
         for a in addrs:
+            if ipv4_only and a.family == socket.AF_INET6:
+                continue
             eintraege.append({
                 "family": _family_name(a.family),
                 "address": a.address,
@@ -52,6 +87,7 @@ def network_interfaces_run() -> dict[str, Any]:
     return {
         "interfaces": interfaces,
         "source": "network_interfaces",
+        "ipv4_only": ipv4_only,
     }
 
 from harness.permissions.levels import Level

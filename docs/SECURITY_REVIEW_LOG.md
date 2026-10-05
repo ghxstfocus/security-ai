@@ -2186,3 +2186,18 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       - Lehre: bei gemischten Hunks in geteilten
         Dateien vorher Reviewer-Meldung, nicht
         nachtraeglich.
+
+
+2012. (offen, Kategorie 2, UX)
+      Client-side Feldvalidierung Werkbank.
+      - Fall C aus der Sichtpruefung 2026-10-05:
+        User hat '192.168,178.114' (Komma) statt
+        '192.168.178.114' eingegeben.
+      - Fail closed hat korrekt gegriffen,
+        Fehlermeldung war konkret.
+      - UX-Verbesserung: HTML-Pattern-Attribut
+        auf type="text"-Feldern (IP/Hostname-Regex),
+        Client-seitige Validierung.
+      - Kein Sicherheitsproblem.
+      - Eigener Block, nicht Teil dieser Runde.
+      - Merkposten.
