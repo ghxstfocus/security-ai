@@ -805,3 +805,50 @@ a.alert-device-identifier:hover {
     max-height: 300px;
     overflow: auto;
 }
+
+/* Auflage 2013: Renderer-Klassen. */
+.tool-spinner {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.tool-line {
+    padding: 2px 0;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.tool-kv {
+    padding: 2px 0;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.tool-kv-key {
+    color: var(--text-secondary);
+}
+
+.tool-item {
+    padding: 6px 8px;
+    margin: 4px 0;
+    border-left: 2px solid var(--bg-border);
+}
+
+.tool-sub {
+    padding-left: 12px;
+}
+
+.tool-error {
+    color: var(--text-primary);
+    padding: 4px 0;
+    font-size: 0.85rem;
+}
+
+.tool-pre {
+    margin: 4px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.8rem;
+}

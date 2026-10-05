@@ -8,6 +8,10 @@ Pingt ein Ziel im autorisierten Netz. Fail closed:
 Ziel ausserhalb scope -> ToolError. subprocess mit
 shell=False, Timeout 10s, check=False.
 
+IPv4-only (Bug E, Auflage 2013): im LXC wird
+AF_INET6 nicht unterstuetzt. ping wird mit '-4'
+aufgerufen.
+
 Signatur folgt dem AgentLoop: tool.func(**args).
 Also: ping_run(target=..., count=...).
 """
@@ -18,6 +22,11 @@ from typing import Any
 
 from core.net.scope import check_target_allowed
 from harness.tool_registry.tool import ToolError
+
+
+class PingError(ToolError):
+    """ping-spezifischer Fehler (Bug E)."""
+
 
 _PING_TIMEOUT_S = 10
 _COUNT_MIN = 1
@@ -45,7 +54,7 @@ def ping_run(target: str, count: int = 4) -> dict[str, Any]:
             f"ping: 'count' muss {_COUNT_MIN}..{_COUNT_MAX} sein"
         )
     check_target_allowed(t)
-    argv = ["ping", "-c", str(count), "-W", "1", t]
+    argv = ["ping", "-4", "-c", str(count), "-W", "1", t]
     try:
         proc = subprocess.run(
             argv,
@@ -61,6 +70,12 @@ def ping_run(target: str, count: int = 4) -> dict[str, Any]:
         raise ToolError("ping: 'ping' nicht im PATH") from exc
     except OSError as exc:
         raise ToolError(f"ping: OSError: {exc}") from exc
+    if proc.returncode != 0 and not proc.stdout.strip():
+        raise PingError(
+            f"ping: Ziel nicht erreichbar oder "
+            f"AF_INET6 nicht unterstuetzt "
+            f"(returncode={proc.returncode})"
+        )
     return {
         "target": t,
         "count": count,
@@ -86,5 +101,6 @@ PING_TOOL = Tool(
 
 __all__ = [
     "PING_TOOL",
+    "PingError",
     "ping_run",
 ]
