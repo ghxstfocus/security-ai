@@ -79,6 +79,8 @@ def create_app(
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config.setdefault("CHAT_RATE_MAX", 10)
     app.config.setdefault("CHAT_RATE_WINDOW", 60)
+    app.config.setdefault("WORKBENCH_RATE_MAX", 10)
+    app.config.setdefault("WORKBENCH_RATE_WINDOW", 60)
     app.config["SESSION_COOKIE_SECURE"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
     app.config["PERMANENT_SESSION_LIFETIME"] = (
@@ -94,6 +96,8 @@ def create_app(
     app.extensions["audit_writer"] = AuditWriter(
         base_dir=audit_base_dir,
     )
+    from tools.workbench_registry import build_workbench_registry
+    app.extensions["workbench_registry"] = build_workbench_registry()
 
     if check_audit:
         expected_owner = pwd.getpwuid(os.getuid()).pw_name
@@ -249,6 +253,9 @@ def create_app(
 
     from apps.dashboard.routes_system import register_system_routes
     register_system_routes(app)
+
+    from apps.dashboard.routes_tools import register_tools_routes
+    register_tools_routes(app)
 
     from apps.dashboard.filters import (
         format_score,
