@@ -2150,3 +2150,39 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
         (einheitliches Aktions-Panel oder je
         Seite eigene Aktionsleiste).
       - Kategorie 3.
+
+2005. (offen, Kategorie 3, spaeter)
+      Test: Werkbank-Tools schreiben nicht.
+      - Prueft per AST oder grep, dass keines der
+        13 Werkbank-Tools folgende Aufrufe enthaelt:
+          open(..., "w") / open(..., "a")
+          os.remove / os.unlink / os.rmdir
+          shutil.rmtree
+          pathlib.Path.write_text / write_bytes
+          subprocess mit Schreib-Redirect
+      - Defense in Depth gegen spaetere Regression.
+      - Nicht Teil von Commit 4c/4d.
+      - Eigener Block nach Runde 1.
+
+2006. (erledigt in 8e27bdb + 0704684)
+      Reihenfolge-Abweichung Punkt 58 Runde 1
+      Schritt 6.
+      - Ursprungsplan (Auflage 1991/1992):
+        4c (2000+2001) -> 4d (Doku) -> 4b (UI).
+      - Tatsaechliche Reihenfolge: 4c -> 4b -> 4d.
+      - Grund: routes_tools.py und
+        test_dashboard_tools.py enthielten gemischte
+        Hunks (4b + 4c). git add -p kann Zeilen in
+        einem Hunk nicht trennen. Die zwei Dateien
+        wurden mit ihren 4b+4c-Anteilen in Commit 4c
+        committet. Restliche 4b-Dateien in Commit 4b.
+      - Konsequenz: Commit 4c enthaelt UI-Vorbereitung
+        (TOOL_LABELS, TOOL_FIELDS, ToolNotFoundError,
+        tools_by_group) zusaetzlich zu den Auflagen
+        2000 + 2001.
+      - Die Reihenfolge-Abweichung wurde nicht vorher
+        gemeldet (HR-R5), aber in den Commit-Nachrichten
+        dokumentiert.
+      - Lehre: bei gemischten Hunks in geteilten
+        Dateien vorher Reviewer-Meldung, nicht
+        nachtraeglich.

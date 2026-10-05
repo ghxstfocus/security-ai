@@ -16,6 +16,16 @@ Siehe WEB_SECURITY_CHECKLIST §N-Ausnahme Werkbank.
 """
 from __future__ import annotations
 
+# Hinweis zur Trennung:
+# Diese Registry ist bewusst getrennt vom
+# AgentLoop. Sie enthaelt ausschliesslich
+# Level-0-1-read-only-Tools.
+# Der AgentLoop ist Pflicht fuer Level 2+
+# (Policy, Level-Check, Approval).
+# Aenderungen an dieser Datei brauchen
+# einen Reviewer-Block.
+# Siehe WEB_SECURITY_CHECKLIST §N-Ausnahme
+# Werkbank und DESIGN_DECISIONS § 17.
 from harness.tool_registry.registry import ToolRegistry
 from tools.audit_tail import AUDIT_TAIL_TOOL
 from tools.device_history import DEVICE_HISTORY_TOOL

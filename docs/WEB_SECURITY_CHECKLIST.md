@@ -173,23 +173,68 @@ Service-Schicht, nicht ueber den AgentLoop:
 
     UI -> Service -> Werkbank-Registry -> Tool
 
-- Umfang: 13 Tools, alle Level 0-1 (read-only).
-  Die Werkbank-Tools sind in
-  tools/workbench_registry.py gelistet.
-  Klassen-Ausnahme, keine 13 Einzeleintraege.
-- Service-Grenze: ausschliesslich ToolRunService
-  (core/services/tool_run_service.py), nicht der
-  AgentLoop.
-- Fail-closed-Nachweis:
+Umfang: Werkbank Runde 1, genau 13 Tools, alle
+Level 0-1 (read-only). Feste Liste in
+tools/workbench_registry.py. Klassen-Ausnahme,
+keine 13 Einzeleintraege. Jede Erweiterung der
+Werkbank braucht einen eigenen Reviewer-Block.
+
+Service-Grenze: ausschliesslich ToolRunService
+(core/services/tool_run_service.py), nicht der
+AgentLoop.
+
+Greifende Schichten (Stand nach Auflage 2000/2001):
+
+    - RBAC (Service): tool.net_diag / tool.sys_status /
+      tool.db_read.
+    - Route-RBAC: device.read.
+    - CSRF: X-CSRF-Token, synchronizer.
+    - Argument-Whitelist: Route filtert auf
+      tool.allowed_args; Service ruft validate_args.
+    - Level-2-Guard: tool.level > Level.READ -> 4xx.
+    - Rate-Limit: pro (actor, tool) ueber
+      RateLimitService (Punkt 9).
+    - Audit: tool=<tool_name>,
+      details.component=tool_run_service,
+      details.source=ui, original_args im Hash.
+      Audit-Fehler -> ToolRunAuditError (Auflage 2001),
+      Route -> 500 + no-store.
+    - scope_guard: check_target_allowed in allen 5
+      net_diag-Tools (ping, traceroute, whois,
+      dns_lookup, port_check; Auflage 2000).
+    - CSP: app.after_request (app-weit).
+    - Sandbox pro Tool: subprocess mit shell=False,
+      Timeout, check=False; socket mit settimeout.
+
+Bewusst nicht greifende Schichten:
+
+    - Policy Engine (Level 0-1 brauchen keine
+      Policy-Entscheidung).
+    - Approval Queue (Level 0-1 sind AUTOMATIC).
+    - Concurrency-Limits (max_iterations,
+      max_runtime, max_tool_calls) aus dem
+      AgentLoop; Werkbank nutzt nur Rate-Limit.
+
+Nicht relevant:
+
+    - Redaction: Werkbank-Ausgaben gehen direkt
+      an den Nutzer, kein LLM-Kontakt.
+
+Fail-closed-Nachweis:
+
     - unbekanntes Tool      -> 4xx.
     - unbekannter Key       -> 4xx (Key-Whitelist
       in der Route + validate_args im Service).
-    - Audit-Fehler          -> 5xx (ToolRunOperationError).
+    - Audit-Fehler          -> 5xx (ToolRunAuditError).
     - Level >= 2            -> 4xx (Level-2-Guard).
-- Rate-Limit: pro Principal und Tool ueber den
-  bestehenden RateLimitService (Punkt 9).
-- Kein Shell, subprocess nur im Tool selbst
-  (shell=False).
+
+Verweis: DESIGN_DECISIONS § 17
+(Dashboard als administrative Oberflaeche).
+
+Wartung: Die Werkbank-Registry ist bewusst getrennt
+vom AgentLoop. Aenderungen an tools/workbench_registry.py
+oder an den freigeschalteten Tools brauchen einen
+eigenen Reviewer-Block.
 
 ### §N-Ausnahme: Services-Status (Punkt 66, Auflage 1753)
 

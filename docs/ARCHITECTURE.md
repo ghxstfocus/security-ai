@@ -362,9 +362,24 @@ Regel: Kein UPDATE, kein DELETE.
 
 **Status:** teilweise. `sandbox_profile`-Feld und
 `KNOWN_SANDBOX_PROFILES` in `harness/tool_registry/tool.py`;
-Profil-Dateien in `harness/sandbox/profiles/`. Die echte
-Durchsetzung (Timeout, kein Shell, Argument-Whitelist) liegt
-aktuell pro Tool, z. B. in `tools/nmap_scan.py`.
+Profil-Dateien in `harness/sandbox/profiles/`.
+
+**Deklaration vs. Durchsetzung (Auflage 2004):**
+Die YAML-Profile sind Deklaration, nicht Durchsetzung.
+Sie beschreiben `filesystem: read_only` und
+`network: restricted`, aber diese beiden Aspekte werden
+heute NIRGENDS zentral durchgesetzt -- weder im
+AgentLoop noch im ToolRunService.
+
+Die aktuelle Durchsetzung erfolgt pro Tool:
+- `subprocess.run(..., shell=False, timeout=..., check=False)`
+  (ping, traceroute, whois, nmap_scan, ...).
+- `socket.settimeout(...)` (port_check).
+- `check_target_allowed` (alle 5 net_diag-Tools).
+
+Eine zentrale Sandbox-Durchsetzung
+(`filesystem: read_only`, `network: restricted`)
+ist geplant, aber nicht implementiert.
 Zentralisierung spaeter.
 
 Isolation pro Tool. Subprozess mit harten Limits:
