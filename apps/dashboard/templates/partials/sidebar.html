@@ -64,6 +64,37 @@
             <span>Chat mit KI</span>
         </a>
         {% endif %}
+        {% if can_view_tool_net_diag or can_view_tool_sys_status or can_view_tool_db_read %}
+        <details class="sidebar-group"
+                 {% if request.path.startswith('/tools') %}open{% endif %}>
+            <summary class="sidebar-group-summary">
+                <span>Werkzeuge</span>
+            </summary>
+            <div class="sidebar-group-content">
+                {% if can_view_tool_net_diag %}
+                <a data-nav="tools-netzwerk"
+                   class="sidebar-link"
+                   href="/tools#netzwerk">
+                    <span>Netzwerk-Diagnose</span>
+                </a>
+                {% endif %}
+                {% if can_view_tool_sys_status %}
+                <a data-nav="tools-system"
+                   class="sidebar-link"
+                   href="/tools#system">
+                    <span>System</span>
+                </a>
+                {% endif %}
+                {% if can_view_tool_db_read %}
+                <a data-nav="tools-datenbank"
+                   class="sidebar-link"
+                   href="/tools#datenbank">
+                    <span>Datenbank</span>
+                </a>
+                {% endif %}
+            </div>
+        </details>
+        {% endif %}
         <div class="sidebar-divider"></div>
         {% if can_view_users or can_view_roles or can_view_audit or can_view_settings %}
         <details class="sidebar-group"

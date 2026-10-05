@@ -12,4 +12,94 @@
 
 {% block content %}
 <h1>Werkzeuge</h1>
+
+{% if can_view_tool_net_diag and tools_by_group.netzwerk.tools %}
+<section id="netzwerk" class="tool-section">
+    <h2>{{ tools_by_group.netzwerk.label }}</h2>
+    {% for tool in tools_by_group.netzwerk.tools %}
+    <div class="tool-card" data-tool="{{ tool.name }}">
+        <h3>{{ tool.label }}</h3>
+        {% if tool.description %}
+        <p class="tool-desc">{{ tool.description }}</p>
+        {% endif %}
+        <form class="tool-form" data-tool="{{ tool.name }}">
+            {% for field in tool.fields %}
+            <label class="tool-field">
+                <span>{{ field.label }}</span>
+                <input name="{{ field.name }}"
+                       type="{{ field.type }}"
+                       {% if field.required %}required{% endif %}>
+            </label>
+            {% endfor %}
+            <button type="submit" class="button-primary">
+                Ausfuehren
+            </button>
+        </form>
+        <pre class="tool-output" hidden></pre>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+
+{% if can_view_tool_sys_status and tools_by_group.system.tools %}
+<section id="system" class="tool-section">
+    <h2>{{ tools_by_group.system.label }}</h2>
+    {% for tool in tools_by_group.system.tools %}
+    <div class="tool-card" data-tool="{{ tool.name }}">
+        <h3>{{ tool.label }}</h3>
+        {% if tool.description %}
+        <p class="tool-desc">{{ tool.description }}</p>
+        {% endif %}
+        <form class="tool-form" data-tool="{{ tool.name }}">
+            {% for field in tool.fields %}
+            <label class="tool-field">
+                <span>{{ field.label }}</span>
+                <input name="{{ field.name }}"
+                       type="{{ field.type }}"
+                       {% if field.required %}required{% endif %}>
+            </label>
+            {% endfor %}
+            <button type="submit" class="button-primary">
+                Ausfuehren
+            </button>
+        </form>
+        <pre class="tool-output" hidden></pre>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+
+{% if can_view_tool_db_read and tools_by_group.datenbank.tools %}
+<section id="datenbank" class="tool-section">
+    <h2>{{ tools_by_group.datenbank.label }}</h2>
+    {% for tool in tools_by_group.datenbank.tools %}
+    <div class="tool-card" data-tool="{{ tool.name }}">
+        <h3>{{ tool.label }}</h3>
+        {% if tool.description %}
+        <p class="tool-desc">{{ tool.description }}</p>
+        {% endif %}
+        <form class="tool-form" data-tool="{{ tool.name }}">
+            {% for field in tool.fields %}
+            <label class="tool-field">
+                <span>{{ field.label }}</span>
+                <input name="{{ field.name }}"
+                       type="{{ field.type }}"
+                       {% if field.required %}required{% endif %}>
+            </label>
+            {% endfor %}
+            <button type="submit" class="button-primary">
+                Ausfuehren
+            </button>
+        </form>
+        <pre class="tool-output" hidden></pre>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tools.js') }}"
+        defer></script>
 {% endblock %}
