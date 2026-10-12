@@ -8,9 +8,14 @@ Pingt ein Ziel im autorisierten Netz. Fail closed:
 Ziel ausserhalb scope -> ToolError. subprocess mit
 shell=False, Timeout 10s, check=False.
 
-IPv4-only (Bug E, Auflage 2013): im LXC wird
-AF_INET6 nicht unterstuetzt. ping wird mit '-4'
+IPv4-only (Bug E, Auflage 2013): ping wird mit '-4'
 aufgerufen.
+
+LXC-Hinweis (Bug H, Auflage 2016): In einem
+unprivilegierten LXC ohne CAP_NET_RAW und ohne
+ping_group_range-Eintrag scheitert ping mit
+returncode=2 ("socket: Operation not permitted").
+Der Fehlerfall wird als PingError gemeldet.
 
 Signatur folgt dem AgentLoop: tool.func(**args).
 Also: ping_run(target=..., count=...).
@@ -74,10 +79,11 @@ def ping_run(target: str, count: int = 4) -> dict[str, Any]:
     except OSError as exc:
         raise ToolError(f"ping: OSError: {exc}") from exc
     if proc.returncode != 0 and not proc.stdout.strip():
+        stderr_short = (proc.stderr or "").strip()[:200]
         raise PingError(
-            f"ping: Ziel nicht erreichbar oder "
-            f"AF_INET6 nicht unterstuetzt "
-            f"(returncode={proc.returncode})"
+            f"ping: Ziel nicht erreichbar "
+            f"(returncode={proc.returncode}, "
+            f"stderr={stderr_short})"
         )
     return {
         "target": t,
