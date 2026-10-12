@@ -58,6 +58,18 @@ class PingIpv4Tests(unittest.TestCase):
         self.assertIn("received", result["stdout"])
         self.assertEqual(result["source"], "ping")
 
+    def test_ping_lxc_fehler_stderr(self) -> None:
+        """Bei returncode=2 mit stderr wird PingError geworfen."""
+        with patch(
+            "tools.ping.subprocess.run",
+            return_value=_proc(
+                2, "", "ping: socket: Operation not permitted"
+            ),
+        ), self.assertRaises(PingError) as ctx:
+            ping_run("localhost", count=1)
+        self.assertIn("Operation not permitted",
+                      str(ctx.exception))
+
 
 if __name__ == "__main__":
     unittest.main()
