@@ -58,10 +58,12 @@ def dns_lookup_run(hostname: str) -> dict[str, Any]:
         raise ToolError(f"dns_lookup: DNS-Fehler fuer {h!r}: {exc}") from exc
     except OSError as exc:
         raise ToolError(f"dns_lookup: OSError: {exc}") from exc
-    addresses = sorted({info[4][0] for info in infos})
+    addresses = sorted({str(info[4][0]) for info in infos})
+    ipv6_supported = any(":" in addr for addr in addresses)
     return {
         "hostname": h,
         "addresses": addresses,
+        "ipv6_supported": ipv6_supported,
         "source": "dns_lookup",
     }
 

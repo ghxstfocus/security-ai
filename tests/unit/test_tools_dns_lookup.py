@@ -34,7 +34,26 @@ class DnsLookupScopeTests(unittest.TestCase):
             result = dns_lookup_run("192.168.178.1")
         self.assertEqual(result["hostname"], "192.168.178.1")
         self.assertEqual(result["addresses"], ["192.168.178.1"])
+        self.assertFalse(result["ipv6_supported"])
         self.assertEqual(result["source"], "dns_lookup")
+
+    def test_dns_lookup_reports_ipv6_supported(self) -> None:
+        fake_infos = [
+            (
+                socket.AF_INET6,
+                socket.SOCK_STREAM,
+                6,
+                "",
+                ("fd00::1", 0, 0, 0),
+            ),
+        ]
+        with patch(
+            "tools.dns_lookup.socket.getaddrinfo",
+            return_value=fake_infos,
+        ):
+            result = dns_lookup_run("192.168.178.1")
+        self.assertTrue(result["ipv6_supported"])
+        self.assertEqual(result["addresses"], ["fd00::1"])
 
     def test_dns_lookup_raises_tool_error_on_dns_failure(self) -> None:
         with patch(
