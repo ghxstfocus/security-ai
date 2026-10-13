@@ -77,6 +77,10 @@ class TracerouteTests(unittest.TestCase):
         with self.assertRaises(ToolArgumentValueError):
             traceroute_run(target="192.168.178.1", max_hops=999)
 
+    def test_traceroute_binary_missing(self) -> None:
+        with mock.patch("tools.traceroute.subprocess.run", side_effect=FileNotFoundError()), self.assertRaises(ToolError):
+            traceroute_run(target="127.0.0.1", max_hops=5)
+
 
 class DnsLookupTests(unittest.TestCase):
     def test_dns_lookup_localhost(self) -> None:
