@@ -36,6 +36,14 @@ class DnsLookupScopeTests(unittest.TestCase):
         self.assertEqual(result["addresses"], ["192.168.178.1"])
         self.assertEqual(result["source"], "dns_lookup")
 
+    def test_dns_lookup_raises_tool_error_on_dns_failure(self) -> None:
+        with patch(
+            "tools.dns_lookup.socket.getaddrinfo",
+            side_effect=socket.gaierror("fake dns failure"),
+        ), self.assertRaises(ToolError) as ctx:
+            dns_lookup_run("192.168.178.1")
+        self.assertIn("DNS-Fehler", str(ctx.exception))
+
 
 if __name__ == "__main__":
     unittest.main()
