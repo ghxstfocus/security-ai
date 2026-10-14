@@ -20,7 +20,10 @@ import subprocess
 from typing import Any
 
 from core.net.scope import check_target_allowed
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 
 _TIMEOUT_S = 10
 
@@ -32,13 +35,13 @@ def whois_run(target: str) -> dict[str, Any]:
     Binary fehlt -> ToolError.
     """
     if not isinstance(target, str):
-        raise ToolError(
+        raise ToolArgumentValueError(
             f"whois: 'target' muss String sein, "
             f"nicht {type(target).__name__}"
         )
     t = target.strip()
     if not t:
-        raise ToolError("whois: 'target' darf nicht leer sein")
+        raise ToolArgumentValueError("whois: 'target' darf nicht leer sein")
     check_target_allowed(t)
     argv = ["whois", "--", t]
     try:

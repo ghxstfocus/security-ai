@@ -162,6 +162,14 @@ class WhoisTests(unittest.TestCase):
         with mock.patch("tools.whois.subprocess.run", side_effect=FileNotFoundError()), self.assertRaises(ToolError):
             whois_run(target="127.0.0.1")
 
+    def test_whois_target_not_string(self) -> None:
+        with self.assertRaises(ToolArgumentValueError):
+            whois_run(target=123)  # type: ignore[arg-type]
+
+    def test_whois_target_empty(self) -> None:
+        with self.assertRaises(ToolArgumentValueError):
+            whois_run(target="")
+
 
 class SystemStatusTests(unittest.TestCase):
     def test_system_status_liefert_werte(self) -> None:
