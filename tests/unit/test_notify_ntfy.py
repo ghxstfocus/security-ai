@@ -8,7 +8,10 @@ import os
 import unittest
 from unittest import mock
 
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 from tools.notify_ntfy import notify_ntfy_run
 
 
@@ -95,6 +98,46 @@ class NotifyNtfyTests(_EnvReset):
         self.assertEqual(
             _SEVERITY_TO_TAG["CRITICAL"], "rotating_light",
         )
+
+    def test_validate_title_nicht_string(self):
+        self._set()
+        with self.assertRaises(ToolArgumentValueError):
+            notify_ntfy_run(None, "x", "INFO")
+
+    def test_validate_title_leer(self):
+        self._set()
+        with self.assertRaises(ToolArgumentValueError):
+            notify_ntfy_run("", "x", "INFO")
+
+    def test_validate_title_zu_lang(self):
+        self._set()
+        with self.assertRaises(ToolArgumentValueError):
+            notify_ntfy_run("a" * 201, "x", "INFO")
+
+    def test_validate_message_nicht_string(self):
+        self._set()
+        with self.assertRaises(ToolArgumentValueError):
+            notify_ntfy_run("t", None, "INFO")
+
+    def test_validate_message_leer(self):
+        self._set()
+        with self.assertRaises(ToolArgumentValueError):
+            notify_ntfy_run("t", "", "INFO")
+
+    def test_validate_message_zu_lang(self):
+        self._set()
+        with self.assertRaises(ToolArgumentValueError):
+            notify_ntfy_run("t", "a" * 4001, "INFO")
+
+    def test_validate_severity_nicht_string(self):
+        self._set()
+        with self.assertRaises(ToolArgumentValueError):
+            notify_ntfy_run("t", "x", None)
+
+    def test_validate_severity_unbekannt(self):
+        self._set()
+        with self.assertRaises(ToolArgumentValueError):
+            notify_ntfy_run("t", "x", "INVALID")
 
 
 if __name__ == "__main__":
