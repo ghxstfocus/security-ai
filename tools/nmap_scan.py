@@ -28,7 +28,11 @@ from defusedxml import ElementTree as ET
 
 from core.net.scope import check_target_allowed
 from harness.permissions.levels import Level
-from harness.tool_registry.tool import Tool, ToolArgumentError, ToolError
+from harness.tool_registry.tool import (
+    Tool,
+    ToolArgumentValueError,
+    ToolError,
+)
 
 # ---------------------------------------------------------------------- #
 # Konstanten
@@ -60,15 +64,17 @@ _MAX_TARGET_LEN = 253
 
 def _validate_target(target: Any) -> str:
     if not isinstance(target, str):
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"nmap_scan: 'target' muss ein String sein, "
             f"nicht {type(target).__name__}"
         )
     t = target.strip()
     if not t:
-        raise ToolArgumentError("nmap_scan: 'target' darf nicht leer sein")
+        raise ToolArgumentValueError(
+            "nmap_scan: 'target' darf nicht leer sein"
+        )
     if len(t) > _MAX_TARGET_LEN:
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"nmap_scan: 'target' zu lang ({len(t)} > {_MAX_TARGET_LEN})"
         )
     return t
@@ -81,11 +87,11 @@ def _validate_ports(ports: Any) -> str | None:
         try:
             ports = ",".join(str(int(p)) for p in ports)
         except (TypeError, ValueError) as exc:
-            raise ToolArgumentError(
+            raise ToolArgumentValueError(
                 "nmap_scan: 'ports' als Liste muss Zahlen enthalten"
             ) from exc
     if not isinstance(ports, str):
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"nmap_scan: 'ports' muss String oder Liste sein, "
             f"nicht {type(ports).__name__}"
         )
@@ -93,12 +99,12 @@ def _validate_ports(ports: Any) -> str | None:
     if not p:
         return None
     if len(p) > _MAX_PORTS_LEN:
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"nmap_scan: 'ports' zu lang ({len(p)} > {_MAX_PORTS_LEN})"
         )
     for ch in p:
         if not (ch.isdigit() or ch in ",-"):
-            raise ToolArgumentError(
+            raise ToolArgumentValueError(
                 f"nmap_scan: unerlaubtes Zeichen {ch!r} in 'ports'"
             )
     return p
@@ -106,7 +112,7 @@ def _validate_ports(ports: Any) -> str | None:
 
 def _validate_scan_type(scan_type: Any) -> str:
     if not isinstance(scan_type, str):
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"nmap_scan: 'scan_type' muss String sein, "
             f"nicht {type(scan_type).__name__}"
         )
@@ -114,7 +120,7 @@ def _validate_scan_type(scan_type: Any) -> str:
     if st in _FORBIDDEN_SCAN_TYPES:
         raise ToolError(f"nmap_scan: {_FORBIDDEN_SCAN_TYPES[st]}")
     if st not in _ALLOWED_SCAN_TYPES:
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"nmap_scan: unbekannter scan_type {st!r}. "
             f"Erlaubt: {sorted(_ALLOWED_SCAN_TYPES)}"
         )
