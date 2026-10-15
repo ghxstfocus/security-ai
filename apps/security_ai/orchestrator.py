@@ -147,7 +147,7 @@ class ProcessingResult:
 
 
 def _build_default_registry() -> ToolRegistry:
-    """Baut die Standard-ToolRegistry mit den 5 Tools."""
+    """Baut die Standard-ToolRegistry mit den registrierten Tools."""
     reg = ToolRegistry()
     reg.register(NMAP_SCAN_TOOL)
     reg.register(READ_LOGS_TOOL)
