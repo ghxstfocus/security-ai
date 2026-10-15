@@ -1,7 +1,7 @@
 # Phasen
 
 Uebersicht aller Phasen mit Status.
-Details in `docs/DESIGN_DECISIONS.md` und den jeweiligen Modulen.
+Details in `docs/DECISIONS.md` und den jeweiligen Modulen.
 
 Legende: ✅ abgeschlossen, 🔨 in Arbeit, 💡 geplant.
 
@@ -485,7 +485,7 @@ Wenn TLS steht: HSTS-Header, Cookie-Flags pruefen
 bleiben unveraendert, Testmatrix fuer HTTPS ergaenzen.
 
 Kategorie 3 (TLS, Auth, Cookie-Flags).
-Siehe docs/SECURITY_REVIEW_LOG.md offener Punkt 10.
+Siehe docs/SECURITY_LOG.md offener Punkt 10.
 
 Erledigt in dieser Session (Commits afb4eb2 und 37ae99d):
 - nginx 1.22.1 aus bookworm installiert, eigene CA +
@@ -625,7 +625,7 @@ Fix C (Commit dd10214):
   App-Start, copy-paste-faehiger cp-Befehl,
   Verifikations-SQL, Hinweis Version 1, Hinweis
   Downgrade (Auflagen 400, 410, 411, 417, 409).
-- docs/SECURITY_REVIEW_LOG.md Punkt 15 um
+- docs/SECURITY_LOG.md Punkt 15 um
   Erledigt-Vermerk ergaenzt (Referenz bleibt).
   Neuer Punkt 17 (check_schema_version auch beim
   security_ai-Start, Auflage 398). Neuer Punkt 18
@@ -932,7 +932,7 @@ README repariert (Heredoc-Vorfall 5b5a727),
 - Vorfall-Nachtrag 2026-09-28: PROJECT_VISION.md
   Heredoc-Kopfzeile entfernt (A883-Klasse, zweiter
   Fall, Datei vollstaendig). Details in
-  docs/SECURITY_REVIEW_LOG.md.
+  docs/SECURITY_LOG.md.
 Kernzahlen 950 Tests. PHASES 3.6.10/3.6.11
 abgehakt. Commits e0a6aa4, 4cc0a45, 8e79495.
 
@@ -941,7 +941,7 @@ abgehakt. Commits e0a6aa4, 4cc0a45, 8e79495.
 mypy no-untyped-def 66 -> 2, ruff 2 -> 0.
 23 Commits (A900-1, A900-2a, A900-2b-1,
 A900-2b-2a/b/c, Ruff-I001-Fix).
-Details in docs/SECURITY_REVIEW_LOG.md.
+Details in docs/SECURITY_LOG.md.
 Punkt 60 erledigt in B1b-2 (d93cc68).
 
 ## B1 - mypy-Aufraeumen  ✅
@@ -965,7 +965,7 @@ Punkt 64 entfaellt (B4 war Fehlalarm).
   Guards + safe_redirect).
 - B1b-2 d93cc68, d77fd23, 2de4a40 (Kern-Services:
   orchestrator, chat, agent_loop).
-Details in docs/SECURITY_REVIEW_LOG.md.
+Details in docs/SECURITY_LOG.md.
 
 ## Punkt 55 - Dashboard-Anzeige-Erweiterung  ✅
 
@@ -989,7 +989,7 @@ Tests: 1040 -> 1071.
 Live-Technologie: Polling (kein WS/SSE).
 Neue Punkte 65 (Extern-Kachel), 66 (/system-
 Detailseite).
-Details in docs/SECURITY_REVIEW_LOG.md.
+Details in docs/SECURITY_LOG.md.
 
 ## Phase 5 — Admin AI  🔨
 
@@ -1311,7 +1311,7 @@ Kategorie: 3.
 
 ### Offene Punkte vor 3.8
 
-Siehe docs/SECURITY_REVIEW_LOG.md, Punkte 1-11.
+Siehe docs/SECURITY_LOG.md, Punkte 1-11.
 Insbesondere:
 - Punkt 5: ChatServiceError -> OperationError.
 - Punkt 6: Fehlerklassen-Trennung in Alt-Services.

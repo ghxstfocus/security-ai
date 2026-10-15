@@ -106,7 +106,7 @@ Chat-Interface:
 - Kein Tool-Aufruf aus dem Chat.
 - Antworten sind Vorschlaege, keine Aktionen.
 
-Details: siehe docs/DESIGN_DECISIONS.md, Abschnitt 8.
+Details: siehe docs/DECISIONS.md, Abschnitt 8.
 
 ### Ebene 3 — Builder Harness
 
@@ -425,7 +425,7 @@ Das LLM bekommt nur, was der Kontext-Bauer freigibt. Kein
 LLM-Output fliesst in Detection, Risk, Policy, Approval
 oder Change-Freigaben.
 
-Details: docs/DESIGN_DECISIONS.md, Abschnitt 8.
+Details: docs/DECISIONS.md, Abschnitt 8.
 
 ### 3.14 harness/llm — entfernt (Phase 16)
 
@@ -533,7 +533,7 @@ Vertrauensakt ist der Betrieb beim Kunden
 nicht die Entwicklung des Adapters.
 
 Siehe PROJECT_VISION § 2 (Bridge-Begriff im
-Rollensicht-Bild) und docs/PHASES.md Phase 7.
+Rollensicht-Bild) und docs/ROADMAP.md Phase 7.
 
 ## 4. Datenfluss — Beispiel
 

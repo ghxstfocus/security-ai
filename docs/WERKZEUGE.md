@@ -116,7 +116,7 @@ Die normale String-Suche bleibt.
 - Anzeigenamen aus der UI (z. B. "Alarme",
   "Freigaben", "Aenderungen").
 - Deutsche Begriffe ("alarm", "alert", "freigabe").
-  Punkt 29 in docs/SECURITY_REVIEW_LOG.md:
+  Punkt 29 in docs/SECURITY_LOG.md:
   Synonym-Mapping ist geplant, aber nicht gebaut.
 - Freitext-Felder: description, diff_or_patch,
   rollback_plan, test_plan, args_json,

@@ -1631,7 +1631,7 @@ getrennte Kanaele.
 ## 22. Phase-3.6.8-Erweiterungen
 
 Siehe auch:
-- docs/SECURITY_REVIEW_LOG.md — Sicherheits-
+- docs/SECURITY_LOG.md — Sicherheits-
   Entscheidungen nach Thema + offene Punkte 1-11.
 - docs/INCONSISTENCIES_FOUND.md — Ausgelagerte
   Inkonsistenzen (heute leer).

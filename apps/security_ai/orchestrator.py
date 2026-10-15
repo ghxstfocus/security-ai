@@ -361,7 +361,7 @@ class SecurityAI:
 
         Grund: Benachrichtigung, keine Aktion. Keine Policy, kein
         Approval noetig. Best effort. DB ist Quelle der Wahrheit.
-        Siehe docs/DESIGN_DECISIONS.md #9.
+        Siehe docs/DECISIONS.md #9.
         """
         if (loop_result.status != "APPROVAL_REQUIRED"
                 or loop_result.approval_request_id is None):

@@ -79,11 +79,30 @@ Der Mensch bleibt die letzte Instanz.
 - Physische Sicherheit (Phase 10).
 - Ganzheitliche Korrelation (Phase 11).
 
+## Umgebung
+
+- Container: CT102 auf Proxmox, Hostname security-ai,
+  IP 192.168.178.117, Tailscale 100.116.205.98.
+- Projektordner: /opt/security-ai.
+- GitHub: git@github.com:ghxstfocus/security-ai.git
+  (privat, Branch main).
+- Debian 12, Python 3.11, pytest 9.1.1 (venv).
+- venv-Python: /opt/security-ai/.venv/bin/python3.
+- Tests aus CWD /opt/security-ai (Regel-Dateien
+  werden relativ zum CWD geladen).
+- Zugriff Dashboard: https://security-ai (Tailnet).
+
 ## Wo man liest
 
-- docs/DEPLOYMENT.md - Installation und Betrieb.
+- docs/STATUS.md - aktueller Stand (HEAD, Tests,
+  naechster Block).
+- docs/ROADMAP.md - Phasen und Ausblick.
+- docs/DECISIONS.md - Design-Entscheidungen.
+- docs/SECURITY_LOG.md - Sicherheits-Entscheidungen.
+- docs/CONVENTIONS.md - projektspezifische Konventionen.
 - docs/ARCHITECTURE.md - technische Schichten.
-- PROJECT_VISION.md - die grosse Vision.
+- docs/DEPLOYMENT.md - Installation und Betrieb.
 - docs/SECURITY.md - Threat Model und Guardrails.
-- docs/PHASES.md - Phasenstand und Ausblick.
+- PROJECT_VISION.md - die grosse Vision.
+- CHANGELOG.md - chronologische Aenderungen.
 

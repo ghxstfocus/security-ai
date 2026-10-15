@@ -12,7 +12,7 @@ Verantwortung:
 Kein jsonschema. Handgeschriebene Validierung: Pflichtfelder,
 Typen, Enum-Werte. Fail closed bei jeder Unstimmigkeit.
 
-JSON-Format (siehe auch docs/DESIGN_DECISIONS.md):
+JSON-Format (siehe auch docs/DECISIONS.md):
   Pflicht: change_id, timestamp, title, description,
            requested_by, status, type.
   Optional: diff_or_patch, files_affected, rollback_plan,

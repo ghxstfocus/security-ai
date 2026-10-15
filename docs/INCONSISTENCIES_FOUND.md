@@ -2,7 +2,7 @@
 
 Sammlung von Inkonsistenzen zwischen Dokumenten,
 Code und Doku. Ausgelagert aus
-`docs/SECURITY_REVIEW_LOG.md`, damit dort nur
+`docs/SECURITY_LOG.md`, damit dort nur
 Sicherheits-Entscheidungen und offene Punkte stehen.
 
 ## Struktur
@@ -22,7 +22,7 @@ Pro Eintrag:
 - Historie bleibt.
 - Nur echte Widersprueche. Offene Punkte
   (noch nicht erledigt, aber nicht falsch) bleiben
-  in `docs/SECURITY_REVIEW_LOG.md`.
+  in `docs/SECURITY_LOG.md`.
 
 ## Bestand
 

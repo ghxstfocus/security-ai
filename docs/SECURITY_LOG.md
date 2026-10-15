@@ -310,9 +310,9 @@ test_access_denied_errorhandler_403 abgedeckt.
 
 ## Handoff-Hinweise
 
-- Neuer Chat liest: docs/CONTEXT_PROMPT.md,
-  docs/DESIGN_DECISIONS.md, diese Datei,
-  docs/PHASES.md.
+- Neuer Chat liest: docs/STATUS.md,
+  docs/DECISIONS.md, diese Datei,
+  docs/ROADMAP.md.
 - Ausgelagerte Inkonsistenzen:
   docs/INCONSISTENCIES_FOUND.md (heute leer;
   Struktur vorhanden fuer kuenftige Funde).
@@ -592,7 +592,7 @@ Punkt 82: Orchestrator-Docstring 5->6 Tools (6d9c1c1).
     SSH-Tunnel + temporaer Secure=False, aber nur
     mit Bind 127.0.0.1 und sofortigem Rueckbau.
     Eigener Kategorie-3-Block (TLS/Auth).
-    Siehe docs/PHASES.md offener Punkt "3.6.12 HTTPS".
+    Siehe docs/ROADMAP.md offener Punkt "3.6.12 HTTPS".
 
 11. SSH-Zugang Windows -> CT102:
     permitrootlogin without-password in der effektiven
@@ -1628,7 +1628,7 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     check=False, RBAC device.read, fail closed ->
     'unbekannt').
     Dokumentiert in docs/WEB_SECURITY_CHECKLIST.md §N
-    und docs/DESIGN_DECISIONS.md §17.
+    und docs/DECISIONS.md §17.
     Kategorie 3 (Reviewer-GO Variante 1).
 
 70. (erledigt in 95df3ae, Kategorie 3, Detection)

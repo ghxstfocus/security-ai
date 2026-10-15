@@ -93,7 +93,7 @@ Admin AI, Mensch.
 **Rollen im Betrieb** (dieses Dokument):
 Mensch, Admin AI, Core, Kunden-KI, Geraete.
 
-**Test-Ebenen** (docs/DESIGN_DECISIONS.md):
+**Test-Ebenen** (docs/DECISIONS.md):
 Score, Mapping, Kette, Approval, Change.
 
 Die drei Blickwinkel beschreiben dieselbe
@@ -210,16 +210,16 @@ bis zur Enterprise-Plattform. Der Core bleibt
 derselbe. Die KIs kommen dazu. Der Mensch
 entscheidet immer.
 
-Details zu den Phasen: docs/PHASES.md.
+Details zu den Phasen: docs/ROADMAP.md.
 
 ## 10. Referenzen
 
 - docs/ARCHITECTURE.md — technische Schichten.
 - docs/SECURITY.md — Threat Model, Guardrails,
   Alarm-Regeln.
-- docs/PHASES.md — Phasenstand und Roadmap.
-- docs/DESIGN_DECISIONS.md — Design-Entscheidungen.
+- docs/ROADMAP.md — Phasenstand und Roadmap.
+- docs/DECISIONS.md — Design-Entscheidungen.
 - docs/PERMISSIONS.md — Tool-Level und RBAC.
 - docs/PROTOCOL.md — Foederationsprotokoll.
-- docs/WORKFLOW.md — Prozess und Regeln.
+- docs/CONVENTIONS.md — projektspezifische Konventionen.
 

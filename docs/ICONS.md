@@ -28,6 +28,6 @@ Alte ASCII-Marker wurden umgestellt:
 - `(verworfen)` -> ❌
 
 Runde 1 (2026-10-03): ICONS.md, PROJECT_VISION.md,
-docs/PHASES.md, docs/SECURITY_REVIEW_LOG.md.
+docs/ROADMAP.md, docs/SECURITY_LOG.md.
 Runde 2 (offen): WEB_SECURITY_CHECKLIST,
 DEPLOYMENT, SECURITY, ARCHITECTURE, WORKFLOW.
