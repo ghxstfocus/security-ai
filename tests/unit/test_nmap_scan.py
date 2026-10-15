@@ -21,7 +21,10 @@ import subprocess
 import unittest
 from unittest import mock
 
-from harness.tool_registry.tool import ToolError
+from harness.tool_registry.tool import (
+    ToolArgumentValueError,
+    ToolError,
+)
 from tools.nmap_scan import nmap_scan_run
 
 # ---------------------------------------------------------------------- #
@@ -198,6 +201,46 @@ class NmapTargetWhitelistTests(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------- #
+# Argument-Validierung: target
+# ---------------------------------------------------------------------- #
+
+class NmapTargetValidationTests(unittest.TestCase):
+    def test_validate_target_nicht_string(self):
+        with self.assertRaises(ToolArgumentValueError):
+            nmap_scan_run(target=123)
+
+    def test_validate_target_leer(self):
+        with self.assertRaises(ToolArgumentValueError):
+            nmap_scan_run(target="")
+
+    def test_validate_target_zu_lang(self):
+        with self.assertRaises(ToolArgumentValueError):
+            nmap_scan_run(target="a" * 254)
+
+
+# ---------------------------------------------------------------------- #
+# Argument-Validierung: ports
+# ---------------------------------------------------------------------- #
+
+class NmapPortsValidationTests(unittest.TestCase):
+    def test_validate_ports_nicht_string(self):
+        with self.assertRaises(ToolArgumentValueError):
+            nmap_scan_run(target="127.0.0.1", ports=123)
+
+    def test_validate_ports_liste_mit_nicht_zahl(self):
+        with self.assertRaises(ToolArgumentValueError):
+            nmap_scan_run(target="127.0.0.1", ports=["a"])
+
+    def test_validate_ports_zu_lang(self):
+        with self.assertRaises(ToolArgumentValueError):
+            nmap_scan_run(target="127.0.0.1", ports="1" * 513)
+
+    def test_validate_ports_unerlaubtes_zeichen(self):
+        with self.assertRaises(ToolArgumentValueError):
+            nmap_scan_run(target="127.0.0.1", ports="80;rm")
+
+
+# ---------------------------------------------------------------------- #
 # scan_type-Verbote
 # ---------------------------------------------------------------------- #
 
@@ -210,10 +253,13 @@ class NmapScanTypeTests(unittest.TestCase):
         with self.assertRaises(ToolError):
             nmap_scan_run(target="127.0.0.1", scan_type="ping")
 
-    def test_unbekannt_wirft_toolargumenterror(self):
-        from harness.tool_registry.tool import ToolArgumentError
-        with self.assertRaises(ToolArgumentError):
+    def test_unbekannt_wirft_toolargumentvalueerror(self):
+        with self.assertRaises(ToolArgumentValueError):
             nmap_scan_run(target="127.0.0.1", scan_type="magic")
+
+    def test_validate_scan_type_nicht_string(self):
+        with self.assertRaises(ToolArgumentValueError):
+            nmap_scan_run(target="127.0.0.1", scan_type=123)
 
 
 # ---------------------------------------------------------------------- #
