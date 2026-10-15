@@ -44,7 +44,11 @@ from typing import Any
 import requests
 
 from harness.permissions.levels import Level
-from harness.tool_registry.tool import Tool, ToolArgumentError, ToolError
+from harness.tool_registry.tool import (
+    Tool,
+    ToolArgumentValueError,
+    ToolError,
+)
 
 _TIMEOUT_S = 5
 _MAX_TITLE_LEN = 200
@@ -67,15 +71,17 @@ _SEVERITY_TO_TAG = {
 
 def _validate_title(title: Any) -> str:
     if not isinstance(title, str):
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"notify_ntfy: 'title' muss String sein, "
             f"nicht {type(title).__name__}"
         )
     t = title.strip()
     if not t:
-        raise ToolArgumentError("notify_ntfy: 'title' darf nicht leer sein")
+        raise ToolArgumentValueError(
+            "notify_ntfy: 'title' darf nicht leer sein"
+        )
     if len(t) > _MAX_TITLE_LEN:
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"notify_ntfy: 'title' zu lang ({len(t)} > {_MAX_TITLE_LEN})"
         )
     return t
@@ -83,15 +89,17 @@ def _validate_title(title: Any) -> str:
 
 def _validate_message(message: Any) -> str:
     if not isinstance(message, str):
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"notify_ntfy: 'message' muss String sein, "
             f"nicht {type(message).__name__}"
         )
     m = message.strip()
     if not m:
-        raise ToolArgumentError("notify_ntfy: 'message' darf nicht leer sein")
+        raise ToolArgumentValueError(
+            "notify_ntfy: 'message' darf nicht leer sein"
+        )
     if len(m) > _MAX_MESSAGE_LEN:
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"notify_ntfy: 'message' zu lang ({len(m)} > {_MAX_MESSAGE_LEN})"
         )
     return m
@@ -99,13 +107,13 @@ def _validate_message(message: Any) -> str:
 
 def _validate_severity(severity: Any) -> str:
     if not isinstance(severity, str):
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"notify_ntfy: 'severity' muss String sein, "
             f"nicht {type(severity).__name__}"
         )
     s = severity.strip().upper()
     if s not in _VALID_SEVERITIES:
-        raise ToolArgumentError(
+        raise ToolArgumentValueError(
             f"notify_ntfy: unbekannte severity {s!r}. "
             f"Erlaubt: {sorted(_VALID_SEVERITIES)}"
         )
