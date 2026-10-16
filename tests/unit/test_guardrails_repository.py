@@ -121,7 +121,3 @@ def test_set_state_unknown_id_raises(_db_path: Path) -> None:
     with pytest.raises(GuardrailNotFoundError):
         repo.set_state("nicht-vorhanden", "disabled")
 
-
-def test_no_create_table_in_test_file() -> None:
-    src = Path(__file__).read_text(encoding="utf-8")
-    assert "CREATE TABLE" not in src

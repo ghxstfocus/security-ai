@@ -140,7 +140,7 @@ class AccessCheckerTests(unittest.TestCase):
     def test_permissions_of_viewer(self):
         perms = self.checker.permissions_of("viewer1")
         self.assertEqual(
-            perms, frozenset({"chat.ask", "device.read", "audit.read"})
+            perms, frozenset({"chat.ask", "device.read", "audit.read", "guardrail.view"})
         )
 
     def test_permissions_of_unbekannt(self):

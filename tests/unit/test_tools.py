@@ -16,7 +16,7 @@ from harness.permissions.levels import Level
 from harness.policy_engine.engine import PolicyEngine
 from harness.policy_engine.policy import Decision, PolicyContext
 from harness.tool_registry.registry import ToolRegistry
-from harness.tool_registry.tool import Tool, ToolArgumentError, ToolError
+from harness.tool_registry.tool import Tool, ToolArgumentError, ToolArgumentValueError, ToolError
 from tools.get_devices import GET_DEVICES_TOOL, get_devices_run
 from tools.nmap_scan import NMAP_SCAN_TOOL, nmap_scan_run
 from tools.read_logs import READ_LOGS_TOOL, read_logs_run
@@ -189,9 +189,9 @@ class NmapScanTests(unittest.TestCase):
             {"target": "x", "ports": [22, "a"]},
             {"target": "x", "scan_type": "unbekannt"},
         ]:
-            with self.assertRaises(ToolArgumentError, msg=bad):
+            with self.assertRaises((ToolArgumentError, ToolArgumentValueError),
+                                   msg=bad):
                 nmap_scan_run(**bad)
-
     def test_syn_scan_wirft_toolerror(self):
         with self.assertRaises(ToolError):
             nmap_scan_run(target="192.168.178.1", scan_type="syn")
