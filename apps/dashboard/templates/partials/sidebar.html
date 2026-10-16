@@ -96,10 +96,11 @@
         </details>
         {% endif %}
         <div class="sidebar-divider"></div>
-        {% if can_view_users or can_view_roles or can_view_audit or can_view_settings %}
+        {% if can_view_users or can_view_roles or can_view_guardrails or can_view_audit or can_view_settings %}
         <details class="sidebar-group"
                  {% if request.path.startswith('/users')
                        or request.path.startswith('/roles')
+                       or request.path.startswith('/guardrails')
                        or request.path.startswith('/audit')
                        or request.path.startswith('/settings') %}open{% endif %}>
             <summary class="sidebar-group-summary">
@@ -118,6 +119,13 @@
                    class="sidebar-link{% if request.path == '/roles' %} active{% endif %}"
                    href="/roles">
                     <span>Rollen</span>
+                </a>
+                {% endif %}
+                {% if can_view_guardrails %}
+                <a data-nav="guardrails"
+                   class="sidebar-link{% if request.path == '/guardrails' %} active{% endif %}"
+                   href="/guardrails">
+                    <span>Guardrails</span>
                 </a>
                 {% endif %}
                 {% if can_view_audit %}

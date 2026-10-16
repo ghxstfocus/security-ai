@@ -1,0 +1,22 @@
+# Beispiel-Guardrails fuer die Projekt-Konfiguration.
+# Format: Liste unter dem Schluessel "guardrails".
+# Pflichtfelder pro Eintrag: id, name, level, state.
+# level: info | warn | block
+# state: enabled | disabled
+guardrails:
+  - id: GR-001
+    name: Shell-Zugriff blockieren
+    level: block
+    state: enabled
+  - id: GR-002
+    name: Unbekannte Netzwerkziele warnen
+    level: warn
+    state: enabled
+  - id: GR-003
+    name: Policy-Aenderung ohne Change Request blockieren
+    level: block
+    state: enabled
+  - id: GR-004
+    name: Ausfuehrliche Audit-Ausgabe
+    level: info
+    state: disabled

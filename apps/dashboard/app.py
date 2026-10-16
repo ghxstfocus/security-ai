@@ -257,6 +257,9 @@ def create_app(
     from apps.dashboard.routes_tools import register_tools_routes
     register_tools_routes(app)
 
+    from apps.dashboard.routes_guardrails import register_guardrails_routes
+    register_guardrails_routes(app)
+
     from apps.dashboard.filters import (
         format_score,
         format_score_label,

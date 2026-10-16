@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Guardrails{% endblock %}
+
+{% block content %}
+<h1>Guardrails</h1>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Level</th>
+      <th>State</th>
+      <th>Aktion</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for g in guardrails %}
+    <tr>
+      <td>{{ g.name }}</td>
+      <td>{{ g.level.value }}</td>
+      <td>{{ g.state.value }}</td>
+      <td>
+        {% if g.state.value == "enabled" %}
+        <button type="button" class="btn"
+                data-guardrail-id="{{ g.id }}"
+                data-action="disabled">Deaktivieren</button>
+        {% else %}
+        <button type="button" class="btn"
+                data-guardrail-id="{{ g.id }}"
+                data-action="enabled">Aktivieren</button>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

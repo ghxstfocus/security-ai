@@ -410,6 +410,10 @@ Commits: 4d865d2, 1360560, 17411a3, 5d5fb15,
 identifier bleibt die Identitaet (MAC). last_ip ist
 Kontext-Feld.
 
+## Phase 18 — Guardrails laden und nutzen  ✅
+
+core/guardrails/{models,loader,repository}.py, core/services/guardrail_service.py. Dashboard-Route /guardrails (read-only) und POST /api/guardrails/<id>/state. Audit-Kind guardrail_state_changed.
+
 ## Phase 3.8 — Host-Scanner / Netzwerk-Discovery  💡
 
 Ziel: das gesamte Heimnetz beobachten, nicht nur den

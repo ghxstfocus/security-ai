@@ -4,6 +4,14 @@ Protokoll der wichtigsten Review-Entscheidungen
 aus der externen Review-Session (Audit-Chat)
 waehrend Phase 3.5 und 3.6.
 
+## Phase 18 — Guardrails (2026-10-16)
+
+- Neue Route POST /api/guardrails/<id>/state.
+- CSRF via session['_csrf_token'] + csrf.validate.
+- RBAC guardrail.manage im GuardrailService.
+- Audit-Kind guardrail_state_changed.
+- CSP-konform via externe JS-Datei.
+
 ## Zweck
 
 - Nachvollziehbarkeit: WARUM ist der Code so?

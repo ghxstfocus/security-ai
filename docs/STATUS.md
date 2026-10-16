@@ -4,7 +4,7 @@ Aktueller Stand des Projekts. Kurz halten.
 Details in `docs/ROADMAP.md` (Phasen) und
 `docs/DECISIONS.md` (Design).
 
-Letzte Aktualisierung: 2026-10-15.
+Letzte Aktualisierung: 2026-10-16.
 
 ## Kennzahlen
 
@@ -98,5 +98,9 @@ Offen aus `docs/ROADMAP.md`:
 - `docs/DECISIONS.md` — Design-Entscheidungen.
 - `docs/SECURITY_LOG.md` — Sicherheits-Entscheidungen.
 - `docs/CONVENTIONS.md` — projektspezifische Konventionen.
+## Phase 18 — Guardrails laden und nutzen
+
+U1-U12 done. U13 (Doku-Nachzug) folgt in diesem Block. Details in docs/ROADMAP.md.
+
 - `docs/ARCHITECTURE.md` — Architektur im Detail.
 - `CHANGELOG.md` — chronologische Aenderungen.
