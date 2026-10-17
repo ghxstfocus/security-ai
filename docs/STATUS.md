@@ -102,5 +102,27 @@ Offen aus `docs/ROADMAP.md`:
 
 U1-U12 done. U13 (Doku-Nachzug) folgt in diesem Block. Details in docs/ROADMAP.md.
 
+## Phase 19 — ChangeApplier und Sofort-Massnahmen-Kategorie
+
+Status: ✅ abgeschlossen (U1-U5). Details in docs/ROADMAP.md,
+Begruendung in docs/DECISIONS.md Paragraph 24.
+
+Unterbloecke:
+
+- ✅ U1: ChangeApplier-Grundgeruest (harness/versioning/applier.py,
+  Backup/Restore, Idempotenz, Fail-closed).
+- ✅ U2: ChangeApplier-Integration in ChangeService
+  (change_deployed, change_rolled_back, Audit-Pflicht).
+- ✅ U3: Sofort-Massnahmen-Kategorie (BLOCK, ISOLATE als
+  destruktive Aktionen; Berechtigung + Audit-Pflicht).
+- ✅ U4: RBAC und Audit fuer Sofort-Massnahmen
+  (eigene Permission, Audit-Kind, fail closed).
+- ✅ U5: Tests und Doku-Nachzug (Unit-Tests, STATUS, ROADMAP,
+  DECISIONS, SECURITY_LOG).
+
+Verweis: ChangeApplier in harness/versioning/applier.py,
+Sofort-Massnahmen-Kategorie in docs/DECISIONS.md Paragraph 24,
+Sicherheitsentscheidungen in docs/SECURITY_LOG.md.
+
 - `docs/ARCHITECTURE.md` — Architektur im Detail.
 - `CHANGELOG.md` — chronologische Aenderungen.

@@ -12,6 +12,31 @@ waehrend Phase 3.5 und 3.6.
 - Audit-Kind guardrail_state_changed.
 - CSP-konform via externe JS-Datei.
 
+## Phase 19 — ChangeApplier und Sofort-Massnahmen (2026-10-16)
+
+ChangeApplier (harness/versioning/applier.py) mit Backup/Restore,
+Idempotenz und Fail-closed-Semantik. Integration in ChangeService
+(Audit-Kinds change_deployed, change_rolled_back).
+
+Sofort-Massnahmen-Kategorie:
+
+- Destruktive Aktionen: BLOCK und ISOLATE. Beide veraendern den
+  Systemzustand (Sperren eines Geraets, Isolieren aus dem Netz).
+- Nicht destruktiv: reine Lese-Aktionen (Status, Inventar,
+  Audit-Ansicht) bleiben ohne Sofort-Massnahme.
+- Berechtigung: eigene Permission fuer Sofort-Massnahmen
+  (sofortmassnahme.execute). RBAC im Service-Layer, nicht im UI.
+- Audit-Pflicht: jede Sofort-Massnahme erzeugt einen
+  Audit-Eintrag (kind=sofortmassnahme_executed) mit Akteur,
+  Ziel, Aktion und Ergebnis. Audit-Fehler ist fail closed
+  (Service-Aufruf bricht ab).
+- Fail closed: unbekannte Aktion, fehlende Berechtigung oder
+  Audit-Fehler fuehren zum Abbruch, kein stiller Durchlauf.
+- Backup/Restore: ChangeApplier sichert den Vorzustand vor jeder
+  Aenderung und kann ihn wiederherstellen (Rollback).
+- Idempotenz: wiederholte Anwendung derselben Aenderung fuehrt
+  nicht zu doppelten Effekten.
+
 ## Zweck
 
 - Nachvollziehbarkeit: WARUM ist der Code so?
