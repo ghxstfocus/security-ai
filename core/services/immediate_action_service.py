@@ -19,8 +19,8 @@ from typing import TYPE_CHECKING, Protocol
 from core.risk.models import ImmediateActionCategory
 
 if TYPE_CHECKING:
-    from core.audit.log import AuditLog
     from core.risk.models import Finding
+    from harness.audit.writer import AuditWriter
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ class ImmediateActionService:
 
     def __init__(
         self,
-        audit_log: AuditLog,
+        audit_log: AuditWriter,
         notifier: Notifier | None = None,
     ) -> None:
         self._audit_log = audit_log
@@ -185,9 +185,12 @@ class ImmediateActionService:
         category: ImmediateActionCategory,
         status: str,
     ) -> None:
-        self._audit_log.record(
-            kind="immediate_action",
-            actor="immediate_action_service",
+        self._audit_log.log(
+            agent="immediate_action_service",
+            tool="immediate_action",
+            policy_result="applied",
+            permission_level=1,
+            execution_status="ok",
             details={
                 "finding_id": str(finding.id),
                 "category": category.value

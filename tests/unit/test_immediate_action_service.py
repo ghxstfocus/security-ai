@@ -30,6 +30,9 @@ class _FakeAuditLog:
     def record(self, **kwargs: Any) -> None:
         self.entries.append(kwargs)
 
+    def log(self, **kwargs: Any) -> None:
+        self.entries.append(kwargs)
+
 
 class _FakeNotifier:
     def __init__(self) -> None:

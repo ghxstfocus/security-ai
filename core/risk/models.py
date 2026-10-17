@@ -201,6 +201,28 @@ _IMMEDIATE_ACTION_MAP: dict[RiskCategory, ImmediateActionCategory] = {
 }
 
 
+@dataclass(frozen=True)
+class Actor:
+    """Minimaler Actor fuer Berechtigungspruefung."""
+    name: str
+    permissions: frozenset[str] = field(default_factory=frozenset)
+
+
+@dataclass(frozen=True)
+class Finding:
+    """Befund, auf den eine Sofort-Massnahme angewendet wird.
+
+    U4 (2026-10-17): Minimal-Typ fuer den
+    ImmediateActionService. id + severity sind
+    Pflicht, actor optional (fail-closed bei
+    fehlenden Berechtigungen).
+    """
+    id: str
+    severity: str
+    actor: Actor | None = None
+
+
+
 def risk_level_to_immediate_action(
     category: RiskCategory,
 ) -> ImmediateActionCategory:
@@ -220,6 +242,8 @@ def risk_level_to_immediate_action(
 
 __all__ = [
     "DEFAULT_THRESHOLDS",
+    "Actor",
+    "Finding",
     "ImmediateActionCategory",
     "RiskAssessment",
     "RiskCategory",
