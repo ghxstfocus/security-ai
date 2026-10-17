@@ -8,8 +8,9 @@ Merge-Semantik:
   - Listen werden ERSETZT (nicht anghaengt).
   - Skalare ueberschreiben.
 
-Grenzen dieser Runde:
-  - KEIN Fail-closed (U2a3).
+Fail-closed (U2a3):
+  - Jeder Fehler in apply() setzt change.state = FAILED
+    und propagiert (kein silent no-op).
 """
 
 from __future__ import annotations
@@ -52,23 +53,39 @@ class ChangeApplier:
 
         Validiert target gegen config_path, erstellt ein
         Backup und schreibt die gemergte YAML zurueck.
+
+        Fail-closed: Jeder Fehler (Target-Validierung,
+        YAML-Parse, IO, Payload-Typ) setzt
+        change.state = FAILED und propagiert.
         """
-        if change.target != str(self.config_path):
+        try:
+            if change.target != str(self.config_path):
+                raise ValueError(
+                    f"Change.target {change.target!r} passt nicht zu "
+                    f"config_path {str(self.config_path)!r}"
+                )
+
+            self._backup(change)
+
+            with self.config_path.open("r", encoding="utf-8") as handle:
+                data = yaml.safe_load(handle) or {}
+
+            merged = _merge(data, change.payload)
+
+            with self.config_path.open("w", encoding="utf-8") as handle:
+                yaml.safe_dump(merged, handle, sort_keys=False)
+        except yaml.YAMLError as exc:
+            # U2a3: yaml.YAMLError ist keine ValueError-
+            # Subklasse. Aufrufer (und Test) erwarten
+            # aber ValueError als einheitliche Exception
+            # fuer ungueltige Eingaben. Deshalb wrappen.
             change.state = ChangeState.FAILED
             raise ValueError(
-                f"Change.target {change.target!r} passt nicht zu "
-                f"config_path {str(self.config_path)!r}"
-            )
-
-        self._backup(change)
-
-        with self.config_path.open("r", encoding="utf-8") as handle:
-            data = yaml.safe_load(handle) or {}
-
-        merged = _merge(data, change.payload)
-
-        with self.config_path.open("w", encoding="utf-8") as handle:
-            yaml.safe_dump(merged, handle, sort_keys=False)
+                f"YAML-Parse-Fehler in {self.config_path}: "
+                f"{exc}") from exc
+        except Exception:
+            change.state = ChangeState.FAILED
+            raise
 
     def _backup(self, change: Change) -> Path:
         """Kopiert config_path nach backup_dir/<change.id>.bak."""

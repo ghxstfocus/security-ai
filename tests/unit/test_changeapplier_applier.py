@@ -107,6 +107,22 @@ class ChangeApplierApplyTests(unittest.TestCase):
 
         self.assertEqual(change.state, ChangeState.FAILED)
 
+    def test_apply_fehler_setzt_failed_und_propagiert(self) -> None:
+        # Kaputte Zieldatei: yaml.safe_load wirft einen
+        # yaml.YAMLError. apply() wrappt das in ValueError
+        # (U2a3: einheitliche Exception-Klasse fuer
+        # ungueltige Eingaben).
+        self.config_path.write_text(
+            "server: [unbalanced\n", encoding="utf-8"
+        )
+        applier = ChangeApplier(self.config_path, self.backup_dir)
+        change = self._make_change({"server": {"port": 8080}})
+
+        with self.assertRaises(ValueError):
+            applier.apply(change)
+
+        self.assertEqual(change.state, ChangeState.FAILED)
+
 
 class ChangeApplierRollbackTests(unittest.TestCase):
     """Gate-Tests fuer rollback (idempotent)."""
