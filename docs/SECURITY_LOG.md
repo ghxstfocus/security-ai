@@ -37,6 +37,34 @@ Sofort-Massnahmen-Kategorie:
 - Idempotenz: wiederholte Anwendung derselben Aenderung fuehrt
   nicht zu doppelten Effekten.
 
+## Phase 19 — Sofort-Massnahmen: Destruktivitaet, Berechtigung, Audit (2026-10-16)
+
+Detail-Eintrag zur Sofort-Massnahmen-Kategorie (Ergaenzung zum
+Phase-19-Eintrag oben).
+
+Destruktive Aktionen:
+
+- BLOCK: sperrt ein Geraet. Veraendert den Systemzustand.
+- ISOLATE: isoliert ein Geraet aus dem Netz. Veraendert den
+  Systemzustand.
+- Reine Lese-Aktionen (Status, Inventar, Audit-Ansicht) sind
+  nicht destruktiv und bleiben ohne Sofort-Massnahme.
+
+Berechtigung:
+
+- Eigene Permission sofortmassnahme.execute.
+- RBAC im Service-Layer, nicht im UI. Das UI-Verstecken von
+  Aktionen ist kein Schutz.
+- Fehlende Berechtigung -> Abbruch (fail closed).
+
+Audit-Pflicht:
+
+- Jede Sofort-Massnahme erzeugt einen Audit-Eintrag
+  (kind=sofortmassnahme_executed) mit Akteur, Ziel, Aktion
+  und Ergebnis.
+- Audit-Fehler ist fail closed: der Service-Aufruf bricht ab,
+  kein stiller Durchlauf.
+
 ## Zweck
 
 - Nachvollziehbarkeit: WARUM ist der Code so?

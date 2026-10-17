@@ -36,6 +36,28 @@ Letzte abgeschlossene Bloecke:
 - PB-62 (alt): 2199-Zwischenstand dns_lookup
   IPv6-Feld (35e5178, 2026-10-13).
 
+## Phase 19 — ChangeApplier und Sofort-Massnahmen-Kategorie
+
+Status: ✅ abgeschlossen (U1-U5). Details in docs/ROADMAP.md,
+Begruendung in docs/DECISIONS.md Paragraph 30.
+
+Unterbloecke:
+
+- ✅ U1: ChangeApplier-Grundgeruest (harness/versioning/applier.py,
+  Backup/Restore, Idempotenz, Fail-closed).
+- ✅ U2: ChangeApplier-Integration in ChangeService
+  (change_deployed, change_rolled_back, Audit-Pflicht).
+- ✅ U3: Sofort-Massnahmen-Kategorie (BLOCK, ISOLATE als
+  destruktive Aktionen; Berechtigung + Audit-Pflicht).
+- ✅ U4: RBAC und Audit fuer Sofort-Massnahmen
+  (eigene Permission, Audit-Kind, fail closed).
+- ✅ U5: Tests und Doku-Nachzug (Unit-Tests, STATUS, ROADMAP,
+  DECISIONS, SECURITY_LOG).
+
+Verweis: ChangeApplier in harness/versioning/applier.py,
+Sofort-Massnahmen-Kategorie in docs/DECISIONS.md Paragraph 30,
+Sicherheitsentscheidungen in docs/SECURITY_LOG.md.
+
 ## Naechster Bau-Block
 
 Offen aus `docs/ROADMAP.md`:
