@@ -29,3 +29,6 @@ data/*.vacuum-*
 id_ed25519
 id_rsa
 id_ecdsa
+
+# W34a: Laufzeit-Verzeichnis der Werkstatt (W26/W27)
+.werkstatt/
