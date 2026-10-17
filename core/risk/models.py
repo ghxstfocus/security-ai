@@ -181,12 +181,51 @@ class RiskContext:
         return identifier in wl
 
 
+class ImmediateActionCategory(str, Enum):
+    """Sofort-Massnahme abgeleitet aus der RiskCategory."""
+    BLOCK = "BLOCK"
+    ISOLATE = "ISOLATE"
+    ALERT = "ALERT"
+    LOG_ONLY = "LOG_ONLY"
+
+    def __str__(self) -> str:  # pragma: no cover
+        return self.value
+
+
+_IMMEDIATE_ACTION_MAP: dict[RiskCategory, ImmediateActionCategory] = {
+    RiskCategory.CONFIRMED: ImmediateActionCategory.BLOCK,
+    RiskCategory.SECURITY_ALERT: ImmediateActionCategory.ISOLATE,
+    RiskCategory.SUSPICION: ImmediateActionCategory.ALERT,
+    RiskCategory.ANOMALY: ImmediateActionCategory.LOG_ONLY,
+    RiskCategory.EVENT: ImmediateActionCategory.LOG_ONLY,
+}
+
+
+def risk_level_to_immediate_action(
+    category: RiskCategory,
+) -> ImmediateActionCategory:
+    """
+    Bildet eine RiskCategory auf die Sofort-Massnahme ab.
+
+    Fail closed: unbekannte RiskCategory (kein Enum-Mitglied)
+    wirft ValueError, kein Default.
+    """
+    try:
+        return _IMMEDIATE_ACTION_MAP[category]
+    except KeyError:
+        raise ValueError(
+            f"unbekannte RiskCategory: {category!r}"
+        ) from None
+
+
 __all__ = [
     "DEFAULT_THRESHOLDS",
+    "ImmediateActionCategory",
     "RiskAssessment",
     "RiskCategory",
     "RiskContext",
     "RiskRuleError",
     "clamp_score",
+    "risk_level_to_immediate_action",
     "score_to_category",
 ]
