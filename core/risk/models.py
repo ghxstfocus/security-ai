@@ -219,6 +219,7 @@ class Finding:
     """
     id: str
     severity: str
+    category: RiskCategory | None = None
     actor: Actor | None = None
 
 
