@@ -8,6 +8,7 @@ Fail-closed: Import-Fehler muessen sofort sichtbar
 sein, kein stilles Fallback.
 """
 
-from .models import Change, ChangeApplier, ChangeState
+from .applier import ChangeApplier
+from .models import Change, ChangeState
 
 __all__ = ["Change", "ChangeApplier", "ChangeState"]

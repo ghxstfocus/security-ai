@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from pathlib import Path
 
 import pytest
 
-from core.changeapplier import Change, ChangeApplier, ChangeState
+from core.changeapplier import Change, ChangeState
 
 
 def test_paket_reexport() -> None:
@@ -21,7 +20,6 @@ def test_paket_reexport() -> None:
     # (drei Symbole re-exportiert), nicht die Reihenfolge.
     assert set(pkg.__all__) == {
         "ChangeApplier", "Change", "ChangeState"}
-    assert pkg.ChangeApplier is ChangeApplier
     assert pkg.Change is Change
     assert pkg.ChangeState is ChangeState
 
@@ -40,20 +38,6 @@ def test_change_default_state_ist_pending() -> None:
     change = Change(id="c1", target="config.yaml", payload={"a": 1})
     assert change.state is ChangeState.PENDING
     assert change.applied_at is None
-
-
-def test_changeapplier_instanziierbar(tmp_path: Path) -> None:
-    applier = ChangeApplier(tmp_path / "config.yaml")
-    assert applier.config_path == tmp_path / "config.yaml"
-
-
-def test_apply_und_rollback_signaturen(tmp_path: Path) -> None:
-    applier = ChangeApplier(tmp_path / "config.yaml")
-    change = Change(id="c1", target="config.yaml", payload={})
-    with pytest.raises(NotImplementedError):
-        applier.apply(change)
-    with pytest.raises(NotImplementedError):
-        applier.rollback(change)
 
 
 def test_gueltiger_uebergang_pending_nach_applied() -> None:

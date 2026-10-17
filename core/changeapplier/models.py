@@ -12,7 +12,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
 
 
 class ChangeState(Enum):
@@ -61,23 +60,3 @@ class Change:
                 f"{self.state.value} -> {new_state.value}"
             )
         self.state = new_state
-
-
-class ChangeApplier:
-    """Wendet Changes auf eine Konfigurationsdatei an.
-
-    Grundgeruest: keine Logik in dieser Runde.
-    """
-
-    def __init__(self, config_path: Path) -> None:
-        self.config_path = config_path
-
-    def apply(self, change: Change) -> None:
-        """Wendet einen Change an. Grundgeruest, keine Logik."""
-        raise NotImplementedError("ChangeApplier.apply ist noch nicht implementiert")
-
-    def rollback(self, change: Change) -> None:
-        """Rollt einen Change zurueck. Grundgeruest, keine Logik."""
-        raise NotImplementedError(
-            "ChangeApplier.rollback ist noch nicht implementiert"
-        )
