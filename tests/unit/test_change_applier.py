@@ -156,6 +156,38 @@ class ChangeModelTests(unittest.TestCase):
 
 
 
+class ChangeApplierAuditAppliedTests(unittest.TestCase):
+    def setUp(self) -> None:
+        from core.changeapplier.applier import (
+            ChangeApplier as CoreChangeApplier,
+        )
+        self._CoreChangeApplier = CoreChangeApplier
+        self._tmp = tempfile.TemporaryDirectory()
+        self.tmp = Path(self._tmp.name)
+        self.cfg = self.tmp / "cfg.yaml"
+        self.cfg.write_text("key: value\n")
+        self.backup_dir = self.tmp / "backups"
+        self.backup_dir.mkdir()
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def _make_applier(self, writer):
+        return self._CoreChangeApplier(
+            config_path=self.cfg,
+            backup_dir=self.backup_dir,
+            audit_writer=writer,
+        )
+
+    def _make_change(self):
+        return Change(id="CHG-1", target=str(self.cfg))
+
+    def test_apply_ohne_audit_writer_kein_fehler(self):
+        applier = self._make_applier(None)
+        change = self._make_change()
+        applier.apply(change)
+        self.assertFalse((self.tmp / "audit-logs").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
