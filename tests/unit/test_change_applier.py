@@ -9,13 +9,16 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest import mock
 
 from apps.security_ai.orchestrator import SecurityAI
+from core.changeapplier.models import Change, ChangeState
 from core.changes.models import ChangeStatus, ChangeType
 from core.changes.repository import ChangeRepository
 from core.inventory.repository import connect
+from harness.audit.writer import AuditWriter
 from harness.versioning.applier import ChangeApplier
 
 
@@ -91,6 +94,43 @@ class OrchestratorCreateChangeTests(unittest.TestCase):
                     entry["details"]["change_id"], cr.change_id)
                 self.assertEqual(entry["details"]["type"],
                                  "policy_change")
+
+
+class ChangeModelTests(unittest.TestCase):
+    def test_change_defaults_audit_writer_und_applied_at_none(self):
+        c = Change(id="CHG-1", target="policies/tools.yaml")
+        self.assertIsNone(c.audit_writer)
+        self.assertIsNone(c.applied_at)
+        self.assertEqual(c.state, ChangeState.PENDING)
+
+    def test_change_mit_gesetzten_feldern_roundtrip(self):
+        writer = AuditWriter(base_dir=tempfile.mkdtemp())
+        when = datetime(2026, 10, 16, 12, 0, 0,
+                        tzinfo=UTC)
+        c = Change(
+            id="CHG-2",
+            target="policies/tools.yaml",
+            audit_writer=writer,
+            applied_at=when,
+        )
+        self.assertIs(c.audit_writer, writer)
+        self.assertEqual(c.applied_at, when)
+
+    def test_change_state_hat_genau_vier_werte(self):
+        self.assertEqual(
+            {m.name for m in ChangeState},
+            {"PENDING", "APPLIED", "ROLLED_BACK", "FAILED"},
+        )
+        self.assertEqual(len(list(ChangeState)), 4)
+
+    def test_change_state_per_name_abrufbar(self):
+        self.assertIs(ChangeState["PENDING"], ChangeState.PENDING)
+        self.assertIs(ChangeState["APPLIED"], ChangeState.APPLIED)
+        self.assertIs(
+            ChangeState["ROLLED_BACK"], ChangeState.ROLLED_BACK)
+        self.assertIs(ChangeState["FAILED"], ChangeState.FAILED)
+
+
 
 
 if __name__ == "__main__":

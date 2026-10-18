@@ -13,6 +13,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
+from harness.audit.writer import AuditWriter
+
 
 class ChangeState(Enum):
     """Zustand eines Changes."""
@@ -46,6 +48,7 @@ class Change:
     target: str
     payload: dict = field(default_factory=dict)
     state: ChangeState = ChangeState.PENDING
+    audit_writer: AuditWriter | None = None
     applied_at: datetime | None = None
 
     def transition_to(self, new_state: ChangeState) -> None:
