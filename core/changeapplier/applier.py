@@ -86,8 +86,15 @@ class ChangeApplier:
 
             if self._audit_writer is not None:
                 self._audit_writer.log(
-                    status=ChangeState.APPLIED,
-                    change_id=change.id,
+                    agent="security_ai",
+                    tool="changeapplier",
+                    policy_result="ALLOWED",
+                    permission_level=0,
+                    execution_status="OK",
+                    details={
+                        "change_id": change.id,
+                        "status": ChangeState.APPLIED.value,
+                    },
                 )
         except yaml.YAMLError as exc:
             # U2a3: yaml.YAMLError ist keine ValueError-
