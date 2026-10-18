@@ -96,6 +96,30 @@ class OrchestratorCreateChangeTests(unittest.TestCase):
                                  "policy_change")
 
 
+class ChangeApplierInitTests(unittest.TestCase):
+    def test_init_default_audit_writer_none(self):
+        from core.changeapplier.applier import (
+            ChangeApplier as CoreChangeApplier,
+        )
+        a = CoreChangeApplier(
+            config_path=Path("cfg.yaml"),
+            backup_dir=Path("backups"),
+        )
+        self.assertIsNone(a._audit_writer)
+
+    def test_init_speichert_audit_writer(self):
+        from core.changeapplier.applier import (
+            ChangeApplier as CoreChangeApplier,
+        )
+        writer = AuditWriter(base_dir=tempfile.mkdtemp())
+        a = CoreChangeApplier(
+            config_path=Path("cfg.yaml"),
+            backup_dir=Path("backups"),
+            audit_writer=writer,
+        )
+        self.assertIs(a._audit_writer, writer)
+
+
 class ChangeModelTests(unittest.TestCase):
     def test_change_defaults_audit_writer_und_applied_at_none(self):
         c = Change(id="CHG-1", target="policies/tools.yaml")

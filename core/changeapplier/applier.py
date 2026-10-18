@@ -17,11 +17,14 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import yaml
 
 from .models import Change, ChangeState
+
+if TYPE_CHECKING:
+    from harness.audit.writer import AuditWriter
 
 
 def _merge(base: Any, overlay: Any) -> Any:
@@ -44,9 +47,15 @@ def _merge(base: Any, overlay: Any) -> Any:
 class ChangeApplier:
     """Wendet Changes auf eine Konfigurationsdatei an."""
 
-    def __init__(self, config_path: Path, backup_dir: Path) -> None:
+    def __init__(
+        self,
+        config_path: Path,
+        backup_dir: Path,
+        audit_writer: AuditWriter | None = None,
+    ) -> None:
         self.config_path = config_path
         self.backup_dir = backup_dir
+        self._audit_writer = audit_writer
 
     def apply(self, change: Change) -> None:
         """Wendet einen Change an.
