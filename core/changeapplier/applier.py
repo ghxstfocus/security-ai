@@ -83,6 +83,12 @@ class ChangeApplier:
 
             with self.config_path.open("w", encoding="utf-8") as handle:
                 yaml.safe_dump(merged, handle, sort_keys=False)
+
+            if self._audit_writer is not None:
+                self._audit_writer.log(
+                    status=ChangeState.APPLIED,
+                    change_id=change.id,
+                )
         except yaml.YAMLError as exc:
             # U2a3: yaml.YAMLError ist keine ValueError-
             # Subklasse. Aufrufer (und Test) erwarten
