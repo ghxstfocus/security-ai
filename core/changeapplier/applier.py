@@ -102,11 +102,37 @@ class ChangeApplier:
             # aber ValueError als einheitliche Exception
             # fuer ungueltige Eingaben. Deshalb wrappen.
             change.state = ChangeState.FAILED
+            if self._audit_writer is not None:
+                self._audit_writer.log(
+                    agent="security_ai",
+                    tool="changeapplier",
+                    policy_result="ALLOWED",
+                    permission_level=0,
+                    execution_status="FAILED",
+                    details={
+                        "change_id": change.id,
+                        "status": ChangeState.FAILED.value,
+                    },
+                )
+            self.rollback(change)
             raise ValueError(
                 f"YAML-Parse-Fehler in {self.config_path}: "
                 f"{exc}") from exc
         except Exception:
             change.state = ChangeState.FAILED
+            if self._audit_writer is not None:
+                self._audit_writer.log(
+                    agent="security_ai",
+                    tool="changeapplier",
+                    policy_result="ALLOWED",
+                    permission_level=0,
+                    execution_status="FAILED",
+                    details={
+                        "change_id": change.id,
+                        "status": ChangeState.FAILED.value,
+                    },
+                )
+            self.rollback(change)
             raise
 
     def _backup(self, change: Change) -> Path:
