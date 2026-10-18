@@ -154,3 +154,15 @@ class ChangeApplier:
         if not backup_path.exists():
             return
         shutil.copy2(backup_path, self.config_path)
+        if self._audit_writer is not None:
+            self._audit_writer.log(
+                agent="security_ai",
+                tool="changeapplier",
+                policy_result="ALLOWED",
+                permission_level=0,
+                execution_status="OK",
+                details={
+                    "change_id": change.id,
+                    "status": ChangeState.ROLLED_BACK.value,
+                },
+            )
