@@ -10,3 +10,5 @@ pro Tool (z. B. tools/nmap_scan.py).
 
 Zentralisierung spaeter.
 """
+
+__all__: list[str] = []

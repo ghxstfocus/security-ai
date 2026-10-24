@@ -18,3 +18,5 @@ no_path_traversal, no_null_bytes).
 
 Geplant fuer Phase 4.
 """
+
+__all__: list[str] = []
