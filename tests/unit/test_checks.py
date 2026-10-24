@@ -201,3 +201,8 @@ def test_check_port_ping_invalid_bounds() -> None:
     assert check_port_ping(80, 1, False) is False
     assert check_port_ping(80, "1", 100) is False
     assert check_port_ping(80, 1, None) is False
+
+
+def _dummy_f841():
+    unused_var = 42
+
