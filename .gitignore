@@ -31,4 +31,5 @@ id_rsa
 id_ecdsa
 
 # W34a: Laufzeit-Verzeichnis der Werkstatt (W26/W27)
-.werkstatt/
+.werkstatt/*
+!.werkstatt/verify.json
