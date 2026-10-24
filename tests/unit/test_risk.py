@@ -330,5 +330,5 @@ if __name__ == "__main__":
 
 
 def _dummy_f841_risk():
-    x = 99
+    return 99
 

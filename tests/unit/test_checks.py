@@ -204,5 +204,5 @@ def test_check_port_ping_invalid_bounds() -> None:
 
 
 def _dummy_f841():
-    unused_var = 42
+    _unused_var = 42
 

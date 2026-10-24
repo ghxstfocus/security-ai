@@ -134,3 +134,13 @@
 - **Status:** phase_ende
 - **Info:** rc=0 tasks_ok=1/1
 
+## 2026-10-24T23:16:18+00:00 -- ruff-Fehler in tests/unit/test_checks.py beheben
+- **Status:** done
+
+## 2026-10-24T23:16:20+00:00 -- ruff-Fehler in tests/unit/test_risk.py beheben
+- **Status:** done
+
+## 2026-10-24T23:16:38+00:00 -- Phase abgeschlossen: security-ai
+- **Status:** phase_ende
+- **Info:** rc=0 tasks_ok=2/2
+
