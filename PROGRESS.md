@@ -43,3 +43,10 @@
 - **Status:** phase_ende
 - **Info:** rc=0 tasks_ok=3/3
 
+## 2026-10-24T12:42:46+00:00 -- Bestehende Funktionen in core/checks/__init__.py pruefen
+- **Status:** done
+
+## 2026-10-24T12:43:57+00:00 -- check_port_count implementieren
+- **Status:** failed
+- **Info:** post_build_verify_failed
+

@@ -43,4 +43,25 @@ def check_port_list(
     ]
 
 
-__all__ = ["check_port", "check_port_list", "check_port_range"]
+def check_port_count(
+    ports: object, min_port: object, max_port: object
+) -> int:
+    """Gibt die Anzahl der Ports aus ports zurueck, fuer die check_port_range True liefert.
+
+    Ist ports keine Liste oder kein Tupel, wird 0 zurueckgegeben.
+    """
+    if not isinstance(ports, (list, tuple)):
+        return 0
+    return sum(
+        1
+        for port in ports
+        if check_port_range(port, min_port, max_port)
+    )
+
+
+__all__ = [
+    "check_port",
+    "check_port_count",
+    "check_port_list",
+    "check_port_range",
+]
