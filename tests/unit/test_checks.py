@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import pytest
 
-from core.checks import check_port, check_port_count, check_port_list, check_port_range
+from core.checks import check_port, check_port_count, check_port_list, check_port_ping, check_port_range, check_port_sum
 
 
 @pytest.mark.parametrize("port", [1, 2, 80, 443, 65534, 65535])
@@ -130,3 +130,67 @@ def test_check_port_count_invalid_bounds() -> None:
 def test_check_port_count_non_list_input() -> None:
     assert check_port_count("80", 1, 100) == 0
     assert check_port_count(None, 1, 100) == 0
+
+
+def test_check_port_sum_empty() -> None:
+    assert check_port_sum([], 1, 100) == 0
+
+
+def test_check_port_sum_all_valid() -> None:
+    assert check_port_sum([1, 50, 100], 1, 100) == 151
+
+
+def test_check_port_sum_mixed() -> None:
+    assert check_port_sum([0, 1, 50, 101, 100], 1, 100) == 151
+
+
+def test_check_port_sum_boundaries() -> None:
+    assert check_port_sum([1, 100], 1, 100) == 101
+    assert check_port_sum([0, 101], 1, 100) == 0
+
+
+def test_check_port_sum_invalid_entries() -> None:
+    assert check_port_sum([True, "80", None, 80.0, 80], 1, 100) == 80
+
+
+def test_check_port_sum_invalid_bounds() -> None:
+    assert check_port_sum([80], True, 100) == 0
+    assert check_port_sum([80], 1, False) == 0
+    assert check_port_sum([80], "1", 100) == 0
+    assert check_port_sum([80], 1, None) == 0
+
+
+def test_check_port_sum_non_list_input() -> None:
+    assert check_port_sum("80", 1, 100) == 0
+    assert check_port_sum(None, 1, 100) == 0
+
+
+def test_check_port_ping_true_cases() -> None:
+    assert check_port_ping(80, 1, 100) is True
+    assert check_port_ping(443, 1, 1000) is True
+    assert check_port_ping(8080, 1, 10000) is True
+
+
+def test_check_port_ping_outside_range() -> None:
+    assert check_port_ping(80, 81, 100) is False
+    assert check_port_ping(443, 1, 442) is False
+    assert check_port_ping(8080, 1, 8079) is False
+
+
+def test_check_port_ping_not_in_list() -> None:
+    assert check_port_ping(22, 1, 100) is False
+    assert check_port_ping(3306, 1, 10000) is False
+
+
+def test_check_port_ping_boundaries() -> None:
+    assert check_port_ping(80, 80, 80) is True
+    assert check_port_ping(443, 443, 443) is True
+    assert check_port_ping(8080, 8080, 8080) is True
+    assert check_port_ping(80, 81, 100) is False
+
+
+def test_check_port_ping_invalid_bounds() -> None:
+    assert check_port_ping(80, True, 100) is False
+    assert check_port_ping(80, 1, False) is False
+    assert check_port_ping(80, "1", 100) is False
+    assert check_port_ping(80, 1, None) is False

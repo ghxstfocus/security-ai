@@ -59,9 +59,36 @@ def check_port_count(
     )
 
 
+def check_port_sum(
+    ports: object, min_port: object, max_port: object
+) -> int:
+    """Gibt die Summe der Ports aus ports zurueck, fuer die check_port_range True liefert.
+
+    Ist ports keine Liste oder kein Tupel, wird 0 zurueckgegeben.
+    """
+    if not isinstance(ports, (list, tuple)):
+        return 0
+    return sum(
+        port
+        for port in ports
+        if check_port_range(port, min_port, max_port)
+    )
+
+
+def check_port_ping(
+    port: object, min_port: object, max_port: object
+) -> bool:
+    """Gibt True zurueck, wenn check_port_range True liefert und port in [80, 443, 8080] liegt."""
+    if not check_port_range(port, min_port, max_port):
+        return False
+    return port in (80, 443, 8080)
+
+
 __all__ = [
     "check_port",
     "check_port_count",
     "check_port_list",
+    "check_port_ping",
     "check_port_range",
+    "check_port_sum",
 ]
