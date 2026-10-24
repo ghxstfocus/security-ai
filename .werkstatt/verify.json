@@ -11,6 +11,15 @@
       "phase": "post_build"
     },
     {
+      "id": "ruff_changed",
+      "command": [
+        "ruff",
+        "check",
+        "{changed_py_files}"
+      ],
+      "phase": "post_build"
+    },
+    {
       "id": "pytest_changed",
       "command": [
         "python3",
