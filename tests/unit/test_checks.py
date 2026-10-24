@@ -6,7 +6,14 @@ from __future__ import annotations
 
 import pytest
 
-from core.checks import check_port, check_port_count, check_port_list, check_port_ping, check_port_range, check_port_sum
+from core.checks import (
+    check_port,
+    check_port_count,
+    check_port_list,
+    check_port_ping,
+    check_port_range,
+    check_port_sum,
+)
 
 
 @pytest.mark.parametrize("port", [1, 2, 80, 443, 65534, 65535])
