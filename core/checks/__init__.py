@@ -26,4 +26,21 @@ def check_port_range(port: object, min_port: object, max_port: object) -> bool:
     return min_port <= port <= max_port
 
 
-__all__ = ["check_port", "check_port_range"]
+def check_port_list(
+    ports: object, min_port: object, max_port: object
+) -> list[int]:
+    """Gibt die Ports aus ports zurueck, fuer die check_port_range True liefert.
+
+    Reihenfolge der Eingabeliste bleibt erhalten. Ist ports keine Liste
+    oder kein Tupel, wird eine leere Liste zurueckgegeben.
+    """
+    if not isinstance(ports, (list, tuple)):
+        return []
+    return [
+        port
+        for port in ports
+        if check_port_range(port, min_port, max_port)
+    ]
+
+
+__all__ = ["check_port", "check_port_list", "check_port_range"]

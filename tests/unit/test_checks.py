@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import pytest
 
-from core.checks import check_port, check_port_range
+from core.checks import check_port, check_port_list, check_port_range
 
 
 @pytest.mark.parametrize("port", [1, 2, 80, 443, 65534, 65535])
@@ -57,3 +57,44 @@ def test_check_port_range_invalid_bounds() -> None:
     assert check_port_range(80, 1, False) is False
     assert check_port_range(80, "1", 100) is False
     assert check_port_range(80, 1, None) is False
+
+
+def test_check_port_list_empty() -> None:
+    assert check_port_list([], 1, 100) == []
+
+
+def test_check_port_list_all_valid() -> None:
+    assert check_port_list([1, 50, 100], 1, 100) == [1, 50, 100]
+
+
+def test_check_port_list_all_invalid() -> None:
+    assert check_port_list([0, 101, 65536], 1, 100) == []
+
+
+def test_check_port_list_mixed() -> None:
+    assert check_port_list([0, 1, 50, 101, 100], 1, 100) == [1, 50, 100]
+
+
+def test_check_port_list_bounds() -> None:
+    assert check_port_list([1, 100], 1, 100) == [1, 100]
+    assert check_port_list([0, 101], 1, 100) == []
+
+
+def test_check_port_list_preserves_order() -> None:
+    assert check_port_list([100, 1, 50], 1, 100) == [100, 1, 50]
+
+
+def test_check_port_list_invalid_entries() -> None:
+    assert check_port_list([True, "80", None, 80.0, 80], 1, 100) == [80]
+
+
+def test_check_port_list_invalid_bounds() -> None:
+    assert check_port_list([80], True, 100) == []
+    assert check_port_list([80], 1, False) == []
+    assert check_port_list([80], "1", 100) == []
+    assert check_port_list([80], 1, None) == []
+
+
+def test_check_port_list_non_list_input() -> None:
+    assert check_port_list("80", 1, 100) == []
+    assert check_port_list(None, 1, 100) == []
