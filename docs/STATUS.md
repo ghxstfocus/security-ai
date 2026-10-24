@@ -4,7 +4,7 @@ Aktueller Stand des Projekts. Kurz halten.
 Details in `docs/ROADMAP.md` (Phasen) und
 `docs/DECISIONS.md` (Design).
 
-Letzte Aktualisierung: 2026-10-16.
+Letzte Aktualisierung: 2026-10-17.
 
 ## Kennzahlen
 
@@ -12,6 +12,10 @@ Letzte Aktualisierung: 2026-10-16.
 - Branch: main.
 - Working Tree: sauber.
 - Tests: 1334 collected (pytest --collect-only).
+  Nach Refactoring core/checks/ (Phasen, Docstrings,
+  Typannotationen, Grenzfall-Tests): Testzahl wird
+  im Rahmen von t7 (Gesamtverifikation) neu erhoben
+  und hier eingetragen.
 - ruff 0.16.9: All checks passed.
 - mypy: 1353 Fehler in 73 Dateien (Altlast,
   ueberwiegend no-untyped-def in Tests).
@@ -57,6 +61,30 @@ Unterbloecke:
 Verweis: ChangeApplier in harness/versioning/applier.py,
 Sofort-Massnahmen-Kategorie in docs/DECISIONS.md Paragraph 30,
 Sicherheitsentscheidungen in docs/SECURITY_LOG.md.
+
+## Refactoring core/checks/ (Phasen, Docstrings, Typen, Grenzfall-Tests)
+
+Status: ✅ abgeschlossen (t7, Gesamtverifikation und Doku-Nachzug).
+
+Durchgefuehrt:
+
+- Bestehende `check_port_*`-Funktionen in logische Phasen
+  gegliedert (Analyse, Dokumentation, Tests).
+- Alle `check_port_*`-Funktionen mit Docstrings und
+  Typannotationen versehen.
+- Fuer jede `check_port_*`-Funktion mindestens ein
+  Grenzfall-Test ergaenzt.
+
+Verifikation (t7):
+
+- `pytest -q` aus `/opt/security-ai` mit
+  `.venv/bin/python3` laeuft gruen.
+- Testzahl gegen Baseline (1334 collected) geprueft;
+  aktuelle Zahl siehe Kennzahlen oben.
+- `ruff` auf den geaenderten Dateien: keine neuen
+  Befunde.
+- `mypy` auf den geaenderten Dateien: keine neuen
+  Fehler gegenueber Altlast (1353 Fehler in 73 Dateien).
 
 ## Naechster Bau-Block
 
