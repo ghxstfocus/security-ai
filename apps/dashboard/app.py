@@ -101,9 +101,13 @@ def create_app(
 
     if check_audit:
         expected_owner = pwd.getpwuid(os.getuid()).pw_name
+        # Fail closed: AuditDirInconsistentError propagiert
+        # und verhindert den App-Start (Punkt 14).
         check_audit_logs(audit_base_dir, expected_owner)
 
     if check_schema:
+        # Fail closed: SchemaVersionError propagiert und
+        # verhindert den App-Start (Punkt 15).
         _conn = connect(app.config["DB_PATH"])
         try:
             check_schema_version(

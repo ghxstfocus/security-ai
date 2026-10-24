@@ -169,9 +169,14 @@ class AuditWriter:
     Thread-safe. Append-only. Fail closed.
     """
 
-    def __init__(self, base_dir: str | os.PathLike[str] = "audit-logs") -> None:
+    def __init__(
+        self,
+        base_dir: str | os.PathLike[str] = "audit-logs",
+        expected_owner: str | None = None,
+    ) -> None:
         self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)
+        self.expected_owner = expected_owner
         self._lock = threading.Lock()
 
     def _file_for(self, when: datetime) -> Path:
@@ -221,6 +226,22 @@ class AuditWriter:
                 )
                 try:
                     os.chmod(path, 0o640)
+                    if self.expected_owner is not None:
+                        st = os.fstat(fd)
+                        try:
+                            owner = pwd.getpwuid(st.st_uid).pw_name
+                        except KeyError as exc:
+                            raise AuditWriteError(
+                                f"Unbekannter UID {st.st_uid} fuer "
+                                f"{path.name}. Erwartet: "
+                                f"{self.expected_owner}."
+                            ) from exc
+                        if owner != self.expected_owner:
+                            raise AuditWriteError(
+                                f"Owner {owner} (UID {st.st_uid}) fuer "
+                                f"{path.name}. Erwartet: "
+                                f"{self.expected_owner}."
+                            )
                     with os.fdopen(fd, "a", encoding="utf-8") as fh:
                         fh.write(line)
                         fh.flush()
