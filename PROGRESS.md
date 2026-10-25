@@ -166,3 +166,22 @@
 - **Status:** phase_ende
 - **Info:** rc=0 tasks_ok=6/6
 
+## 2026-10-25T16:36:04+00:00 -- Fehlerklassen und Ergebnis-Typen
+- **Status:** done
+
+## 2026-10-25T16:36:07+00:00 -- Konstanten und __init__
+- **Status:** done
+
+## 2026-10-25T16:36:16+00:00 -- apply-Methode implementieren
+- **Status:** done
+
+## 2026-10-25T16:36:25+00:00 -- rollback-Methode implementieren
+- **Status:** done
+
+## 2026-10-25T16:36:39+00:00 -- Paket-Exporte ergaenzen
+- **Status:** done
+
+## 2026-10-25T16:41:21+00:00 -- Phase abgeschlossen: security-ai
+- **Status:** phase_ende
+- **Info:** rc=0 tasks_ok=5/6
+
