@@ -2,19 +2,15 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """
-Change-Applier (Stub).
+Change-Applier.
 
-Aufgabe (spaeter): einen APPROVED ChangeRequest anwenden,
-Ergebnis als DEPLOYED markieren, bei Bedarf Rollback ausfuehren.
+Wendet einen APPROVED ChangeRequest an (apply), markiert
+das Ergebnis als DEPLOYED und fuehrt bei Bedarf ein Rollback
+aus (rollback).
 
-Aktueller Stand: STUB. apply() und rollback() werfen
-NotImplementedError. Damit ist der Aufrufpfad klar, die
-Implementierung folgt in einer spaeteren Phase.
-
-Bewusste Entscheidung:
-- Kein "silent no-op". Fail closed: wer anwendet, muss es
-  wissen. Sonst koennte ein APPROVED Change als DEPLOYED
-  markiert werden, ohne tatsaechlich angewendet worden zu sein.
+Implementiert in Commit 4e244ff (RERUN-80). Fail-closed-
+Semantik: unbekannter Typ, fehlender Handler oder Audit-
+Fehler fuehren zum Abbruch, kein "silent no-op".
 """
 from __future__ import annotations
 
