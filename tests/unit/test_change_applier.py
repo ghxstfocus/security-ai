@@ -23,16 +23,6 @@ from harness.versioning.applier import ChangeApplier
 
 
 class ApplierStubTests(unittest.TestCase):
-    def test_apply_wirft_notimplemented(self):
-        a = ChangeApplier()
-        with self.assertRaises(NotImplementedError):
-            a.apply(mock.Mock())
-
-    def test_rollback_wirft_notimplemented(self):
-        a = ChangeApplier()
-        with self.assertRaises(NotImplementedError):
-            a.rollback(mock.Mock())
-
     def test_konstruktor_nimmt_deps(self):
         a = ChangeApplier(audit="x", repo="y")
         self.assertEqual(a._deps, {"audit": "x", "repo": "y"})
