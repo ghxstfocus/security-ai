@@ -56,7 +56,7 @@ tests/integration/test_nmap_real.py (skipif kein nmap).
 data/migrations/0003_approvals.sql, 0004_change_requests.sql.
 core/approval/, core/changes/.
 scripts/approvals_cli.py, scripts/changes_cli.py.
-harness/versioning/applier.py (Stub).
+harness/versioning/applier.py (Stub — spaeter in Phase 19 ersetzt).
 harness/approval/queue.py, AgentLoop mit approval_queue.
 _notify_approval (Telegram, fail open).
 
