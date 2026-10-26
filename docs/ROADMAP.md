@@ -433,25 +433,6 @@ Unterbloecke:
 Details in docs/DECISIONS.md Paragraph 24 und
 docs/SECURITY_LOG.md.
 
-## Phase 19 — ChangeApplier und Sofort-Massnahmen-Kategorie  ✅
-
-ChangeApplier (harness/versioning/applier.py) mit Backup/Restore,
-Idempotenz und Fail-closed-Semantik. Integration in ChangeService
-(change_deployed, change_rolled_back). Sofort-Massnahmen-Kategorie
-(BLOCK, ISOLATE) mit eigener Permission und Audit-Pflicht.
-
-Unterbloecke:
-
-- ✅ U1: ChangeApplier-Grundgeruest (Backup/Restore, Idempotenz,
-  Fail-closed).
-- ✅ U2: ChangeApplier-Integration in ChangeService.
-- ✅ U3: Sofort-Massnahmen-Kategorie (BLOCK, ISOLATE).
-- ✅ U4: RBAC und Audit fuer Sofort-Massnahmen.
-- ✅ U5: Tests und Doku-Nachzug.
-
-Details in docs/DECISIONS.md Paragraph 30 und
-docs/SECURITY_LOG.md.
-
 ## Phase 3.8 — Host-Scanner / Netzwerk-Discovery  💡
 
 Ziel: das gesamte Heimnetz beobachten, nicht nur den
