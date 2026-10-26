@@ -4,18 +4,14 @@ Aktueller Stand des Projekts. Kurz halten.
 Details in `docs/ROADMAP.md` (Phasen) und
 `docs/DECISIONS.md` (Design).
 
-Letzte Aktualisierung: 2026-10-17.
+Letzte Aktualisierung: 2026-10-26.
 
 ## Kennzahlen
 
 - HEAD: c9142a7 (origin/main synchron).
 - Branch: main.
 - Working Tree: sauber.
-- Tests: 1334 collected (pytest --collect-only).
-  Nach Refactoring core/checks/ (Phasen, Docstrings,
-  Typannotationen, Grenzfall-Tests): Testzahl wird
-  im Rahmen von t7 (Gesamtverifikation) neu erhoben
-  und hier eingetragen.
+- Tests: siehe aktuelle pytest-Ausgabe (mind. 1334 collected).
 - ruff 0.16.9: All checks passed.
 - mypy: 1353 Fehler in 73 Dateien (Altlast,
   ueberwiegend no-untyped-def in Tests).
@@ -39,6 +35,14 @@ Letzte abgeschlossene Bloecke:
   (3bb5917, 2026-10-14).
 - PB-62 (alt): 2199-Zwischenstand dns_lookup
   IPv6-Feld (35e5178, 2026-10-13).
+
+## ChangeApplier
+
+Status: ✅ implementiert (`harness/versioning/applier.py`, 277 Zeilen, RERUN-80).
+- `apply()` und `rollback()` sind implementiert (kein Stub mehr).
+- Fail-closed-Semantik: unbekannter Typ, fehlender Handler oder Audit-Fehler -> `ApplierError`.
+- Idempotenz: zweiter `apply()` auf DEPLOYED -> `idempotent_skip=True`.
+- Backup: `changes/backups/<change_id>.json`.
 
 ## Phase 19 — ChangeApplier und Sofort-Massnahmen-Kategorie
 
@@ -92,8 +96,6 @@ Offen aus `docs/ROADMAP.md`:
 
 - Host-Scanner (Phase 3.8).
 - Endpoint-Watcher.
-- Sofort-Massnahmen-Kategorie.
-- ChangeApplier-Implementierung.
 - Chat als Aktions-Schnittstelle.
 - Token-Mechanik.
 - Anbindungs-Registry.
@@ -152,27 +154,3 @@ Offen aus `docs/ROADMAP.md`:
 
 U1-U12 done. U13 (Doku-Nachzug) folgt in diesem Block. Details in docs/ROADMAP.md.
 
-## Phase 19 — ChangeApplier und Sofort-Massnahmen-Kategorie
-
-Status: ✅ abgeschlossen (U1-U5). Details in docs/ROADMAP.md,
-Begruendung in docs/DECISIONS.md Paragraph 24.
-
-Unterbloecke:
-
-- ✅ U1: ChangeApplier-Grundgeruest (harness/versioning/applier.py,
-  Backup/Restore, Idempotenz, Fail-closed).
-- ✅ U2: ChangeApplier-Integration in ChangeService
-  (change_deployed, change_rolled_back, Audit-Pflicht).
-- ✅ U3: Sofort-Massnahmen-Kategorie (BLOCK, ISOLATE als
-  destruktive Aktionen; Berechtigung + Audit-Pflicht).
-- ✅ U4: RBAC und Audit fuer Sofort-Massnahmen
-  (eigene Permission, Audit-Kind, fail closed).
-- ✅ U5: Tests und Doku-Nachzug (Unit-Tests, STATUS, ROADMAP,
-  DECISIONS, SECURITY_LOG).
-
-Verweis: ChangeApplier in harness/versioning/applier.py,
-Sofort-Massnahmen-Kategorie in docs/DECISIONS.md Paragraph 24,
-Sicherheitsentscheidungen in docs/SECURITY_LOG.md.
-
-- `docs/ARCHITECTURE.md` — Architektur im Detail.
-- `CHANGELOG.md` — chronologische Aenderungen.
