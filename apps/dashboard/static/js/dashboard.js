@@ -33,6 +33,13 @@
                 return null;
             }
             return r.json();
+        }).then(function (data) {
+            if (data) {
+                updateFast(data);
+                updateSlow(data);
+                renderTimeline(data.timeline?.entries ?? []);
+            }
+            return data;
         }).catch(function () {
             return null;
         });
@@ -42,6 +49,44 @@
         while (node.firstChild) {
             node.removeChild(node.firstChild);
         }
+    }
+
+    function renderTimeline(entries) {
+        var host = document.getElementById("timeline");
+        if (!host) {
+            return;
+        }
+        host.replaceChildren();
+        if (!Array.isArray(entries) || entries.length === 0) {
+            var empty = document.createElement("p");
+            empty.textContent = "Keine Eintraege.";
+            host.appendChild(empty);
+            return;
+        }
+        var list = document.createElement("ul");
+        list.className = "timeline-list";
+        entries.forEach(function (entry) {
+            var item = document.createElement("li");
+            item.className = "timeline-item";
+            var ts = document.createElement("span");
+            ts.className = "timeline-ts";
+            ts.textContent = String(entry.timestamp || "");
+            var kind = document.createElement("span");
+            kind.className = "timeline-kind";
+            kind.textContent = String(entry.kind || "");
+            var agent = document.createElement("span");
+            agent.className = "timeline-agent";
+            agent.textContent = String(entry.agent || "");
+            var action = document.createElement("span");
+            action.className = "timeline-action";
+            action.textContent = String(entry.action || "");
+            item.appendChild(ts);
+            item.appendChild(kind);
+            item.appendChild(agent);
+            item.appendChild(action);
+            list.appendChild(item);
+        });
+        host.appendChild(list);
     }
 
     function netBadgeClass(net) {
@@ -207,7 +252,9 @@
     }
 
     function tick(fn) {
-        fetchState().then(fn);
+        fetchState().then(function (data) {
+            fn(data);
+        });
     }
 
     function init() {
