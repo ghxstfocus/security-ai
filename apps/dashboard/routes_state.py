@@ -180,7 +180,10 @@ def _section_recent_changes() -> list | None:
 
 
 def _timeline_get(entry: object, key: str) -> object:
-    """Mapping- oder getattr-Zugriff fuer Timeline-Eintraege."""
+    """Mapping- oder getattr-Zugriff fuer Timeline-Eintraege.
+
+    M-488-Test
+    """
     if isinstance(entry, Mapping):
         return entry.get(key)
     return getattr(entry, key, None)
