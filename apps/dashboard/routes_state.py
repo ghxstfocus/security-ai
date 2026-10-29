@@ -187,7 +187,10 @@ def _timeline_get(entry: object, key: str) -> object:
 
 
 def _timeline_str(value: object, max_len: int) -> str:
-    """None -> "", sonst str() und auf max_len kuerzen."""
+    """None -> "", sonst str() und auf max_len kuerzen.
+
+    M-487-Test
+    """
     if value is None:
         return ""
     return str(value)[:max_len]
