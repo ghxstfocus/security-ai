@@ -339,6 +339,11 @@ def _section_timeline_entries(
         })
         if len(entries) >= _TIMELINE_LIMIT:
             break
+    entries = sorted(
+        entries,
+        key=lambda e: float(e["score"]) if isinstance(e.get("score"), (int, float)) else 0.0,
+        reverse=True,
+    )
     return entries
 
 
