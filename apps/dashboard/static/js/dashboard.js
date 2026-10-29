@@ -37,7 +37,12 @@
             if (data) {
                 updateFast(data);
                 updateSlow(data);
-                renderTimeline(data.timeline?.entries ?? []);
+                // GOLD: timeline kann Array (neu) oder
+                // {entries: [...]} (alt) sein.
+                var _entries = Array.isArray(data.timeline)
+                    ? data.timeline
+                    : (data.timeline && data.timeline.entries) || [];
+                renderTimeline(_entries);
             }
             return data;
         }).catch(function () {
@@ -68,9 +73,13 @@
         entries.forEach(function (entry) {
             var item = document.createElement("li");
             item.className = "timeline-item";
+            // GOLD: Backend liefert ts_display, ts_iso, kind, agent,
+            // action, score, audit_id, href. Nicht "timestamp".
             var ts = document.createElement("span");
             ts.className = "timeline-ts";
-            ts.textContent = String(entry.timestamp || "");
+            ts.textContent = String(
+                entry.ts_display || entry.ts_iso || entry.ts || "—"
+            );
             var kind = document.createElement("span");
             kind.className = "timeline-kind";
             kind.textContent = String(entry.kind || "");
@@ -79,11 +88,30 @@
             agent.textContent = String(entry.agent || "");
             var action = document.createElement("span");
             action.className = "timeline-action";
-            action.textContent = String(entry.action || "");
-            item.appendChild(ts);
-            item.appendChild(kind);
-            item.appendChild(agent);
-            item.appendChild(action);
+            var _score = entry.score;
+            action.textContent = String(
+                (entry.action || "") +
+                (_score !== null && _score !== undefined
+                    ? " (score=" + _score + ")" : "")
+            );
+            var href = entry.href || "";
+            var content = document.createDocumentFragment();
+            if (href) {
+                var link = document.createElement("a");
+                link.className = "timeline-link";
+                link.href = href;
+                link.textContent = ts.textContent + " · " +
+                    kind.textContent + " · " +
+                    agent.textContent + " · " +
+                    action.textContent;
+                content.appendChild(link);
+            } else {
+                content.appendChild(ts);
+                content.appendChild(kind);
+                content.appendChild(agent);
+                content.appendChild(action);
+            }
+            item.appendChild(content);
             list.appendChild(item);
         });
         host.appendChild(list);

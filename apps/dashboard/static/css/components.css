@@ -906,3 +906,90 @@ a.alert-device-identifier:hover {
 .timeline-action:hover {
     text-decoration: underline;
 }
+
+/* Timeline-Grid (Auflage 2013).
+   Zweizeiliges Grid: Zeitstempel links, Kind/Action rechts.
+   Kein Inline-Style, CSP style-src 'self' bleibt unberuehrt. */
+.timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-wrap: anywhere;
+}
+
+.timeline-item {
+    display: grid;
+    grid-template-columns: 18ch 1fr;
+    grid-template-areas: "ts kind" "ts action";
+    column-gap: 0.75rem;
+    row-gap: 0.125rem;
+    padding: 0.375rem 0.5rem;
+    border-left: 3px solid var(--color-border, #374151);
+    font-size: 0.875rem;
+}
+
+.timeline-item:hover {
+    background: var(--color-surface-hover, rgb(255 255 255 / 4%));
+}
+
+.timeline-item > * {
+    min-width: 0;
+}
+
+.timeline-ts {
+    grid-area: ts;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--color-text-muted, #9ca3af);
+    font-size: 0.8125rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.timeline-kind {
+    grid-area: kind;
+    display: inline-block;
+    padding: 0 0.4rem;
+    border-radius: 0.25rem;
+    background: var(--color-badge-bg, rgb(148 163 184 / 15%));
+    color: var(--color-text, #e5e7eb);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.timeline-agent {
+    color: var(--color-text-muted, #9ca3af);
+    font-size: 0.75rem;
+    margin-left: 0.4rem;
+}
+
+.timeline-action {
+    grid-area: action;
+    color: var(--color-text, #e5e7eb);
+    overflow-wrap: anywhere;
+}
+
+.timeline-action a,
+.timeline-item a {
+    color: var(--color-link, #60a5fa);
+    text-decoration: none;
+}
+
+.timeline-action a:hover,
+.timeline-action a:focus-visible,
+.timeline-item a:hover,
+.timeline-item a:focus-visible {
+    text-decoration: underline;
+}
+
+@media (max-width: 500px) {
+    .timeline-item {
+        grid-template-columns: 1fr;
+        grid-template-areas: "ts" "kind" "action";
+    }
+}
