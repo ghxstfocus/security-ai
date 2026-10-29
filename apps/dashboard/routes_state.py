@@ -55,7 +55,8 @@ from core.services.inventory_service import InventoryService
 
 logger = logging.getLogger(__name__)
 
-_TIMELINE_LIMIT = 15
+TIMELINE_LIMIT = 15
+_TIMELINE_LIMIT = TIMELINE_LIMIT
 _TIMELINE_TS_MAX = 40
 _TIMELINE_KIND_MAX = 100
 _TIMELINE_ACTOR_MAX = 100
@@ -192,7 +193,99 @@ def _timeline_str(value: object, max_len: int) -> str:
     return str(value)[:max_len]
 
 
-def _section_timeline(
+def _format_timeline_ts(value: object) -> str:
+    """ISO-8601-Timestamp fuer die Timeline formatieren.
+
+    - Nicht-String oder leer -> "-" (fail safe).
+    - "Z"-Suffix wird zu "+00:00" (UTC aus dem Audit-Log).
+    - Zeitzonenbehaftet -> nach UTC normalisiert.
+    - Naiv -> unveraendert formatiert.
+    - ValueError -> Rohwert auf 19 Zeichen gekuerzt.
+    """
+    if not isinstance(value, str) or not value:
+        return "-"
+    raw = value
+    if raw.endswith("Z"):
+        raw = raw[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(raw)
+    except ValueError:
+        return value[:19]
+    if parsed.tzinfo is not None:
+        parsed = parsed.astimezone(UTC)
+    return parsed.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _section_timeline(principal: object, checker: object) -> dict:
+    """Timeline-Sektion (audit.read). Fail closed, wirft nie.
+
+    - Ohne audit.read: {"available": False, "count": 0, "entries": []}.
+    - read_events(limit=TIMELINE_LIMIT) aus core.audit_reader.
+    - Last-Resort-Guard (noqa: BLE001): Audit-JSONL ist append-only und
+      von aussen schreibbar; eine einzelne defekte Zeile darf den
+      kompletten Dashboard-Poll nicht zerstoeren. Exception-Nachricht
+      und Pfad werden nicht in den Response uebernommen.
+    - Pro Event flaches dict: timestamp, actor, tool, kind, summary.
+      Rohe details (args_json, decision_reason) werden nicht durchgereicht.
+    - Reihenfolge bleibt wie von read_events geliefert.
+    """
+    empty = {"available": False, "count": 0, "entries": []}
+    try:
+        allowed = checker.has_permission(principal, "audit.read")
+    except (AttributeError, TypeError):
+        return empty
+    if not allowed:
+        return empty
+    try:
+        reader = AuditReaderService(
+            audit_writer=g.audit,
+            checker=g.access_checker,
+        )
+        raw = reader.list_recent_assessments(
+            principal, limit=TIMELINE_LIMIT,
+        )
+    except Exception:  # noqa: BLE001 - Last-Resort-Guard, siehe Docstring
+        logger.warning("timeline read_events failed")
+        return empty
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
+        return empty
+    entries: list[dict] = []
+    for event in raw:
+        try:
+            details = getattr(event, "details", None)
+            kind = None
+            if isinstance(details, Mapping):
+                kind = details.get("kind")
+            if kind is None:
+                kind = getattr(event, "kind", None)
+            actor = getattr(event, "agent", None)
+            tool = getattr(event, "tool", None)
+            action = getattr(event, "action", None)
+            ts = getattr(event, "timestamp", None)
+            kind_str = "—" if kind is None else str(kind)
+            action_str = "" if action is None else str(action)
+            summary = f"{kind_str} {action_str}".strip()
+            if len(summary) > 120:
+                summary = summary[:117] + "..."
+            entries.append({
+                "timestamp": "" if ts is None else str(ts),
+                "actor": "—" if actor is None else str(actor),
+                "tool": "—" if tool is None else str(tool),
+                "kind": kind_str,
+                "summary": summary,
+            })
+        except (AttributeError, TypeError, ValueError):
+            continue
+        if len(entries) >= TIMELINE_LIMIT:
+            break
+    return {
+        "available": True,
+        "count": len(entries),
+        "entries": entries,
+    }
+
+
+def _section_timeline_entries(
     reader: object,
     principal: object,
     checker: object,
@@ -201,74 +294,16 @@ def _section_timeline(
 
     - Ohne audit.read: [] (kein Leak, kein Crash).
     - read_events(limit=15), defensiv normalisiert.
-    - Keine details/args_json/Freitext durchreichen.
-    """
-    try:
-        allowed = checker.has_permission(principal, "audit.read")
-    except (AttributeError, TypeError):
-        return []
-    if not allowed:
-        return []
-    try:
-        raw = reader.read_events(limit=_TIMELINE_LIMIT)
-    except (OSError, ValueError) as exc:
-        logger.warning("timeline read_events failed: %s", type(exc).__name__)
-        return []
-    except Exception as exc:  # noqa: BLE001 - AuditReaderError etc.
-        logger.warning("timeline read_events failed: %s", type(exc).__name__)
-        return []
-    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
-        return []
-    result: list[dict] = []
-    for entry in raw:
-        if not isinstance(entry, Mapping) and not hasattr(entry, "__dict__"):
-            continue
-        details = _timeline_get(entry, "details")
-        kind_raw = None
-        if isinstance(details, Mapping):
-            kind_raw = details.get("kind")
-        if kind_raw is None:
-            kind_raw = _timeline_get(entry, "kind")
-        actor_raw = _timeline_get(entry, "actor")
-        if actor_raw is None:
-            actor_raw = _timeline_get(entry, "principal")
-        if actor_raw is None:
-            actor_raw = _timeline_get(entry, "tool")
-        summary_raw = _timeline_get(entry, "action")
-        if summary_raw is None:
-            summary_raw = _timeline_get(entry, "tool_name")
-        result.append({
-            "ts": _timeline_str(
-                _timeline_get(entry, "ts"), _TIMELINE_TS_MAX,
-            ),
-            "kind": _timeline_str(kind_raw, _TIMELINE_KIND_MAX),
-            "actor": _timeline_str(actor_raw, _TIMELINE_ACTOR_MAX),
-            "summary": _timeline_str(
-                summary_raw, _TIMELINE_SUMMARY_MAX,
-            ),
-        })
-        if len(result) >= _TIMELINE_LIMIT:
-            break
-    return result
-
-
-def _section_timeline_entries(
-    reader: object,
-    principal: object,
-    checker: object,
-) -> dict:
-    """Timeline-Sektion (audit.read). Fail closed, nie None.
-
-    - Ohne audit.read: {"entries": []} (kein Leak, kein Crash).
-    - read_events(limit=15), defensiv normalisiert.
     - Fehler von read_events: fail closed (leere Liste).
+    - Pro Eintrag: ts, kind, agent, action, score, audit_id, href.
+    - Eintraege ohne audit_id werden uebersprungen (kein toter Link).
     """
     try:
         allowed = checker.has_permission(principal, "audit.read")
     except (AttributeError, TypeError):
-        return {"entries": []}
+        return []
     if not allowed:
-        return {"entries": []}
+        return []
     try:
         # AuditReaderService.list_recent_assessments(actor, limit=...)
         # statt des erfundenen reader.read_events(...).
@@ -279,58 +314,32 @@ def _section_timeline_entries(
         logger.warning(
             "timeline list_recent_assessments failed: %s", type(exc).__name__,
         )
-        return {"entries": []}
+        return []
     if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
-        return {"entries": []}
+        return []
     entries: list[dict] = []
     for event in raw:
         if not isinstance(event, Mapping):
             continue
-        details = event.get("details") or {}
-        if not isinstance(details, Mapping):
-            details = {}
-        # GOLD: kind/action direkt aus event lesen (list_recent_assessments
-        # legt sie nicht unter "details" ab).
-        _kind = event.get("kind") or event.get("event_kind") or ""
-        _action = (
-            event.get("action")
-            or event.get("message")
-            or event.get("summary")
-            or ""
-        )
-        if not _kind and isinstance(details, Mapping):
-            _kind = details.get("kind") or ""
-        if not _action and isinstance(details, Mapping):
-            _action = details.get("action") or ""
-        # GOLD: read_risk_assessments liefert category/score/rule_id/tool.
-        # Wir mappen auf die Timeline-Felder:
-        #   timestamp -> timestamp
-        #   category  -> kind  (SECURITY_ALERT / CONFIRMED)
-        #   rule_id   -> agent (unknown_device / unknown_device_persistent)
-        #   score     -> action ("score=0.7")
-        #   tool      -> tool  (risk_engine)
-        _category = str(event.get("category") or "")
-        _rule = str(event.get("rule_id") or "")
-        _score = event.get("score")
-        _kind_display = _category or _kind
-        _agent_display = _rule or str(event.get("agent") or "")
-        _action_display = (
-            f"score={_score}" if _score is not None else _action
-        )
+        audit_id = event.get("audit_id") or event.get("id")
+        if not audit_id:
+            continue
+        kind = event.get("kind") or event.get("category") or ""
+        agent = event.get("agent") or "security_ai"
+        action = event.get("action") or event.get("rule_id") or ""
+        score = event.get("score")
         entries.append({
-            "timestamp": _timeline_str(
-                event.get("timestamp"), _TIMELINE_TS_MAX,
-            ),
-            "agent": _timeline_str(_agent_display, _TIMELINE_ACTOR_MAX),
-            "tool": _timeline_str(
-                event.get("tool"), _TIMELINE_KIND_MAX,
-            ),
-            "kind": _timeline_str(_kind_display, _TIMELINE_KIND_MAX),
-            "action": _timeline_str(_action_display, _TIMELINE_SUMMARY_MAX),
+            "ts": _format_timeline_ts(event.get("timestamp")),
+            "kind": _timeline_str(kind, _TIMELINE_KIND_MAX),
+            "agent": _timeline_str(agent, _TIMELINE_ACTOR_MAX),
+            "action": _timeline_str(action, _TIMELINE_SUMMARY_MAX),
+            "score": score,
+            "audit_id": audit_id,
+            "href": f"/audit/{audit_id}",
         })
         if len(entries) >= _TIMELINE_LIMIT:
             break
-    return {"entries": entries}
+    return entries
 
 
 def register_state_routes(app: Flask) -> None:
@@ -343,15 +352,7 @@ def register_state_routes(app: Flask) -> None:
         changes = _section_changes()
         system = _section_system()
         recent_changes = _section_recent_changes()
-        # GOLD: _section_timeline_entries braucht AuditReaderService
-        # (mit list_recent_assessments), nicht AuditWriter.
-        from core.services.audit_reader_service import AuditReaderService
-        _timeline_reader = AuditReaderService(
-            audit_writer=g.audit, checker=g.access_checker,
-        )
-        timeline = _section_timeline_entries(
-            _timeline_reader, g.principal, g.access_checker,
-        )
+        timeline = _section_timeline(g.principal, g.access_checker)
         body: dict = {
             "timestamp": datetime.now(UTC).isoformat(),
         }
@@ -371,4 +372,4 @@ def register_state_routes(app: Flask) -> None:
         return resp
 
 
-__all__ = ["register_state_routes"]
+__all__ = ["TIMELINE_LIMIT", "register_state_routes"]
