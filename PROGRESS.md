@@ -227,3 +227,6 @@
 ## 2026-10-30T22:40:06+00:00 -- STATUS.md Punkt 1 entfernen
 - **Status:** done
 
+## 2026-10-30T23:37:38+00:00 -- Veralteten AuditReaderError-Punkt entfernen
+- **Status:** done
+

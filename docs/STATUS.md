@@ -105,13 +105,6 @@ Offen aus `docs/ROADMAP.md`:
 
 ## Offene Punkte (aus SECURITY_LOG.md)
 
-1. AuditReaderError-Namenskollision:
-   `core/reporting/audit_reader.py::AuditReaderError`
-   hat denselben Namen wie der fruehere Service-
-   Fehler. Service-Seite umbenannt zu
-   `AuditReaderServiceError`. Modul-Seite in
-   Phase 3.6.9+ umbenennen.
-
 2. systemd `WorkingDirectory=/opt/security-ai`:
    `audit-logs/` und `detection/rules.yaml` werden
    relativ zum CWD gelesen. Deployment-Doku +
