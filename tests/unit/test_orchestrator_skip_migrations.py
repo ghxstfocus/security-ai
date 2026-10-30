@@ -27,9 +27,11 @@ class SkipMigrationsTests(unittest.TestCase):
         }
 
     def test_default_calls_apply_migrations(self) -> None:
+        # check_schema_version wird ebenfalls gemockt (seit 398e013
+        # im selben 'if not skip_migrations'-Block).
         with TemporaryDirectory() as d, mock.patch.object(
             orc, "apply_migrations",
-        ) as m:
+        ) as m, mock.patch.object(orc, "check_schema_version"):
             orc.SecurityAI(
                 db_path=Path(d) / "x.db",
                 migrations_dir=Path("data/migrations"),
@@ -38,15 +40,20 @@ class SkipMigrationsTests(unittest.TestCase):
             self.assertEqual(m.call_count, 1)
 
     def test_skip_migrations_does_not_call(self) -> None:
+        # check_schema_version wird ebenfalls gemockt, sollte
+        # aber bei skip_migrations=True nicht aufgerufen werden.
         with TemporaryDirectory() as d, mock.patch.object(
             orc, "apply_migrations",
-        ) as m:
+        ) as m, mock.patch.object(
+            orc, "check_schema_version",
+        ) as m_schema:
             orc.SecurityAI(
                 db_path=Path(d) / "x.db",
                 migrations_dir=Path("data/migrations"),
                 skip_migrations=True,
             )
             self.assertFalse(m.called)
+            self.assertFalse(m_schema.called)
 
 
 if __name__ == "__main__":
