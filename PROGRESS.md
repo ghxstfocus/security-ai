@@ -185,3 +185,12 @@
 - **Status:** phase_ende
 - **Info:** rc=0 tasks_ok=5/6
 
+## 2026-10-30T20:05:04+00:00 -- Konstanten und _score_sort_key einfuegen
+- **Status:** done
+
+## 2026-10-30T20:05:07+00:00 -- Timeline-Sortierung nach Score
+- **Status:** done
+
+## 2026-10-30T20:05:12+00:00 -- Recent Changes auf 10 begrenzen
+- **Status:** done
+

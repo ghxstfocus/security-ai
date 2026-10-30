@@ -61,6 +61,31 @@ _TIMELINE_TS_MAX = 40
 _TIMELINE_KIND_MAX = 100
 _TIMELINE_ACTOR_MAX = 100
 _TIMELINE_SUMMARY_MAX = 200
+_SCORE_SENTINEL = float("-inf")
+_RECENT_CHANGES_LIMIT = 10
+
+
+def _score_sort_key(entry: object) -> float:
+    """Sortierschluessel fuer Timeline-Eintraege anhand von "score".
+
+    - Kein dict oder kein "score"-Schluessel -> _SCORE_SENTINEL.
+    - None oder bool -> _SCORE_SENTINEL.
+    - float(raw) mit (TypeError, ValueError) -> _SCORE_SENTINEL.
+    - NaN -> _SCORE_SENTINEL; +inf bleibt erhalten.
+    - Rein, mutiert den Eintrag nicht.
+    """
+    if not isinstance(entry, dict) or "score" not in entry:
+        return _SCORE_SENTINEL
+    raw = entry.get("score")
+    if raw is None or isinstance(raw, bool):
+        return _SCORE_SENTINEL
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return _SCORE_SENTINEL
+    if value != value:  # noqa: PLR0124 - NaN-Check
+        return _SCORE_SENTINEL
+    return value
 
 
 def _section_devices() -> dict | None:
@@ -172,11 +197,13 @@ def _section_recent_changes() -> list | None:
             audit_writer=g.audit,
             checker=g.access_checker,
         )
-        return svc.list_recent_by_kinds(
-            g.principal, set(RECENT_CHANGE_KINDS), limit=5,
+        entries = svc.list_recent_by_kinds(
+            g.principal, set(RECENT_CHANGE_KINDS),
+            limit=_RECENT_CHANGES_LIMIT,
         )
     except AccessDeniedError:
         return None
+    return entries[-_RECENT_CHANGES_LIMIT:]
 
 
 def _timeline_get(entry: object, key: str) -> object:
@@ -345,12 +372,7 @@ def _section_timeline_entries(
         })
         if len(entries) >= _TIMELINE_LIMIT:
             break
-    entries = sorted(
-        entries,
-        key=lambda e: float(e["score"]) if isinstance(e.get("score"), (int, float)) else 0.0,
-        reverse=True,
-    )
-    return entries
+    return sorted(entries, key=_score_sort_key, reverse=True)
 
 
 def register_state_routes(app: Flask) -> None:
