@@ -599,8 +599,13 @@ Abschluss (2026-09-25, Commit bba4ac7):
   Badge-Semantik angepasst (Auflagen 434-440).
 - partials/alert_row.html entfernt (verwaist,
   Auflagen 420/421).
-- Pro-Tabelle-Klassen als offener Punkt 19 notiert
-  (Auflage 419), eigener Folgeschritt.
+- ✅ Punkt 19: Pro-Tabelle-Klassen fuer gezieltes
+  Spalten-Ausblenden bei <500px. Die globale
+  `nth-child(n+4)`-Regel aus 3.6.10 ist entfernt, die
+  Spaltenauswahl liegt in vier Pro-Tabelle-Klassen
+  (`table-alerts`, `table-inventory`, `table-changes`,
+  `table-audit`) in `apps/dashboard/static/css/components.css`,
+  die Templates tragen die Klasse am `<table>`.
 
 ## Phase 3.6.15a — Migrations-Tracking + Deployment-Schritt  ✅
 

@@ -203,3 +203,18 @@
 ## 2026-10-30T21:10:32+00:00 -- Import check_schema_version in orchestrator
 - **Status:** done
 
+## 2026-10-30T21:40:17+00:00 -- CSS: Pro-Tabelle-Regeln statt globaler Regel
+- **Status:** done
+
+## 2026-10-30T21:40:18+00:00 -- alerts.html: Klasse table-alerts ergaenzen
+- **Status:** done
+
+## 2026-10-30T21:40:19+00:00 -- inventory.html: Klasse table-inventory ergaenzen
+- **Status:** done
+
+## 2026-10-30T21:40:19+00:00 -- changes.html: Klasse table-changes ergaenzen
+- **Status:** done
+
+## 2026-10-30T21:40:20+00:00 -- audit.html: Klasse table-audit ergaenzen
+- **Status:** done
+

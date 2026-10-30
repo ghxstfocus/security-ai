@@ -483,24 +483,11 @@ a.alert-device-identifier:hover {
    (identische Spezifitaet 0,2,1, File-Reihenfolge
    entscheidet). Kein !important. */
 @media (max-width: 500px) {
-    /* alerts (Punkt 79a, 7 Spalten):
-       <500px sichtbar: Zeitpunkt (1), Was (2), Bewertung (6).
-       Ausblenden: Geraet (3), IP (4), Begruendung (5),
-       Link (7). */
-    table.table-alerts th:nth-child(3),
-    table.table-alerts td:nth-child(3),
-    table.table-alerts th:nth-child(4),
-    table.table-alerts td:nth-child(4),
-    table.table-alerts th:nth-child(5),
-    table.table-alerts td:nth-child(5),
-    table.table-alerts th:nth-child(7),
-    table.table-alerts td:nth-child(7) { display: none; }
-    table.table-alerts th:nth-child(1),
-    table.table-alerts td:nth-child(1),
-    table.table-alerts th:nth-child(2),
-    table.table-alerts td:nth-child(2),
-    table.table-alerts th:nth-child(6),
-    table.table-alerts td:nth-child(6) { display: table-cell; }
+    /* alerts: Zeitpunkt, Kategorie-Badge und Score sind die
+       Alarm-Aussage; Begruendungstext/Quelle sind sekundaer.
+       Sichtbar: 1-3, ausgeblendet ab Spalte 4. */
+    .table-alerts th:nth-child(n+4),
+    .table-alerts td:nth-child(n+4) { display: none; }
 
     /* approvals: Request-ID + Status sichtbar.
        Status ist die Entscheidung. */
@@ -517,48 +504,32 @@ a.alert-device-identifier:hover {
     table.table-approvals th:nth-child(5),
     table.table-approvals td:nth-child(5) { display: table-cell; }
 
-    /* audit: Zeitpunkt + Audit-ID + Ergebnis sichtbar.
-       Was wann passiert ist und ob erlaubt. */
-    table.table-audit th:nth-child(3),
-    table.table-audit td:nth-child(3),
-    table.table-audit th:nth-child(4),
-    table.table-audit td:nth-child(4),
-    table.table-audit th:nth-child(6),
-    table.table-audit td:nth-child(6),
-    table.table-audit th:nth-child(7),
-    table.table-audit td:nth-child(7) { display: none; }
-    table.table-audit th:nth-child(1),
-    table.table-audit td:nth-child(1),
-    table.table-audit th:nth-child(2),
-    table.table-audit td:nth-child(2),
-    table.table-audit th:nth-child(5),
-    table.table-audit td:nth-child(5) { display: table-cell; }
+    /* audit: wer, wann und welche Art von Eintrag bleibt sichtbar;
+       Tool und Detailtext sind auf schmalen Displays entbehrlich.
+       Sichtbar: Zeit (1), Agent (2), Kind (4); ausgeblendet:
+       Tool (3) und alles ab Spalte 5. */
+    .table-audit th:nth-child(3),
+    .table-audit td:nth-child(3),
+    .table-audit th:nth-child(n+5),
+    .table-audit td:nth-child(n+5) { display: none; }
 
-    /* changes: Change-ID + Titel + Status sichtbar.
-       Typ + Erstellt sind Detail. */
-    table.table-changes th:nth-child(3),
-    table.table-changes td:nth-child(3),
-    table.table-changes th:nth-child(5),
-    table.table-changes td:nth-child(5) { display: none; }
-    table.table-changes th:nth-child(1),
-    table.table-changes td:nth-child(1),
-    table.table-changes th:nth-child(2),
-    table.table-changes td:nth-child(2),
-    table.table-changes th:nth-child(4),
-    table.table-changes td:nth-child(4) { display: table-cell; }
+    /* changes: was geaendert wird und in welchem Zustand es ist,
+       ist die Kernaussage; Typ, Antragsteller und Erstellzeitpunkt
+       sind sekundaer. Sichtbar: Change-ID (1), Titel (2), Status (4);
+       ausgeblendet: Typ (3) und alles ab Spalte 5. */
+    .table-changes th:nth-child(3),
+    .table-changes td:nth-child(3),
+    .table-changes th:nth-child(n+5),
+    .table-changes td:nth-child(n+5) { display: none; }
 
-    /* inventory: Identifier + Name + Zuletzt gesehen
-       sichtbar. Netz + Whitelist sind Kontext. */
-    table.table-inventory th:nth-child(3),
-    table.table-inventory td:nth-child(3),
-    table.table-inventory th:nth-child(4),
-    table.table-inventory td:nth-child(4) { display: none; }
-    table.table-inventory th:nth-child(1),
-    table.table-inventory td:nth-child(1),
-    table.table-inventory th:nth-child(2),
-    table.table-inventory td:nth-child(2),
-    table.table-inventory th:nth-child(5),
-    table.table-inventory td:nth-child(5) { display: table-cell; }
+    /* inventory: Geraet plus Status identifizieren den Eintrag;
+       Netzwerk, zuletzt-gesehen und IP sind Zusatzinfo.
+       Sichtbar: Identifier (1), Name (2), Status (4);
+       ausgeblendet: Netzwerk (3) und alles ab Spalte 5. */
+    .table-inventory th:nth-child(3),
+    .table-inventory td:nth-child(3),
+    .table-inventory th:nth-child(n+5),
+    .table-inventory td:nth-child(n+5) { display: none; }
 
     /* users: Name + Status sichtbar.
        Kind/Rolle-ID/Passwort/Erstellt sind Detail. */
