@@ -194,3 +194,9 @@
 ## 2026-10-30T20:05:12+00:00 -- Recent Changes auf 10 begrenzen
 - **Status:** done
 
+## 2026-10-30T21:01:47+00:00 -- Timeline-Einträge nach Score sortieren
+- **Status:** done
+
+## 2026-10-30T21:01:51+00:00 -- Recent Changes auf letzte 10 begrenzen
+- **Status:** done
+
