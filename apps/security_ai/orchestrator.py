@@ -40,6 +40,7 @@ from core.inventory.repository import (
     DEFAULT_MIGRATIONS_DIR,
     DeviceRepository,
     apply_migrations,
+    check_schema_version,
     connect,
 )
 from core.inventory.whitelist import WhitelistRepository
@@ -218,6 +219,7 @@ class SecurityAI:
         self._conn = connect(db_path)
         if not skip_migrations:
             apply_migrations(self._conn, migrations_dir)
+            check_schema_version(self._conn, migrations_dir)
 
         self._devices = DeviceRepository(self._conn)
         self._whitelist = WhitelistRepository(self._conn)
