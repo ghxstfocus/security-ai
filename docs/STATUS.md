@@ -22,12 +22,19 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 
 ## Offene Punkte
 
-### OP-002: last_ip nur bei Diff-Events
+### OP-002a: normalize_ip + update_last_ip_if_changed (Diff-Check, isoliert)
 - **Status:** open
-- **Betroffene Dateien:** —
-- **Akzeptanzkriterien:** Punkt 49: last_ip nur bei Diff-Events (Beobachtungsstand).
-- **Tests:** —
+- **Betroffene Dateien:** `core/inventory/device.py`, `core/inventory/repository.py`
+- **Akzeptanzkriterien:** `normalize_ip(value)` in `device.py` (leer/None -> None, parsebar -> kanonisch via ipaddress, unparsebar -> None). `update_last_ip_if_changed(self, identifier, ip)` in `repository.py`: SELECT last_ip, vergleiche via normalize_ip, UPDATE nur bei Diff. Rueckgabe: True = geschrieben, False = keine Aenderung / unbekannter identifier. KEIN `device_history`-Insert (OP-002b). KEIN `upsert_seen`-Umbau (OP-002b). Keine Migration.
+- **Tests:** `tests/unit/test_inventory.py` (Mensch schreibt): `test_normalize_ip_*` (5 Faelle), `test_update_last_ip_if_changed_*` (3 Faelle: Erstschreiben, unveraendert, Wechsel).
 - **Blockiert von:** —
+
+### OP-002b: upsert_seen delegiert + device_history-Insert
+- **Status:** open
+- **Betroffene Dateien:** `core/inventory/repository.py`
+- **Akzeptanzkriterien:** `upsert_seen(identifier, ip=X)` ruft `update_last_ip_if_changed(identifier, X)` auf statt `last_ip = ?` direkt zu schreiben. Bei Diff: zusaetzlich `INSERT INTO device_history` mit (device_id, feld="last_ip", alt, neu, timestamp). Bestehende Tests `test_upsert_seen_empty_ip_does_not_overwrite` etc. bleiben gruen. Kein Schema-Change.
+- **Tests:** `tests/unit/test_inventory.py` (Mensch): `test_upsert_seen_kein_doppel_history`, `test_upsert_seen_mit_ip_wechsel_history`.
+- **Blockiert von:** OP-002a
 
 ### OP-003: ruff-Regelschaerfung
 - **Status:** open
