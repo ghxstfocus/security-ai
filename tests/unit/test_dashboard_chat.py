@@ -38,6 +38,18 @@ def _reset_rate_limiter():
     yield
 
 
+@pytest.fixture(autouse=True)
+def _deepseek_key(monkeypatch):
+    """Fix 2026-10-31: Tests brauchen DEEPSEEK_API_KEY, weil
+    _build_chat_service() sonst ConfigError -> LLMUnavailable -> 502
+    liefert. Ausser bei Tests, die genau das pruefen (die
+    ueberschreiben get_deepseek_api_key gezielt).
+    """
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "sk-test")
+    monkeypatch.setenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+    yield
+
+
 def _client_with_csrf(app, role):
     c = create_role_client(app, role)
     with c.session_transaction() as sess:
@@ -552,3 +564,28 @@ def test_chat_api_links_nicht_bei_llm_source(app, monkeypatch):
     assert r.status_code == 200
     data = r.get_json()
     assert data["links"] == []
+
+
+# ---------------------------------------------------------------------- #
+# Spec: fehlender Key -> 502 (Fix 2026-10-31)
+# ---------------------------------------------------------------------- #
+
+def test_chat_api_ohne_key_liefert_502(app, monkeypatch):
+    """Fix 2026-10-31: _build_chat_service() wirft ConfigError->
+    LLMUnavailable. Vorher stand der Aufruf AUSSERHALB des try-
+    Blocks -> Route lieferte 500 statt 502. Spec: 502.
+    """
+    from core import config as _cfg
+    from core.config import ConfigError
+
+    def _raises():
+        raise ConfigError("DEEPSEEK_API_KEY fehlt")
+
+    monkeypatch.setattr(_cfg, "get_deepseek_api_key", _raises)
+    c, tok = _client_with_csrf(app, "viewer")
+    r = _post(app, c, tok, body=b'{"question": "hallo"}')
+    assert r.status_code == 502, (
+        f"Erwartet 502 (LLMUnavailable), bekommen {r.status_code}"
+    )
+    data = r.get_json()
+    assert "error" in data

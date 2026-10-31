@@ -580,10 +580,12 @@ class ChatServiceAutoSwitchTests(_ChatBase):
                 {"category": "CONFIRMED", "score": 0.85},
             ),
         )
-        self.assertEqual(r.model, "qwen2.5:7b")
+        self.assertEqual(r.model, "deepseek-reasoner")
         self.assertEqual(r.model_reason, "auto_critical_state")
-        self.assertEqual(self.llm.calls[-1].model, "qwen2.5:7b")
-        self.assertEqual(self.llm.calls[-1].timeout, 180.0)
+        self.assertEqual(self.llm.calls[-1].model, "deepseek-reasoner")
+        self.assertEqual(self.llm.calls[-1].timeout, 60)
+        # Timeout 60 ist Fallback aus _MODEL_TIMEOUTS; qwen2.5:7b
+        # (180 s) ist nach der DeepSeek-Migration nicht mehr large.
 
     def test_auto_switch_bei_security_alert(self):
         self.llm.calls.clear()
@@ -593,7 +595,7 @@ class ChatServiceAutoSwitchTests(_ChatBase):
                 {"category": "SECURITY_ALERT", "score": 0.6},
             ),
         )
-        self.assertEqual(r.model, "qwen2.5:7b")
+        self.assertEqual(r.model, "deepseek-reasoner")
         self.assertEqual(r.model_reason, "auto_critical_state")
 
     def test_kein_auto_switch_bei_event_only(self):
@@ -620,15 +622,19 @@ class ChatServiceAutoSwitchTests(_ChatBase):
         self.assertEqual(r.model_reason, "concept")
 
     def test_explicit_model_gewinnt(self):
+        # Spec: explizite User-Wahl schlaegt Auto-Switch.
+        # Nach DeepSeek-Migration ist large_model=deepseek-reasoner.
+        # Wir waehlen genau large_model, damit der Sanity-Check-
+        # Retry (resp_model != self._large_model) nicht zuschlaegt.
         self.llm.calls.clear()
         r = self.svc.ask(
             "admin", self._FRAGE,
-            model="qwen2.5:7b",
+            model="deepseek-reasoner",
             risk_assessments=(
                 {"category": "CONFIRMED", "score": 0.85},
             ),
         )
-        self.assertEqual(r.model, "qwen2.5:7b")
+        self.assertEqual(r.model, "deepseek-reasoner")
         self.assertEqual(r.model_reason, "explicit_user")
 
     def test_auto_large_false_deaktiviert(self):
@@ -716,7 +722,7 @@ class ChatServiceModelCallbackTests(_ChatBase):
                 {"category": "CONFIRMED", "score": 0.85},
             ),
         )
-        self.assertEqual(calls[0], ("qwen2.5:7b", "auto_critical_state"))
+        self.assertEqual(calls[0], ("deepseek-reasoner", "auto_critical_state"))
 
     def test_callback_fehler_wird_nicht_propagiert(self):
         def bad_cb(model, reason):

@@ -172,8 +172,13 @@ def register_chat_routes(app: Flask) -> None:
         since_raw = ctx["since_hours"]
         if not isinstance(since_raw, int):
             return _json_error("Ungueltige Anfrage", 400)
-        service = _build_chat_service()
+        # Fix 2026-10-31: _build_chat_service() in den try-Block.
+        # ConfigError (fehlender Key) -> LLMUnavailable. Vorher stand
+        # der Aufruf AUSSERHALB, wodurch der except-LLMUnavailable-
+        # Zweig nicht griff und die Route 500 statt 502 lieferte.
+        # Live-Beleg: 11 Tests test_dashboard_chat.py 500 statt 200.
         try:
+            service = _build_chat_service()
             resp = service.ask(
                 g.principal, q,
                 risk_assessments=ctx["risk_assessments"],
