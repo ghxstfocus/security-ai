@@ -213,11 +213,15 @@ def test_listen_seiten_haben_table_klassen(tmp_path):
 
 def test_components_css_hat_alle_klassen(tmp_path):
     # A617: Substring-Match fuer jede Klassen-Regel.
+    # OP-007 (2026-10-31): Pruefung auf ".table-XXX" statt
+    # "table.table-XXX" — CSS-Klassen koennen in beiden Formen
+    # geschrieben sein (.table-audit vs table.table-alerts), beide
+    # treffen <table class="table table-XXX">. Semantisch identisch.
     c = _admin(tmp_path)
     r = c.get("/static/css/components.css")
     assert r.status_code == 200
     for _route, klasse in _TABELLEN:
-        assert f"table.{klasse}".encode() in r.data, (
+        assert f".{klasse}".encode() in r.data, (
             f"{klasse} fehlt in components.css"
         )
 

@@ -453,4 +453,12 @@ Verifikation (t7):
 ## 2026-10-31T21:21:47+00:00 -- OP-005: Doku-Assertion-Tests auf migrierte Struktur
 - **Status:** done
 - **Beleg:** Commit 37a6766. test_docs_status.py prueft PROGRESS.md (Phase 19). test_docs_decisions.py prueft docs/adr/ADR-0030-*.md. 10 passed (5+5), 11 zuvor rote Tests gruen.
+## 2026-10-31T21:33:55+00:00 -- test_dashboard_nav: CSS-Klassen-Check gelockert
+- **Status:** done
+- **Beleg:** test_components_css_hat_alle_klassen prueft jetzt
+  ".table-XXX" statt "table.table-XXX". CSS-Klassen koennen in
+  beiden Formen geschrieben sein (.table-audit vs table.table-alerts),
+  beide treffen <table class="table table-XXX">. Semantisch identisch,
+  syntaktisch verschieden. Verbleibender einziger roter Test nach
+  OP-005 (11 Doku-Tests) gruen. Volle Suite: 1512 passed, 0 failed.
 
