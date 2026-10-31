@@ -223,10 +223,10 @@ def _classify_question(question: str) -> str:
         return "concept"
     return "interpretation"
 
-# Modellabhaengige Timeouts (Sekunden). Fallback 60.
+# Modellabhaengige Timeouts (Sekunden) fuer DeepSeek. Fallback 60.
 _MODEL_TIMEOUTS = {
-    "llama3.2:3b": 30,
-    "qwen2.5:7b": 180,
+    "deepseek-chat": 60,
+    "deepseek-reasoner": 180,
 }
 
 
