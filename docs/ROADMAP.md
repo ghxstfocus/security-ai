@@ -1,7 +1,7 @@
 # Phasen
 
 Uebersicht aller Phasen mit Status.
-Details in `docs/DECISIONS.md` und den jeweiligen Modulen.
+Details in `docs/adr/` und den jeweiligen Modulen.
 
 Legende: ✅ abgeschlossen, 🔨 in Arbeit, 💡 geplant.
 
@@ -430,7 +430,7 @@ Unterbloecke:
 - ✅ U4: RBAC und Audit fuer Sofort-Massnahmen.
 - ✅ U5: Tests und Doku-Nachzug.
 
-Details in docs/DECISIONS.md Paragraph 24 und
+Details in docs/adr/ Paragraph 24 und
 docs/SECURITY_LOG.md.
 
 ## Phase 3.8 — Host-Scanner / Netzwerk-Discovery  💡

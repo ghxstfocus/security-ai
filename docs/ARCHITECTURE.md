@@ -106,7 +106,7 @@ Chat-Interface:
 - Kein Tool-Aufruf aus dem Chat.
 - Antworten sind Vorschlaege, keine Aktionen.
 
-Details: siehe docs/DECISIONS.md, Abschnitt 8.
+Details: siehe docs/adr/, Abschnitt 8.
 
 ### Ebene 3 — Builder Harness
 
@@ -425,7 +425,7 @@ Das LLM bekommt nur, was der Kontext-Bauer freigibt. Kein
 LLM-Output fliesst in Detection, Risk, Policy, Approval
 oder Change-Freigaben.
 
-Details: docs/DECISIONS.md, Abschnitt 8.
+Details: docs/adr/, Abschnitt 8.
 
 ### 3.14 harness/llm — entfernt (Phase 16)
 

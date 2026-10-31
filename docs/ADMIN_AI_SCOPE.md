@@ -291,7 +291,7 @@ Die Admin AI ist bewusst nicht:
 
 - docs/ARCHITECTURE.md — technische Schichten.
 - docs/SECURITY.md — Threat Model.
-- docs/DECISIONS.md — Design-Entscheidungen.
+- docs/adr/ — Design-Entscheidungen.
 - docs/ROADMAP.md — Phasenplanung (Phase 13).
 - docs/PROTOCOL_ADMIN_AI.md (geplant) —
   Protokoll-Spezifikation.

@@ -56,7 +56,7 @@ Pflicht:
 
 - docs/STATUS.md — aktueller Stand.
 - docs/ROADMAP.md — Phasen und Ausblick.
-- docs/DECISIONS.md — Design-Entscheidungen.
+- docs/adr/ — Design-Entscheidungen.
 - docs/SECURITY_LOG.md — Sicherheitsentscheidungen.
 - docs/CONVENTIONS.md — diese Datei.
 - CHANGELOG.md — chronologische Aenderungen.

@@ -372,7 +372,7 @@ test_access_denied_errorhandler_403 abgedeckt.
 ## Handoff-Hinweise
 
 - Neuer Chat liest: docs/STATUS.md,
-  docs/DECISIONS.md, diese Datei,
+  docs/adr/, diese Datei,
   docs/ROADMAP.md.
 - Ausgelagerte Inkonsistenzen:
   docs/INCONSISTENCIES_FOUND.md (heute leer;
@@ -1689,7 +1689,7 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     check=False, RBAC device.read, fail closed ->
     'unbekannt').
     Dokumentiert in docs/WEB_SECURITY_CHECKLIST.md §N
-    und docs/DECISIONS.md §17.
+    und docs/adr/ §17.
     Kategorie 3 (Reviewer-GO Variante 1).
 
 70. (erledigt in 95df3ae, Kategorie 3, Detection)
