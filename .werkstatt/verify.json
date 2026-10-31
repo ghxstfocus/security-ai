@@ -50,7 +50,8 @@
         "-q"
       ],
       "requires": "{changed_non_test_py_files}",
-      "phase": "post_build"
+      "phase": "phase_end",
+      "timeout": 900
     },
     {
       "id": "pytest_full_checks",
