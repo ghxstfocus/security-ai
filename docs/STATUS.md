@@ -66,3 +66,12 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 - `docs/adr/` — Design-Entscheidungen (ADRs).
 - [`SECURITY_LOG.md`](SECURITY_LOG.md) — Sicherheits-Entscheidungen.
 - [`CONVENTIONS.md`](CONVENTIONS.md) — projektspezifische Konventionen.
+
+## Delete-Zone
+
+| Pfad | Warum entfernt | Ersetzt durch | Wiedereinfuehrung |
+|---|---|---|---|
+| `docs/DECISIONS.md` | Monolith, 2026-10-31 migriert | `docs/adr/ADR-NNNN-*.md` | nie — ADR-Format ist Pflicht |
+| `docs/README.md` | Diaetaxis, 2026-10-31 | `docs/index.md` | nie |
+| `PROJECT_VISION.md` (root) | Doku-Bundling, 2026-10-31 | `docs/PROJECT_VISION.md` | nie |
+| `docs/PROGRESS.md` | Duplikat, 2026-10-31 | `PROGRESS.md` (root) | nie |
