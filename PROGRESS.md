@@ -450,4 +450,7 @@ Verifikation (t7):
 ## 2026-10-31T19:09:11+00:00 -- Phase abgeschlossen: security-ai
 - **Status:** phase_ende
 - **Info:** tasks_ok=5/5
+## 2026-10-31T21:21:47+00:00 -- OP-005: Doku-Assertion-Tests auf migrierte Struktur
+- **Status:** done
+- **Beleg:** Commit 37a6766. test_docs_status.py prueft PROGRESS.md (Phase 19). test_docs_decisions.py prueft docs/adr/ADR-0030-*.md. 10 passed (5+5), 11 zuvor rote Tests gruen.
 

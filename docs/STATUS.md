@@ -50,14 +50,6 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 - **Tests:** —
 - **Blockiert von:** —
 
-### OP-005: Doku-Assertion-Tests auf migrierte Struktur umschreiben
-- **Status:** open
-- **Betroffene Dateien:** `tests/unit/test_docs_status.py`, `tests/unit/test_docs_decisions.py`
-- **Akzeptanzkriterien:** (a) `test_docs_status.py` prueft Phase-19-Abschnitt in `PROGRESS.md` (nicht mehr `docs/STATUS.md`), weil Phase 19 am 2026-10-31 nach PROGRESS.md migriert wurde. (b) `test_docs_decisions.py` prueft ChangeApplier-Paragraph 30 in `docs/adr/ADR-0030-changeapplier-und-sofort-massnahmen-kategorie.md` (nicht mehr `docs/DECISIONS.md`, Datei am 2026-10-31 geloescht). (c) `pytest tests/unit/test_docs_status.py tests/unit/test_docs_decisions.py -q` ist gruen. (d) Kein anderer Test gebrochen (`pytest -q`).
-- **Tests:** `pytest tests/unit/test_docs_status.py tests/unit/test_docs_decisions.py -q`
-- **Blockiert von:** —
-
-
 ### OP-006: Planner-Split crasht auf 'out-of-scope'-Architect-Output
 - **Status:** open
 - **Betroffene Dateien:** `werkstatt/planner.py` (Split-Logik)
@@ -85,6 +77,7 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 
 | Pfad | Warum entfernt | Ersetzt durch | Wiedereinfuehrung |
 |---|---|---|---|
+| OP-005 | erledigt 2026-10-31 (37a6766) | Test-Umschreiben | – |
 | `docs/DECISIONS.md` | Monolith, 2026-10-31 migriert | `docs/adr/ADR-NNNN-*.md` | nie — ADR-Format ist Pflicht |
 | `docs/README.md` | Diaetaxis, 2026-10-31 | `docs/index.md` | nie |
 | `PROJECT_VISION.md` (root) | Doku-Bundling, 2026-10-31 | `docs/PROJECT_VISION.md` | nie |
