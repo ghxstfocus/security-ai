@@ -50,6 +50,14 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 - **Tests:** —
 - **Blockiert von:** —
 
+### OP-005: Doku-Assertion-Tests auf migrierte Struktur umschreiben
+- **Status:** open
+- **Betroffene Dateien:** `tests/unit/test_docs_status.py`, `tests/unit/test_docs_decisions.py`
+- **Akzeptanzkriterien:** (a) `test_docs_status.py` prueft Phase-19-Abschnitt in `PROGRESS.md` (nicht mehr `docs/STATUS.md`), weil Phase 19 am 2026-10-31 nach PROGRESS.md migriert wurde. (b) `test_docs_decisions.py` prueft ChangeApplier-Paragraph 30 in `docs/adr/ADR-0030-changeapplier-und-sofort-massnahmen-kategorie.md` (nicht mehr `docs/DECISIONS.md`, Datei am 2026-10-31 geloescht). (c) `pytest tests/unit/test_docs_status.py tests/unit/test_docs_decisions.py -q` ist gruen. (d) Kein anderer Test gebrochen (`pytest -q`).
+- **Tests:** `pytest tests/unit/test_docs_status.py tests/unit/test_docs_decisions.py -q`
+- **Blockiert von:** —
+
+
 ## Umgebung
 
 - Container: CT102 (security-ai,
@@ -66,7 +74,6 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 - `docs/adr/` — Design-Entscheidungen (ADRs).
 - [`SECURITY_LOG.md`](SECURITY_LOG.md) — Sicherheits-Entscheidungen.
 - [`CONVENTIONS.md`](CONVENTIONS.md) — projektspezifische Konventionen.
-
 ## Delete-Zone
 
 | Pfad | Warum entfernt | Ersetzt durch | Wiedereinfuehrung |
