@@ -58,6 +58,13 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 - **Blockiert von:** —
 
 
+### OP-006: Planner-Split crasht auf 'out-of-scope'-Architect-Output
+- **Status:** open
+- **Betroffene Dateien:** `werkstatt/planner.py` (Split-Logik)
+- **Akzeptanzkriterien:** Wenn der Architect sagt "out-of-scope" oder "Tests sind OUT-OF-SCOPE" und KEINEN konkreten Task-Plan liefert, bricht Planner-Split ab mit `planner_split_no_tasks` und der Loop endet sauber. Er erzeugt NICHT einen Mega-Task mit 20+ Dateien aus dem Code-Index. Live-Beleg 2026-10-31: OP-005-Loop, Planner-Split lieferte 1 Task "Architect-Loesung umsetzen" mit 24 Dateien (24 Migrations + 2 Tests + 2 Docs + 2 Code-Dateien), obwohl die Aufgabe explizit nur 2 Test-Dateien betraf.
+- **Tests:** `tests/test_planner_split.py::test_out_of_scope_kein_mega_task`
+- **Blockiert von:** —
+
 ## Umgebung
 
 - Container: CT102 (security-ai,
