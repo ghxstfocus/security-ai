@@ -343,7 +343,63 @@ Port 8080 wird nicht mehr verwendet.
   NoNewPrivileges.
 - ✅ Binding auf 127.0.0.1 fuer Flask.
 
-## 3d. Systemvoraussetzungen
+## 3d. Arbeitsverzeichnis (CWD) und systemd-Units
+
+Jeder systemd-Prozess dieses Projekts muss mit
+`WorkingDirectory=/opt/security-ai` starten. Grund: alle
+Pfade in `core/config.py`, im Detection-Loader, im
+Policy-Loader und im Risk-Engine-Loader werden relativ
+zum CWD aufgeloest und nicht aus `__file__` abgeleitet.
+
+CWD-relativ gelesen/geschrieben:
+
+| Pfad                          | Modul / Zweck                          |
+|-------------------------------|----------------------------------------|
+| `detection/rules.yaml`        | Detection-Regeln                       |
+| `policies/tools.yaml`         | Policy Engine                          |
+| `core/risk/rules.yaml`        | Risk Engine                            |
+| `audit-logs/`                 | AuditWriter, tageweise JSONL           |
+| `data/` mit `data/migrations/`| SQLite + Schema-Check                  |
+| `changes/backups/`            | ChangeApplier-Backups                  |
+| `data/events-YYYY-MM-DD.jsonl`| Event-Reader-Eingang                   |
+
+Fehlerbild ohne `WorkingDirectory`: Der Prozess startet
+aus `/`, die Regeldateien werden nicht gefunden. Je nach
+Modul folgt ein `FileNotFoundError` oder ein
+fail-closed-Abbruch; im schlechtesten Fall laeuft der
+Prozess mit leerem Regelbestand weiter. Deshalb ist die
+Zeile nicht optional, sondern Pflicht.
+
+Vollstaendiges Beispiel der realen Unit
+`security-ai-event-reader.service`:
+
+- `[Unit]` mit `Description=security-ai event reader`
+  und `After=network-online.target`.
+- `[Service]` mit `Type=oneshot`, `User=security-ai`,
+  `Group=security-ai`, `WorkingDirectory=/opt/security-ai`
+  (**die neue Pflichtzeile**),
+  `ExecStart=/opt/security-ai/.venv/bin/python3 /opt/security-ai/tools/event_reader.py`,
+  `NoNewPrivileges=true`, `ProtectSystem=strict`,
+  `ProtectHome=true`, `PrivateTmp=true` und den fuer das
+  Projekt noetigen
+  `ReadWritePaths=/opt/security-ai/audit-logs /opt/security-ai/data /opt/security-ai/changes`,
+  sowie `Restart=on-failure` und `RestartSec=30`.
+- `[Install]` mit `WantedBy=multi-user.target`.
+
+Analog `security-ai-fritzbox-watcher.service`: gleiches
+`WorkingDirectory=/opt/security-ai`, gleicher Python-Pfad
+`/opt/security-ai/.venv/bin/python3`, `ExecStart` auf
+`tools/fritzbox_watcher.py`. Die Dashboard-Unit steht
+bereits in §3c; dort ist `WorkingDirectory=/opt/security-ai`
+als nachzutragende Zeile ausdruecklich genannt.
+
+Verifikation nach `systemctl daemon-reload` und Restart:
+
+    systemctl show -p WorkingDirectory security-ai-event-reader
+
+Erwartet: `WorkingDirectory=/opt/security-ai`.
+
+## 3e. Systemvoraussetzungen
 
 Zentrale Liste der Pakete und Versionen, die auf CT102
 fuer den Betrieb von Homelab Security AI notwendig sind.

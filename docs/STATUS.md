@@ -22,13 +22,6 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 
 ## Offene Punkte
 
-### OP-001: systemd WorkingDirectory
-- **Status:** open
-- **Betroffene Dateien:** —
-- **Akzeptanzkriterien:** systemd `WorkingDirectory=/opt/security-ai`: `audit-logs/` und `detection/rules.yaml` werden relativ zum CWD gelesen. Deployment-Doku + Unit-File in Phase 3.6.9.
-- **Tests:** —
-- **Blockiert von:** —
-
 ### OP-002: last_ip nur bei Diff-Events
 - **Status:** open
 - **Betroffene Dateien:** —

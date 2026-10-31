@@ -39,6 +39,25 @@ core/risk/rules.yaml werden relativ zum CWD
 geladen. Tests aus einem anderen Verzeichnis
 schlagen fehl.
 
+### Arbeitsverzeichnis
+
+Alle im Projekt verwendeten Dateipfade
+(`detection/rules.yaml`, `policies/tools.yaml`,
+`core/risk/rules.yaml`, `audit-logs/`, `data/`,
+`changes/backups/`) sind relativ zum CWD und
+werden nicht aus `__file__` abgeleitet. Deshalb
+muessen systemd-Units `WorkingDirectory=/opt/security-ai`
+setzen. Die Belege (Tabelle der CWD-relativen
+Pfade, Beispiel-Units) stehen ausschliesslich in
+`docs/DEPLOYMENT.md` §3d — dort und nur dort,
+damit die CWD-Anforderung nicht an zwei Stellen
+auseinanderlaeuft.
+
+Randbedingung: Lokale Aufrufe (pytest,
+CLI-Skripte) muessen aus dem Projektwurzel-
+verzeichnis erfolgen; die venv-Python liegt
+unter `/opt/security-ai/.venv/bin/python3`.
+
 ## 3. Git-Remote/Branch
 
 origin/main

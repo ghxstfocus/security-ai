@@ -423,3 +423,31 @@ Verifikation (t7):
 - **Status:** phase_ende
 - **Info:** rc=1 tasks_ok=3/4
 
+## 2026-10-31T19:07:56+00:00 -- DEPLOYMENT.md §3d CWD-Abschnitt
+- **Status:** done
+
+## 2026-10-31T19:08:01+00:00 -- DEPLOYMENT.md §L Checkliste
+- **Status:** done
+
+## 2026-10-31T19:08:06+00:00 -- CONVENTIONS.md §2 CWD-Verweis
+- **Status:** done
+
+## 2026-10-31T19:08:09+00:00 -- STATUS.md OP-001 entfernen
+- **Status:** done
+
+## 2026-10-31 -- OP-001: systemd WorkingDirectory
+- **Status:** done
+- **Kategorie:** 2 — Doku/Deployment
+- `docs/DEPLOYMENT.md` §3d enthält die CWD-Anforderung, die Belegtabelle der CWD-relativen Pfade und die vollständigen Beispiel-Units für `security-ai-event-reader.service` und `security-ai-fritzbox-watcher.service`.
+- `docs/CONVENTIONS.md` §2 verweist auf §3d.
+- Die Checkliste §L trägt den Prüfbefehl `grep -L 'WorkingDirectory=/opt/security-ai' deploy/systemd/*.service`.
+- **Offener Folgepunkt (nicht Teil dieses Blocks):** Die Zeile `WorkingDirectory=/opt/security-ai` muss noch in die realen Unit-Dateien unter `deploy/systemd/` eingetragen und die Units neu installiert werden — der ChangeApplier-/Deploy-Pfad wird hier bewusst nicht mitgeändert.
+- Keine Migration und keine Python-Änderung nötig; Migration 0019 bleibt damit unbelegt.
+
+## 2026-10-31T19:08:11+00:00 -- PROGRESS.md OP-001 erledigt
+- **Status:** done
+
+## 2026-10-31T19:09:11+00:00 -- Phase abgeschlossen: security-ai
+- **Status:** phase_ende
+- **Info:** tasks_ok=5/5
+
