@@ -42,6 +42,17 @@
       "phase": "post_build"
     },
     {
+      "id": "pytest_regression",
+      "command": [
+        "python3",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "requires": "{changed_non_test_py_files}",
+      "phase": "post_build"
+    },
+    {
       "id": "pytest_full_checks",
       "command": [
         "python3",
