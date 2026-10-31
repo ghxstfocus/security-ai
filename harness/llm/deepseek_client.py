@@ -119,7 +119,7 @@ class DeepSeekClient:
             with urllib.request.urlopen(http_request, timeout=timeout) as resp:
                 raw = resp.read()
         except urllib.error.HTTPError as exc:
-            raise LLMUnavailable(
+            raise LLMError(
                 f"DeepSeek HTTP-Fehler: {exc.code}"
             ) from exc
         except urllib.error.URLError as exc:
@@ -141,13 +141,46 @@ class DeepSeekClient:
         except (KeyError, IndexError, TypeError) as exc:
             raise LLMError("DeepSeek-Antwort hat unerwartetes Format") from exc
 
-        usage = payload.get("usage") or {}
-        prompt_tokens = int(usage.get("prompt_tokens", 0) or 0)
-        completion_tokens = int(usage.get("completion_tokens", 0) or 0)
-
         return LLMResponse(
-            content=content,
+            text=content,
             model=payload.get("model", model),
-            prompt_tokens=prompt_tokens,
-            completion_tokens=completion_tokens,
+            done=True,
+            raw=payload,
         )
+
+    def generate_text(
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+        model: str | None = None,
+        max_tokens: int | None = None,
+        timeout: float | None = None,
+    ) -> str:
+        """Kompatibilitaets-Wrapper: liefert nur den Antworttext."""
+        request = LLMRequest(
+            prompt=prompt,
+            system=system,
+            model=model,
+            max_tokens=max_tokens,
+            timeout=timeout,
+        )
+        return self.generate(request).text
+
+    def is_available(self, timeout: float | None = None) -> bool:
+        """Health-Check gegen ``/v1/models``. Liefert ``True``/``False``."""
+        effective_timeout = float(timeout or self.default_timeout)
+        url = self.base_url.rstrip("/") + MODELS_PATH
+        http_request = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {self.api_key}"},
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(
+                http_request, timeout=effective_timeout
+            ) as resp:
+                resp.read()
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError):
+            return False
+        return True

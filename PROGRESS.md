@@ -276,3 +276,9 @@
 - **Status:** phase_ende
 - **Info:** tasks_ok=4/7
 
+## 2026-10-31T11:25:21+00:00 -- harness/llm/client.py entfernen
+- **Status:** done
+
+## 2026-10-31T11:25:24+00:00 -- harness/llm/ollama_client.py entfernen
+- **Status:** done
+
