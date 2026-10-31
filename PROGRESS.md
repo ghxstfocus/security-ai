@@ -248,3 +248,31 @@
 - **Status:** phase_ende
 - **Info:** tasks_ok=1/1
 
+## 2026-10-31T10:48:54+00:00 -- DeepSeekClient implementieren
+- **Status:** failed
+- **Info:** post_build_verify_failed
+
+## 2026-10-31T10:49:03+00:00 -- core/config.py auf DeepSeek umstellen
+- **Status:** done
+
+## 2026-10-31T10:49:11+00:00 -- chat_cli.py auf DeepSeekClient umstellen
+- **Status:** done
+
+## 2026-10-31T10:49:15+00:00 -- routes_chat.py auf DeepSeekClient umstellen
+- **Status:** done
+
+## 2026-10-31T10:49:22+00:00 -- harness/llm/client.py entfernen
+- **Status:** failed
+- **Info:** reviewer_rejected_after_reflection
+
+## 2026-10-31T10:49:24+00:00 -- harness/llm/ollama_client.py entfernen
+- **Status:** failed
+- **Info:** reviewer_rejected_after_reflection
+
+## 2026-10-31T10:49:28+00:00 -- .env.example auf DeepSeek umstellen
+- **Status:** done
+
+## 2026-10-31T10:50:46+00:00 -- Phase abgeschlossen: security-ai
+- **Status:** phase_ende
+- **Info:** tasks_ok=4/7
+

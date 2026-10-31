@@ -12,6 +12,9 @@ Konvention:
 - Bereits gesetzte Umgebungsvariablen gewinnen (Tests/CI).
 - Werte werden NICHT gecacht; Getter lesen live aus os.environ.
   reset_cache() ist fuer Tests da, die .env neu laden wollen.
+
+Die LLM-Konfiguration zeigt jetzt auf DeepSeek; der frueher
+erzwungene Loopback-Host entfaellt.
 """
 from __future__ import annotations
 
@@ -22,9 +25,9 @@ from pathlib import Path
 
 DEFAULT_ENV_PATH = ".env"
 
-DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
-DEFAULT_MODEL = "llama3.2:3b"
-DEFAULT_MODEL_LARGE = "qwen2.5:7b"
+DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
+DEFAULT_MODEL = "deepseek-chat"
+DEFAULT_MODEL_LARGE = "deepseek-reasoner"
 DEFAULT_FRITZ_HOST = "fritz.box"
 DEFAULT_FRITZ_NETWORK_TYPE = "Hauptnetz"
 DEFAULT_GUEST_NETWORK_PREFIX = "192.168.189.0/24"
@@ -102,31 +105,34 @@ def reset_cache() -> None:
 # Getter
 # ---------------------------------------------------------------------- #
 
-def validate_ollama_base_url(url: str) -> str:
-    """Prueft, ob die URL ein erlaubtes Ollama-Ziel ist.
+def get_deepseek_api_key() -> str:
+    """Liest DEEPSEEK_API_KEY aus der Umgebung (fail closed).
 
-    Fail closed: bei ungueltigem Scheme oder
-    nicht-Loopback-Host wird ConfigError geworfen.
+    Der Key wird nie geloggt, nie in Fehlermeldungen interpoliert
+    und nie teilweise zurueckgegeben.
     """
-    if not isinstance(url, str) or not url:
-        raise ConfigError("OLLAMA_BASE_URL darf nicht leer sein")
+    value = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    if not value:
+        raise ConfigError("DEEPSEEK_API_KEY fehlt oder ist leer")
+    return value
+
+
+def get_deepseek_base_url() -> str:
+    """Liest DEEPSEEK_BASE_URL aus der Umgebung.
+
+    Default: DEFAULT_DEEPSEEK_BASE_URL. Fail closed bei
+    ungueltigem Scheme oder fehlendem Host.
+    """
+    raw = os.environ.get("DEEPSEEK_BASE_URL", DEFAULT_DEEPSEEK_BASE_URL)
+    url = raw.strip() or DEFAULT_DEEPSEEK_BASE_URL
     parsed = urllib.parse.urlparse(url)
     if parsed.scheme not in ("http", "https"):
         raise ConfigError(
-            f"OLLAMA_BASE_URL: Scheme {parsed.scheme!r} nicht erlaubt"
+            f"DEEPSEEK_BASE_URL: Scheme {parsed.scheme!r} nicht erlaubt"
         )
-    if parsed.hostname not in ("127.0.0.1", "localhost", "::1"):
-        raise ConfigError(
-            f"OLLAMA_BASE_URL: Host {parsed.hostname!r} nicht erlaubt "
-            "(nur Loopback)"
-        )
+    if not parsed.hostname:
+        raise ConfigError("DEEPSEEK_BASE_URL: Host fehlt")
     return url
-
-
-def get_ollama_base_url() -> str:
-    return validate_ollama_base_url(
-        os.environ.get("OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL)
-    )
 
 
 def get_model_default() -> str:
@@ -256,25 +262,25 @@ def get_fritz_credentials() -> tuple[str, str]:
 
 
 __all__ = [
+    "DEFAULT_DEEPSEEK_BASE_URL",
     "DEFAULT_ENV_PATH",
     "DEFAULT_FRITZ_HOST",
     "DEFAULT_FRITZ_NETWORK_TYPE",
     "DEFAULT_GUEST_NETWORK_PREFIX",
     "DEFAULT_MODEL",
     "DEFAULT_MODEL_LARGE",
-    "DEFAULT_OLLAMA_BASE_URL",
     "SECRET_KEY_MIN_BYTES",
     "ConfigError",
+    "get_deepseek_api_key",
+    "get_deepseek_base_url",
     "get_fritz_credentials",
     "get_fritz_host",
     "get_fritz_network_type",
     "get_guest_network_prefix",
     "get_model_default",
     "get_model_large",
-    "get_ollama_base_url",
     "get_secret_key",
     "load_env",
     "reset_cache",
     "resolve_network_type",
-    "validate_ollama_base_url",
 ]

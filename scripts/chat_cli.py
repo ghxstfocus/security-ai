@@ -17,6 +17,9 @@ Aufruf:
   python3 scripts/chat_cli.py --principal cli-admin --whoami
       -> Rolle + Permissions des Principals
 
+Der Chat laeuft gegen die DeepSeek-API; ein gesetzter
+DEEPSEEK_API_KEY ist Pflicht.
+
 Konvention:
 - --principal Pflicht.
 - Ohne --question: interaktiver Modus (bis "exit" oder EOF).
@@ -53,11 +56,12 @@ from core.access.repository import (
 )
 from core.access.session_repo import SessionRepository
 from core.config import (
+    ConfigError,
+    get_deepseek_api_key,
+    get_deepseek_base_url,
     get_model_default,
     get_model_large,
-    get_ollama_base_url,
     load_env,
-    validate_ollama_base_url,
 )
 from core.context.builder import build_chat_context
 from core.inventory.repository import (
@@ -70,7 +74,7 @@ from core.services.access_service import (
     AccessServiceError,
 )
 from harness.audit.writer import AuditWriter
-from harness.llm.client import OllamaClient
+from harness.llm.deepseek_client import DeepSeekClient
 from harness.llm.errors import LLMError
 from scripts.init_db import init_db
 
@@ -85,7 +89,7 @@ DEFAULT_AUDIT_DIR = "audit-logs"
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="chat_cli",
-        description="Chat mit der lokalen Security AI (Ollama)",
+        description="Chat mit der Security AI (DeepSeek)",
     )
     p.add_argument("--principal", required=True,
                    help="Principal-Name (z. B. cli-admin)")
@@ -106,16 +110,16 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Kein Auto-Bootstrap: fail closed, wenn DB fehlt "
                         "oder cli-admin fehlt")
     p.add_argument("--no-auto-large", action="store_true",
-                   help="Auto-Switch zu grossem Modell deaktivieren")
+                   help="Auto-Switch auf `deepseek-reasoner` deaktivieren")
     p.add_argument("--context-hours", type=int, default=24,
                    help="Zeitfenster fuer Kontext (Default: 24)")
     p.add_argument("--context-max-assessments", type=int, default=50,
                    help="Max risk_assessments im Kontext (Default: 50)")
     p.add_argument("--base-url", default=None,
-                   help=f"Ollama-Base-URL (Default aus .env: "
-                        f"{get_ollama_base_url()})")
+                   help=f"DeepSeek-Base-URL (Default aus DEEPSEEK_BASE_URL: "
+                        f"{get_deepseek_base_url()})")
     p.add_argument("--model", default=None,
-                   help=f"Ollama-Modell (Default aus .env: "
+                   help=f"DeepSeek-Modell (Default aus SECURITY_AI_MODEL: "
                         f"{get_model_default()}; gross: {get_model_large()})")
     p.add_argument("--timeout", type=float, default=None,
                    help="LLM-Timeout in Sekunden (Default: 30)")
@@ -125,6 +129,27 @@ def build_parser() -> argparse.ArgumentParser:
 # ---------------------------------------------------------------------- #
 # Hilfen
 # ---------------------------------------------------------------------- #
+
+def _build_llm_client(args: argparse.Namespace) -> DeepSeekClient:
+    """
+    Baut den DeepSeekClient aus CLI-Argumenten und .env-Konfiguration.
+
+    Ein explizites CLI-Argument schlaegt die .env-Konfiguration.
+    Fehlender Key oder ungueltiges Scheme -> FEHLER + Exit 1.
+    """
+    try:
+        base_url = getattr(args, "base_url", None) or get_deepseek_base_url()
+        model = getattr(args, "model", None) or get_model_default()
+        api_key = get_deepseek_api_key()
+        return DeepSeekClient(
+            base_url=base_url,
+            api_key=api_key,
+            default_model=model,
+        )
+    except (ConfigError, ValueError) as exc:
+        print(f"FEHLER: {exc}", file=sys.stderr)
+        raise SystemExit(1) from exc
+
 
 def _print_response(resp: ChatResponse) -> None:
     """
@@ -236,9 +261,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         audit = AuditWriter(base_dir=args.audit_base_dir)
-        base_url = args.base_url or get_ollama_base_url()
-        base_url = validate_ollama_base_url(base_url)
-        llm = OllamaClient(base_url=base_url)
+        llm = _build_llm_client(args)
 
         principals = PrincipalRepository(conn)
         roles = RoleRepository(conn)

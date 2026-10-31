@@ -29,6 +29,7 @@ Fehler:
 - Rate-Limit erreicht   -> 429 JSON + Retry-After.
 - AccessDeniedError     -> 403 JSON.
 - LLMError/Timeout/Unavailable -> 502 JSON (Auflage 487).
+- fehlende DeepSeek-Konfiguration -> 502 JSON.
 - ChatServiceError      -> 400 JSON.
 - ChatOperationError    -> NICHT fangen (globaler 500).
 
@@ -52,14 +53,38 @@ from core.context.links import extract_links
 from core.services.rate_limit_service import RateLimitService
 from harness.llm.errors import LLMError, LLMTimeout, LLMUnavailable
 
+# LLMUnavailable wird in _build_chat_service (ConfigError -> LLMUnavailable)
+# und in chat_api (502-Mapping) verwendet.
+
 QUESTION_MAX_LEN = 2000
 
 
 def _build_chat_service() -> ChatService:
-    from harness.llm.client import OllamaClient
+    """Baut den ChatService mit DeepSeekClient.
+
+    ConfigError (fehlender Key, ungueltiges Scheme) wird als
+    LLMUnavailable neu geworfen und in chat_api auf 502 JSON
+    abgebildet (ConfigError -> LLMUnavailable -> 502).
+    """
+    from core.config import (
+        ConfigError,
+        get_deepseek_api_key,
+        get_deepseek_base_url,
+        get_model_default,
+    )
+    from harness.llm.deepseek_client import DeepSeekClient
+
+    try:
+        client = DeepSeekClient(
+            base_url=get_deepseek_base_url(),
+            api_key=get_deepseek_api_key(),
+            default_model=get_model_default(),
+        )
+    except ConfigError as exc:
+        raise LLMUnavailable(f"DeepSeek nicht konfiguriert: {exc}") from exc
     return ChatService(
         audit_writer=g.audit,
-        llm_client=OllamaClient(),
+        llm_client=client,
         checker=g.access_checker,
     )
 
