@@ -353,7 +353,6 @@ Status: ✅ implementiert (`harness/versioning/applier.py`, 277 Zeilen, RERUN-80
 - Backup: `changes/backups/<change_id>.json`.
 
 
-
 ## Phase 19 — ChangeApplier und Sofort-Massnahmen-Kategorie
 
 Status: ✅ abgeschlossen (U1-U5). Details in docs/ROADMAP.md,
@@ -375,7 +374,6 @@ Unterbloecke:
 Verweis: ChangeApplier in harness/versioning/applier.py,
 Sofort-Massnahmen-Kategorie in docs/adr/ Paragraph 30,
 Sicherheitsentscheidungen in docs/SECURITY_LOG.md.
-
 
 
 ## Refactoring core/checks/ (Phasen, Docstrings, Typen, Grenzfall-Tests)
@@ -403,15 +401,25 @@ Verifikation (t7):
   Fehler gegenueber Altlast (1353 Fehler in 73 Dateien).
 
 
-
-## Phase 18 — Guardrails laden und nutzen
-
-U1-U12 done. U13 (Doku-Nachzug) folgt in diesem Block. Details in docs/ROADMAP.md.
-
-
-
 ### Erledigt (2026-10-31, aus Offene Punkte)
 
 4. ERLEDIGT-2026-10-31: Punkt 45: verwaiste .env.example-Variablen
    (Kategorie 1, Doku). Alle per os.environ.get gelesenen
    Variablen sind in .env.example vorhanden.
+## 2026-10-31T18:37:01+00:00 -- ROADMAP Phase 18 U1-U12 Liste
+- **Status:** done
+
+## 2026-10-31T18:37:06+00:00 -- SECURITY_LOG Audit-Kinds Phase 18
+- **Status:** done
+
+## 2026-10-31T18:37:13+00:00 -- STATUS OP-005 entfernen
+- **Status:** failed
+- **Info:** reviewer_rejected
+
+## 2026-10-31T18:37:16+00:00 -- PROGRESS OP-005 erledigt eintragen
+- **Status:** done
+
+## 2026-10-31T18:39:11+00:00 -- Phase abgeschlossen: security-ai
+- **Status:** phase_ende
+- **Info:** rc=1 tasks_ok=3/4
+

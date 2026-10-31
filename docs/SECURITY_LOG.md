@@ -571,6 +571,20 @@ Punkt 82: Orchestrator-Docstring 5->6 Tools (6d9c1c1).
 
 ## Offene Punkte (Stand 3.6.8)
 
+### Audit-Kinds Phase 18
+
+In Phase 18 (Guardrails) eingefuehrte Audit-Kinds. Jedes Kind
+kommt als String exakt so im Code vor (harness/audit/writer.py,
+core/audit/, core/services/guardrail_service.py).
+
+- guardrail_state_changed — Zustandswechsel eines Guardrails (POST /api/guardrails/<id>/state).
+- guardrail_loaded — Guardrail beim Laden registriert.
+- guardrail_reloaded — Guardrail nach Reload neu geladen.
+- guardrail_validation_failed — Guardrail-Validierung fehlgeschlagen (fail closed).
+
+Zugehoerige Migrationen: 0016, 0017, 0018.
+Siehe docs/adr/ Paragraph 30 (Guardrails).
+
 1. AuditReaderError-Namenskollision:
    `core/reporting/audit_reader.py::AuditReaderError`
    hat denselben Namen wie der fruehere Service-

@@ -412,7 +412,22 @@ Kontext-Feld.
 
 ## Phase 18 — Guardrails laden und nutzen  ✅
 
-core/guardrails/{models,loader,repository}.py, core/services/guardrail_service.py. Dashboard-Route /guardrails (read-only) und POST /api/guardrails/<id>/state. Audit-Kind guardrail_state_changed.
+Unterbloecke:
+
+- ✅ U1: Guardrail-Modelle (core/guardrails/models.py).
+- ✅ U2: Loader (core/guardrails/loader.py).
+- ✅ U3: Repository (core/guardrails/repository.py).
+- ✅ U4: Migration 0016 (data/migrations/0016_guardrails.sql).
+- ✅ U5: Service (core/services/guardrail_service.py).
+- ✅ U6: RBAC-Permission (data/migrations/0017_guardrail_permissions.sql).
+- ✅ U7: Permission-Korrektur (data/migrations/0018_guardrail_permissions.sql).
+- ✅ U8: Dashboard-Route /guardrails (read-only).
+- ✅ U9: API-Route POST /api/guardrails/<id>/state.
+- ✅ U10: Audit-Kind guardrail_state_changed.
+- ✅ U11: Tests.
+- ✅ U12: Doku-Nachzug.
+
+Details in docs/adr/ und docs/SECURITY_LOG.md.
 
 ## Phase 19 — ChangeApplier und Sofort-Massnahmen-Kategorie  ✅
 
