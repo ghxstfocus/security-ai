@@ -110,9 +110,6 @@ Offen aus `docs/ROADMAP.md`:
    relativ zum CWD gelesen. Deployment-Doku +
    Unit-File in Phase 3.6.9.
 
-3. Rollen-Review: kein Principal ohne Rolle.
-   Siehe SECURITY_LOG.md.
-
 4. Punkt 45: verwaiste .env.example-Variablen
    (Kategorie 1, Doku).
 
