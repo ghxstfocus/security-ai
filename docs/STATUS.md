@@ -5,7 +5,7 @@ Letzte Aktualisierung: 2026-10-31.
 
 ## Kennzahlen
 
-- HEAD: c9142a7 (origin/main synchron).
+- HEAD: ffef6b4 (origin/main synchron).
 - Branch: main.
 - Working Tree: sauber.
 - Tests: siehe aktuelle pytest-Ausgabe (mind. 1334 collected).
@@ -19,20 +19,6 @@ Letzte Aktualisierung: 2026-10-31.
 Phase 3.6 (Web-Dashboard) ist funktional
 abgeschlossen. Arbeit laeuft ueber die Werkstatt
 (Punkte und Zwischenbloecke).
-
-
-## Naechster Bau-Block
-
-Offen aus `docs/ROADMAP.md`:
-
-- Host-Scanner (Phase 3.8).
-- Endpoint-Watcher.
-- Chat als Aktions-Schnittstelle.
-- Token-Mechanik.
-- Anbindungs-Registry.
-- Cloud-AI-Anbindung.
-- Kunden-KI-Basis.
-- LLM-Rolle klaeren.
 
 ## Offene Punkte
 
@@ -76,8 +62,14 @@ Offen aus `docs/ROADMAP.md`:
 
 ## Verweise
 
-- `docs/ROADMAP.md` — Phasen und Ausblick.
-- `docs/DECISIONS.md` — Design-Entscheidungen.
-- `docs/SECURITY_LOG.md` — Sicherheits-Entscheidungen.
-- `docs/CONVENTIONS.md` — projektspezifische Konventionen.
+- [`ROADMAP.md`](ROADMAP.md) — Phasen und Ausblick.
+- `docs/adr/` — Design-Entscheidungen (ADRs).
+- [`SECURITY_LOG.md`](SECURITY_LOG.md) — Sicherheits-Entscheidungen.
+- [`CONVENTIONS.md`](CONVENTIONS.md) — projektspezifische Konventionen.
 
+### OP-005: Phase 18 U13 — Doku-Nachzug
+- **Status:** open
+- **Betroffene Dateien:** docs/ROADMAP.md, docs/SECURITY_LOG.md
+- **Akzeptanzkriterien:** ROADMAP.md enthaelt Phase 18 U1-U12; SECURITY_LOG.md listet alle neuen Audit-Kinds. `grep -F` auf beide Dateien findet je mind. 1 Treffer pro U-Nummer.
+- **Tests:** —
+- **Blockiert von:** —
