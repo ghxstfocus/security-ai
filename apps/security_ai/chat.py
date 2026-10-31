@@ -58,7 +58,7 @@ class LLMClientProtocol(Protocol):
     """
     Minimale Schnittstelle fuer einen LLM-Client.
 
-    Echte Implementierung: harness.llm.client.OllamaClient.
+    Echte Implementierung: harness.llm.deepseek_client.DeepSeekClient.
     Test-Implementierung: ein Fake, der eine feste Antwort liefert.
     """
 
