@@ -22,7 +22,7 @@ from apps.dashboard.decorators import require_permission
 from core.config import (
     get_model_default,
     get_model_large,
-    get_ollama_base_url,
+    get_deepseek_base_url,
 )
 
 
@@ -50,7 +50,7 @@ def _snapshot() -> dict:
         "debug": _val("DEBUG"),
         "testing": _val("TESTING"),
         "max_content_length": _val("MAX_CONTENT_LENGTH"),
-        "ollama_base_url": get_ollama_base_url(),
+        "deepseek_base_url": get_deepseek_base_url(),
         "model_default": get_model_default(),
         "model_large": get_model_large(),
         "cookie_httponly": _val("SESSION_COOKIE_HTTPONLY"),

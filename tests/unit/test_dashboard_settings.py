@@ -75,16 +75,16 @@ def test_settings_shows_config_values(app):
 
 def test_settings_shows_models(app):
     from core.config import (
+        get_deepseek_base_url,
         get_model_default,
         get_model_large,
-        get_ollama_base_url,
     )
     c = create_role_client(app, "admin")
     r = c.get("/settings")
     body = r.data.decode("utf-8", errors="replace")
     assert get_model_default() in body
     assert get_model_large() in body
-    assert get_ollama_base_url() in body
+    assert get_deepseek_base_url() in body
 
 
 def test_settings_shows_security_self_report(app):

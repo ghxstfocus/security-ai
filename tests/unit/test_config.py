@@ -16,13 +16,13 @@ from __future__ import annotations
 import pytest
 
 from core.config import (
+    DEFAULT_DEEPSEEK_BASE_URL,
     SECRET_KEY_MIN_BYTES,
     ConfigError,
+    get_deepseek_base_url,
     get_guest_network_prefix,
-    get_ollama_base_url,
     get_secret_key,
     resolve_network_type,
-    validate_ollama_base_url,
 )
 
 # ---------------------------------------------------------------------- #
@@ -112,45 +112,28 @@ def test_secret_key_min_bytes_is_32() -> None:
     assert SECRET_KEY_MIN_BYTES == 32
 
 
-def test_validate_ollama_file_scheme_raises() -> None:
+def test_get_deepseek_base_url_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("DEEPSEEK_BASE_URL", raising=False)
+    assert get_deepseek_base_url() == DEFAULT_DEEPSEEK_BASE_URL
+
+
+def test_get_deepseek_base_url_env_gewinnt(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("DEEPSEEK_BASE_URL", "https://proxy.example.com")
+    assert get_deepseek_base_url() == "https://proxy.example.com"
+
+
+def test_get_deepseek_base_url_fail_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("DEEPSEEK_BASE_URL", "file:///etc/passwd")
     with pytest.raises(ConfigError):
-        validate_ollama_base_url("file:///etc/passwd")
+        get_deepseek_base_url()
 
 
-def test_validate_ollama_external_host_raises() -> None:
+def test_get_deepseek_base_url_ohne_host_raises(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DEEPSEEK_BASE_URL", "https://")
     with pytest.raises(ConfigError):
-        validate_ollama_base_url("http://evil.example.com")
-
-
-def test_validate_ollama_leer_raises() -> None:
-    with pytest.raises(ConfigError):
-        validate_ollama_base_url("")
-
-
-def test_validate_ollama_loopback_ok() -> None:
-    url = "http://127.0.0.1:11434"
-    assert validate_ollama_base_url(url) == url
-
-
-def test_validate_ollama_localhost_ok() -> None:
-    url = "http://localhost:11434"
-    assert validate_ollama_base_url(url) == url
-
-
-def test_validate_ollama_https_loopback_ok() -> None:
-    url = "https://127.0.0.1:11434"
-    assert validate_ollama_base_url(url) == url
-
-
-def test_validate_ollama_lan_host_raises() -> None:
-    with pytest.raises(ConfigError):
-        validate_ollama_base_url("http://192.168.178.50:11434")
-
-
-def test_get_ollama_base_url_fail_closed(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("OLLAMA_BASE_URL", "file:///etc/passwd")
-    with pytest.raises(ConfigError):
-        get_ollama_base_url()
+        get_deepseek_base_url()
 
 
 # ------------------------------------------------------------------ #

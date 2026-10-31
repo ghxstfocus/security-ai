@@ -158,14 +158,20 @@ class DeepSeekClient:
         timeout: float | None = None,
     ) -> str:
         """Kompatibilitaets-Wrapper: liefert nur den Antworttext."""
-        request = LLMRequest(
-            prompt=prompt,
-            system=system,
-            model=model,
-            max_tokens=max_tokens,
-            timeout=timeout,
-        )
-        return self.generate(request).text
+        # Fix 2026-10-31: LLMRequest validiert streng (model: str,
+        # max_tokens > 0, timeout > 0). None-Werte hier nicht
+        # durchreichen, sondern Defaults greifen lassen. Live-Beleg:
+        # generate_text(prompt) mit model=None -> ValueError.
+        kwargs: dict = {"prompt": prompt}
+        if system is not None:
+            kwargs["system"] = system
+        if model is not None:
+            kwargs["model"] = model
+        if max_tokens is not None:
+            kwargs["max_tokens"] = max_tokens
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+        return self.generate(LLMRequest(**kwargs)).text
 
     def is_available(self, timeout: float | None = None) -> bool:
         """Health-Check gegen ``/v1/models``. Liefert ``True``/``False``."""
