@@ -24,6 +24,8 @@ from apps.security_ai.chat import (
     ChatService,
     ChatServiceError,
 )
+
+DEFAULT_DEEPSEEK_MODEL = "deepseek-chat"
 from core.access.checker import AccessChecker, AccessDeniedError
 from core.access.models import PrincipalKind
 from core.access.repository import (
@@ -92,7 +94,7 @@ class _ChatBase(unittest.TestCase):
             audit_writer=self.audit,
             llm_client=self.llm,
             checker=self.checker,
-            default_model="llama3.2:3b",
+            default_model=DEFAULT_DEEPSEEK_MODEL,
         )
 
     def tearDown(self) -> None:
@@ -128,16 +130,16 @@ class ChatServiceHappyPathTests(_ChatBase):
         self.assertIsInstance(r, ChatResponse)
         self.assertEqual(r.answer, "Antwort.")
         self.assertEqual(r.source, "llm")
-        self.assertEqual(r.model, "llama3.2:3b")
+        self.assertEqual(r.model, DEFAULT_DEEPSEEK_MODEL)
         self.assertTrue(r.used_llm)
         self.assertFalse(r.denied)
         self.assertEqual(len(self.llm.calls), 1)
-        self.assertEqual(self.llm.calls[0].model, "llama3.2:3b")
+        self.assertEqual(self.llm.calls[0].model, DEFAULT_DEEPSEEK_MODEL)
 
     def test_model_override(self):
-        r = self.svc.ask("admin", "Frage?", model="qwen2.5:7b")
-        self.assertEqual(r.model, "qwen2.5:7b")
-        self.assertEqual(self.llm.calls[-1].model, "qwen2.5:7b")
+        r = self.svc.ask("admin", "Frage?", model="deepseek-chat")
+        self.assertEqual(r.model, "deepseek-chat")
+        self.assertEqual(self.llm.calls[-1].model, "deepseek-chat")
 
     def test_leere_frage_wirft(self):
         for bad in ("", "   ", None, 123):
@@ -302,7 +304,7 @@ class ChatServiceLlmErrorTests(_ChatBase):
     def test_llmerror_wird_propagiert(self):
         llm = FakeLLM(error=LLMUnavailable("ollama down"))
         svc = ChatService(audit_writer=self.audit, llm_client=llm, checker=self.checker,
-                          default_model="llama3.2:3b")
+                          default_model=DEFAULT_DEEPSEEK_MODEL)
         with self.assertRaises(LLMError):
             svc.ask("admin", "Frage?")
         kinds = self._kinds()
@@ -378,7 +380,7 @@ class ChatServiceAuditTests(_ChatBase):
             if e["details"]["kind"] == "chat_answered"
         )
         self.assertEqual(answered["details"]["source"], "llm")
-        self.assertEqual(answered["details"]["model"], "llama3.2:3b")
+        self.assertEqual(answered["details"]["model"], DEFAULT_DEEPSEEK_MODEL)
 
     def test_chat_answered_source_detail(self):
         self.svc.ask("admin", "welche IP?", detail=True)
@@ -605,10 +607,9 @@ class ChatServiceAutoSwitchTests(_ChatBase):
                 {"category": "EVENT", "score": 0.1},
             ),
         )
-        self.assertEqual(r.model, "llama3.2:3b")
+        self.assertEqual(r.model, DEFAULT_DEEPSEEK_MODEL)
         self.assertEqual(r.model_reason, "default")
-        # llama3.2:3b ist nach der DeepSeek-Migration nicht mehr in
-        # _MODEL_TIMEOUTS -> _timeout_for_model liefert 60 (Fallback).
+        # DEFAULT_DEEPSEEK_MODEL ist in _MODEL_TIMEOUTS -> 60.
         self.assertEqual(self.llm.calls[-1].timeout, 60.0)
 
     def test_kein_auto_switch_bei_konzeptfrage(self):
@@ -619,7 +620,7 @@ class ChatServiceAutoSwitchTests(_ChatBase):
                 {"category": "CONFIRMED", "score": 0.85},
             ),
         )
-        self.assertEqual(r.model, "llama3.2:3b")
+        self.assertEqual(r.model, DEFAULT_DEEPSEEK_MODEL)
         self.assertEqual(r.model_reason, "concept")
 
     def test_explicit_model_gewinnt(self):
@@ -704,8 +705,8 @@ class ChatServiceModelCallbackTests(_ChatBase):
             on_model_selected=cb,
         )
         self.assertEqual(len(calls), 1)
-        # "Was ist ein Portscan?" ist concept -> 3B
-        self.assertEqual(calls[0], ("llama3.2:3b", "concept"))
+        # "Was ist ein Portscan?" ist concept -> Default-Modell
+        self.assertEqual(calls[0], (DEFAULT_DEEPSEEK_MODEL, "concept"))
         # LLM wurde danach gerufen
         self.assertEqual(len(self.llm.calls), 1)
 

@@ -289,3 +289,10 @@
 - **Status:** phase_ende
 - **Info:** tasks_ok=1/1
 
+## 2026-10-31T13:06:41+00:00 -- tests/unit/test_chat.py atomar umstellen
+- **Status:** done
+
+## 2026-10-31T13:09:24+00:00 -- Phase abgeschlossen: security-ai
+- **Status:** phase_ende
+- **Info:** tasks_ok=1/1
+
