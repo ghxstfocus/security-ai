@@ -1,3 +1,16 @@
+# security-ai — Doku-Index
+
+Lese-Reihenfolge wie in `AGENTS.md`:
+
+1. [`STATUS.md`](STATUS.md)
+2. [`ROADMAP.md`](ROADMAP.md)
+3. [`ARCHITECTURE.md`](ARCHITECTURE.md)
+4. [`CONVENTIONS.md`](CONVENTIONS.md)
+5. [`adr/README.md`](adr/README.md)
+6. [`glossary.md`](glossary.md)
+
+---
+
 # docs
 
 Index der Detail-Dokumentation.
