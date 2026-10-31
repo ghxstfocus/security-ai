@@ -194,7 +194,7 @@ Tests:
 
 ## 3b. Ollama (entfernt)
 
-Der lokale Ollama-Chat wurde mit dem Ollama-Rueckbau (Phase 16) entfernt. Siehe DESIGN_DECISIONS Paragraph 26 und SECURITY_REVIEW_LOG Punkt 88. Die Intelligenz-Schicht wird von der Admin AI uebernommen (siehe docs/ADMIN_AI_SCOPE.md).
+Der lokale Ollama-Chat wurde mit dem Ollama-Rueckbau (Phase 16) entfernt. Siehe docs/adr/ Paragraph 26 und SECURITY_REVIEW_LOG Punkt 88. Die Intelligenz-Schicht wird von der Admin AI uebernommen (siehe docs/ADMIN_AI_SCOPE.md).
 
 ## 3c. Dashboard hinter nginx mit TLS
 

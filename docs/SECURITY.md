@@ -370,7 +370,7 @@ Login ohne Zutritt: ntfy (C). Zugriff bleibt aktiv:
 ntfy (W). Ungewoehnliches Muster: ntfy (W). System
 bleibt offen: ntfy (W). Mehrere Versuche: ntfy (C).
 
-Kanal-Details: DESIGN_DECISIONS § 23 (Alarm-Kanal)
+Kanal-Details: docs/adr/ § 23 (Alarm-Kanal)
 und docs/NTFY.md.
 
 ---

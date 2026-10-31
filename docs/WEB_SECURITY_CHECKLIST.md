@@ -59,7 +59,7 @@ was der Service freigibt.
       default-src 'self'; script-src 'self';
       style-src 'self'; img-src 'self' data:;
       connect-src 'self'.
-      (Quelle: DESIGN_DECISIONS §16 — streng, kein
+      (Quelle: docs/adr/ §16 — streng, kein
       unsafe-inline, kein unsafe-eval.)
 - 💡 Keine Inline-Skripte (nur externe JS-Dateien).
 
@@ -228,7 +228,7 @@ Fail-closed-Nachweis:
     - Audit-Fehler          -> 5xx (ToolRunAuditError).
     - Level >= 2            -> 4xx (Level-2-Guard).
 
-Verweis: DESIGN_DECISIONS § 17
+Verweis: docs/adr/ § 17
 (Dashboard als administrative Oberflaeche).
 
 Wartung: Die Werkbank-Registry ist bewusst getrennt

@@ -357,7 +357,7 @@ Status: ✅ implementiert (`harness/versioning/applier.py`, 277 Zeilen, RERUN-80
 ## Phase 19 — ChangeApplier und Sofort-Massnahmen-Kategorie
 
 Status: ✅ abgeschlossen (U1-U5). Details in docs/ROADMAP.md,
-Begruendung in docs/DECISIONS.md Paragraph 30.
+Begruendung in docs/adr/ Paragraph 30.
 
 Unterbloecke:
 
@@ -373,7 +373,7 @@ Unterbloecke:
   DECISIONS, SECURITY_LOG).
 
 Verweis: ChangeApplier in harness/versioning/applier.py,
-Sofort-Massnahmen-Kategorie in docs/DECISIONS.md Paragraph 30,
+Sofort-Massnahmen-Kategorie in docs/adr/ Paragraph 30,
 Sicherheitsentscheidungen in docs/SECURITY_LOG.md.
 
 

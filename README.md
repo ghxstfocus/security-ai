@@ -97,7 +97,7 @@ Der Mensch bleibt die letzte Instanz.
 - docs/STATUS.md - aktueller Stand (HEAD, Tests,
   naechster Block).
 - docs/ROADMAP.md - Phasen und Ausblick.
-- docs/DECISIONS.md - Design-Entscheidungen.
+- docs/adr/ - Design-Entscheidungen.
 - docs/SECURITY_LOG.md - Sicherheits-Entscheidungen.
 - docs/CONVENTIONS.md - projektspezifische Konventionen.
 - docs/ARCHITECTURE.md - technische Schichten.

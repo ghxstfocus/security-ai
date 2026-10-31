@@ -747,7 +747,7 @@ Umgesetzt in fuenf Commits:
 - c7f2649 (3/5) inventory: InventoryOperationError neu.
   InventoryServiceError (Format) -> 404 (Pfad-Parameter).
 - b0834d0 (4/5) audit_reader: AuditReaderOperationError neu.
-- (5/5) Doku-Nachzug: DESIGN_DECISIONS §11,
+- (5/5) Doku-Nachzug: docs/adr/ §11,
   SECURITY_REVIEW_LOG, PHASES, CONTEXT_PROMPT.
 
 Tests: 805 passed (Vollsuite, venv).
@@ -1349,7 +1349,7 @@ Siehe docs/SECURITY_LOG.md, Punkte 1-11.
 Insbesondere:
 - Punkt 5: ChatServiceError -> OperationError.
 - Punkt 6: Fehlerklassen-Trennung in Alt-Services.
-- Punkt 7/8: DESIGN_DECISIONS § 2/§ 11 (in diesem
+- Punkt 7/8: docs/adr/ § 2/§ 11 (in diesem
   Doku-Audit nachgetragen).
 - Punkt 10/11: HTTPS und SSH-Zugang.
 

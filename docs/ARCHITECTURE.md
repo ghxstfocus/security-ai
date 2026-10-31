@@ -432,7 +432,7 @@ Details: docs/adr/, Abschnitt 8.
 **Status:** entfernt (Phase 16).
 Der ehemalige Ollama-Client (harness/llm/client.py) wurde
 mit dem Ollama-Rueckbau entfernt. Siehe
-DESIGN_DECISIONS Paragraph 26 und SECURITY_REVIEW_LOG
+docs/adr/ Paragraph 26 und SECURITY_REVIEW_LOG
 Punkt 88. Fuer Cloud-Provider siehe docs/ADMIN_AI_SCOPE.md.
 
 ### 3.15 core/reporting — Reporting & Kontext (Phase 3.5.6)

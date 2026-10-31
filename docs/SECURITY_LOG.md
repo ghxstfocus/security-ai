@@ -495,7 +495,7 @@ Punkt 82: Orchestrator-Docstring 5->6 Tools (6d9c1c1).
   Phasen 6-11 (706ab5e).
 - Punkt 3 (e45bc87): create_principal erzwingt
   device.read. Doku in PERMISSIONS.md und
-  DESIGN_DECISIONS §10. Fail closed beim Anlegen
+  docs/adr/ §10. Fail closed beim Anlegen
   statt beim Login. Log-Markierung: 3b36753.
 - 3.6.17 (d4c6fa7): SearchRepository setzt
   row_factory defensiv.
@@ -592,11 +592,11 @@ Punkt 82: Orchestrator-Docstring 5->6 Tools (6d9c1c1).
    device.read und wirft AccessServiceError
    bei Rollen ohne device.read (Reviewer-GO
    Variante B, Auflagen 597-602). Doku in
-   PERMISSIONS.md und DESIGN_DECISIONS §10.
+   PERMISSIONS.md und docs/adr/ §10.
 
 4. `WEB_SECURITY_CHECKLIST.md` § E auf strenge
    CSP korrigiert (kein `'unsafe-inline'`) —
-   Quelle jetzt `DESIGN_DECISIONS §16`.
+   Quelle jetzt `docs/adr/ §16`.
 
 5. ChatServiceError nicht in ServiceError-Hierarchie.
    Liegt in apps/security_ai/chat.py, erbt von
@@ -624,11 +624,11 @@ Punkt 82: Orchestrator-Docstring 5->6 Tools (6d9c1c1).
      -> 404, ApprovalStateError -> 409, Basisklasse
      ApprovalRepositoryError -> 500.
 
-7. DESIGN_DECISIONS § 2 (tool-Tabelle):
+7. docs/adr/ § 2 (tool-Tabelle):
    ChangeService -> change_service ergaenzen
    (Auflage 52, 3.6.8d).
 
-8. DESIGN_DECISIONS § 11: Regel
+8. docs/adr/ § 11: Regel
    "Format-Fehler -> ServiceError-Subklasse -> 4xx.
    Betriebs-Fehler -> OperationError-Subklasse -> 5xx."
    ergaenzen (Auflage 74, 3.6.8d).
@@ -1629,7 +1629,7 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
      Name") bleibt sichtbar. Code unveraendert
      (_new_state schreibt h["name"] direkt, was
      den Sentinel enthaelt).
-     Doku: DESIGN_DECISIONS §5 (Event-Transport)
+     Doku: docs/adr/ §5 (Event-Transport)
      um Hinweis zum State-Schema ergaenzt.
      Auflagen 1764-1777.
 
@@ -1778,7 +1778,7 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
     UnknownDeviceRule ist tot - known wird nie gesetzt.
     Fix: Punkt 73a (Auflagen 1840-1848): der Orchestrator
     setzt known im process() aus der Whitelist. Whitelist
-    ist die einzige Quelle der Wahrheit (DESIGN_DECISIONS
+    ist die einzige Quelle der Wahrheit (docs/adr/
     §6). Event-Wert wird hart ueberschrieben.
     Live-Beleg 2026-10-01T17:13:47: device_presence fuer
     C0:7A:D6:76:0D:EB (Hauptnetz, nicht whitelisted) ->
@@ -2024,7 +2024,7 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       (llama3.2:3b, qwen2.5:7b) liefert keine
       brauchbaren Antworten fuer die Komplexitaet
       der Aufgaben. Ersetzt durch Cloud-Provider.
-    - Siehe DESIGN_DECISIONS Paragraph 26.
+    - Siehe docs/adr/ Paragraph 26.
     - Umfang: harness/llm/, apps/security_ai/
       chat.py, scripts/chat_cli.py, Dashboard-
       Chat (routes_chat.py, chat.html, chat.js),
@@ -2042,7 +2042,7 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       Rollentypen. Die Admin AI darf Rollen-
       instanzen aus existierenden Typen anlegen.
     - Ausnahme: Core-Admins nur durch Menschen.
-    - Siehe DESIGN_DECISIONS Paragraph 24 und
+    - Siehe docs/adr/ Paragraph 24 und
       docs/ADMIN_AI_SCOPE.md Paragraph 4.
     - Datenmodell: neue Tabelle role_types oder
       Erweiterung der bestehenden roles-Tabelle.
@@ -2067,7 +2067,7 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       streng vertraulich).
     - Der Core filtert jede Anfrage an die
       Admin AI nach dieser Klassifikation.
-    - Siehe DESIGN_DECISIONS Paragraph 27.
+    - Siehe docs/adr/ Paragraph 27.
     - Kategorie 3: Datenmodell, Service,
       Filterlogik.
 
@@ -2077,14 +2077,14 @@ Ruff-I001-Fix (Kategorie 2 + 3, 2 Commits, ruff 2 -> 0):
       austauschbar (Azure, Anthropic, OpenAI,
       DeepSeek, Copilot).
     - Der Core kennt nur das LLMProvider-Interface.
-    - Siehe DESIGN_DECISIONS Paragraph 28.
+    - Siehe docs/adr/ Paragraph 28.
     - Kategorie 3.
 
 93. (offen, Kategorie 3, Architektur/Betrieb)
     Firma-Installation und Installer.
     - Beschluss 2026-10-04: jede Firma
       installiert ihren eigenen Core.
-    - Siehe DESIGN_DECISIONS Paragraph 29.
+    - Siehe docs/adr/ Paragraph 29.
     - Bausteine: Installer-Skript, Erstkonfiguration
       (erster Admin-Zugang, erste Rollen),
       Update-Pfad, Backup-Konzept,

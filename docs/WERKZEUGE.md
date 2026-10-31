@@ -32,7 +32,7 @@ Exit-Code 0 bei Erfolg, 1 bei Fehler.
 
 ## scripts/chat_cli.py — entfernt (Phase 16)
 
-Der lokale Chat (chat_cli, Ollama) wurde mit dem Ollama-Rueckbau entfernt. Siehe DESIGN_DECISIONS Paragraph 26 und SECURITY_REVIEW_LOG Punkt 88.
+Der lokale Chat (chat_cli, Ollama) wurde mit dem Ollama-Rueckbau entfernt. Siehe docs/adr/ Paragraph 26 und SECURITY_REVIEW_LOG Punkt 88.
 
 ## scripts/approvals_cli.py
 
