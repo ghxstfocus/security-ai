@@ -44,10 +44,11 @@ __all__ = [
 class DeepSeekClient:
     """Duenner Client gegen die OpenAI-kompatible DeepSeek-API.
 
-    Bewusste Abweichung von ``validate_ollama_base_url``: es gibt keinen
-    Loopback-Zwang, weil DeepSeek ein Cloud-Ziel ist. ``base_url`` muss
-    dennoch ein nicht-leerer ``str`` sein und mit ``http://`` oder
-    ``https://`` beginnen.
+    Bewusste Abweichung von der frueheren Loopback-Validierung: es gibt keinen
+    Loopback-Zwang, weil DeepSeek ein Cloud-Ziel ist. Die Base-URL wird aus
+    ``core/config.get_deepseek_base_url()`` bezogen. ``base_url`` muss dennoch
+    ein nicht-leerer ``str`` sein und mit ``http://`` oder ``https://``
+    beginnen.
 
     ``api_key`` muss nach ``.strip()`` nicht leer sein, damit nie ein
     unauthentifizierter Request rausgeht und der Fehler frueh und laut

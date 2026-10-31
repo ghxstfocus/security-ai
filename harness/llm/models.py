@@ -13,7 +13,7 @@ koennen.
 
 Konventionen:
 - max_tokens > 0, timeout > 0 (fail closed).
-- model als String, keine Pruefung gegen eine Liste (Ollama
+- model als String, keine Pruefung gegen eine Liste (DeepSeek
   lehnt unbekannte Modelle selbst ab).
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-DEFAULT_MODEL = "llama3.2:3b"
+DEFAULT_MODEL = "deepseek-chat"
 DEFAULT_MAX_TOKENS = 512
 DEFAULT_TIMEOUT = 30.0
 

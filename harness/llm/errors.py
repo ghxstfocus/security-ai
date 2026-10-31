@@ -6,7 +6,7 @@ LLM-Fehlerklassen.
 
 Hierarchie:
     LLMError                (Basis)
-      LLMUnavailable        (Ollama nicht erreichbar)
+      LLMUnavailable        (DeepSeek nicht erreichbar)
       LLMTimeout            (Zeitueberschreitung)
 
 Aufrufer koennen:
@@ -24,11 +24,11 @@ class LLMError(RuntimeError):
 
 
 class LLMUnavailable(LLMError):
-    """Ollama ist nicht erreichbar (Connection refused, DNS, ...)."""
+    """DeepSeek ist nicht erreichbar (Connection refused, DNS, ...)."""
 
 
 class LLMTimeout(LLMError):
-    """Ollama hat nicht rechtzeitig geantwortet."""
+    """DeepSeek hat nicht rechtzeitig geantwortet."""
 
 
 __all__ = [

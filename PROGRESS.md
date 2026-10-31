@@ -296,3 +296,19 @@
 - **Status:** phase_ende
 - **Info:** tasks_ok=1/1
 
+## 2026-10-31T13:28:52+00:00 -- PROJECT_VISION.md Ollama-Referenzen ersetzen
+- **Status:** done
+
+## 2026-10-31T13:28:55+00:00 -- models.py Docstring und DEFAULT_MODEL korrigieren
+- **Status:** done
+
+## 2026-10-31T13:28:58+00:00 -- errors.py Docstrings anpassen
+- **Status:** done
+
+## 2026-10-31T13:29:01+00:00 -- deepseek_client.py Kommentar umschreiben
+- **Status:** done
+
+## 2026-10-31T13:31:36+00:00 -- Phase abgeschlossen: security-ai
+- **Status:** phase_ende
+- **Info:** tasks_ok=4/4
+

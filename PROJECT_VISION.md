@@ -59,7 +59,7 @@ Der Mensch bleibt die letzte Instanz.
     |  - Audit (append-only, unveraenderlich)                         |
     |  - Approval Queue (Human-in-the-Loop)                           |
     |  - Change Request Workflow                                      |
-    |  - Lokales LLM (Ollama, optional)                               |
+    |  - Cloud-LLM (DeepSeek, optional)                               |
     |                                                                 |
     |  = SCHNITTSTELLE zu ALLEN Bridges                               |
     |  = einzige Instanz, die Aktionen ausfuehrt                      |
@@ -169,7 +169,7 @@ Status-Marker: ✅ laeuft, 🔨 in Arbeit,
 | Event-Reader                   | ✅     | 30s-Timer, Systemd                   |
 | ntfy-Alarme                    | ✅     | self-hosted, Tailscale               |
 | Web-Dashboard                  | ✅     | RBAC, CSP-konform, 12 Seiten         |
-| Lokaler Chat (Ollama)          | ✅     | optional, Fact/Concept/Interpretation|
+| Chat (DeepSeek)                | ✅     | optional, Fact/Concept/Interpretation|
 | Host-Scanner                   | 💡     | Phase 3.8                            |
 | Admin AI (Cloud)               | 💡     | Phase 5                              |
 | Kunden-KI (Cloud)              | 💡     | Phase 9                              |
