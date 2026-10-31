@@ -583,9 +583,8 @@ class ChatServiceAutoSwitchTests(_ChatBase):
         self.assertEqual(r.model, "deepseek-reasoner")
         self.assertEqual(r.model_reason, "auto_critical_state")
         self.assertEqual(self.llm.calls[-1].model, "deepseek-reasoner")
-        self.assertEqual(self.llm.calls[-1].timeout, 60)
-        # Timeout 60 ist Fallback aus _MODEL_TIMEOUTS; qwen2.5:7b
-        # (180 s) ist nach der DeepSeek-Migration nicht mehr large.
+        self.assertEqual(self.llm.calls[-1].timeout, 180)
+        # Timeout 180 aus _MODEL_TIMEOUTS['deepseek-reasoner'].
 
     def test_auto_switch_bei_security_alert(self):
         self.llm.calls.clear()
@@ -608,7 +607,9 @@ class ChatServiceAutoSwitchTests(_ChatBase):
         )
         self.assertEqual(r.model, "llama3.2:3b")
         self.assertEqual(r.model_reason, "default")
-        self.assertEqual(self.llm.calls[-1].timeout, 30.0)
+        # llama3.2:3b ist nach der DeepSeek-Migration nicht mehr in
+        # _MODEL_TIMEOUTS -> _timeout_for_model liefert 60 (Fallback).
+        self.assertEqual(self.llm.calls[-1].timeout, 60.0)
 
     def test_kein_auto_switch_bei_konzeptfrage(self):
         self.llm.calls.clear()
@@ -671,8 +672,8 @@ class ChatServiceAutoSwitchTests(_ChatBase):
 class TimeoutHelperTests(unittest.TestCase):
     def test_bekannte_modelle(self):
         from apps.security_ai.chat import _timeout_for_model
-        self.assertEqual(_timeout_for_model("llama3.2:3b"), 30)
-        self.assertEqual(_timeout_for_model("qwen2.5:7b"), 180)
+        self.assertEqual(_timeout_for_model("deepseek-chat"), 60)
+        self.assertEqual(_timeout_for_model("deepseek-reasoner"), 180)
 
     def test_unbekanntes_modell(self):
         from apps.security_ai.chat import _timeout_for_model
