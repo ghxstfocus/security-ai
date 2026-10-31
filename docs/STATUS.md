@@ -110,8 +110,9 @@ Offen aus `docs/ROADMAP.md`:
    relativ zum CWD gelesen. Deployment-Doku +
    Unit-File in Phase 3.6.9.
 
-4. Punkt 45: verwaiste .env.example-Variablen
-   (Kategorie 1, Doku).
+4. ERLEDIGT-2026-10-31: Punkt 45: verwaiste .env.example-Variablen
+   (Kategorie 1, Doku). Alle per os.environ.get gelesenen
+   Variablen sind in .env.example vorhanden.
 
 5. Punkt 49: last_ip nur bei Diff-Events
    (Beobachtungsstand).
