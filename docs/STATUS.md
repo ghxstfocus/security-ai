@@ -69,9 +69,9 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 
 | Pfad | Warum entfernt | Ersetzt durch | Wiedereinfuehrung |
 |---|---|---|---|
-| OP-005 |
 | OP-002b1 | erledigt 2026-11-01 (dffa860) | Delegation + None-Guard | – |
-| OP-054 | erledigt 2026-11-01 (Werkstatt b795e14) | Builder-False-Positive gefixt | – | erledigt 2026-10-31 (37a6766) | Test-Umschreiben | – |
+| OP-054 | erledigt 2026-11-01 (Werkstatt b795e14) | Builder-False-Positive gefixt | – |
+| OP-005 | erledigt 2026-10-31 (37a6766) | Test-Umschreiben | – |
 | OP-002a | erledigt 2026-11-01 (0c0b901, 4bd9c2a) | normalize_ip + update_last_ip_if_changed | – |
 | `docs/DECISIONS.md` | Monolith, 2026-10-31 migriert | `docs/adr/ADR-NNNN-*.md` | nie — ADR-Format ist Pflicht |
 | `docs/README.md` | Diaetaxis, 2026-10-31 | `docs/index.md` | nie |
