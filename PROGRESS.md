@@ -513,3 +513,7 @@ Verifikation (t7):
 ## 2026-11-01T17:28:26+00:00 -- OP-002b3: Loop-Nachzug 4/4 Tasks (rc=0)
 - **Status:** done
 - **Info:** Commits 09cb89d (Loop) + f2f126c (Kommentar-Restore). Loop-Validierung nach OP-059b/060a/061/062a/062b: 4/4 Tasks done, rc=0. Der Loop hat in update_last_ip_if_changed 3 Kommentarzeilen entfernt (semantisch irrelevant, aber Doku-Verlust) — als separater Commit f2f126c wiederhergestellt. Test test_upsert_seen_mit_ip_wechsel_history wurde auf RFC-5737-Dokumentations-IPs (192.0.2.10 -> 192.0.2.11) umgestellt — semantisch korrekter als der manuelle Fix mit 1.1.1.1 -> 2.2.2.2. 14 Tests gruen (op002b3 + op002a + op002b2). Audit-Pfade: reviewer_stagnation_false_positive (t1), auftrag_bereits_erfuellt_pre_hook (t2), reviewer_phase_approved durch OP-062a (Redaction-Fix) erstmals ohne reject. Human-Gate zeigte Architect-Plan + Reviewer-Bugs + Reflexionen (OP-062b wirkt).
+
+## 2026-11-01T17:57:09+00:00 -- OP-004 Fehldiagnose korrigiert
+- **Status:** info
+- **Info:** Urspruengliche OP-004-Beschreibung ('A900 mypy no-untyped-def, 67 Stellen') war eine Fehldiagnose. Messung 2026-11-01: bei aktivem disallow_untyped_defs (pyproject.toml:55) zeigt mypy 0 untyped-def-Fehler in core/. grep-False-Positive auf mehrzeilige Signaturen. A900 ist kein ruff-Code (ruff 0.16.9). Echte mypy-Fehler: 2 in core/checks/__init__.py:76 (operator, nicht no-untyped-def). OP-004 umgeschrieben auf den echten Befund (1 Datei, 2 Zeilen, Test existiert).
