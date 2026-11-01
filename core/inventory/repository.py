@@ -351,6 +351,24 @@ class DeviceRepository:
                 "VALUES (?, ?, ?, ?, ?, NULL, ?)",
                 (identifier, insert_name, network_type, ts, ts, ip),
             )
+            # FIX N2 (2026-11-01): device_seen-History beim ersten Insert.
+            # Regression durch d611e2b: generischer device_history-INSERT
+            # aus dem Insert-Pfad in den Update-Pfad verschoben.
+            # 5 Spalten (nicht 8): feld/alt/neu sind via Migration 0019
+            # optional und in data/inventory.db nicht vorhanden.
+            _new_row = self._conn.execute(
+                "SELECT id FROM devices WHERE identifier = ?",
+                (identifier,),
+            ).fetchone()
+            if _new_row is not None:
+                self._conn.execute(
+                    "INSERT INTO device_history "
+                    "(device_id, timestamp, event_type, network_type, "
+                    " data_json) "
+                    "VALUES (?, ?, ?, ?, ?)",
+                    (int(_new_row["id"]), ts, event_type,
+                     network_type, data_json),
+                )
             self._conn.commit()
             result = self.get(identifier)
             if result is None:
