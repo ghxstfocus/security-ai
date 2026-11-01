@@ -505,3 +505,7 @@ Verifikation (t7):
 ## 2026-11-01T12:58:37+00:00 -- OP-002b2: _insert_device_history mit Duplikatschutz
 - **Status:** done
 - **Info:** Commit ef413bd. SELECT vor INSERT auf (device_id, feld, alt, neu, timestamp), NULL-sicher (IS ?), Duplikat -> False. Kein commit/rollback. 3 Tests in test_inventory_op002b2.py.
+
+## 2026-11-01T13:25:37+00:00 -- OP-002b3: upsert_seen schreibt last_ip-Wechsel in History
+- **Status:** done
+- **Info:** Commit ebad370. update_last_ip_if_changed(commit=False), _insert_device_history + self._conn.commit() in upsert_seen. 2 Tests in test_inventory_op002b3.py.

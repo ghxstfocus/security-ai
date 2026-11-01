@@ -42,13 +42,6 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 - **Akzeptanzkriterien:** Wenn der Architect sagt "out-of-scope" oder "Tests sind OUT-OF-SCOPE" und KEINEN konkreten Task-Plan liefert, bricht Planner-Split ab mit `planner_split_no_tasks` und der Loop endet sauber. Er erzeugt NICHT einen Mega-Task mit 20+ Dateien aus dem Code-Index. Live-Beleg 2026-10-31: OP-005-Loop, Planner-Split lieferte 1 Task "Architect-Loesung umsetzen" mit 24 Dateien (24 Migrations + 2 Tests + 2 Docs + 2 Code-Dateien), obwohl die Aufgabe explizit nur 2 Test-Dateien betraf.
 - **Tests:** `tests/test_planner_split.py::test_out_of_scope_kein_mega_task`
 - **Blockiert von:** —
-### OP-002b3: upsert_seen ruft _insert_device_history nach Diff
-- **Status:** open
-- **Betroffene Dateien:** `core/inventory/repository.py`
-- **Akzeptanzkriterien:** In `upsert_seen`, NACH erfolgreichem `self.update_last_ip_if_changed(...)`, wenn `True` zurueck: rufe `self._insert_device_history(device_id, feld="last_ip", alt=<alter Wert aus SELECT>, neu=<normalize_ip(ip)>, timestamp=ts)`. Atomare Transaktion (commit nur bei Erfolg, sonst rollback + raise). KEINE Inline-Implementierung der History-Logik in upsert_seen.
-- **Tests:** Neuer Test `test_upsert_seen_mit_ip_wechsel_history` (Wechsel → 2 DB-Eintraege in device_history mit alt/neu).
-- **Blockiert von:** OP-002b1, OP-002b2
-- **Hinweis:** Setzt voraus, dass b1 und b2 sauber sind.
 ## Umgebung
 
 - Container: CT102 (security-ai,
@@ -78,3 +71,4 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 | `PROJECT_VISION.md` (root) | Doku-Bundling, 2026-10-31 | `docs/PROJECT_VISION.md` | nie |
 | `docs/PROGRESS.md` | Duplikat, 2026-10-31 | `PROGRESS.md` (root) | nie |
 | OP-002b2 | erledigt 2026-11-01 (ef413bd) | Loop-Nachzug manuell (Loop rc=1, Methode+Test manuell) | – |
+| OP-002b3 | erledigt 2026-11-01 (ebad370) | Loop-Nachzug manuell (Loop rc=1) | - |
