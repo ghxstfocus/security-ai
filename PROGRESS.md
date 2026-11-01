@@ -509,3 +509,15 @@ Verifikation (t7):
 ## 2026-11-01T13:25:37+00:00 -- OP-002b3: upsert_seen schreibt last_ip-Wechsel in History
 - **Status:** done
 - **Info:** Commit ebad370. update_last_ip_if_changed(commit=False), _insert_device_history + self._conn.commit() in upsert_seen. 2 Tests in test_inventory_op002b3.py.
+## 2026-11-01T17:24:03+00:00 -- update_last_ip_if_changed commit-Parameter
+- **Status:** done
+
+## 2026-11-01T17:24:06+00:00 -- upsert_seen History-Schreiben + Commit
+- **Status:** done
+
+## 2026-11-01T17:24:15+00:00 -- Test mit IP-Wechsel korrigieren
+- **Status:** done
+
+## 2026-11-01T17:24:23+00:00 -- Test ohne IP-Wechsel + Import entfernen
+- **Status:** done
+

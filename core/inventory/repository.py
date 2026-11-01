@@ -550,9 +550,6 @@ class DeviceRepository:
         if not ip:
             return False
         ziel = normalize_ip(ip)
-        # OP-002b1-Fix: ip="" oder ip=None = "kein Diff". Sonst wuerde
-        # UPDATE last_ip auf None setzen, was der alte Code durch
-        # "new_ip = ip if ip else existing.last_ip" verhinderte.
         if ziel is None:
             return False
         row = self._conn.execute(
