@@ -30,6 +30,8 @@ Grenzfall-Tests:
 
 from __future__ import annotations
 
+from typing import cast
+
 _PORT_MIN = 1
 _PORT_MAX = 65535
 
@@ -77,7 +79,11 @@ def check_port_range(port: object, min_port: object, max_port: object) -> bool:
         return False
     if isinstance(max_port, bool):
         return False
-    return min_port <= port <= max_port
+    # OP-004: min_port/max_port sind nach den isinstance-Guards fuer mypy int.
+    # port bleibt aber object (check_port akzeptiert beliebige Typen und
+    # gibt erst zur Laufzeit True/False). cast macht die Narrowing-Absicht
+    # fuer den Typechecker explizit.
+    return min_port <= cast(int, port) <= max_port
 
 
 def check_port_list(
