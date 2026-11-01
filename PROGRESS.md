@@ -509,15 +509,7 @@ Verifikation (t7):
 ## 2026-11-01T13:25:37+00:00 -- OP-002b3: upsert_seen schreibt last_ip-Wechsel in History
 - **Status:** done
 - **Info:** Commit ebad370. update_last_ip_if_changed(commit=False), _insert_device_history + self._conn.commit() in upsert_seen. 2 Tests in test_inventory_op002b3.py.
-## 2026-11-01T17:24:03+00:00 -- update_last_ip_if_changed commit-Parameter
-- **Status:** done
 
-## 2026-11-01T17:24:06+00:00 -- upsert_seen History-Schreiben + Commit
+## 2026-11-01T17:28:26+00:00 -- OP-002b3: Loop-Nachzug 4/4 Tasks (rc=0)
 - **Status:** done
-
-## 2026-11-01T17:24:15+00:00 -- Test mit IP-Wechsel korrigieren
-- **Status:** done
-
-## 2026-11-01T17:24:23+00:00 -- Test ohne IP-Wechsel + Import entfernen
-- **Status:** done
-
+- **Info:** Commits 09cb89d (Loop) + f2f126c (Kommentar-Restore). Loop-Validierung nach OP-059b/060a/061/062a/062b: 4/4 Tasks done, rc=0. Der Loop hat in update_last_ip_if_changed 3 Kommentarzeilen entfernt (semantisch irrelevant, aber Doku-Verlust) — als separater Commit f2f126c wiederhergestellt. Test test_upsert_seen_mit_ip_wechsel_history wurde auf RFC-5737-Dokumentations-IPs (192.0.2.10 -> 192.0.2.11) umgestellt — semantisch korrekter als der manuelle Fix mit 1.1.1.1 -> 2.2.2.2. 14 Tests gruen (op002b3 + op002a + op002b2). Audit-Pfade: reviewer_stagnation_false_positive (t1), auftrag_bereits_erfuellt_pre_hook (t2), reviewer_phase_approved durch OP-062a (Redaction-Fix) erstmals ohne reject. Human-Gate zeigte Architect-Plan + Reviewer-Bugs + Reflexionen (OP-062b wirkt).

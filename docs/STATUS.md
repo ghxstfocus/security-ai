@@ -71,4 +71,4 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 | `PROJECT_VISION.md` (root) | Doku-Bundling, 2026-10-31 | `docs/PROJECT_VISION.md` | nie |
 | `docs/PROGRESS.md` | Duplikat, 2026-10-31 | `PROGRESS.md` (root) | nie |
 | OP-002b2 | erledigt 2026-11-01 (ef413bd) | Loop-Nachzug manuell (Loop rc=1, Methode+Test manuell) | – |
-| OP-002b3 | erledigt 2026-11-01 (ebad370) | Loop-Nachzug manuell (Loop rc=1) | - |
+| OP-002b3 | erledigt 2026-11-01 (09cb89d/f2f126c) | Loop-Nachzug erfolgreich (4/4 Tasks, rc=0) | – |
