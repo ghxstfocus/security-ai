@@ -335,60 +335,83 @@ class DeviceRepository:
         ts = (timestamp or datetime.now(UTC)).isoformat()
         data_json = json.dumps(data or {}, ensure_ascii=False, sort_keys=True)
 
-        existing = self.get(identifier)
-        if existing is None:
+        # Vorab-SELECT: alt-Zustand (id + last_ip) VOR jedem Update merken.
+        pre = self._conn.execute(
+            "SELECT id, last_ip FROM devices WHERE identifier = ?",
+            (identifier,),
+        ).fetchone()
+
+        if pre is None:
             insert_name = (
                 None if entity_name == FALLBACK_SENTINEL else entity_name
             )
-            cur = self._conn.execute(
+            self._conn.execute(
                 "INSERT INTO devices "
                 "(identifier, entity_name, network_type, first_seen, last_seen, notes, last_ip) "
                 "VALUES (?, ?, ?, ?, ?, NULL, ?)",
                 (identifier, insert_name, network_type, ts, ts, ip),
             )
-            device_id = cur.lastrowid
+            self._conn.commit()
+            result = self.get(identifier)
+            if result is None:
+                raise InventoryRepositoryError(
+                    f"Device {identifier!r} nach INSERT nicht gefunden"
+                )
+            return result
+
+        device_id = int(pre["id"])
+        alt_ip = pre["last_ip"]
+
+        existing = self.get(identifier)
+        if existing is None:
+            raise InventoryRepositoryError(
+                f"Device {identifier!r} nach SELECT nicht gefunden"
+            )
+        if entity_name == FALLBACK_SENTINEL:
+            new_name = None
+        elif entity_name is not None:
+            new_name = entity_name
         else:
-            device_id = existing.id
-            if entity_name == FALLBACK_SENTINEL:
-                new_name = None
-            elif entity_name is not None:
-                new_name = entity_name
-            else:
-                new_name = existing.entity_name
-            new_net = network_type if network_type is not None else existing.network_type
-            # OP-002b1: Inline last_ip-Pflege entfernt, Delegation an
-            # update_last_ip_if_changed. None-Guard (ip="" -> None)
-            # ist in update_last_ip_if_changed, nicht hier.
+            new_name = existing.entity_name
+        new_net = (
+            network_type if network_type is not None else existing.network_type
+        )
+        try:
             self._conn.execute(
                 "UPDATE devices SET entity_name = ?, network_type = ?, "
                 "last_seen = ? WHERE id = ?",
                 (new_name, new_net, ts, device_id),
             )
-            # OP-002b3: alt-Wert vor dem UPDATE merken, dann mit
-            # commit=False aufrufen und bei echtem Diff einen
-            # field_change-History-Eintrag schreiben.
-            alt_ip = existing.last_ip
             changed = self.update_last_ip_if_changed(
                 identifier, ip, commit=False,
             )
             if changed:
+                neu = normalize_ip(ip)
+                if neu is None:
+                    neu = ip.strip() if isinstance(ip, str) else ip
                 self._insert_device_history(
-                    device_id, "last_ip", alt_ip, normalize_ip(ip), ts,
+                    device_id,
+                    feld="last_ip",
+                    alt=alt_ip,
+                    neu=neu,
+                    timestamp=ts,
                 )
-                self._conn.commit()
+            self._conn.execute(
+                "INSERT INTO device_history "
+                "(device_id, timestamp, event_type, network_type, data_json) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (device_id, ts, event_type, network_type, data_json),
+            )
+        except sqlite3.Error:
+            self._conn.rollback()
+            raise
 
-        self._conn.execute(
-            "INSERT INTO device_history "
-            "(device_id, timestamp, event_type, network_type, data_json) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (device_id, ts, event_type, network_type, data_json),
-        )
         self._conn.commit()
 
         result = self.get(identifier)
         if result is None:
             raise InventoryRepositoryError(
-                f"Device {identifier!r} nach INSERT nicht gefunden"
+                f"Device {identifier!r} nach UPDATE nicht gefunden"
             )
         return result
 
@@ -524,6 +547,8 @@ class DeviceRepository:
         commit=False: die Transaktion bleibt offen und gehoert
         dem Aufrufer (Transaktionshoheit beim Aufrufer).
         """
+        if not ip:
+            return False
         ziel = normalize_ip(ip)
         # OP-002b1-Fix: ip="" oder ip=None = "kein Diff". Sonst wuerde
         # UPDATE last_ip auf None setzen, was der alte Code durch
@@ -531,7 +556,7 @@ class DeviceRepository:
         if ziel is None:
             return False
         row = self._conn.execute(
-            "SELECT last_ip FROM devices WHERE identifier = ?",
+            "SELECT id, last_ip FROM devices WHERE identifier = ?",
             (identifier,),
         ).fetchone()
         if row is None:
