@@ -21,12 +21,6 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 (Punkte und Zwischenbloecke).
 
 ## Offene Punkte
-### OP-002b: upsert_seen delegiert + device_history-Insert
-- **Status:** open
-- **Betroffene Dateien:** `core/inventory/repository.py`
-- **Akzeptanzkriterien:** `upsert_seen(identifier, ip=X)` ruft `update_last_ip_if_changed(identifier, X)` auf statt `last_ip = ?` direkt zu schreiben. Bei Diff: zusaetzlich `INSERT INTO device_history` mit (device_id, feld="last_ip", alt, neu, timestamp). Bestehende Tests `test_upsert_seen_empty_ip_does_not_overwrite` etc. bleiben gruen. Kein Schema-Change.
-- **Tests:** `tests/unit/test_inventory.py` (Mensch): `test_upsert_seen_kein_doppel_history`, `test_upsert_seen_mit_ip_wechsel_history`.
-- **Blockiert von:** OP-002a
 
 ### OP-003: ruff-Regelschaerfung
 - **Status:** open
@@ -48,6 +42,38 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 - **Akzeptanzkriterien:** Wenn der Architect sagt "out-of-scope" oder "Tests sind OUT-OF-SCOPE" und KEINEN konkreten Task-Plan liefert, bricht Planner-Split ab mit `planner_split_no_tasks` und der Loop endet sauber. Er erzeugt NICHT einen Mega-Task mit 20+ Dateien aus dem Code-Index. Live-Beleg 2026-10-31: OP-005-Loop, Planner-Split lieferte 1 Task "Architect-Loesung umsetzen" mit 24 Dateien (24 Migrations + 2 Tests + 2 Docs + 2 Code-Dateien), obwohl die Aufgabe explizit nur 2 Test-Dateien betraf.
 - **Tests:** `tests/test_planner_split.py::test_out_of_scope_kein_mega_task`
 - **Blockiert von:** —
+
+### OP-002b1: upsert_seen delegiert an update_last_ip_if_changed
+- **Status:** open
+- **Betroffene Dateien:** `core/inventory/repository.py`
+- **Akzeptanzkriterien:** In `upsert_seen` (repository.py) wird die Zeile `new_ip = ip if ip else existing.last_ip` und die `last_ip`-Spalte im UPDATE entfernt. Stattdessen EIN Aufruf `self.update_last_ip_if_changed(identifier, ip)` NACH dem bestehenden UPDATE und VOR `self._conn.commit()`. KEINE Inline-Duplikation der Logik. `update_last_ip_if_changed` wird tatsaechlich aufgerufen (grep: `self.update_last_ip_if_changed` in upsert_seen-Body). KEINE `_insert_device_history` (bleibt OP-002b2). KEIN Duplikatschutz (bleibt OP-002b3).
+- **Tests:** Bestehende Tests in `tests/unit/test_inventory.py` bleiben gruen. Neuer Test `test_upsert_seen_ruft_update_last_ip_if_changed` (mock/Monkey-Patch auf die Methode, prueft Aufruf).
+- **Blockiert von:** —
+- **Hinweis:** Live-Test 5 v2 (2026-11-01): Builder duplizierte die Logik inline statt zu delegieren. 3× Reviewer-Reject. Phase-Reflection erschoepft. Kleinerer Task-Scope soll das verhindern.
+
+### OP-002b2: _insert_device_history mit Duplikatschutz
+- **Status:** open
+- **Betroffene Dateien:** `core/inventory/repository.py`
+- **Akzeptanzkriterien:** Neue Methode `_insert_device_history(self, device_id, feld, alt, neu, timestamp)` mit Duplikatschutz: VOR dem INSERT ein SELECT auf (device_id, feld, alt, neu, timestamp). Wenn identischer Eintrag existiert: skip (return False). KEINE doppelte Methodendefinition. KEIN Aufruf aus `upsert_seen` (bleibt OP-002b3).
+- **Tests:** Neuer Test `test_insert_device_history_kein_duplikat` (2× gleicher Aufruf → 1 DB-Zeile).
+- **Blockiert von:** —
+- **Hinweis:** Live-Test 5 v2: Builder definierte die Methode 2× (Duplikat im Diff) ohne Duplikatschutz. Reviewer-Reject korrekt. Kleinerer Scope.
+
+### OP-002b3: upsert_seen ruft _insert_device_history nach Diff
+- **Status:** open
+- **Betroffene Dateien:** `core/inventory/repository.py`
+- **Akzeptanzkriterien:** In `upsert_seen`, NACH erfolgreichem `self.update_last_ip_if_changed(...)`, wenn `True` zurueck: rufe `self._insert_device_history(device_id, feld="last_ip", alt=<alter Wert aus SELECT>, neu=<normalize_ip(ip)>, timestamp=ts)`. Atomare Transaktion (commit nur bei Erfolg, sonst rollback + raise). KEINE Inline-Implementierung der History-Logik in upsert_seen.
+- **Tests:** Neuer Test `test_upsert_seen_mit_ip_wechsel_history` (Wechsel → 2 DB-Eintraege in device_history mit alt/neu).
+- **Blockiert von:** OP-002b1, OP-002b2
+- **Hinweis:** Setzt voraus, dass b1 und b2 sauber sind.
+
+### OP-054: auftrag_bereits_erfuellt triggert bei "Methode existiert"
+- **Status:** open
+- **Betroffene Dateien:** `werkstatt/builder.py`
+- **Akzeptanzkriterien:** Der Flag `auftrag_bereits_erfuellt` wird nur gesetzt, wenn die Task-Spec explizit sagt "pruefe, ob X existiert" UND X im IST-ZUSTAND steht. Bei Aufgaben wie "baue Methode X mit Eigenschaft Y" reicht die Existenz von X NICHT — Y muss auch nachgewiesen sein (Signature, Verhalten, Tests). Konkret: bei `auftrag_bereits_erfuellt` muss der Builder ein Feld `begruendung_bereits_erfuellt` mit Setzen einer Pruefung (grep, read_file) belegen.
+- **Tests:** `tests/test_builder.py::test_auftrag_bereits_erfuellt_nur_mit_beleg`. Live-Beleg: 2026-11-01, t2 (OP-002b) wurde "done via auftrag_bereits_erfuellt_pre_hook" markiert, obwohl die Methode fehlerhaft (doppelt, ohne Duplikatschutz) war.
+- **Blockiert von:** —
+- **Hinweis:** Live-Befund 2026-11-01. Der Builder erkennt "Methode existiert" und setzt Flag, ohne die Korrektheit zu pruefen.
 
 ## Umgebung
 
