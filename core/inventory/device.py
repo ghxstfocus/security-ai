@@ -13,6 +13,7 @@ neues Device. Der DB-Zugriff liegt in repository.py.
 """
 from __future__ import annotations
 
+import ipaddress
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
@@ -33,6 +34,26 @@ class DeviceType(str, Enum):
 
 def _utc_now() -> datetime:
     return datetime.now(UTC)
+
+
+def normalize_ip(value: str | None) -> str | None:
+    """
+    Kanonisiert eine IP-Adresse (IPv4/IPv6) als Text.
+
+    Reine, seiteneffektfreie Utility ohne DB- oder Logging-Bezug.
+    Gibt ``None`` zurueck, wenn der Wert ``None``, leer oder nicht
+    parsebar ist. ``None`` ist der einzige Fehlerkanal.
+    """
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        addr = ipaddress.ip_address(text)
+    except (ValueError, TypeError):
+        return None
+    return str(addr)
 
 
 @dataclass(frozen=True)
@@ -127,4 +148,5 @@ class Device:
 __all__ = [
     "Device",
     "DeviceType",
+    "normalize_ip",
 ]

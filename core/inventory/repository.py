@@ -21,7 +21,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from core.inventory.device import Device
+from core.inventory.device import Device, normalize_ip
 from core.sentinels import FALLBACK_SENTINEL
 
 # Single source of truth fuer den DB-Pfad.
@@ -450,6 +450,32 @@ class DeviceRepository:
             "(device_id, timestamp, event_type, network_type, data_json) "
             "VALUES (?, ?, ?, ?, ?)",
             (row["id"], ts, event_type, network_type, data_json),
+        )
+        self._conn.commit()
+        return True
+
+    def update_last_ip_if_changed(
+        self, identifier: str, ip: str | None,
+    ) -> bool:
+        """Aktualisiert last_ip nur bei echter Aenderung.
+
+        Rueckgabe: True, wenn ein UPDATE ausgefuehrt wurde,
+        False wenn der Identifier unbekannt ist oder der
+        normalisierte Wert unveraendert ist.
+        """
+        ziel = normalize_ip(ip)
+        row = self._conn.execute(
+            "SELECT last_ip FROM devices WHERE identifier = ?",
+            (identifier,),
+        ).fetchone()
+        if row is None:
+            return False
+        alt = normalize_ip(row["last_ip"])
+        if alt == ziel:
+            return False
+        self._conn.execute(
+            "UPDATE devices SET last_ip = ? WHERE identifier = ?",
+            (ziel, identifier),
         )
         self._conn.commit()
         return True

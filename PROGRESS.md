@@ -462,3 +462,13 @@ Verifikation (t7):
   syntaktisch verschieden. Verbleibender einziger roter Test nach
   OP-005 (11 Doku-Tests) gruen. Volle Suite: 1512 passed, 0 failed.
 
+## 2026-11-01T08:50:15+00:00 -- normalize_ip in device.py
+- **Status:** done
+
+## 2026-11-01T08:50:20+00:00 -- update_last_ip_if_changed in repository.py
+- **Status:** done
+
+## 2026-11-01T08:50:48+00:00 -- Phase abgeschlossen: security-ai
+- **Status:** phase_ende
+- **Info:** tasks_ok=2/2
+
