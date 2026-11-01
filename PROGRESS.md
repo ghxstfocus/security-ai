@@ -471,4 +471,11 @@ Verifikation (t7):
 ## 2026-11-01T08:50:48+00:00 -- Phase abgeschlossen: security-ai
 - **Status:** phase_ende
 - **Info:** tasks_ok=2/2
+## 2026-11-01T09:05:58+00:00 -- OP-002a: normalize_ip + update_last_ip_if_changed
+- **Status:** done
+- **Beleg:** Commits 0c0b901 (Code), 4bd9c2a (Tests).
+- **Code:** core/inventory/device.py::normalize_ip (IPv4/IPv6-canonical, None-safe) + core/inventory/repository.py::update_last_ip_if_changed (SELECT + compare + UPDATE nur bei Diff).
+- **Tests:** 9 neue in tests/unit/test_inventory_op002a.py, alle gruen.
+- **Live-Beleg:** Erster vollstaendig erfolgreicher Loop-Lauf (2/2 Tasks, pytest_regression 600s gruen, human_gate approved).
+- **Nicht enthalten:** upsert_seen-Umbau, device_history-Insert (bleibt OP-002b).
 

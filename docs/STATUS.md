@@ -8,7 +8,7 @@ Letzte Aktualisierung: 2026-10-31.
 - HEAD: ffef6b4 (origin/main synchron).
 - Branch: main.
 - Working Tree: sauber.
-- Tests: siehe aktuelle pytest-Ausgabe (mind. 1334 collected).
+- Tests: 1343 collected (Stand 2026-11-01).
 - ruff 0.16.9: All checks passed.
 - mypy: 1353 Fehler in 73 Dateien (Altlast,
   ueberwiegend no-untyped-def in Tests).
@@ -21,14 +21,6 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 (Punkte und Zwischenbloecke).
 
 ## Offene Punkte
-
-### OP-002a: normalize_ip + update_last_ip_if_changed (Diff-Check, isoliert)
-- **Status:** open
-- **Betroffene Dateien:** `core/inventory/device.py`, `core/inventory/repository.py`
-- **Akzeptanzkriterien:** `normalize_ip(value)` in `device.py` (leer/None -> None, parsebar -> kanonisch via ipaddress, unparsebar -> None). `update_last_ip_if_changed(self, identifier, ip)` in `repository.py`: SELECT last_ip, vergleiche via normalize_ip, UPDATE nur bei Diff. Rueckgabe: True = geschrieben, False = keine Aenderung / unbekannter identifier. KEIN `device_history`-Insert (OP-002b). KEIN `upsert_seen`-Umbau (OP-002b). Keine Migration.
-- **Tests:** `tests/unit/test_inventory.py` (Mensch schreibt): `test_normalize_ip_*` (5 Faelle), `test_update_last_ip_if_changed_*` (3 Faelle: Erstschreiben, unveraendert, Wechsel).
-- **Blockiert von:** —
-
 ### OP-002b: upsert_seen delegiert + device_history-Insert
 - **Status:** open
 - **Betroffene Dateien:** `core/inventory/repository.py`
@@ -78,6 +70,7 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 | Pfad | Warum entfernt | Ersetzt durch | Wiedereinfuehrung |
 |---|---|---|---|
 | OP-005 | erledigt 2026-10-31 (37a6766) | Test-Umschreiben | – |
+| OP-002a | erledigt 2026-11-01 (0c0b901, 4bd9c2a) | normalize_ip + update_last_ip_if_changed | – |
 | `docs/DECISIONS.md` | Monolith, 2026-10-31 migriert | `docs/adr/ADR-NNNN-*.md` | nie — ADR-Format ist Pflicht |
 | `docs/README.md` | Diaetaxis, 2026-10-31 | `docs/index.md` | nie |
 | `PROJECT_VISION.md` (root) | Doku-Bundling, 2026-10-31 | `docs/PROJECT_VISION.md` | nie |
