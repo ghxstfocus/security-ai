@@ -501,3 +501,7 @@ Verifikation (t7):
   und manuell wiederhergestellt. Der Reset war der Fehler, nicht
   der Loop.
 
+
+## 2026-11-01T12:58:37+00:00 -- OP-002b2: _insert_device_history mit Duplikatschutz
+- **Status:** done
+- **Info:** Commit ef413bd. SELECT vor INSERT auf (device_id, feld, alt, neu, timestamp), NULL-sicher (IS ?), Duplikat -> False. Kein commit/rollback. 3 Tests in test_inventory_op002b2.py.

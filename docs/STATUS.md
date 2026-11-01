@@ -42,14 +42,6 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 - **Akzeptanzkriterien:** Wenn der Architect sagt "out-of-scope" oder "Tests sind OUT-OF-SCOPE" und KEINEN konkreten Task-Plan liefert, bricht Planner-Split ab mit `planner_split_no_tasks` und der Loop endet sauber. Er erzeugt NICHT einen Mega-Task mit 20+ Dateien aus dem Code-Index. Live-Beleg 2026-10-31: OP-005-Loop, Planner-Split lieferte 1 Task "Architect-Loesung umsetzen" mit 24 Dateien (24 Migrations + 2 Tests + 2 Docs + 2 Code-Dateien), obwohl die Aufgabe explizit nur 2 Test-Dateien betraf.
 - **Tests:** `tests/test_planner_split.py::test_out_of_scope_kein_mega_task`
 - **Blockiert von:** —
-### OP-002b2: _insert_device_history mit Duplikatschutz
-- **Status:** open
-- **Betroffene Dateien:** `core/inventory/repository.py`
-- **Akzeptanzkriterien:** Neue Methode `_insert_device_history(self, device_id, feld, alt, neu, timestamp)` mit Duplikatschutz: VOR dem INSERT ein SELECT auf (device_id, feld, alt, neu, timestamp). Wenn identischer Eintrag existiert: skip (return False). KEINE doppelte Methodendefinition. KEIN Aufruf aus `upsert_seen` (bleibt OP-002b3).
-- **Tests:** Neuer Test `test_insert_device_history_kein_duplikat` (2× gleicher Aufruf → 1 DB-Zeile).
-- **Blockiert von:** —
-- **Hinweis:** Live-Test 5 v2: Builder definierte die Methode 2× (Duplikat im Diff) ohne Duplikatschutz. Reviewer-Reject korrekt. Kleinerer Scope.
-
 ### OP-002b3: upsert_seen ruft _insert_device_history nach Diff
 - **Status:** open
 - **Betroffene Dateien:** `core/inventory/repository.py`
@@ -85,3 +77,4 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 | `docs/README.md` | Diaetaxis, 2026-10-31 | `docs/index.md` | nie |
 | `PROJECT_VISION.md` (root) | Doku-Bundling, 2026-10-31 | `docs/PROJECT_VISION.md` | nie |
 | `docs/PROGRESS.md` | Duplikat, 2026-10-31 | `PROGRESS.md` (root) | nie |
+| OP-002b2 | erledigt 2026-11-01 (ef413bd) | Loop-Nachzug manuell (Loop rc=1, Methode+Test manuell) | – |
