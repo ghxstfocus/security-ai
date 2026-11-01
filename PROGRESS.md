@@ -487,4 +487,17 @@ Verifikation (t7):
 - **Fix:** no_effect-Filter prueft vor Flag-Setzen, ob old_string im
   Datei-Ist-Zustand mehrfach vorkommt. Bei Duplikat-Anker: kein Flag,
   Audit-Event builder_patch_duplicate_anchor.
+## 2026-11-01T11:44:52+00:00 -- OP-002b1: upsert_seen delegiert an update_last_ip_if_changed
+- **Status:** done
+- **Beleg:** Commits dffa860 (Code+Tests).
+- **Code:** Inline last_ip-Pflege aus upsert_seen entfernt,
+  self.update_last_ip_if_changed(identifier, ip) aufgerufen.
+  Plus ziel-is-None-Guard in update_last_ip_if_changed.
+- **Tests:** 2 neue in UpsertSeenDelegationTests (mock.object),
+  3 bestehende Regression-Tests gruen. 46 passed.
+- **Loop-Bilanz:** Loop baute korrekt. pytest_regression (OP-034)
+  erkannte Semantik-Bug (3 bestehende Tests rot), Loop-Abbruch
+  korrekt. Nach git reset --hard wurde Loop-Delegation verworfen
+  und manuell wiederhergestellt. Der Reset war der Fehler, nicht
+  der Loop.
 

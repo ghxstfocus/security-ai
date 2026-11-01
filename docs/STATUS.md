@@ -42,15 +42,6 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 - **Akzeptanzkriterien:** Wenn der Architect sagt "out-of-scope" oder "Tests sind OUT-OF-SCOPE" und KEINEN konkreten Task-Plan liefert, bricht Planner-Split ab mit `planner_split_no_tasks` und der Loop endet sauber. Er erzeugt NICHT einen Mega-Task mit 20+ Dateien aus dem Code-Index. Live-Beleg 2026-10-31: OP-005-Loop, Planner-Split lieferte 1 Task "Architect-Loesung umsetzen" mit 24 Dateien (24 Migrations + 2 Tests + 2 Docs + 2 Code-Dateien), obwohl die Aufgabe explizit nur 2 Test-Dateien betraf.
 - **Tests:** `tests/test_planner_split.py::test_out_of_scope_kein_mega_task`
 - **Blockiert von:** —
-
-### OP-002b1: upsert_seen delegiert an update_last_ip_if_changed
-- **Status:** open
-- **Betroffene Dateien:** `core/inventory/repository.py`
-- **Akzeptanzkriterien:** In `upsert_seen` (repository.py) wird die Zeile `new_ip = ip if ip else existing.last_ip` und die `last_ip`-Spalte im UPDATE entfernt. Stattdessen EIN Aufruf `self.update_last_ip_if_changed(identifier, ip)` NACH dem bestehenden UPDATE und VOR `self._conn.commit()`. KEINE Inline-Duplikation der Logik. `update_last_ip_if_changed` wird tatsaechlich aufgerufen (grep: `self.update_last_ip_if_changed` in upsert_seen-Body). KEINE `_insert_device_history` (bleibt OP-002b2). KEIN Duplikatschutz (bleibt OP-002b3).
-- **Tests:** Bestehende Tests in `tests/unit/test_inventory.py` bleiben gruen. Neuer Test `test_upsert_seen_ruft_update_last_ip_if_changed` (mock/Monkey-Patch auf die Methode, prueft Aufruf).
-- **Blockiert von:** —
-- **Hinweis:** Live-Test 5 v2 (2026-11-01): Builder duplizierte die Logik inline statt zu delegieren. 3× Reviewer-Reject. Phase-Reflection erschoepft. Kleinerer Task-Scope soll das verhindern.
-
 ### OP-002b2: _insert_device_history mit Duplikatschutz
 - **Status:** open
 - **Betroffene Dateien:** `core/inventory/repository.py`
@@ -87,6 +78,7 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 | Pfad | Warum entfernt | Ersetzt durch | Wiedereinfuehrung |
 |---|---|---|---|
 | OP-005 |
+| OP-002b1 | erledigt 2026-11-01 (dffa860) | Delegation + None-Guard | – |
 | OP-054 | erledigt 2026-11-01 (Werkstatt b795e14) | Builder-False-Positive gefixt | – | erledigt 2026-10-31 (37a6766) | Test-Umschreiben | – |
 | OP-002a | erledigt 2026-11-01 (0c0b901, 4bd9c2a) | normalize_ip + update_last_ip_if_changed | – |
 | `docs/DECISIONS.md` | Monolith, 2026-10-31 migriert | `docs/adr/ADR-NNNN-*.md` | nie — ADR-Format ist Pflicht |
