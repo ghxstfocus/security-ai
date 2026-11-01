@@ -338,7 +338,7 @@ class UpsertSeenDelegationTests(unittest.TestCase):
             return_value=False,
         ) as mock:
             self.repo.upsert_seen("dev-1", ip="192.168.1.6")
-        mock.assert_called_once_with("dev-1", "192.168.1.6")
+        mock.assert_called_once_with("dev-1", "192.168.1.6", commit=False)
 
     def test_upsert_seen_ohne_ip_ruft_delegation_auf(self):
         """upsert_seen mit ip=None ruft Delegation mit None auf.
@@ -352,4 +352,4 @@ class UpsertSeenDelegationTests(unittest.TestCase):
             return_value=False,
         ) as mock:
             self.repo.upsert_seen("dev-2")
-        mock.assert_called_once_with("dev-2", None)
+        mock.assert_called_once_with("dev-2", None, commit=False)
