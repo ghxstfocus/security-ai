@@ -5,7 +5,7 @@ Letzte Aktualisierung: 2026-10-31.
 
 ## Kennzahlen
 
-- HEAD: ffef6b4 (origin/main synchron).
+- HEAD: 2f8d9e9
 - Branch: main.
 - Working Tree: sauber.
 - Tests: 1343 collected (Stand 2026-11-01).
@@ -28,24 +28,6 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 - **Akzeptanzkriterien:** Punkt 53b: ruff-Regelschaerfung (PL, TRY, ANN, S, T20, ARG). Kategorie 3, eigener Block mit Bestandsaufnahme pro Regel-Gruppe.
 - **Tests:** —
 - **Blockiert von:** —
-
-### OP-004: mypy operator-Fehler in core/checks/__init__.py:76
-
-- **Status:** open
-- **Betroffene Dateien:** `core/checks/__init__.py`
-- **Akzeptanzkriterien:** `mypy core/checks/__init__.py` muss 0 Fehler zeigen. Aktuell 2 Fehler in Zeile 76 (`check_port_range`, `return min_port <= port <= max_port`):
-error: Unsupported operand types for >= ("int" and "object") [operator]
-error: Unsupported operand types for <= ("int" and "object") [operator]
-
-text
-Kopieren
-Herunterladen
-Ursache: `min_port`/`max_port` sind als `object` typisiert. mypy narrowt sie nach den `isinstance`-Guards nicht auf `int`, weil die Bedingung `if not isinstance(min_port, int) or isinstance(min_port, bool)` das Narrowing blockiert.
-Fix: entweder explizites `typing.cast(int, ...)` nach den Guards, oder die Bedingungen umstrukturieren (separate `if not isinstance(...): return False`-Zeilen, dann separater `bool`-Ausschluss).
-Keine Verhaltensaenderung: die Funktion liefert weiter `False` bei Nicht-Int-Ports und `True` bei int im Bereich. Bestehende Tests in `tests/unit/test_checks.py` bleiben gruen.
-- **Tests:** `tests/unit/test_checks.py::test_check_port_range_invalid_bounds` (existiert, deckt bool/str/None-Grenzen ab).
-- **Blockiert von:** —
-- **Hinweis:** Urspruengliche OP-004-Beschreibung ('A900 mypy no-untyped-def, 67 Stellen') war eine **Fehldiagnose**. Messung 2026-11-01: 0 untyped-def-Fehler in `core/` bei aktivem `disallow_untyped_defs = true` (pyproject.toml:55); der grep auf 105 war ein False-Positive auf mehrzeilige Signaturen. Echte mypy-Fehler: **2**, beide in `core/checks/__init__.py:76` (`operator`, nicht `no-untyped-def`). A900 ist kein ruff-Code (ruff 0.16.9 kennt das nicht). Diese OP deckt den echten, konkreten mypy-Befund ab — klein, loop-tauglich, Test existiert.
 
 ### OP-006: Planner-Split crasht auf 'out-of-scope'-Architect-Output
 - **Status:** open
@@ -83,3 +65,4 @@ Keine Verhaltensaenderung: die Funktion liefert weiter `False` bei Nicht-Int-Por
 | `docs/PROGRESS.md` | Duplikat, 2026-10-31 | `PROGRESS.md` (root) | nie |
 | OP-002b2 | erledigt 2026-11-01 (ef413bd) | Loop-Nachzug manuell (Loop rc=1, Methode+Test manuell) | – |
 | OP-002b3 | erledigt 2026-11-01 (09cb89d/f2f126c) | Loop-Nachzug erfolgreich (4/4 Tasks, rc=0) | – |
+| OP-004 | erledigt 2026-11-01 | OP-004: In core/checks/__init__.py die Funktion check_port_r | - |

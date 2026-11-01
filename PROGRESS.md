@@ -517,3 +517,7 @@ Verifikation (t7):
 ## 2026-11-01T17:57:09+00:00 -- OP-004 Fehldiagnose korrigiert
 - **Status:** info
 - **Info:** Urspruengliche OP-004-Beschreibung ('A900 mypy no-untyped-def, 67 Stellen') war eine Fehldiagnose. Messung 2026-11-01: bei aktivem disallow_untyped_defs (pyproject.toml:55) zeigt mypy 0 untyped-def-Fehler in core/. grep-False-Positive auf mehrzeilige Signaturen. A900 ist kein ruff-Code (ruff 0.16.9). Echte mypy-Fehler: 2 in core/checks/__init__.py:76 (operator, nicht no-untyped-def). OP-004 umgeschrieben auf den echten Befund (1 Datei, 2 Zeilen, Test existiert).
+## 2026-11-01T17:58:50+00:00 -- OP-004: OP-004: In core/checks/__init__.py die Funktion check_port_r
+- **Status:** done
+- **Info:** Loop-Doku-Nachzug (Ebene 1). Beleg: git log security-ai.
+

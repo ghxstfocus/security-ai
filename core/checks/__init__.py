@@ -69,9 +69,13 @@ def check_port_range(port: object, min_port: object, max_port: object) -> bool:
     """
     if not check_port(port):
         return False
-    if not isinstance(min_port, int) or isinstance(min_port, bool):
+    if not isinstance(min_port, int):
         return False
-    if not isinstance(max_port, int) or isinstance(max_port, bool):
+    if isinstance(min_port, bool):
+        return False
+    if not isinstance(max_port, int):
+        return False
+    if isinstance(max_port, bool):
         return False
     return min_port <= port <= max_port
 
