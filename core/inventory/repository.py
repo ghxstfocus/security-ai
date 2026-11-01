@@ -457,6 +457,50 @@ class DeviceRepository:
         self._conn.commit()
         return True
 
+    def _insert_device_history(
+        self,
+        device_id: int,
+        feld: str,
+        alt: str | None,
+        neu: str | None,
+        timestamp: str,
+    ) -> bool:
+        """Fuegt einen field_change-Eintrag in device_history ein.
+
+        Duplikat-Check per NULL-sicherem IS-Vergleich auf feld/alt/neu.
+        Committet NICHT — Transaktionshoheit liegt beim Aufrufer.
+        """
+        if not isinstance(device_id, int) or device_id <= 0:
+            raise ValueError("device_id muss eine positive Ganzzahl sein")
+        if not isinstance(feld, str) or not feld.strip():
+            raise ValueError("feld muss ein nicht-leerer String sein")
+        if not isinstance(timestamp, str) or not timestamp:
+            raise ValueError(
+                "timestamp muss ein nicht-leerer ISO-8601-String sein"
+            )
+
+        existing = self._conn.execute(
+            "SELECT 1 FROM device_history "
+            "WHERE device_id = ? AND feld IS ? AND alt IS ? "
+            "AND neu IS ? AND timestamp = ?",
+            (device_id, feld, alt, neu, timestamp),
+        ).fetchone()
+        if existing is not None:
+            logger.debug(
+                "device_history-Duplikat uebersprungen: device_id=%s feld=%s",
+                device_id, feld,
+            )
+            return False
+
+        self._conn.execute(
+            "INSERT INTO device_history "
+            "(device_id, timestamp, event_type, network_type, data_json, "
+            " feld, alt, neu) "
+            "VALUES (?, ?, 'field_change', NULL, '{}', ?, ?, ?)",
+            (device_id, timestamp, feld, alt, neu),
+        )
+        return True
+
     def update_last_ip_if_changed(
         self, identifier: str, ip: str | None,
     ) -> bool:
