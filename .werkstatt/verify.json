@@ -63,6 +63,18 @@
         "-q"
       ],
       "phase": "phase_end"
+    },
+    {
+      "id": "mypy_changed",
+      "hart": true,
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "mypy",
+        "{changed_py_files}",
+        "--no-error-summary"
+      ],
+      "phase": "post_build"
     }
   ]
 }
