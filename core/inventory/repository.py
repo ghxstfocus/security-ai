@@ -364,7 +364,18 @@ class DeviceRepository:
                 "last_seen = ? WHERE id = ?",
                 (new_name, new_net, ts, device_id),
             )
-            self.update_last_ip_if_changed(identifier, ip)
+            # OP-002b3: alt-Wert vor dem UPDATE merken, dann mit
+            # commit=False aufrufen und bei echtem Diff einen
+            # field_change-History-Eintrag schreiben.
+            alt_ip = existing.last_ip
+            changed = self.update_last_ip_if_changed(
+                identifier, ip, commit=False,
+            )
+            if changed:
+                self._insert_device_history(
+                    device_id, "last_ip", alt_ip, normalize_ip(ip), ts,
+                )
+                self._conn.commit()
 
         self._conn.execute(
             "INSERT INTO device_history "
@@ -502,13 +513,16 @@ class DeviceRepository:
         return True
 
     def update_last_ip_if_changed(
-        self, identifier: str, ip: str | None,
+        self, identifier: str, ip: str | None, *, commit: bool = True,
     ) -> bool:
         """Aktualisiert last_ip nur bei echter Aenderung.
 
         Rueckgabe: True, wenn ein UPDATE ausgefuehrt wurde,
         False wenn der Identifier unbekannt ist oder der
         normalisierte Wert unveraendert ist.
+
+        commit=False: die Transaktion bleibt offen und gehoert
+        dem Aufrufer (Transaktionshoheit beim Aufrufer).
         """
         ziel = normalize_ip(ip)
         # OP-002b1-Fix: ip="" oder ip=None = "kein Diff". Sonst wuerde
@@ -529,7 +543,8 @@ class DeviceRepository:
             "UPDATE devices SET last_ip = ? WHERE identifier = ?",
             (ziel, identifier),
         )
-        self._conn.commit()
+        if commit:
+            self._conn.commit()
         return True
 
     def count(self) -> int:
