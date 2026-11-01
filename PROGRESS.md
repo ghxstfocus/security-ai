@@ -478,4 +478,13 @@ Verifikation (t7):
 - **Tests:** 9 neue in tests/unit/test_inventory_op002a.py, alle gruen.
 - **Live-Beleg:** Erster vollstaendig erfolgreicher Loop-Lauf (2/2 Tasks, pytest_regression 600s gruen, human_gate approved).
 - **Nicht enthalten:** upsert_seen-Umbau, device_history-Insert (bleibt OP-002b).
+## 2026-11-01T09:29:19+00:00 -- OP-054: auftrag_bereits_erfuellt-False-Positive (Werkstatt-Fix)
+- **Status:** done
+- **Beleg:** Werkstatt-Commit b795e14 (builder.py + audit.py + 4 Tests).
+- **Befund:** Live-Test 5 v2 markierte t2 (_insert_device_history) als
+  done via auftrag_bereits_erfuellt, obwohl t1 eine doppelte Methode
+  hinterlassen hatte.
+- **Fix:** no_effect-Filter prueft vor Flag-Setzen, ob old_string im
+  Datei-Ist-Zustand mehrfach vorkommt. Bei Duplikat-Anker: kein Flag,
+  Audit-Event builder_patch_duplicate_anchor.
 

@@ -66,15 +66,6 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 - **Tests:** Neuer Test `test_upsert_seen_mit_ip_wechsel_history` (Wechsel → 2 DB-Eintraege in device_history mit alt/neu).
 - **Blockiert von:** OP-002b1, OP-002b2
 - **Hinweis:** Setzt voraus, dass b1 und b2 sauber sind.
-
-### OP-054: auftrag_bereits_erfuellt triggert bei "Methode existiert"
-- **Status:** open
-- **Betroffene Dateien:** `werkstatt/builder.py`
-- **Akzeptanzkriterien:** Der Flag `auftrag_bereits_erfuellt` wird nur gesetzt, wenn die Task-Spec explizit sagt "pruefe, ob X existiert" UND X im IST-ZUSTAND steht. Bei Aufgaben wie "baue Methode X mit Eigenschaft Y" reicht die Existenz von X NICHT — Y muss auch nachgewiesen sein (Signature, Verhalten, Tests). Konkret: bei `auftrag_bereits_erfuellt` muss der Builder ein Feld `begruendung_bereits_erfuellt` mit Setzen einer Pruefung (grep, read_file) belegen.
-- **Tests:** `tests/test_builder.py::test_auftrag_bereits_erfuellt_nur_mit_beleg`. Live-Beleg: 2026-11-01, t2 (OP-002b) wurde "done via auftrag_bereits_erfuellt_pre_hook" markiert, obwohl die Methode fehlerhaft (doppelt, ohne Duplikatschutz) war.
-- **Blockiert von:** —
-- **Hinweis:** Live-Befund 2026-11-01. Der Builder erkennt "Methode existiert" und setzt Flag, ohne die Korrektheit zu pruefen.
-
 ## Umgebung
 
 - Container: CT102 (security-ai,
@@ -95,7 +86,8 @@ abgeschlossen. Arbeit laeuft ueber die Werkstatt
 
 | Pfad | Warum entfernt | Ersetzt durch | Wiedereinfuehrung |
 |---|---|---|---|
-| OP-005 | erledigt 2026-10-31 (37a6766) | Test-Umschreiben | – |
+| OP-005 |
+| OP-054 | erledigt 2026-11-01 (Werkstatt b795e14) | Builder-False-Positive gefixt | – | erledigt 2026-10-31 (37a6766) | Test-Umschreiben | – |
 | OP-002a | erledigt 2026-11-01 (0c0b901, 4bd9c2a) | normalize_ip + update_last_ip_if_changed | – |
 | `docs/DECISIONS.md` | Monolith, 2026-10-31 migriert | `docs/adr/ADR-NNNN-*.md` | nie — ADR-Format ist Pflicht |
 | `docs/README.md` | Diaetaxis, 2026-10-31 | `docs/index.md` | nie |
