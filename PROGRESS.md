@@ -521,3 +521,7 @@ Verifikation (t7):
 - **Status:** done
 - **Info:** Loop-Doku-Nachzug (Ebene 1). Beleg: git log security-ai.
 
+
+## 2026-11-01T18:23:51+00:00 -- OP-004: mypy operator-Fehler behoben (manuell)
+- **Status:** done
+- **Info:** Commit cdf9ba8. Loop-Validierung #5 (18:20) hat 4 Reflection-Runden gedreht, aber falschen Fix gebaut: `int(min_port)` statt `typing.cast`. Der Loop folgte damit meiner OP-004-Formulierung, die `int(min_port)` als valide Narrowing-Variante nannte — das ist fuer mypy falsch (`No overload variant of int matches object`). Der Reviewer zitierte diese Formulierung woertlich. Kein Loop-Bug — fehlerhafte Spec. Manueller Fix: nur `cast(int, port)`, min_port/max_port sind nach den isinstance-Guards fuer mypy bereits int. mypy 0 Fehler, 53 Tests gruen. Loop-5-Diff: /root/backups/security-ai-20261101-182157-loop5-fail/
