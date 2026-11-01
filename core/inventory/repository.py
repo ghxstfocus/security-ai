@@ -356,12 +356,15 @@ class DeviceRepository:
             else:
                 new_name = existing.entity_name
             new_net = network_type if network_type is not None else existing.network_type
-            new_ip = ip if ip else existing.last_ip
+            # OP-002b1: Inline last_ip-Pflege entfernt, Delegation an
+            # update_last_ip_if_changed. None-Guard (ip="" -> None)
+            # ist in update_last_ip_if_changed, nicht hier.
             self._conn.execute(
                 "UPDATE devices SET entity_name = ?, network_type = ?, "
-                "last_seen = ?, last_ip = ? WHERE id = ?",
-                (new_name, new_net, ts, new_ip, device_id),
+                "last_seen = ? WHERE id = ?",
+                (new_name, new_net, ts, device_id),
             )
+            self.update_last_ip_if_changed(identifier, ip)
 
         self._conn.execute(
             "INSERT INTO device_history "
@@ -464,6 +467,11 @@ class DeviceRepository:
         normalisierte Wert unveraendert ist.
         """
         ziel = normalize_ip(ip)
+        # OP-002b1-Fix: ip="" oder ip=None = "kein Diff". Sonst wuerde
+        # UPDATE last_ip auf None setzen, was der alte Code durch
+        # "new_ip = ip if ip else existing.last_ip" verhinderte.
+        if ziel is None:
+            return False
         row = self._conn.execute(
             "SELECT last_ip FROM devices WHERE identifier = ?",
             (identifier,),

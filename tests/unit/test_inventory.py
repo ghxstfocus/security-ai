@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 from dataclasses import FrozenInstanceError
 from datetime import UTC, datetime, timedelta
 
@@ -319,3 +320,36 @@ class UpsertSeenLastIpTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class UpsertSeenDelegationTests(unittest.TestCase):
+    def setUp(self):
+        self.conn = _fresh_conn()
+        self.repo = DeviceRepository(self.conn)
+
+    def tearDown(self):
+        self.conn.close()
+
+    def test_upsert_seen_ruft_update_last_ip_if_changed(self):
+        """upsert_seen mit ip=... MUSS update_last_ip_if_changed aufrufen."""
+        self.repo.upsert_seen("dev-1", ip="192.168.1.5")
+        with patch.object(
+            self.repo, "update_last_ip_if_changed",
+            return_value=False,
+        ) as mock:
+            self.repo.upsert_seen("dev-1", ip="192.168.1.6")
+        mock.assert_called_once_with("dev-1", "192.168.1.6")
+
+    def test_upsert_seen_ohne_ip_ruft_delegation_auf(self):
+        """upsert_seen mit ip=None ruft Delegation mit None auf.
+
+        Die Delegation selbst entscheidet (ziel is None -> False),
+        aber der Aufruf passiert.
+        """
+        self.repo.upsert_seen("dev-2", ip="10.0.0.1")
+        with patch.object(
+            self.repo, "update_last_ip_if_changed",
+            return_value=False,
+        ) as mock:
+            self.repo.upsert_seen("dev-2")
+        mock.assert_called_once_with("dev-2", None)
