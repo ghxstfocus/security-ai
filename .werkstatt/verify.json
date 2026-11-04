@@ -49,7 +49,7 @@
         "pytest",
         "-q"
       ],
-      "requires": "{changed_non_test_py_files}",
+      "requires": "{changed_py_files}",
       "phase": "phase_end",
       "timeout": 900
     },
